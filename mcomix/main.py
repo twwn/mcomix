@@ -2687,6 +2687,7 @@ class MainWindow(Gtk.Window):
         cover.show_active(
             held and chosen is not None
             and library.get_chosen_cover(chosen[0]) == chosen[1])
+        self.uimanager.ready_popup()
         widgets.popup_at(self.popup, widget, x, y)
 
 

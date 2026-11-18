@@ -70,6 +70,13 @@ def _descriptors_on(path):
     return held
 
 
+def _popup_model(window):
+    """The model of <window>'s right-click menu, which is built when
+    the menu is first opened."""
+    window.uimanager.ready_popup()
+    return window.uimanager.popup.get_menu_model()
+
+
 class MainWindowTest(MComixTest):
 
     def setUp(self):
@@ -881,8 +888,7 @@ class MainWindowTest(MComixTest):
         one that needs a page picked out - which is the one only it can
         do, since it is opened on the page it means."""
         self.assertIn('win.extract-page-popup',
-                      self._menu_actions(self.window.uimanager.popup
-                                         .get_menu_model()))
+                      self._menu_actions(_popup_model(self.window)))
 
     # -- Picking a page out, and deleting it ------------------------------
 
@@ -4021,8 +4027,7 @@ class MainWindowTest(MComixTest):
         self.assertIsNotNone(
             self._menubar_item('win.open-containing-folder'), 'no menu item')
         self.assertIn('win.open-containing-folder-popup',
-                      self._menu_actions(self.window.uimanager.popup
-                                         .get_menu_model()))
+                      self._menu_actions(_popup_model(self.window)))
         action = self.window.actiongroup.get_action('open_containing_folder')
         popup = self.window.actiongroup.get_action(
             'open_containing_folder_popup')
@@ -4086,8 +4091,7 @@ class MainWindowTest(MComixTest):
 
     def test_the_right_click_menu_offers_to_delete_a_page(self):
         self.assertIn('win.delete-page-popup',
-                      self._menu_actions(self.window.uimanager.popup
-                                         .get_menu_model()))
+                      self._menu_actions(_popup_model(self.window)))
 
     def test_the_right_click_menu_deletes_the_page_it_was_opened_over(self):
         before = self._ready()
@@ -4099,8 +4103,7 @@ class MainWindowTest(MComixTest):
 
     def test_the_right_click_menu_offers_to_copy_the_page(self):
         self.assertIn('win.copy-page-popup',
-                      self._menu_actions(self.window.uimanager.popup
-                                         .get_menu_model()))
+                      self._menu_actions(_popup_model(self.window)))
 
     def test_the_right_click_menu_copies_the_page_it_was_opened_over(self):
         """The menu bar's Copy takes the view; the popup stands on one
@@ -4139,8 +4142,7 @@ class MainWindowTest(MComixTest):
 
     def test_the_right_click_menu_offers_to_move_the_file(self):
         self.assertIn('moveto.other',
-                      self._menu_actions(self.window.uimanager.popup
-                                         .get_menu_model()))
+                      self._menu_actions(_popup_model(self.window)))
 
     def test_the_file_menu_offers_to_move_the_file_too(self):
         """It was in the right-click menu alone, beside Delete and the
@@ -4671,7 +4673,7 @@ class MainWindowTest(MComixTest):
 
     def test_the_menus_offer_to_rename_the_archive(self):
         for menu in (self.window.uimanager.menubar.get_menu_model(),
-                     self.window.uimanager.popup.get_menu_model()):
+                     _popup_model(self.window)):
             self.assertIn('win.rename-book', self._menu_actions(menu))
 
     def test_a_move_that_fails_leaves_the_changes_to_be_asked_about(self):
@@ -4843,8 +4845,7 @@ class MainWindowTest(MComixTest):
 
     def test_the_menu_offers_to_rename_the_page(self):
         self.assertIn('win.rename-page-popup',
-                      self._menu_actions(self.window.uimanager.popup
-                                         .get_menu_model()))
+                      self._menu_actions(_popup_model(self.window)))
 
     def test_the_rename_dialog_offers_the_name_with_the_stem_picked_out(self):
         """A file manager leaves the extension out of what it selects,
@@ -5556,8 +5557,7 @@ class MainWindowTest(MComixTest):
         with the menu bar hidden - which the right-click menu is there
         for - had no way to reach it at all."""
         self.assertIn('win.edit-archive',
-                      self._menu_actions(self.window.uimanager.popup
-                                         .get_menu_model()))
+                      self._menu_actions(_popup_model(self.window)))
 
     def test_the_right_click_menu_saves_the_page_it_was_opened_over(self):
         """Save As on the menu bar offers both pages of a double page,
@@ -5712,7 +5712,7 @@ class MainWindowTest(MComixTest):
     def _popup_top_level(self):
         """The right-click menu's own items, in order: for each its
         action (None for a submenu) and what hides it."""
-        model = self.window.uimanager.popup.get_menu_model()
+        model = _popup_model(self.window)
         items = []
         for number in range(model.get_n_items()):
             section = model.get_item_link(number, Gio.MENU_LINK_SECTION)
@@ -5745,7 +5745,7 @@ class MainWindowTest(MComixTest):
             if action is not None:
                 self.assertEqual('action-disabled', hidden, action)
         # A submenu keeps every item in its place, greyed or not.
-        model = self.window.uimanager.popup.get_menu_model()
+        model = _popup_model(self.window)
         go = model.get_item_link(2, Gio.MENU_LINK_SECTION).get_item_link(
             0, Gio.MENU_LINK_SUBMENU)
         self.assertIsNone(go.get_item_link(0, Gio.MENU_LINK_SECTION)

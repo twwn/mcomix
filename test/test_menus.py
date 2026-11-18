@@ -93,35 +93,64 @@ class MenusBuiltOnceTest(MComixTest):
     """A new window built both menus, then built them again from an
     idle once it had registered its keybindings, each of which changes
     the key an item shows: 18 ms of the 65 a window with a book took to
-    build and draw first."""
+    build and draw first.  The right-click menu, which many readers
+    never open, is built when it is first opened."""
 
-    def test_a_new_window_builds_each_menu_once_with_its_keys(self):
+    def setUp(self):
+        super().setUp()
         for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
                           constants.THUMBNAIL_PATH):
             os.makedirs(directory, exist_ok=True)
         icons.load_icons()
         keybindings._manager = None
-        built = []
+        self.built = []
         build = ui.MainUI._build
 
         def counted(uimanager, layout, hide_disabled=False):
             if layout is ui._MENUBAR:
-                built.append('menu bar')
+                self.built.append('menu bar')
             elif layout is ui._POPUP:
-                built.append('right-click menu')
+                self.built.append('right-click menu')
             return build(uimanager, layout, hide_disabled)
-        with unittest.mock.patch.object(ui.MainUI, '_build', counted):
-            window = main.MainWindow()
-            main.set_main_window(window)
-            self.addCleanup(main.set_main_window, None)
-            self.addCleanup(window.destroy)
-            self.addCleanup(window.terminate_program)
-            pump()
-        self.assertEqual(['menu bar', 'right-click menu'], built)
-        for menu in (window.menubar, window.popup):
-            with self.subTest(menu=type(menu).__name__):
-                self.assertIn('<Control>o', set(_accelerators(
-                    menu.get_menu_model())))
+        patcher = unittest.mock.patch.object(ui.MainUI, '_build', counted)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+        self.window = main.MainWindow()
+        main.set_main_window(self.window)
+        self.addCleanup(pump)
+        self.addCleanup(main.set_main_window, None)
+        self.addCleanup(self.window.destroy)
+        self.addCleanup(self.window.terminate_program)
+        pump()
+
+    def _keys(self, menu):
+        return set(_accelerators(menu.get_menu_model()))
+
+    def _open_the_right_click_menu(self):
+        self.window.show_page_menu(self.window.page_area, 1, 1, None)
+        self.assertTrue(self.window.popup.get_visible())
+        self.window.popup.popdown()
+        pump()
+
+    def test_a_new_window_builds_its_menu_bar_once_with_its_keys(self):
+        self.assertEqual(['menu bar'], self.built)
+        self.assertIn('<Control>o', self._keys(self.window.menubar))
+
+    def test_the_right_click_menu_is_built_once_when_first_opened(self):
+        self._open_the_right_click_menu()
+        self._open_the_right_click_menu()
+        self.assertEqual(['menu bar', 'right-click menu'], self.built)
+        self.assertIn('<Control>o', self._keys(self.window.popup))
+
+    def test_a_key_changed_shows_in_both_menus(self):
+        self._open_the_right_click_menu()
+        self.window.uimanager.set_accelerator('open', '<Control>F12')
+        pump()
+        self.assertIn('<Control>F12', self._keys(self.window.menubar))
+        self._open_the_right_click_menu()
+        self.assertIn('<Control>F12', self._keys(self.window.popup))
+        self.assertEqual(['menu bar', 'right-click menu', 'menu bar',
+                          'right-click menu'], self.built)
 
 
 class HelpMenuTest(MComixTest):

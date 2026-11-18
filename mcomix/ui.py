@@ -422,6 +422,9 @@ class MainUI:
         self._accelerators: dict[str, str] = {}
         #: The idle that will build the menus again, if one is pending.
         self._rebuild_pending: int | None = None
+        #: Whether the right-click menu's model is the one the keys
+        #: shown now would build.
+        self._popup_built = False
         #: Accelerators that are not MComix' own keybindings hang here.
         #: A shortcut controller triggers the actions by name.
         self.shortcuts = Gtk.ShortcutController()
@@ -678,16 +681,29 @@ class MainUI:
     def _rebuild_menus(self) -> bool:
         self._rebuild_pending = None
         self.menubar.set_menu_model(self._build(_MENUBAR))
-        self.popup.set_menu_model(self._build(_POPUP, hide_disabled=True))
+        # The right-click menu is built when it is next opened: built
+        # here, it was 10 ms of every start, for a menu many readers
+        # never open.
+        self._popup_built = False
+        if self.popup.get_visible():
+            self.ready_popup()
         # The bookmarks menu builds its fixed entries itself.
         self.bookmarks.refresh()
         # A middle click on a recent file or a bookmark opens it in an
         # MComix of its own, and a menu model says nothing about which
         # button reached an item.  A new model is a new set of popovers
-        # below the two roots.
+        # below the root.
         widgets.watch_menu_clicks(self.menubar)
-        widgets.watch_menu_clicks(self.popup)
         return GLib.SOURCE_REMOVE
+
+    def ready_popup(self) -> None:
+        """Build the right-click menu, unless the one there shows the
+        keys of now."""
+        if self._popup_built:
+            return
+        self._popup_built = True
+        self.popup.set_menu_model(self._build(_POPUP, hide_disabled=True))
+        widgets.watch_menu_clicks(self.popup)
 
     def release(self) -> None:
         """Let go of the closed window.
