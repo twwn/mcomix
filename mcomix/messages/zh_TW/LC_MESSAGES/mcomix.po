@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix zh_TW\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-18 15:42+0100\n"
+"POT-Creation-Date: 2026-11-19 00:41+0100\n"
 "PO-Revision-Date: 2013-07-05 21:37+0800\n"
 "Last-Translator: Wayne Su <mstarmstar@hotmail.com>\n"
 "Language-Team: \n"
@@ -59,7 +59,7 @@ msgid "! Could not read %s"
 msgstr "！ 無法讀取 %s"
 
 #: mcomix/archive_packer.py:213 mcomix/file_actions.py:1263
-#: mcomix/library/book_area.py:1312
+#: mcomix/library/book_area.py:1292
 #, python-format
 msgid "! Could not remove %(file)s: %(error)s"
 msgstr "！ 無法移除 %(file)s：%(error)s"
@@ -161,8 +161,8 @@ msgstr "編輯書籤"
 msgid "C_lear bookmarks..."
 msgstr "清除書籤...(_L)"
 
-#: mcomix/bookmark_dialog.py:33 mcomix/main.py:1543 mcomix/openwith.py:437
-#: mcomix/library/collection_area.py:159 mcomix/library/watchlist.py:69
+#: mcomix/bookmark_dialog.py:33 mcomix/main.py:1558 mcomix/openwith.py:428
+#: mcomix/library/collection_area.py:150 mcomix/library/watchlist.py:69
 msgid "_Remove"
 msgstr "移除(_R)"
 
@@ -182,7 +182,7 @@ msgstr "類型"
 msgid "Name"
 msgstr "檔案名稱"
 
-#: mcomix/bookmark_dialog.py:67 mcomix/main.py:2731
+#: mcomix/bookmark_dialog.py:67 mcomix/main.py:2746
 #: mcomix/library/book_properties.py:108 mcomix/library/control_area.py:172
 msgid "Page"
 msgstr "頁次"
@@ -234,8 +234,8 @@ msgstr "新快速鍵..."
 msgid "Comments"
 msgstr "註解"
 
-#: mcomix/comment_dialog.py:134 mcomix/file_handler.py:573
-#: mcomix/file_handler.py:1121
+#: mcomix/comment_dialog.py:134 mcomix/file_handler.py:571
+#: mcomix/file_handler.py:1114
 #, python-format
 msgid "Could not read %s"
 msgstr "無法讀取 %s"
@@ -377,7 +377,7 @@ msgstr "回到已儲存的值。"
 
 #: mcomix/enhance_dialog.py:51 mcomix/file_actions.py:628
 #: mcomix/file_actions.py:686 mcomix/file_actions.py:715
-#: mcomix/file_chooser_base_dialog.py:242 mcomix/openwith.py:461
+#: mcomix/file_chooser_base_dialog.py:242 mcomix/openwith.py:452
 msgid "_Save"
 msgstr "儲存(_S)"
 
@@ -535,11 +535,11 @@ msgstr "檔案將丟進垃圾桶。"
 msgid "_Move to Trash"
 msgstr "丟進垃圾桶(_M)"
 
-#: mcomix/file_actions.py:1103 mcomix/library/book_area.py:1249
+#: mcomix/file_actions.py:1103 mcomix/library/book_area.py:1229
 msgid "It does not go to the trash and cannot be restored."
 msgstr "檔案不會丟進垃圾桶，刪除後無法復原。"
 
-#: mcomix/file_actions.py:1111 mcomix/library/book_area.py:1241
+#: mcomix/file_actions.py:1111 mcomix/library/book_area.py:1221
 #, python-format
 msgid "Delete \"%s\" permanently?"
 msgstr "要永久刪除 %s ？"
@@ -549,7 +549,7 @@ msgstr "要永久刪除 %s ？"
 msgid "Could not move \"%s\" to the trash"
 msgstr "無法將 \"%s\" 丟進垃圾桶"
 
-#: mcomix/file_actions.py:1222 mcomix/library/book_area.py:1326
+#: mcomix/file_actions.py:1222 mcomix/library/book_area.py:1306
 #, python-format
 msgid "%d book could not be moved to the trash."
 msgid_plural "%d books could not be moved to the trash."
@@ -657,7 +657,7 @@ msgstr "替換後將會覆蓋掉原有內容。"
 msgid "Add books"
 msgstr "新增書籍"
 
-#: mcomix/file_chooser_library_dialog.py:43 mcomix/openwith.py:433
+#: mcomix/file_chooser_library_dialog.py:43 mcomix/openwith.py:424
 #: mcomix/library/watchlist.py:67
 msgid "_Add"
 msgstr "加入(_A)..."
@@ -667,33 +667,33 @@ msgstr "加入(_A)..."
 msgid "! Could not unpack into %s; the temporary folder is used instead."
 msgstr "! 無法解壓縮到 %s，改用暫存資料夾。"
 
-#: mcomix/file_handler.py:625
+#: mcomix/file_handler.py:620
 #, python-format
 msgid "No images in '%s'"
 msgstr "%s 裏沒有圖片"
 
-#: mcomix/file_handler.py:913
+#: mcomix/file_handler.py:906
 #, python-format
 msgid "Could not open %s: No such file."
 msgstr "無法開啟 %s：沒有這個檔案。"
 
-#: mcomix/file_handler.py:916 mcomix/file_provider.py:300
+#: mcomix/file_handler.py:909 mcomix/file_provider.py:300
 #: mcomix/file_provider.py:401
 #, python-format
 msgid "Could not open %s: Permission denied."
 msgstr "無法開啟 %s：沒有權限。"
 
-#: mcomix/file_handler.py:1137
+#: mcomix/file_handler.py:1128
 #, python-format
 msgid "There is no room left to unpack the pages in %s."
 msgstr "%s 中沒有剩餘空間來解壓縮頁面。"
 
-#: mcomix/file_handler.py:1221
+#: mcomix/file_handler.py:1217
 #, python-format
 msgid "Continue reading from page %d?"
 msgstr "要從第%d頁開始繼續讀嗎？"
 
-#: mcomix/file_handler.py:1222
+#: mcomix/file_handler.py:1218
 #, python-format
 msgid ""
 "You stopped reading here on %(date)s, %(time)s. If you choose \"Yes\", "
@@ -703,7 +703,7 @@ msgstr ""
 "你在 %(date)s %(time)s 時讀到這裏就停了。如果你選「是」，可以從第 %(page)d 頁"
 "開始讀；否則就會載入第一頁。"
 
-#: mcomix/file_handler.py:1803
+#: mcomix/file_handler.py:1799
 #, python-format
 msgid ""
 "! Corrupt file \"%s\", deleting it; the last file read will not be reopened."
@@ -1122,7 +1122,7 @@ msgstr "刪除"
 msgid "File"
 msgstr "檔案"
 
-#: mcomix/keybindings.py:155 mcomix/ui.py:452 mcomix/library/book_area.py:312
+#: mcomix/keybindings.py:155 mcomix/ui.py:452 mcomix/library/book_area.py:301
 msgid "Delete permanently"
 msgstr "永久刪除"
 
@@ -1182,7 +1182,7 @@ msgid "Preferences"
 msgstr "偏好設定"
 
 #: mcomix/keybindings.py:173 mcomix/ui.py:454 mcomix/ui.py:457
-#: mcomix/library/book_area.py:320
+#: mcomix/library/book_area.py:305
 msgid "Open containing folder"
 msgstr "開啟所在目錄"
 
@@ -1210,7 +1210,7 @@ msgstr "書籤"
 msgid "Edit bookmarks"
 msgstr "編輯書籤"
 
-#: mcomix/keybindings.py:190 mcomix/openwith.py:664
+#: mcomix/keybindings.py:190 mcomix/openwith.py:655
 msgid "Command"
 msgstr "指令"
 
@@ -1233,13 +1233,13 @@ msgstr "無法載入快速鍵設定：%s"
 msgid "! Could not remove file \"%s\""
 msgstr "！ 無法移除檔案 %s"
 
-#: mcomix/main.py:1536
+#: mcomix/main.py:1551
 #, python-format
 msgid "Remove the page picked out of \"%s\"?"
 msgid_plural "Remove the pages picked out of \"%s\"?"
 msgstr[0] "從「%s」中移除選取的頁面嗎？"
 
-#: mcomix/main.py:1539
+#: mcomix/main.py:1554
 msgid ""
 "They are taken out of the archive on disk, which is written again at once. "
 "Leaving the book without removing them forgets which pages they were."
@@ -1247,16 +1247,16 @@ msgstr ""
 "它們會從磁碟上的壓縮檔中取出，壓縮檔隨即重新寫入。不移除就離開這本書，將忘記"
 "那是哪些頁面。"
 
-#: mcomix/main.py:1542
+#: mcomix/main.py:1557
 msgid "_Keep them"
 msgstr "保留(_K)"
 
-#: mcomix/main.py:1766
+#: mcomix/main.py:1781
 #, python-format
 msgid "Animation speed: %s"
 msgstr "動畫速度：%s"
 
-#: mcomix/main.py:2434
+#: mcomix/main.py:2449
 msgid "SLIDESHOW"
 msgstr "投影片放映"
 
@@ -1386,8 +1386,7 @@ msgstr "不完整的跳脫字元。若要輸入「%」，請使用「%%」。"
 msgid "Incomplete quote sequence. For a literal '\"', use '%\"'."
 msgstr "不完整的轉義字元。若要輸入「\\」，請使用「%\\」。"
 
-#: mcomix/openwith.py:341 mcomix/openwith.py:355 mcomix/openwith.py:362
-#: mcomix/openwith.py:379
+#: mcomix/openwith.py:341 mcomix/openwith.py:354 mcomix/openwith.py:386
 msgid "File-related variables can only be used for files."
 msgstr "檔案相關變數只能用於檔案。"
 
@@ -1395,54 +1394,54 @@ msgstr "檔案相關變數只能用於檔案。"
 msgid "Archive-related variables can only be used for archives."
 msgstr "壓縮檔相關變數只能用於壓縮檔。"
 
-#: mcomix/openwith.py:413
+#: mcomix/openwith.py:404
 #, python-format
 msgid "Invalid escape sequence: %%%s"
 msgstr "變數字元不正確：%%%s"
 
-#: mcomix/openwith.py:424
+#: mcomix/openwith.py:415
 msgid "Edit external commands"
 msgstr "編輯外部指令"
 
-#: mcomix/openwith.py:435
+#: mcomix/openwith.py:426
 msgid "Add _separator"
 msgstr "插入分隔行(_S)"
 
-#: mcomix/openwith.py:440
+#: mcomix/openwith.py:431
 msgid "_Up"
 msgstr "向上(_U)"
 
-#: mcomix/openwith.py:443
+#: mcomix/openwith.py:434
 msgid "_Down"
 msgstr "向下(_D)"
 
-#: mcomix/openwith.py:446
+#: mcomix/openwith.py:437
 msgid "Run _command"
 msgstr "執行指令(_C)"
 
-#: mcomix/openwith.py:528
+#: mcomix/openwith.py:519
 msgid "This is a separator pseudo-command."
 msgstr "這是做分隔用的假指令。"
 
-#: mcomix/openwith.py:539
+#: mcomix/openwith.py:530
 #, python-format
 msgid "\"%s\" does not have a valid working directory."
 msgstr "「%s」沒有可用的工作目錄。"
 
-#: mcomix/openwith.py:542
+#: mcomix/openwith.py:533
 #, python-format
 msgid "\"%s\" does not appear to have a valid executable."
 msgstr "「%s」無法正確執行。"
 
-#: mcomix/openwith.py:551
+#: mcomix/openwith.py:542
 msgid "Command label"
 msgstr "指令標題"
 
-#: mcomix/openwith.py:642
+#: mcomix/openwith.py:633
 msgid "Preview:"
 msgstr "預覽："
 
-#: mcomix/openwith.py:650
+#: mcomix/openwith.py:641
 #, python-format
 msgid ""
 "Please refer to the <a href=\"%s\">external command documentation</a> for a "
@@ -1451,23 +1450,23 @@ msgstr ""
 "請到「<a href=\"%s\">external command documentation</a>」查閱可用變數清單和其"
 "他說明。"
 
-#: mcomix/openwith.py:663
+#: mcomix/openwith.py:654
 msgid "Label"
 msgstr "標題"
 
-#: mcomix/openwith.py:665
+#: mcomix/openwith.py:656
 msgid "Working directory"
 msgstr "工作目錄"
 
-#: mcomix/openwith.py:672
+#: mcomix/openwith.py:663
 msgid "Disabled in archives"
 msgstr "不用於壓縮檔"
 
-#: mcomix/openwith.py:742
+#: mcomix/openwith.py:733
 msgid "Save changes to commands?"
 msgstr "儲存指令變更？"
 
-#: mcomix/openwith.py:743
+#: mcomix/openwith.py:734
 msgid ""
 "You have made changes to the list of external commands that have not been "
 "saved yet. Press \"Yes\" to save all changes, or \"No\" to discard them."
@@ -2174,7 +2173,7 @@ msgstr "檔案名稱"
 msgid "File name (GLib)"
 msgstr "檔案名稱（GLib）"
 
-#: mcomix/preferences_dialog.py:765 mcomix/library/book_area.py:394
+#: mcomix/preferences_dialog.py:765 mcomix/library/book_area.py:374
 msgid "File size"
 msgstr "檔案大小"
 
@@ -2183,12 +2182,12 @@ msgid "Last modified"
 msgstr "最後修改時間"
 
 #: mcomix/preferences_dialog.py:772 mcomix/preferences_dialog.py:818
-#: mcomix/library/book_area.py:402
+#: mcomix/library/book_area.py:382
 msgid "Ascending"
 msgstr "遞增"
 
 #: mcomix/preferences_dialog.py:773 mcomix/preferences_dialog.py:819
-#: mcomix/library/book_area.py:403
+#: mcomix/library/book_area.py:383
 msgid "Descending"
 msgstr "遞減"
 
@@ -2329,7 +2328,7 @@ msgstr ""
 "設定螢幕色彩描述檔時，螢幕無法顯示的顏色如何納入其範圍。感知轉換保持顏色之間"
 "的比例；相對色度轉換準確保留螢幕能顯示的顏色。"
 
-#: mcomix/preferences_dialog.py:993 mcomix/library/book_area.py:410
+#: mcomix/preferences_dialog.py:993 mcomix/library/book_area.py:390
 msgid "Normal"
 msgstr "正常"
 
@@ -2780,7 +2779,7 @@ msgstr "向量圖示"
 msgid "! Could not save thumbnail \"%(thumbpath)s\": %(error)s"
 msgstr "！ 無法儲存預覽縮圖「%(thumbpath)s」：%(error)s"
 
-#: mcomix/ui.py:445 mcomix/library/book_area.py:317
+#: mcomix/ui.py:445 mcomix/library/book_area.py:304
 msgid "_Copy"
 msgstr "複製(_P)"
 
@@ -3306,7 +3305,7 @@ msgstr "無法偵測書庫的資料版本！"
 msgid "Upgrading library database version from %(from)d to %(to)d."
 msgstr "將書庫的資料庫版本從 %(from)d 升級到 %(to)d 。"
 
-#: mcomix/library/backend_types.py:437 mcomix/library/collection_area.py:223
+#: mcomix/library/backend_types.py:437 mcomix/library/collection_area.py:213
 #: mcomix/library/control_area.py:97
 msgid "All books"
 msgstr "所有書籍"
@@ -3317,206 +3316,154 @@ msgid "! Could not scan for new books: %s"
 msgstr "！ 無法掃描新書：%s"
 
 #: mcomix/library/book_area.py:287
-msgid "Opens the selected books for viewing."
-msgstr "開啟選取的書。"
-
-#: mcomix/library/book_area.py:289
 msgid "Open _without closing library"
 msgstr "開啟但不關閉書庫(_W)"
 
-#: mcomix/library/book_area.py:290
-msgid "Opens the selected books, but keeps the library window open."
-msgstr "開啟選取的書，但不關閉書庫視窗。"
-
-#: mcomix/library/book_area.py:292
+#: mcomix/library/book_area.py:289
 msgid "_Mark as read"
 msgstr "標記為已讀(_M)"
 
-#: mcomix/library/book_area.py:293
-msgid "Marks the selected books as read to the end."
-msgstr "將所選書籍標記為已讀完。"
-
-#: mcomix/library/book_area.py:295
+#: mcomix/library/book_area.py:290
 msgid "Mark as u_nread"
 msgstr "標記為未讀(_N)"
 
-#: mcomix/library/book_area.py:296
-msgid "Forgets the page the selected books were left at."
-msgstr "忘記所選書籍上次停留的頁面。"
-
-#: mcomix/library/book_area.py:298 mcomix/library/collection_area.py:142
+#: mcomix/library/book_area.py:291 mcomix/library/collection_area.py:142
 msgid "_Add..."
 msgstr "加入(_A)..."
 
-#: mcomix/library/book_area.py:299 mcomix/library/collection_area.py:143
-msgid "Add more books to the library."
-msgstr "將更多書籍加入書庫中。"
-
-#: mcomix/library/book_area.py:302
+#: mcomix/library/book_area.py:294
 msgid "Remove _from this collection"
 msgstr "從這個書集中移除(_C)"
 
-#: mcomix/library/book_area.py:303
-msgid "Removes the selected books from the current collection."
-msgstr "從目前這個書集中移除選取的書。"
-
-#: mcomix/library/book_area.py:305
+#: mcomix/library/book_area.py:296
 msgid "Remove from the _library"
 msgstr "從這個書庫中移除(_L)"
 
-#: mcomix/library/book_area.py:306
-msgid "Completely removes the selected books from the library."
-msgstr "從這個書庫中完全移除選取的書。"
-
-#: mcomix/library/book_area.py:308
+#: mcomix/library/book_area.py:298
 msgid "_Remove and move to the trash"
 msgstr "移除並丟進垃圾桶(_R)"
 
-#: mcomix/library/book_area.py:309
-msgid "Deletes the selected books from disk."
-msgstr "從硬碟刪除選取的書籍。"
-
-#: mcomix/library/book_area.py:314 mcomix/library/collection_area.py:153
+#: mcomix/library/book_area.py:303 mcomix/library/collection_area.py:148
 msgid "Clean _up"
 msgstr "清除(_U)"
 
-#: mcomix/library/book_area.py:315 mcomix/library/collection_area.py:154
-msgid "Removes no longer existent books from the collection."
-msgstr "從書集中移除已不存在的書。"
-
-#: mcomix/library/book_area.py:318
-msgid "Copies the selected book's path to clipboard."
-msgstr "將選取的書的路徑複製到剪貼簿。"
-
-#: mcomix/library/book_area.py:321
-msgid "Shows the selected book in the file manager."
-msgstr "在檔案管理員中顯示選取的書。"
-
-#: mcomix/library/book_area.py:324
+#: mcomix/library/book_area.py:308
 msgid "R_ename"
 msgstr "重新命名(_E)"
 
-#: mcomix/library/book_area.py:325
-msgid "Renames the selected book's file."
-msgstr "重新命名所選書籍的檔案。"
-
-#: mcomix/library/book_area.py:329
+#: mcomix/library/book_area.py:311
 msgid "_Properties"
 msgstr "屬性(_T)"
 
-#: mcomix/library/book_area.py:330
-msgid "Describes the selected books."
-msgstr "顯示選取的書的資訊。"
-
-#: mcomix/library/book_area.py:367
+#: mcomix/library/book_area.py:347
 msgid "Library books"
 msgstr "書庫的書"
 
-#: mcomix/library/book_area.py:381
+#: mcomix/library/book_area.py:361
 msgid "Move _to"
 msgstr "移動到(_V)"
 
-#: mcomix/library/book_area.py:392
+#: mcomix/library/book_area.py:372
 msgid "Book name"
 msgstr "書籍名稱"
 
-#: mcomix/library/book_area.py:393
+#: mcomix/library/book_area.py:373
 msgid "Full path"
 msgstr "完整路徑"
 
-#: mcomix/library/book_area.py:395
+#: mcomix/library/book_area.py:375
 msgid "Pages"
 msgstr "頁數"
 
-#: mcomix/library/book_area.py:396 mcomix/library/book_properties.py:103
+#: mcomix/library/book_area.py:376 mcomix/library/book_properties.py:103
 msgid "Date added"
 msgstr "加入的時間"
 
-#: mcomix/library/book_area.py:397
+#: mcomix/library/book_area.py:377
 msgid "Date modified"
 msgstr "修改日期"
 
-#: mcomix/library/book_area.py:398 mcomix/library/book_properties.py:107
+#: mcomix/library/book_area.py:378 mcomix/library/book_properties.py:107
 msgid "Last read"
 msgstr "上次閱讀"
 
-#: mcomix/library/book_area.py:399
+#: mcomix/library/book_area.py:379
 msgid "By hand"
 msgstr "手動"
 
-#: mcomix/library/book_area.py:408
+#: mcomix/library/book_area.py:388
 msgid "Huge"
 msgstr "極大"
 
-#: mcomix/library/book_area.py:409
+#: mcomix/library/book_area.py:389
 msgid "Large"
 msgstr "較大"
 
-#: mcomix/library/book_area.py:411
+#: mcomix/library/book_area.py:391
 msgid "Small"
 msgstr "較小"
 
-#: mcomix/library/book_area.py:412
+#: mcomix/library/book_area.py:392
 msgid "Tiny"
 msgstr "極小"
 
-#: mcomix/library/book_area.py:416
+#: mcomix/library/book_area.py:396
 msgid "Custom..."
 msgstr "自訂..."
 
-#: mcomix/library/book_area.py:420
+#: mcomix/library/book_area.py:400
 msgid "_Sort"
 msgstr "排序(_S)"
 
-#: mcomix/library/book_area.py:421
+#: mcomix/library/book_area.py:401
 msgid "Cover si_ze"
 msgstr "封面大小(_Z)"
 
-#: mcomix/library/book_area.py:861
+#: mcomix/library/book_area.py:841
 msgid "Set library cover size"
 msgstr "設定書庫封面大小"
 
-#: mcomix/library/book_area.py:1153
+#: mcomix/library/book_area.py:1133
 #, python-format
 msgid "Removed %(num)d book from '%(collection)s'."
 msgid_plural "Removed %(num)d books from '%(collection)s'."
 msgstr[0] "已經移除 %(num)d 本 %(collection)s 書集的書。"
 
-#: mcomix/library/book_area.py:1176 mcomix/library/collection_area.py:308
+#: mcomix/library/book_area.py:1156 mcomix/library/collection_area.py:298
 #, python-format
 msgid "Removed %d book from the library."
 msgid_plural "Removed %d books from the library."
 msgstr[0] "已經從這個書庫移除 %d 本書。"
 
-#: mcomix/library/book_area.py:1198 mcomix/library/book_area.py:1219
+#: mcomix/library/book_area.py:1178 mcomix/library/book_area.py:1199
 msgid "Remove books from the library?"
 msgstr "從這個書庫移除書籍？"
 
-#: mcomix/library/book_area.py:1199
+#: mcomix/library/book_area.py:1179
 msgid ""
 "The selected books will be removed from the library. Any in a folder with no "
 "trash is deleted permanently and cannot be restored."
 msgstr ""
 "這些書將從書庫中移除。位於沒有垃圾桶之目錄中的書將被永久刪除，無法復原。"
 
-#: mcomix/library/book_area.py:1220
+#: mcomix/library/book_area.py:1200
 msgid ""
 "The selected books will be removed from the library and moved to the trash."
 msgstr "這些書將從書庫中移除並丟進垃圾桶。"
 
-#: mcomix/library/book_area.py:1245
+#: mcomix/library/book_area.py:1225
 #, python-format
 msgid "Delete %d book permanently?"
 msgid_plural "Delete %d books permanently?"
 msgstr[0] "要永久刪除 %d 本書？"
 
-#: mcomix/library/book_area.py:1377
+#: mcomix/library/book_area.py:1357
 #, python-format
 msgid "Remove the bookmarks in the deleted book?"
 msgid_plural "Remove the bookmarks in the %(count)d deleted books?"
 msgstr[0] "刪除已刪除的 %(count)d 本書中的書籤？"
 
-#: mcomix/library/book_area.py:1550
+#: mcomix/library/book_area.py:1530
 msgid "Open with"
 msgstr "用其他工具開啟"
 
@@ -3547,99 +3494,83 @@ msgstr "最近閱讀於 %(date)s %(time)s"
 msgid "Started: %(started)d, finished: %(finished)d"
 msgstr "已開始：%(started)d，已讀完：%(finished)d"
 
-#: mcomix/library/collection_area.py:146
+#: mcomix/library/collection_area.py:145
 msgid "New"
 msgstr "新增"
 
-#: mcomix/library/collection_area.py:147
-msgid "Add a new empty collection."
-msgstr "新增新的空白書集。"
-
-#: mcomix/library/collection_area.py:148
+#: mcomix/library/collection_area.py:146
 msgid "Re_name"
 msgstr "重新命名(_N)"
 
-#: mcomix/library/collection_area.py:149
-msgid "Renames the selected collection."
-msgstr "將選取的書集重新命名。"
-
-#: mcomix/library/collection_area.py:150
+#: mcomix/library/collection_area.py:147
 msgid "_Duplicate"
 msgstr "備份(_D)"
 
-#: mcomix/library/collection_area.py:151
-msgid "Creates a duplicate of the selected collection."
-msgstr "建立選取的書集的備份。"
-
-#: mcomix/library/collection_area.py:156
+#: mcomix/library/collection_area.py:149
 msgid "Relocate..."
 msgstr "重新定位..."
 
-#: mcomix/library/collection_area.py:160
-msgid "Deletes the selected collection."
-msgstr "刪除選取的書集。"
-
-#: mcomix/library/collection_area.py:172
+#: mcomix/library/collection_area.py:162
 msgid "Library collections"
 msgstr "書庫的書集"
 
-#: mcomix/library/collection_area.py:259
+#: mcomix/library/collection_area.py:249
 msgid "Add new collection?"
 msgstr "要新增書集嗎？"
 
-#: mcomix/library/collection_area.py:260
+#: mcomix/library/collection_area.py:250
 msgid "Please enter a name for the new collection."
 msgstr "請輸入新書集的名稱。"
 
-#: mcomix/library/collection_area.py:291
+#: mcomix/library/collection_area.py:281
 #, python-format
 msgid "Could not add a new collection called '%s'."
 msgstr "無法新增 %s 書集。"
 
-#: mcomix/library/collection_area.py:296 mcomix/library/collection_area.py:397
+#: mcomix/library/collection_area.py:286 mcomix/library/collection_area.py:387
 msgid "A collection by that name already exists."
 msgstr "已有相同名稱的書集。"
 
-#: mcomix/library/collection_area.py:365
+#: mcomix/library/collection_area.py:355
 msgid "Rename collection?"
 msgstr "重新命名書集？"
 
-#: mcomix/library/collection_area.py:366
+#: mcomix/library/collection_area.py:356
 msgid "Please enter a new name for the selected collection."
 msgstr "請輸入這個書集的新名稱。"
 
-#: mcomix/library/collection_area.py:393
+#: mcomix/library/collection_area.py:383
 #, python-format
 msgid "Could not change the name to '%s'."
 msgstr "無法重新命名為 %s 。"
 
-#: mcomix/library/collection_area.py:409
+#: mcomix/library/collection_area.py:399
 msgid "Could not duplicate collection."
 msgstr "無法備份書集。"
 
-#: mcomix/library/collection_area.py:628
+#: mcomix/library/collection_area.py:618
 msgid "Root"
 msgstr "Root"
 
-#: mcomix/library/collection_area.py:631
+#: mcomix/library/collection_area.py:621
 #, python-format
 msgid ""
 "Put the collection '%(subcollection)s' in the collection "
 "'%(supercollection)s'."
 msgstr "將 %(subcollection)s 書集放到 %(supercollection)s 書集。"
 
-#: mcomix/library/collection_area.py:647
+#: mcomix/library/collection_area.py:637
 #, python-format
 msgid "Add books to '%s'."
 msgstr "將書籍加入 %s 。"
 
-#: mcomix/library/collection_area.py:650
+#: mcomix/library/collection_area.py:640
 #, python-format
 msgid ""
 "Copy books from '%(source collection)s' to '%(destination collection)s'."
 msgstr "將書籍從 %(source collection)s 複製到 %(destination collection)s 。"
 
-#: mcomix/library/collection_area.py:657
+#: mcomix/library/collection_area.py:647
 #, python-format
 msgid ""
 "Move books from '%(source collection)s' to '%(destination collection)s'."
@@ -3713,29 +3644,29 @@ msgstr "在 %s 目錄裏沒有找到新書。"
 msgid "Books relocated: %d"
 msgstr "已重新定位的書：%d"
 
-#: mcomix/library/relocate_dialog.py:61
+#: mcomix/library/relocate_dialog.py:62
 msgid "Relocate books?"
 msgstr "重新定位書籍？"
 
-#: mcomix/library/relocate_dialog.py:67
-msgid "The books were in:"
-msgstr "這些書原本位於："
-
-#: mcomix/library/relocate_dialog.py:68
-msgid "They are now in:"
-msgstr "現在位於："
-
-#: mcomix/library/relocate_dialog.py:70 mcomix/library/relocate_dialog.py:119
-msgid "Select a Folder"
-msgstr "選取一個目錄"
-
-#: mcomix/library/relocate_dialog.py:84
+#: mcomix/library/relocate_dialog.py:63
 msgid ""
 "Tells the library where a folder of books has been moved to. The books keep "
 "their collections, their bookmarks and the pages they were read to."
 msgstr ""
 "告訴書庫某個存放書的目錄已移動到哪裡。這些書會保留其書集、書籤和已讀到的頁"
 "面。"
+
+#: mcomix/library/relocate_dialog.py:71
+msgid "The books were in:"
+msgstr "這些書原本位於："
+
+#: mcomix/library/relocate_dialog.py:72
+msgid "They are now in:"
+msgstr "現在位於："
+
+#: mcomix/library/relocate_dialog.py:74 mcomix/library/relocate_dialog.py:116
+msgid "Select a Folder"
+msgstr "選取一個目錄"
 
 #: mcomix/library/shelf.py:132
 msgid "The library holds no books yet. Add some in the library window."
@@ -3760,6 +3691,57 @@ msgstr "含子目錄"
 #: mcomix/library/watchlist.py:86
 msgid "Automatically scan for new books when library is _opened"
 msgstr "書庫開啟時自動搜尋新書(_O)"
+
+#~ msgid "Opens the selected books for viewing."
+#~ msgstr "開啟選取的書。"
+
+#~ msgid "Opens the selected books, but keeps the library window open."
+#~ msgstr "開啟選取的書，但不關閉書庫視窗。"
+
+#~ msgid "Marks the selected books as read to the end."
+#~ msgstr "將所選書籍標記為已讀完。"
+
+#~ msgid "Forgets the page the selected books were left at."
+#~ msgstr "忘記所選書籍上次停留的頁面。"
+
+#~ msgid "Add more books to the library."
+#~ msgstr "將更多書籍加入書庫中。"
+
+#~ msgid "Removes the selected books from the current collection."
+#~ msgstr "從目前這個書集中移除選取的書。"
+
+#~ msgid "Completely removes the selected books from the library."
+#~ msgstr "從這個書庫中完全移除選取的書。"
+
+#~ msgid "Deletes the selected books from disk."
+#~ msgstr "從硬碟刪除選取的書籍。"
+
+#~ msgid "Removes no longer existent books from the collection."
+#~ msgstr "從書集中移除已不存在的書。"
+
+#~ msgid "Copies the selected book's path to clipboard."
+#~ msgstr "將選取的書的路徑複製到剪貼簿。"
+
+#~ msgid "Shows the selected book in the file manager."
+#~ msgstr "在檔案管理員中顯示選取的書。"
+
+#~ msgid "Renames the selected book's file."
+#~ msgstr "重新命名所選書籍的檔案。"
+
+#~ msgid "Describes the selected books."
+#~ msgstr "顯示選取的書的資訊。"
+
+#~ msgid "Add a new empty collection."
+#~ msgstr "新增新的空白書集。"
+
+#~ msgid "Renames the selected collection."
+#~ msgstr "將選取的書集重新命名。"
+
+#~ msgid "Creates a duplicate of the selected collection."
+#~ msgstr "建立選取的書集的備份。"
+
+#~ msgid "Deletes the selected collection."
+#~ msgstr "刪除選取的書集。"
 
 #~ msgid ""
 #~ "It reads ZIP, RAR, 7z, tar and LHA archives, PDF, DjVu and AZW3 files, as "

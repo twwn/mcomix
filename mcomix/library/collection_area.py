@@ -140,26 +140,16 @@ class _CollectionArea(Gtk.ScrolledWindow, widgets.Releasable):
         """Build the right-click menu for the collection list."""
         entries = (
             ('add', _('_Add...'),
-             _('Add more books to the library.'),
              lambda *args: file_chooser_library_dialog.open_library_filechooser_dialog(
                  self._library)),
-            ('new', _('New'),
-             _('Add a new empty collection.'), self.add_collection),
-            ('rename', _('Re_name'),
-             _('Renames the selected collection.'), self._rename_collection),
-            ('duplicate', _('_Duplicate'),
-             _('Creates a duplicate of the selected collection.'),
-             self._duplicate_collection),
-            ('cleanup', _('Clean _up'),
-             _('Removes no longer existent books from the collection.'),
-             self._clean_collection),
-            ('relocate', _('Relocate...'),
-             relocate_dialog.RelocateDialog.explanation(),
-             self._relocate_books),
-            ('remove', _('_Remove'),
-             _('Deletes the selected collection.'), self._remove_collection),
+            ('new', _('New'), self.add_collection),
+            ('rename', _('Re_name'), self._rename_collection),
+            ('duplicate', _('_Duplicate'), self._duplicate_collection),
+            ('cleanup', _('Clean _up'), self._clean_collection),
+            ('relocate', _('Relocate...'), self._relocate_books),
+            ('remove', _('_Remove'), self._remove_collection),
         )
-        for name, label, tooltip, handler in entries:
+        for name, _label, handler in entries:
             action = Gio.SimpleAction.new(name, None)
             action.connect('activate', handler)
             self._popup_actions.add_action(action)
@@ -172,7 +162,7 @@ class _CollectionArea(Gtk.ScrolledWindow, widgets.Releasable):
         for heading, group in ((_('Library collections'), entries[0:1]),
                                (None, entries[1:4]), (None, entries[4:])):
             section = Gio.Menu()
-            for name, label, _tooltip, _handler in group:
+            for name, label, _handler in group:
                 item = Gio.MenuItem.new(label, 'collections.' + name)
                 if name in self._MENU_KEYS:
                     item.set_attribute_value(

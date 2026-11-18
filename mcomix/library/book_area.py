@@ -280,61 +280,41 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
                   'rename': 'F2',
                   'properties': '<Alt>Return'}
 
-    #: The popup's plain entries: action name, label, tooltip, handler.
-    def _menu_entries(self) -> "tuple[tuple[str, str, str | None, Callable[..., None]], ...]":  # type: ignore[explicit-any]  # the menu items differ in what their handlers take
+    #: The popup's plain entries: action name, label, handler.
+    def _menu_entries(self) -> "tuple[tuple[str, str, Callable[..., None]], ...]":  # type: ignore[explicit-any]  # the menu items differ in what their handlers take
         return (
-            ('open', _('_Open'),
-             _('Opens the selected books for viewing.'),
-             self.open_selected_book),
+            ('open', _('_Open'), self.open_selected_book),
             ('open-keep-library', _('Open _without closing library'),
-             _('Opens the selected books, but keeps the library window open.'),
              self.open_selected_book_noclose),
-            ('mark-read', _('_Mark as read'),
-             _('Marks the selected books as read to the end.'),
-             self._mark_read),
-            ('mark-unread', _('Mark as u_nread'),
-             _('Forgets the page the selected books were left at.'),
-             self._mark_unread),
+            ('mark-read', _('_Mark as read'), self._mark_read),
+            ('mark-unread', _('Mark as u_nread'), self._mark_unread),
             ('add', _('_Add...'),
-             _('Add more books to the library.'),
              lambda *args: file_chooser_library_dialog.open_library_filechooser_dialog(
                  self._library)),
             ('remove-from-collection', _('Remove _from this collection'),
-             _('Removes the selected books from the current collection.'),
              self._remove_books_from_collection),
             ('remove-from-library', _('Remove from the _library'),
-             _('Completely removes the selected books from the library.'),
              self._remove_books_from_library),
             ('completely-remove', _('_Remove and move to the trash'),
-             _('Deletes the selected books from disk.'),
              self._completely_remove_book),
             # The main window's, as SHIFT+Delete is a file manager's.
-            ('delete-permanently', _('Delete permanently'), None,
+            ('delete-permanently', _('Delete permanently'),
              self.delete_permanently),
-            ('cleanup', _('Clean _up'),
-             _('Removes no longer existent books from the collection.'),
-             self._clean_up),
-            ('copy-to-clipboard', _('_Copy'),
-             _("Copies the selected book's path to clipboard."),
-             self._copy_selected),
+            ('cleanup', _('Clean _up'), self._clean_up),
+            ('copy-to-clipboard', _('_Copy'), self._copy_selected),
             ('open-containing-folder', _('Open containing folder'),
-             _('Shows the selected book in the file manager.'),
              self._show_selected_in_folder),
             # Not the collections' "Re_name": N is "Mark as u_nread"'s here.
-            ('rename', _('R_ename'),
-             _("Renames the selected book's file."),
-             self.rename_selected),
+            ('rename', _('R_ename'), self.rename_selected),
             # Not the File menu's "Proper_ties": its letter is taken here
             # in several languages.
-            ('properties', _('_Properties'),
-             _('Describes the selected books.'),
-             self.show_properties),
+            ('properties', _('_Properties'), self.show_properties),
         )
 
     def _create_popup_menu(self) -> Gtk.PopoverMenu:
         """Build the right-click menu for the book list."""
         self._command_actions: list[str] = []
-        for name, label, tooltip, handler in self._menu_entries():
+        for name, _label, handler in self._menu_entries():
             action = Gio.SimpleAction.new(name, None)
             action.connect('activate', handler)
             self._popup_actions.add_action(action)
@@ -368,7 +348,7 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
                                (None, entries[2:4]), (None, entries[4:5]),
                                (None, entries[5:10]), (None, entries[10:14])):
             section = Gio.Menu()
-            for name, label, tooltip, handler in group:
+            for name, label, _handler in group:
                 item = Gio.MenuItem.new(label, 'books.' + name)
                 if name in self._MENU_KEYS:
                     item.set_attribute_value(

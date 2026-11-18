@@ -58,7 +58,11 @@ class RelocateDialog(message_dialog.MessageDialog):
                          modal=True, destroy_with_parent=True)
         self._library = library
         self.set_default_response(Response.OK)
-        self.set_text(_('Relocate books?'), self.explanation())
+        self.set_text(
+            _('Relocate books?'),
+            _('Tells the library where a folder of books has been moved '
+              'to. The books keep their collections, their bookmarks '
+              'and the pages they were read to.'))
         # Two sentences on one line made the dialog as wide as the line,
         # 1025 pixels; wrapping alone asks for no less.
         self._secondary.set_max_width_chars(60)
@@ -77,13 +81,6 @@ class RelocateDialog(message_dialog.MessageDialog):
         # The folder to type is the one that is missing.
         (self._new if self._old.get_text() else self._old).grab_focus()
         self.run_async(self._answered)
-
-    @staticmethod
-    def explanation() -> str:
-        """What relocating does, as the dialog and the menu say it."""
-        return _('Tells the library where a folder of books has been moved '
-                 'to. The books keep their collections, their bookmarks '
-                 'and the pages they were read to.')
 
     def _folder_entry(self, grid: Gtk.Grid, row: int, text: str) -> Gtk.Entry:
         """A labelled entry for a folder in <row> of <grid>."""
