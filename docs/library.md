@@ -90,6 +90,7 @@ While no book is open, the main window shows the covers of "Recent" itself, or o
 - "Watch list", at the bottom of the library window, names folders to look in for new books, each with its collection and whether subfolders are searched.
 - "Remove", or Delete, takes the selected folder off the list. Its books stay in the library.
 - "Scan now" searches at once; closing an edited list searches too.
+- A book that has been read, and so is in "Recent" alone, is filed in the folder's collection by the next search. A folder watched into no collection leaves it as it is.
 - With "Automatically scan for new books when library is opened", the search runs whenever the library opens.
   While the library is open, the folders are watched too: a book copied or moved into one, or into a new subfolder of one searched with its subfolders, is added a moment after it has arrived. The first 1000 folders are watched; a deeper library is still searched whenever it opens.
 

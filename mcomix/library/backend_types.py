@@ -578,12 +578,22 @@ class _WatchList:
             # as new: the scan will add it to the collection the
             # directory is watched for.
             existing_books = self.backend.get_paths_of_books_outside_recent()
+            every_book: list[str] | None = None
             for entry in self.get_watchlist():
+                known = existing_books
+                if entry.collection is None or entry.collection.id is None:
+                    # Watched into no collection, a book read once would
+                    # be filed nowhere and stay in "Recent" alone: it
+                    # was found and added again at every scan.
+                    if every_book is None:
+                        every_book = [path for book, path in
+                                      self.backend.get_book_paths_in_collection()]
+                    known = every_book
                 # One directory that cannot be listed - its permissions,
                 # a share that answers EACCES - is no reason to leave
                 # the directories after it unscanned.
                 try:
-                    new_files = entry.get_new_files(existing_books)
+                    new_files = entry.get_new_files(known)
                 except OSError as error:
                     log.error(_('! Could not scan for new books: %s'), error)
                     continue

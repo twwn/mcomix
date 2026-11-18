@@ -512,6 +512,29 @@ class WatchListTest(unittest.TestCase):
         self.assertEqual(1, len(logs.output))
         self.assertIn('Permission denied', logs.output[0])
 
+    def test_a_book_read_once_is_new_only_where_the_scan_files_it(self):
+        """A book read once is in "Recent" alone, and the scan counts it
+        as new, to file it in the collection its directory is watched
+        for.  A directory watched into no collection filed it nowhere,
+        so it stayed in "Recent" alone and was found and added again at
+        every scan."""
+        read = os.path.join(self.watched, 'read.cbz')
+        shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'), read)
+        self.library.add_book(read, constants.COLLECTION_RECENT)
+        entry = self.library.watchlist.get_watchlist_entry(self.watched)
+        self.library.add_collection('Filed')
+        filed = self.library.get_collection_by_name('Filed')
+        found = []
+        self.library.watchlist.new_files_found += \
+            lambda paths, entry: found.append(list(paths))
+        for collection, new in ((backend_types.DefaultCollection, []),
+                                (filed, [read])):
+            with self.subTest(collection=collection.name):
+                entry.set_collection(collection)
+                found.clear()
+                self.library.watchlist._scan_for_new_files_thread()
+                self.assertEqual([new], found)
+
     def test_a_directory_that_is_not_watched_is_an_error(self):
         with self.assertRaises(ValueError):
             self.library.watchlist.get_watchlist_entry(self.tmpdir)
