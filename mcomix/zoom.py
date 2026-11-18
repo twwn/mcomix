@@ -412,20 +412,14 @@ class ZoomModel:
         while dirty and (total_axis_size > max_size):
             # This algorithm needs O(n*n) time. Let's hope that n is small enough.
             dirty = False
-            current_index = 0
-            current_min: _ScalingData | None = None
-            for i in range(n):
-                d = scaling_data[i]
-                if not d.can_be_downscaled:
-                    # Ignore elements that cannot be made any smaller.
-                    continue
-                if (current_min is None) or (d.forced_vol_err
-                                             < current_min.forced_vol_err):
-                    # We are searching for the tuple where downscaling results
-                    # in the smallest relative volume error (compared to the
-                    # respective ideal volume).
-                    current_min = d
-                    current_index = i
+            # The tuple where downscaling results in the smallest relative
+            # volume error (compared to the respective ideal volume), the
+            # first of several alike, among those that can still be made
+            # smaller.
+            current_index, current_min = min(
+                ((i, d) for i, d in enumerate(scaling_data)
+                 if d.can_be_downscaled),
+                key=lambda pair: pair[1].forced_vol_err, default=(0, None))
             if current_min is None:
                 # Nothing left that can be made smaller, so the loop
                 # below would step over every element and change none.
