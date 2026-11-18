@@ -1555,6 +1555,23 @@ class MissingBooksTest(_LibraryWindowTest):
             popover.popdown()
         pump()
 
+    def test_a_book_gone_says_so_when_opened(self):
+        """A book whose file was moved or deleted outside MComix stays
+        in the library until it is cleaned up.  Opened, it says that its
+        file is not there, rather than showing nothing."""
+        dialog = self._open()
+        path = os.path.join(self.tmp_dir, 'gone.cbz')
+        shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'), path)
+        dialog.backend.add_book(path)
+        os.remove(path)
+        book = dialog.backend.get_book_by_path(path)
+        with unittest.mock.patch.object(self.window.osd, 'show') as shown:
+            dialog.open_book([book.id])
+            pump()
+        message = 'Could not open %s: No such file.' % path
+        self.assertEqual([unittest.mock.call(message)], shown.call_args_list)
+        self.assertFalse(self.window.filehandler.file_loaded)
+
 
 class FinishedMarkTest(_OneBookTest):
 
