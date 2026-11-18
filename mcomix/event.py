@@ -48,6 +48,10 @@ class EventHandler:
         #: or None before it has been seen there: what CTRL and the wheel
         #: zoom about.
         self._hover: tuple[float, float] | None = None
+        #: Where the last motion over the page area was, kept across
+        #: the pointer leaving it: a motion to the same point is not a
+        #: move, and must not bring back the pointer that hid itself.
+        self._last_motion: tuple[float, float] | None = None
         #: Set by a press that brought the window back into focus, which
         #: its release must not answer.
         self._raising_click = False
@@ -971,8 +975,16 @@ class EventHandler:
         # Only the page area brings the cursor back, so it stays hidden
         # while a modal dialog is up.  There is no hook on the whole
         # event stream to do better with.
-        self._window.cursor_handler.refresh()
-        self._window.leave_fullscreen_button.pointer_moved()
+        #
+        # Only a motion that went somewhere does.  A motion can come to a
+        # pointer at rest: GTK can make one up when what lies under the
+        # pointer changes, and a compositor can send one.  Hiding the
+        # pointer and the Leave fullscreen button is such a change, and
+        # answering it brought both back at once, every two seconds.
+        if (x, y) != self._last_motion:
+            self._last_motion = (x, y)
+            self._window.cursor_handler.refresh()
+            self._window.leave_fullscreen_button.pointer_moved()
         self._hover = (x, y)
 
         state = controller.get_current_event_state()

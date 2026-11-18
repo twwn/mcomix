@@ -1580,6 +1580,45 @@ class MainWindowTest(MComixTest):
         self.assertFalse(button.get_visible())
         self.assertIsNone(offer._timeout_event, 'a timer left running')
 
+    def test_a_motion_without_a_move_leaves_the_pointer_hidden(self):
+        """A motion can reach a pointer at rest, at the point it rests on,
+        once the pointer and the Leave fullscreen button have hidden
+        themselves.  Answering it brought both back at once, and they
+        hid and came back every two seconds (issue 73)."""
+        self._ready()
+        offer = self.window.leave_fullscreen_button
+        cursor = self.window.cursor_handler
+        controller = unittest.mock.Mock()
+        controller.get_current_event_state.return_value = 0
+        move = self.window.event_handler.mouse_move_event
+
+        def hidden_pointer():
+            drawn = self.window.page_area.get_cursor()
+            return drawn is not None and drawn.get_name() == 'none'
+
+        with unittest.mock.patch.object(self.window, 'is_fullscreen',
+                                        return_value=True):
+            move(controller, 40.0, 30.0)
+            self.assertTrue(offer.widget.get_visible())
+            self.assertFalse(hidden_pointer())
+            # Both timers run out, as they would two seconds on.
+            offer._stop_timer()
+            offer._hide()
+            cursor._kill_timer()
+            cursor._on_timeout()
+            self.assertTrue(hidden_pointer())
+            move(controller, 40.0, 30.0)
+            self.assertFalse(offer.widget.get_visible(),
+                             'the button came back with no move')
+            self.assertTrue(hidden_pointer(),
+                            'the pointer came back with no move')
+            self.assertIsNone(cursor._timer_id)
+            # A move brings both back.
+            move(controller, 41.0, 30.0)
+            self.assertTrue(offer.widget.get_visible())
+            self.assertFalse(hidden_pointer())
+            offer.update()
+
     def _counter_in_fullscreen(self, wanted):
         prefs['page counter'] = wanted
         pages = len(self._ready())
