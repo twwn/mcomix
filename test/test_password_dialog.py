@@ -12,6 +12,8 @@ from . import MComixTest, get_testfile_path, pump as _pump, wait_for
 from mcomix import archive_extractor
 from mcomix import message_dialog
 from mcomix.archive import password as archive_password
+from mcomix.archive import rar
+from mcomix.archive import rar_external
 from mcomix.archive import sevenzip_external
 from mcomix.archive import zip as zip_archive
 from mcomix.dialog import Response
@@ -327,5 +329,51 @@ class SessionPasswordTest(MComixTest):
                     lambda: extractor.is_ready(self.MEMBER), seconds=20))
                 self.assertIsNone(archive_password.remembered(path))
                 self.assertEqual(frozenset(), extractor.unpacked())
+
+    @unittest.skipUnless(rar_external.RarArchive.is_available(),
+                         'needs unrar')
+    def test_a_page_unrar_will_not_unpack_forgets_it(self):
+        """unrar, where there is no libunrar, says so in its exit code
+        and prints what it made of the page: nothing for one, some of
+        it for another, with the wrong password."""
+        self.answer = 'wrong'
+        patcher = unittest.mock.patch.object(
+            rar.RarArchive, 'is_available', staticmethod(lambda: False))
+        patcher.start()
+        self.addCleanup(patcher.stop)
+        path = get_testfile_path('archives', 'Encrypted.rar')
+        for members in (['arg.jpeg'], ['arg.jpeg', 'foo.JPG']):
+            with self.subTest(members=members):
+                destination = os.path.join(self.tmp_dir, str(len(members)))
+                os.makedirs(destination)
+                extractor = archive_extractor.Extractor()
+                extractor.setup(path, destination)
+                self.addCleanup(extractor.close)
+                self.assertTrue(wait_for(
+                    lambda: extractor.get_files() is not None, seconds=20))
+                self.assertIsInstance(extractor._opened_archive._main_archive,
+                                      rar_external.RarArchive)
+                extractor.set_files(members)
+                extractor.extract()
+                self.assertTrue(wait_for(lambda: all(
+                    extractor.is_ready(member) for member in members),
+                    seconds=20))
+                self.assertIsNone(archive_password.remembered(path))
+                self.assertEqual(frozenset(), extractor.unpacked())
+
+    @unittest.skipUnless(rar_external.RarArchive.is_available(),
+                         'needs unrar')
+    def test_a_stream_unrar_gives_up_on_is_not_taken_for_pages(self):
+        """Printed one after another, a page cut short by a wrong
+        password moved every later page's start into it."""
+        archive = rar_external.RarArchive(
+            get_testfile_path('archives', 'Encrypted.rar'))
+        archive._get_password = lambda: 'wrong'
+        members = list(archive.iter_contents())
+        landed = []
+        with self.assertRaises(Exception):
+            for name in archive.iter_extract(members, self.tmp_dir):
+                landed.append(name)
+        self.assertEqual([], landed)
 
 # vim: expandtab:sw=4:ts=4

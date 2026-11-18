@@ -648,8 +648,9 @@ class ExternalExecutableArchive(NonUnicodeArchive):
             + [self.archive, self._original_filename(filename)],
             os.path.join(destination_dir, filename))
 
-    def _write_output_of(self, command: Sequence[str], path: str) -> None:
-        """Run <command> and write what it prints to the file <path>.
+    def _write_output_of(self, command: Sequence[str], path: str) -> int:
+        """Run <command>, write what it prints to the file <path>, and
+        answer with its exit code.
 
         Read through a pipe and written from here, rather than by the
         program into the file: unrar and lha leave as though all were
@@ -663,7 +664,7 @@ class ExternalExecutableArchive(NonUnicodeArchive):
                 shutil.copyfileobj(proc.stdout, output)
         finally:
             proc.stdout.close()
-            proc.wait()
+        return proc.wait()
 
 
 class DisabledArchive(BaseArchive):

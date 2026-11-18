@@ -11,6 +11,10 @@ from mcomix import process
 from mcomix.archive import archive_base
 
 
+class ExtractionError(Exception):
+    """unrar gave up on a file: what it printed, if anything, is not it."""
+
+
 class RarArchive(archive_base.ExternalExecutableArchive):
     """ RAR file extractor using the unrar/rar executable. """
 
@@ -209,7 +213,15 @@ class RarArchive(archive_base.ExternalExecutableArchive):
 
         desired_filename = self._original_filename(filename)
         cmd = self._get_extract_arguments() + [desired_filename]
-        self._write_output_of(cmd, os.path.join(destination_dir, filename))
+        path = os.path.join(destination_dir, filename)
+        code = self._write_output_of(cmd, path)
+        # 1 is a warning, with the file written all the same; from 2 on
+        # unrar gave up, as over a wrong password (3, or 11 for RAR 5),
+        # and what it printed is not the file.
+        if code >= 2:
+            archive_base.raise_if_no_room(
+                path, dict(self._contents).get(desired_filename))
+            raise ExtractionError('%s: unrar exit code %d' % (filename, code))
 
     def iter_extract(self, entries: Iterable[str], destination_dir: str) -> Iterator[str]:
         """Extract <entries> to <destination_dir>, yielding as each lands.
@@ -236,6 +248,11 @@ class RarArchive(archive_base.ExternalExecutableArchive):
 
             for filename, filesize in self._contents:
                 data = proc.stdout.read(filesize)
+                if len(data) < filesize:
+                    # unrar gave up, as over a wrong password, and every
+                    # later file would start inside this one.
+                    raise ExtractionError(
+                        '%s: %d of %d bytes' % (filename, len(data), filesize))
                 if filename not in wanted:
                     continue
                 unicode_name = wanted.get(filename, None)
