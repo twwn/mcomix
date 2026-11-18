@@ -123,6 +123,7 @@ Preferences = TypedDict('Preferences', {
     'store recent file info': bool,
     'hide all': bool,
     'hide all in fullscreen': bool,
+    'pointer hide delay': int,
     'page counter': int,
     'path of last browsed in filechooser': str,
     'store last saved in directory': bool,
@@ -281,6 +282,9 @@ _DEFAULTS: Preferences = {
     'store recent file info': True,
     'hide all': False,
     'hide all in fullscreen': True,
+    # Milliseconds the pointer and the Leave fullscreen button stay once
+    # the mouse rests over the page; 0 keeps them.
+    'pointer hide delay': 2000,
     # Off, always, or after a page turn: osd.PageCounter has the names.
     'page counter': 0,
     'path of last browsed in filechooser': constants.HOME_DIR,

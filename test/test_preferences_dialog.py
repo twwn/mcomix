@@ -159,14 +159,16 @@ class PreferencesDialogTest(MComixTest):
     # -- What the pair shows ----------------------------------------------
 
     def test_a_spinner_stores_its_value_in_the_unit_of_the_preference(self):
-        """Three spinners show another unit than the preference is kept
-        in: the slideshow delay in seconds for milliseconds, the smart
+        """Four spinners show another unit than the preference is kept
+        in: the slideshow delay and the pointer's in seconds for
+        milliseconds, the smart
         scroll step in per cent for a fraction, and the lens
         magnification with a decimal place.  Everything else is a whole
         number of pixels or pages."""
         dialog = self._open()
         for preference, shown, stored in (
                 ('slideshow delay', 2.5, 2500),
+                ('pointer hide delay', 0.5, 500),
                 ('smart scroll percentage', 40, 0.4),
                 ('lens magnification', 2.5, 2.5),
                 ('thumbnail size', 120, 120),
@@ -571,7 +573,9 @@ class PreferenceCallbacksTest(MComixTest):
                'filehandler.update_comment_extensions',
                'filehandler.refresh_file',
                'thumbnailsidebar.change_thumbnail_background_color',
-               'load_library_covers')
+               'load_library_covers',
+               'cursor_handler.delay_changed',
+               'leave_fullscreen_button.delay_changed')
 
     def setUp(self):
         super().setUp()
@@ -623,6 +627,9 @@ class PreferenceCallbacksTest(MComixTest):
     def test_each_spinner_stores_its_value_and_has_the_window_follow(self):
         for preference, value, stored, called in (
                 ('slideshow delay', 2.5, 2500, {'slideshow.update_delay'}),
+                ('pointer hide delay', 3.5, 3500,
+                 {'cursor_handler.delay_changed',
+                  'leave_fullscreen_button.delay_changed'}),
                 ('smart scroll percentage', 40, 0.4, set()),
                 ('lens magnification', 2.5, 2.5, set()),
                 ('thumbnail size', 90, 90,

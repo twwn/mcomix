@@ -8,11 +8,13 @@ no way of telling that anything is happening.
 """
 
 import unittest
+import unittest.mock
 
 from gi.repository import Gdk
 
 from mcomix import constants
 from mcomix import cursor_handler
+from mcomix.preferences import prefs
 
 
 class _StubWindow:
@@ -83,6 +85,36 @@ class CursorHandlerTest(unittest.TestCase):
         self.handler.set_busy(False)
         self.assertEqual(constants.GRAB_CURSOR, self.handler._current_cursor)
 
+    def test_the_pointer_waits_as_long_as_the_preference_says(self):
+        """The delay is the preference "pointer hide delay", and 0
+        keeps the pointer for good (issue 73)."""
+        for delay, armed in ((3500, [3500]), (0, [])):
+            with self.subTest(delay=delay), \
+                    unittest.mock.patch.dict(prefs,
+                                             {'pointer hide delay': delay}), \
+                    unittest.mock.patch.object(cursor_handler.GLib,
+                                               'timeout_add') as add:
+                self.handler.auto_hide_on()
+                self.assertEqual(armed,
+                                 [call.args[0] for call in add.call_args_list])
+                # The stand-in armed nothing GLib could remove.
+                self.handler._timer_id = None
+                self.handler.auto_hide_off()
+
+    def test_a_new_delay_brings_back_a_hidden_pointer(self):
+        """Set to 0 while the pointer is hidden, the pointer comes back
+        and stays; another delay starts the wait again."""
+        self.handler.auto_hide_on()
+        self.handler._kill_timer()
+        self.handler._on_timeout()
+        self.assertEqual('none', self.window.drawn[-1].get_name())
+        with unittest.mock.patch.dict(prefs, {'pointer hide delay': 0}):
+            self.handler.delay_changed()
+            self.assertIsNone(self.window.drawn[-1])
+            self.assertIsNone(self.handler._timer_id)
+        self.handler.delay_changed()
+        self.assertIsNotNone(self.handler._timer_id)
+
     def test_clearing_when_nothing_is_busy_does_nothing(self):
         """_close() clears unconditionally, including when no listing was
         running, so this must not put a cursor back over the lens."""
@@ -93,7 +125,7 @@ class CursorHandlerTest(unittest.TestCase):
         self.assertEqual(constants.NO_CURSOR, self.handler._current_cursor)
 
     def test_the_wait_cursor_stops_the_pointer_hiding_itself(self):
-        """In fullscreen the pointer hides after HIDE_DELAY of not moving.
+        """In fullscreen the pointer hides once it has rested a while.
         It must not hide while the program is working, or the reader is
         left with no cursor and no sign of progress."""
         self.handler.auto_hide_on()
@@ -113,7 +145,7 @@ class HandSetCursorTest(unittest.TestCase):
 
     Saving an archive used to put the wait cursor straight on the window
     with set_layout_cursor(), which the handler knows nothing about.  The
-    pointer hides itself after HIDE_DELAY of not moving - auto_hide_on() is
+    pointer hides itself once it has rested a while - auto_hide_on() is
     called from MainWindow.__init__(), so the timer is armed in every mode
     and not only in fullscreen - and the timer then draws the hidden cursor
     over the wait one.  A save that takes longer than two seconds left the

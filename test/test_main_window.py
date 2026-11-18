@@ -1619,6 +1619,23 @@ class MainWindowTest(MComixTest):
             self.assertFalse(hidden_pointer())
             offer.update()
 
+    def test_the_button_waits_as_long_as_the_preference_says(self):
+        """The Leave fullscreen button stays as long as the pointer does,
+        and for good at 0, until another delay is set."""
+        self._ready()
+        offer = self.window.leave_fullscreen_button
+        with unittest.mock.patch.object(self.window, 'is_fullscreen',
+                                        return_value=True):
+            prefs['pointer hide delay'] = 0
+            offer.pointer_moved()
+            self.assertTrue(offer.widget.get_visible())
+            self.assertIsNone(offer._timeout_event, 'a wait at 0')
+            prefs['pointer hide delay'] = 1500
+            offer.delay_changed()
+            self.assertIsNotNone(offer._timeout_event,
+                                 'a new delay left the button for good')
+            offer.update()
+
     def _counter_in_fullscreen(self, wanted):
         prefs['page counter'] = wanted
         pages = len(self._ready())

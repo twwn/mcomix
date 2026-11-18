@@ -269,12 +269,10 @@ class LeaveFullscreenButton:
     The menu bar and the tool bar are hidden while the window fills the
     screen, which left a reader holding only the mouse with the
     right-click menu as the one way out.  The button comes and goes with
-    the pointer, which hides itself after the same delay.
+    the pointer: it stays as long after the mouse rests as the pointer
+    does, the preference "pointer hide delay", and for good at 0.
     """
 
-    #: Milliseconds the button stays once the pointer rests: as long as
-    #: the pointer itself does (CursorHandler.HIDE_DELAY).
-    HIDE_DELAY = 2000
     #: Pixels between the button and the edges of the view.
     _MARGIN = 12
 
@@ -311,7 +309,15 @@ class LeaveFullscreenButton:
             return
         self.widget.set_visible(True)
         self._stop_timer()
-        self._timeout_event = GLib.timeout_add(self.HIDE_DELAY, self._time_up)
+        delay = prefs['pointer hide delay']
+        if delay > 0:
+            self._timeout_event = GLib.timeout_add(delay, self._time_up)
+
+    def delay_changed(self) -> None:
+        """Start the shown button's wait again under the new delay, so
+        that one kept for good by 0 goes once there is a delay."""
+        if self.widget.get_visible() and not self._inside:
+            self.pointer_moved()
 
     def update(self) -> None:
         """Take the button away once the window no longer fills the

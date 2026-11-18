@@ -13,6 +13,7 @@ Option | Explanation
 -------|------------
 Language (needs restart) | "Auto-detect (Default)" follows the system.
 Theme | "Follow the system" takes the desktop's colour scheme; "Light" or "Dark" picks one; "Pitch black" is dark with black backgrounds, for OLED screens.
+Hide the pointer after (in seconds) | Once the mouse rests over the page, in a window or fullscreen. The Leave fullscreen button goes with it. 2 by default; 0 keeps both.
 Use this colour as background | The colour behind the page.
 Use dynamic background colour | A colour taken from the page's edges instead: a page with a white border is shown on white. For the page, where it is the default, and for the thumbnails.
 Use checkered background for transparent images | A grey checkerboard behind transparent parts, instead of white.

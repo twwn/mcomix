@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-17 17:17+0100\n"
+"POT-Creation-Date: 2026-11-18 15:42+0100\n"
 "PO-Revision-Date: 2009-01-25 21:54+0100\n"
 "Last-Translator: Jan Nekvasil <jan.nekvasil@gmail.com>\n"
 "Language-Team: \n"
@@ -44,17 +44,16 @@ msgstr "Kopii této licence lze získat na %s"
 msgid "! Extraction error: %s"
 msgstr "! Chyba při rozbalování: %s"
 
-#: mcomix/archive_extractor.py:454 mcomix/archive_tools.py:239
-#: mcomix/image_tools.py:518 mcomix/page_marks.py:62
-#: mcomix/page_rotations.py:42 mcomix/reading_directions.py:47
+#: mcomix/archive_extractor.py:454 mcomix/archive_tools.py:240
+#: mcomix/book_store.py:66 mcomix/image_tools.py:518
 #, python-format
 msgid "! Could not read %s"
 msgstr "! Nepodařilo se přečíst %s"
 
 #
 # File: src/comment.py, line: 53
-#: mcomix/archive_packer.py:213 mcomix/file_actions.py:1254
-#: mcomix/library/book_area.py:1183
+#: mcomix/archive_packer.py:213 mcomix/file_actions.py:1263
+#: mcomix/library/book_area.py:1312
 #, python-format
 msgid "! Could not remove %(file)s: %(error)s"
 msgstr "! Nepodařilo se smazat %(file)s: %(error)s"
@@ -72,17 +71,17 @@ msgstr ""
 "! Nepodařilo se přidat soubor %(sourcefile)s do archivu %(archivefile)s, "
 "ruší se..."
 
-#: mcomix/archive_tools.py:129
+#: mcomix/archive_tools.py:130
 #, python-format
 msgid "Could not open %(file)s: it needs %(program)s."
 msgstr "Nelze otevřít %(file)s: vyžaduje %(program)s."
 
-#: mcomix/archive_tools.py:133
+#: mcomix/archive_tools.py:134
 #, python-format
 msgid "Could not open %(file)s: it needs %(first)s or %(second)s."
 msgstr "Nelze otevřít %(file)s: vyžaduje %(first)s nebo %(second)s."
 
-#: mcomix/archive_tools.py:136
+#: mcomix/archive_tools.py:137
 #, python-format
 msgid "Non-supported archive format: %s"
 msgstr "Nepodporovaný formát archivu: %s"
@@ -92,14 +91,13 @@ msgstr "Nepodporovaný formát archivu: %s"
 msgid "! Could not parse bookmarks file %s"
 msgstr "! Nepodařilo se zpracovat soubor záložek %s"
 
-#: mcomix/bookmark_backend.py:487 mcomix/file_actions.py:1019
-#: mcomix/page_marks.py:153 mcomix/page_rotations.py:124
-#: mcomix/reading_directions.py:98
+#: mcomix/bookmark_backend.py:487 mcomix/book_store.py:83
+#: mcomix/file_actions.py:1021
 #, python-format
 msgid "! Could not save %(file)s to %(directory)s: %(error)s"
 msgstr "! Nepodařilo se uložit %(file)s do %(directory)s: %(error)s"
 
-#: mcomix/bookmark_backend.py:493 mcomix/file_actions.py:1029
+#: mcomix/bookmark_backend.py:493 mcomix/file_actions.py:1031
 #, python-format
 msgid "Could not save \"%(file)s\" to \"%(directory)s\""
 msgstr "Nepodařilo se uložit „%(file)s“ do „%(directory)s“"
@@ -117,8 +115,8 @@ msgstr "_Ne"
 #
 # File: src/preferences.py, line: 230
 #: mcomix/bookmark_backend.py:510 mcomix/edit_dialog.py:65
-#: mcomix/file_actions.py:712 mcomix/file_actions.py:1070
-#: mcomix/file_actions.py:1236 mcomix/file_chooser_base_dialog.py:236
+#: mcomix/file_actions.py:714 mcomix/file_actions.py:1072
+#: mcomix/file_actions.py:1245 mcomix/file_chooser_base_dialog.py:236
 #: mcomix/file_chooser_base_dialog.py:241
 #: mcomix/file_chooser_library_dialog.py:42 mcomix/message_dialog.py:26
 #: mcomix/message_dialog.py:29 mcomix/pageselect.py:38
@@ -174,7 +172,7 @@ msgstr "Úprava záložek"
 msgid "C_lear bookmarks..."
 msgstr "_Vymazat záložky…"
 
-#: mcomix/bookmark_dialog.py:33 mcomix/main.py:1523 mcomix/openwith.py:437
+#: mcomix/bookmark_dialog.py:33 mcomix/main.py:1543 mcomix/openwith.py:437
 #: mcomix/library/collection_area.py:159 mcomix/library/watchlist.py:69
 msgid "_Remove"
 msgstr "Odst_ranit"
@@ -183,7 +181,7 @@ msgstr "Odst_ranit"
 # File: src/ui.py, line: 48
 #: mcomix/bookmark_dialog.py:34 mcomix/comment_dialog.py:29
 #: mcomix/message_dialog.py:25 mcomix/preferences_dialog.py:74
-#: mcomix/properties_dialog.py:38 mcomix/ui.py:499
+#: mcomix/properties_dialog.py:38 mcomix/ui.py:502
 #: mcomix/library/book_properties.py:60 mcomix/library/watchlist.py:41
 msgid "_Close"
 msgstr "Zavř_ít"
@@ -202,7 +200,7 @@ msgstr "Jméno"
 
 #
 # File: src/bookmark.py, line: 256
-#: mcomix/bookmark_dialog.py:67 mcomix/main.py:2710
+#: mcomix/bookmark_dialog.py:67 mcomix/main.py:2731
 #: mcomix/library/book_properties.py:108 mcomix/library/control_area.py:172
 msgid "Page"
 msgstr "Strana"
@@ -241,7 +239,7 @@ msgstr "_Odebrat záložky této knihy..."
 msgid "_Edit bookmarks..."
 msgstr "_Upravit záložky..."
 
-#: mcomix/bookmark_menu.py:204 mcomix/file_actions.py:1300
+#: mcomix/bookmark_menu.py:204 mcomix/file_actions.py:1309
 #, python-format
 msgid "Remove the bookmarks in \"%s\"?"
 msgstr "Smazat záložky v „%s“?"
@@ -264,8 +262,8 @@ msgstr "Komentáře"
 
 #
 # File: src/comment.py, line: 53
-#: mcomix/comment_dialog.py:134 mcomix/file_handler.py:534
-#: mcomix/file_handler.py:1073
+#: mcomix/comment_dialog.py:134 mcomix/file_handler.py:573
+#: mcomix/file_handler.py:1121
 #, python-format
 msgid "Could not read %s"
 msgstr "%s nelze načíst"
@@ -299,12 +297,12 @@ msgid "Remove from archive"
 msgstr "Odstranit z archivu"
 
 #: mcomix/edit_comment_area.py:122 mcomix/edit_image_area.py:121
-#: mcomix/ui.py:471
+#: mcomix/ui.py:474
 msgid "_Undo"
 msgstr "_Zpět"
 
 #: mcomix/edit_comment_area.py:123 mcomix/edit_image_area.py:122
-#: mcomix/ui.py:474
+#: mcomix/ui.py:477
 msgid "_Redo"
 msgstr "Zn_ovu"
 
@@ -346,7 +344,7 @@ msgstr "_Použít"
 
 #
 # File: src/edit.py, line: 50
-#: mcomix/edit_dialog.py:111 mcomix/preferences_dialog.py:433
+#: mcomix/edit_dialog.py:111 mcomix/preferences_dialog.py:439
 msgid "Images"
 msgstr "Obrázky"
 
@@ -359,20 +357,20 @@ msgstr "Soubory s komentáři"
 
 #
 # File: src/library.py, line: 271
-#: mcomix/edit_dialog.py:261 mcomix/file_actions.py:778
+#: mcomix/edit_dialog.py:261 mcomix/file_actions.py:780
 #, python-format
 msgid "! Could not save the archive %(archivefile)s: %(error)s"
 msgstr "! Nepodařilo se uložit archiv %(archivefile)s: %(error)s"
 
 #
 # File: src/edit.py, line: 99
-#: mcomix/edit_dialog.py:274 mcomix/file_actions.py:783
+#: mcomix/edit_dialog.py:274 mcomix/file_actions.py:785
 msgid "The new archive could not be saved!"
 msgstr "Nelze uložit nový archiv!"
 
 #
 # File: src/edit.py, line: 101
-#: mcomix/edit_dialog.py:275 mcomix/file_actions.py:784
+#: mcomix/edit_dialog.py:275 mcomix/file_actions.py:786
 msgid "The original files have not been removed."
 msgstr "Původní soubory nebyly odstraněny."
 
@@ -401,7 +399,7 @@ msgstr "_Pokračovat v úpravách"
 msgid "_Close the book"
 msgstr "Zavří_t knihu"
 
-#: mcomix/edit_image_area.py:116 mcomix/ui.py:457
+#: mcomix/edit_image_area.py:116 mcomix/ui.py:460
 msgid "Re_name page..."
 msgstr "Př_ejmenovat stránku..."
 
@@ -433,8 +431,8 @@ msgstr "Vrátit se k uloženým hodnotám."
 
 #
 # File: src/filechooser.py, line: 39
-#: mcomix/enhance_dialog.py:51 mcomix/file_actions.py:626
-#: mcomix/file_actions.py:684 mcomix/file_actions.py:713
+#: mcomix/enhance_dialog.py:51 mcomix/file_actions.py:628
+#: mcomix/file_actions.py:686 mcomix/file_actions.py:715
 #: mcomix/file_chooser_base_dialog.py:242 mcomix/openwith.py:461
 msgid "_Save"
 msgstr "_Uložit"
@@ -504,7 +502,7 @@ msgstr ""
 "Automaticky upravit kontrast (světlost i tmavost) odděleně pro každý rozsah "
 "barev."
 
-#: mcomix/enhance_dialog.py:124 mcomix/ui.py:574
+#: mcomix/enhance_dialog.py:124 mcomix/ui.py:577
 msgid "_Invert image colors"
 msgstr "_Invertovat barvy obrázku"
 
@@ -512,51 +510,51 @@ msgstr "_Invertovat barvy obrázku"
 msgid "Invert (negate) image colors."
 msgstr "Invertuje (neguje) barvy obrázku."
 
-#: mcomix/file_actions.py:322 mcomix/file_actions.py:1439
-#: mcomix/file_actions.py:1558
+#: mcomix/file_actions.py:324 mcomix/file_actions.py:1452
+#: mcomix/file_actions.py:1595
 msgid "A file of that name is there already."
 msgstr "Soubor s tímto názvem už tam je."
 
-#: mcomix/file_actions.py:348
+#: mcomix/file_actions.py:350
 #, python-format
 msgid "Could not rename \"%s\""
 msgstr "Nepodařilo se přejmenovat „%s“"
 
-#: mcomix/file_actions.py:399
+#: mcomix/file_actions.py:401
 #, python-format
 msgid "Page %(number)d is called \"%(name)s\" already."
 msgstr "Strana %(number)d se už jmenuje „%(name)s“."
 
-#: mcomix/file_actions.py:404
+#: mcomix/file_actions.py:406
 msgid "Rename page?"
 msgstr "Přejmenovat stránku?"
 
-#: mcomix/file_actions.py:405
+#: mcomix/file_actions.py:407
 msgid "Please enter a new name for this page."
 msgstr "Prosím vložte nové jméno této strany."
 
-#: mcomix/file_actions.py:622
+#: mcomix/file_actions.py:624
 #, python-format
 msgid "Write \"%s\" again before closing it?"
 msgstr "Zapsat „%s“ znovu před zavřením?"
 
-#: mcomix/file_actions.py:623
+#: mcomix/file_actions.py:625
 msgid ""
 "The book has changes that the archive on disk does not hold. They are lost "
 "when it closes."
 msgstr ""
 "Kniha má změny, které archiv na disku neobsahuje. Při zavření se ztratí."
 
-#: mcomix/file_actions.py:625
+#: mcomix/file_actions.py:627
 msgid "_Close without saving"
 msgstr "Zavř_ít bez uložení"
 
-#: mcomix/file_actions.py:679
+#: mcomix/file_actions.py:681
 #, python-format
 msgid "Write \"%s\" again now?"
 msgstr "Zapsat „%s“ znovu hned teď?"
 
-#: mcomix/file_actions.py:680
+#: mcomix/file_actions.py:682
 msgid ""
 "The archive on disk will be replaced by the book as it stands: the pages it "
 "holds now, in the order and under the names it shows."
@@ -564,16 +562,16 @@ msgstr ""
 "Archiv na disku bude nahrazen knihou v současné podobě: stránkami, které má "
 "nyní, v pořadí a pod názvy, jaké ukazuje."
 
-#: mcomix/file_actions.py:683
+#: mcomix/file_actions.py:685
 msgid "_Not now"
 msgstr "Te_ď ne"
 
-#: mcomix/file_actions.py:708
+#: mcomix/file_actions.py:710
 #, python-format
 msgid "\"%s\" has changed since it was opened"
 msgstr "„%s“ se od otevření změnil"
 
-#: mcomix/file_actions.py:709
+#: mcomix/file_actions.py:711
 msgid ""
 "Another program has written it. Saving replaces it with the book as MComix "
 "shows it, and what that program changed is lost."
@@ -581,52 +579,52 @@ msgstr ""
 "Zapsal jej jiný program. Uložení jej nahradí knihou tak, jak ji ukazuje "
 "MComix, a to, co onen program změnil, se ztratí."
 
-#: mcomix/file_actions.py:911
+#: mcomix/file_actions.py:913
 #, python-format
 msgid "Could not show the folder: %s"
 msgstr "Složku se nepodařilo zobrazit: %s"
 
-#: mcomix/file_actions.py:958 mcomix/keybindings.py:166
+#: mcomix/file_actions.py:960 mcomix/keybindings.py:166
 msgid "Save page as"
 msgstr "Uložit stránku jako"
 
-#: mcomix/file_actions.py:1023 mcomix/file_actions.py:1560
+#: mcomix/file_actions.py:1025 mcomix/file_actions.py:1597
 #, python-format
 msgid "There is not enough room there: the file is %s."
 msgstr "Není tam dost místa: soubor má %s."
 
-#: mcomix/file_actions.py:1060
+#: mcomix/file_actions.py:1062
 msgid "There is no trash for this folder, so it cannot be restored."
 msgstr "Tato složka nemá koš, takže nepůjde obnovit."
 
-#: mcomix/file_actions.py:1068
+#: mcomix/file_actions.py:1070
 #, python-format
 msgid "Delete \"%s\"?"
 msgstr "Smazat „%s“?"
 
-#: mcomix/file_actions.py:1069
+#: mcomix/file_actions.py:1071
 msgid "The file is moved to the trash."
 msgstr "Soubor bude přesunut do koše."
 
-#: mcomix/file_actions.py:1071
+#: mcomix/file_actions.py:1073
 msgid "_Move to Trash"
 msgstr "Pře_sunout do koše"
 
-#: mcomix/file_actions.py:1101 mcomix/library/book_area.py:1126
+#: mcomix/file_actions.py:1103 mcomix/library/book_area.py:1249
 msgid "It does not go to the trash and cannot be restored."
 msgstr "Nepřesune se do koše a nepůjde obnovit."
 
-#: mcomix/file_actions.py:1109 mcomix/library/book_area.py:1118
+#: mcomix/file_actions.py:1111 mcomix/library/book_area.py:1241
 #, python-format
 msgid "Delete \"%s\" permanently?"
 msgstr "Trvale smazat „%s“?"
 
-#: mcomix/file_actions.py:1209
+#: mcomix/file_actions.py:1218
 #, python-format
 msgid "Could not move \"%s\" to the trash"
 msgstr "Nepodařilo se přesunout „%s“ do koše"
 
-#: mcomix/file_actions.py:1213 mcomix/library/book_area.py:1195
+#: mcomix/file_actions.py:1222 mcomix/library/book_area.py:1326
 #, python-format
 msgid "%d book could not be moved to the trash."
 msgid_plural "%d books could not be moved to the trash."
@@ -634,23 +632,23 @@ msgstr[0] "Nepodařilo se přesunout %d knihu do koše."
 msgstr[1] "Nepodařilo se přesunout %d knihy do koše."
 msgstr[2] "Nepodařilo se přesunout %d knih do koše."
 
-#: mcomix/file_actions.py:1217
+#: mcomix/file_actions.py:1226
 msgid "Delete it permanently instead? It cannot be restored."
 msgid_plural "Delete them permanently instead? They cannot be restored."
 msgstr[0] "Smazat jej místo toho trvale? Nepůjde jej obnovit."
 msgstr[1] "Smazat je místo toho trvale? Nepůjde je obnovit."
 msgstr[2] "Smazat je místo toho trvale? Nepůjde je obnovit."
 
-#: mcomix/file_actions.py:1237
+#: mcomix/file_actions.py:1246
 msgid "_Delete Permanently"
 msgstr "_Smazat trvale"
 
-#: mcomix/file_actions.py:1264
+#: mcomix/file_actions.py:1273
 #, python-format
 msgid "Could not delete \"%s\""
 msgstr "Nepodařilo se smazat „%s“"
 
-#: mcomix/file_actions.py:1270
+#: mcomix/file_actions.py:1279
 #, python-format
 msgid "%d book could not be deleted."
 msgid_plural "%d books could not be deleted."
@@ -658,7 +656,7 @@ msgstr[0] "Nepodařilo se smazat %d knihu."
 msgstr[1] "Nepodařilo se smazat %d knihy."
 msgstr[2] "Nepodařilo se smazat %d knih."
 
-#: mcomix/file_actions.py:1296
+#: mcomix/file_actions.py:1305
 #, python-format
 msgid "The file is gone, and its %d bookmark cannot be opened any more."
 msgid_plural ""
@@ -667,21 +665,21 @@ msgstr[0] "Soubor je pryč a jeho %d záložku už nelze otevřít."
 msgstr[1] "Soubor je pryč a jeho %d záložky už nelze otevřít."
 msgstr[2] "Soubor je pryč a jeho %d záložek už nelze otevřít."
 
-#: mcomix/file_actions.py:1396 mcomix/file_actions.py:1554
+#: mcomix/file_actions.py:1405 mcomix/file_actions.py:1591
 #: mcomix/thumbnail_tools.py:386
 #, python-format
 msgid "! Could not move %(file)s to %(directory)s: %(error)s"
 msgstr "! Nepodařilo se přesunout %(file)s do %(directory)s: %(error)s"
 
-#: mcomix/file_actions.py:1443
+#: mcomix/file_actions.py:1456
 msgid "Rename archive?"
 msgstr "Přejmenovat archiv?"
 
-#: mcomix/file_actions.py:1444
+#: mcomix/file_actions.py:1457
 msgid "Please enter a new name for this archive."
 msgstr "Zadejte nové jméno tohoto archivu."
 
-#: mcomix/file_actions.py:1566
+#: mcomix/file_actions.py:1603
 #, python-format
 msgid "Could not move \"%(file)s\" to \"%(directory)s\""
 msgstr "Nepodařilo se přesunout „%(file)s“ do „%(directory)s“"
@@ -704,7 +702,7 @@ msgstr[2] "%d stránek"
 msgid "Open"
 msgstr "Otevřít"
 
-#: mcomix/file_chooser_base_dialog.py:237 mcomix/library/book_area.py:243
+#: mcomix/file_chooser_base_dialog.py:237 mcomix/library/book_area.py:286
 msgid "_Open"
 msgstr "_Otevřít"
 
@@ -779,37 +777,37 @@ msgstr "! Do %s nelze rozbalit; použije se dočasná složka."
 
 #
 # File: src/filehandler.py, line: 285
-#: mcomix/file_handler.py:583
+#: mcomix/file_handler.py:625
 #, python-format
 msgid "No images in '%s'"
 msgstr "„%s“ neobsahuje žádné obrázky"
 
 #
 # File: src/filehandler.py, line: 213
-#: mcomix/file_handler.py:871
+#: mcomix/file_handler.py:913
 #, python-format
 msgid "Could not open %s: No such file."
 msgstr "Nelze otevřít %s: Soubor neexistuje."
 
 #
 # File: src/filehandler.py, line: 217
-#: mcomix/file_handler.py:874 mcomix/file_provider.py:281
-#: mcomix/file_provider.py:382
+#: mcomix/file_handler.py:916 mcomix/file_provider.py:300
+#: mcomix/file_provider.py:401
 #, python-format
 msgid "Could not open %s: Permission denied."
 msgstr "Nelze otevřít %s: Přístup odmítnut."
 
-#: mcomix/file_handler.py:1089
+#: mcomix/file_handler.py:1137
 #, python-format
 msgid "There is no room left to unpack the pages in %s."
 msgstr "V %s už není místo na rozbalení stránek."
 
-#: mcomix/file_handler.py:1173
+#: mcomix/file_handler.py:1221
 #, python-format
 msgid "Continue reading from page %d?"
 msgstr "Pokračovat ve čtení od strany %d?"
 
-#: mcomix/file_handler.py:1174
+#: mcomix/file_handler.py:1222
 #, python-format
 msgid ""
 "You stopped reading here on %(date)s, %(time)s. If you choose \"Yes\", "
@@ -819,7 +817,7 @@ msgstr ""
 "Čtení jste zde přerušili %(date)s v %(time)s. Zvolíte-li „Ano“, čtení bude "
 "pokračovat od strany %(page)d. Jinak se načte první strana."
 
-#: mcomix/file_handler.py:1781
+#: mcomix/file_handler.py:1803
 #, python-format
 msgid ""
 "! Corrupt file \"%s\", deleting it; the last file read will not be reopened."
@@ -827,14 +825,14 @@ msgstr ""
 "! Soubor „%s“ je poškozený a bude smazán; naposledy čtený soubor se znovu "
 "neotevře."
 
-#: mcomix/file_provider.py:240
+#: mcomix/file_provider.py:259
 #, python-format
 msgid "Invalid path: '%s'"
 msgstr "Neplatná cesta: „%s“"
 
 #
 # File: src/filehandler.py, line: 411
-#: mcomix/image_tools.py:1514
+#: mcomix/image_tools.py:1520
 msgid "Unknown filetype"
 msgstr "Neznámý typ souboru"
 
@@ -845,7 +843,7 @@ msgstr "Klávesa %d"
 
 #
 # File: src/ui.py, line: 284
-#: mcomix/keybindings.py:45 mcomix/ui.py:478
+#: mcomix/keybindings.py:45 mcomix/ui.py:481
 msgid "Previous page"
 msgstr "Předchozí strana"
 
@@ -863,7 +861,7 @@ msgstr "Navigace"
 
 #
 # File: src/ui.py, line: 285
-#: mcomix/keybindings.py:46 mcomix/ui.py:477
+#: mcomix/keybindings.py:46 mcomix/ui.py:480
 msgid "Next page"
 msgstr "Následující strana"
 
@@ -919,13 +917,13 @@ msgstr "Jednotlivá strana vpravo"
 
 #
 # File: src/ui.py, line: 282
-#: mcomix/keybindings.py:58 mcomix/ui.py:479
+#: mcomix/keybindings.py:58 mcomix/ui.py:482
 msgid "First page"
 msgstr "První strana"
 
 #
 # File: src/ui.py, line: 286
-#: mcomix/keybindings.py:59 mcomix/ui.py:480
+#: mcomix/keybindings.py:59 mcomix/ui.py:483
 msgid "Last page"
 msgstr "Poslední strana"
 
@@ -937,21 +935,21 @@ msgstr "Přejít na stranu"
 
 #. TRANSLATORS: Go back to the page a jump (Home, End, Go to
 #. page, a thumbnail, a bookmark) left, as a browser goes back.
-#: mcomix/keybindings.py:61 mcomix/ui.py:484
+#: mcomix/keybindings.py:61 mcomix/ui.py:487
 msgid "Back"
 msgstr "Zpět"
 
 #. TRANSLATORS: Go again to the page "Back" left, as a browser
 #. goes forward.
-#: mcomix/keybindings.py:62 mcomix/ui.py:487
+#: mcomix/keybindings.py:62 mcomix/ui.py:490
 msgid "Forward"
 msgstr "Vpřed"
 
-#: mcomix/keybindings.py:64 mcomix/ui.py:490
+#: mcomix/keybindings.py:64 mcomix/ui.py:493
 msgid "Next book"
 msgstr "Následující kniha"
 
-#: mcomix/keybindings.py:65 mcomix/ui.py:491
+#: mcomix/keybindings.py:65 mcomix/ui.py:494
 msgid "Previous book"
 msgstr "Předchozí kniha"
 
@@ -967,11 +965,11 @@ msgstr "Náhodný archiv ve složce"
 msgid "Shuffle books"
 msgstr "Zamíchat knihy"
 
-#: mcomix/keybindings.py:70 mcomix/ui.py:492
+#: mcomix/keybindings.py:70 mcomix/ui.py:495
 msgid "Next folder"
 msgstr "Následující adresář"
 
-#: mcomix/keybindings.py:71 mcomix/ui.py:493
+#: mcomix/keybindings.py:71 mcomix/ui.py:496
 msgid "Previous folder"
 msgstr "Předchozí adresář"
 
@@ -986,7 +984,7 @@ msgstr "Zarovnat vlevo dolů"
 #: mcomix/keybindings.py:82 mcomix/keybindings.py:83 mcomix/keybindings.py:84
 #: mcomix/keybindings.py:86 mcomix/keybindings.py:87 mcomix/keybindings.py:88
 #: mcomix/keybindings.py:89 mcomix/keybindings.py:91 mcomix/keybindings.py:92
-#: mcomix/keybindings.py:116 mcomix/preferences_dialog.py:260
+#: mcomix/keybindings.py:116 mcomix/preferences_dialog.py:266
 msgid "Scroll"
 msgstr "Posun"
 
@@ -1076,7 +1074,7 @@ msgstr "Zachování transformace"
 #: mcomix/keybindings.py:102 mcomix/keybindings.py:103
 #: mcomix/keybindings.py:104 mcomix/keybindings.py:105
 #: mcomix/keybindings.py:175 mcomix/keybindings.py:178
-#: mcomix/properties_dialog.py:52 mcomix/ui.py:533
+#: mcomix/properties_dialog.py:52 mcomix/ui.py:536
 msgid "Image"
 msgstr "Obrázek"
 
@@ -1123,7 +1121,7 @@ msgstr "Automatické otočení podle výšky"
 #
 # File: src/preferences.py, line: 177
 # File: src/ui.py, line: 296
-#: mcomix/keybindings.py:112 mcomix/preferences_dialog.py:386 mcomix/ui.py:544
+#: mcomix/keybindings.py:112 mcomix/preferences_dialog.py:392 mcomix/ui.py:547
 msgid "Double page mode"
 msgstr "Dvoustránkový režim"
 
@@ -1145,50 +1143,50 @@ msgstr "Titulní strana zvlášť"
 
 #
 # File: src/ui.py, line: 297
-#: mcomix/keybindings.py:114 mcomix/ui.py:561
+#: mcomix/keybindings.py:114 mcomix/ui.py:564
 msgid "Manga mode"
 msgstr "Manga režim"
 
-#: mcomix/keybindings.py:115 mcomix/preferences_dialog.py:404 mcomix/ui.py:562
+#: mcomix/keybindings.py:115 mcomix/preferences_dialog.py:410 mcomix/ui.py:565
 msgid "Continuous mode"
 msgstr "Souvislý režim"
 
-#: mcomix/keybindings.py:116 mcomix/ui.py:563
+#: mcomix/keybindings.py:116 mcomix/ui.py:566
 msgid "Invert smart scroll"
 msgstr "Inverze chytrého posouvání"
 
 #
 # File: src/ui.py, line: 298
-#: mcomix/keybindings.py:118 mcomix/preferences_dialog.py:452 mcomix/ui.py:569
+#: mcomix/keybindings.py:118 mcomix/preferences_dialog.py:458 mcomix/ui.py:572
 msgid "Magnifying lens"
 msgstr "Lupa"
 
-#: mcomix/keybindings.py:119 mcomix/ui.py:570
+#: mcomix/keybindings.py:119 mcomix/ui.py:573
 msgid "Stretch small images"
 msgstr "Roztahování malých obrázků"
 
-#: mcomix/keybindings.py:120 mcomix/ui.py:572
+#: mcomix/keybindings.py:120 mcomix/ui.py:575
 msgid "Crop borders"
 msgstr "Oříznutí okrajů"
 
 #
 # File: src/preferences.py, line: 262
 # File: src/ui.py, line: 288
-#: mcomix/keybindings.py:122 mcomix/ui.py:579
+#: mcomix/keybindings.py:122 mcomix/ui.py:582
 msgid "Best fit mode"
 msgstr "Optimální přizpůsobení"
 
 #
 # File: src/preferences.py, line: 263
 # File: src/ui.py, line: 290
-#: mcomix/keybindings.py:123 mcomix/ui.py:580
+#: mcomix/keybindings.py:123 mcomix/ui.py:583
 msgid "Fit width mode"
 msgstr "Přizpůsobit na šířku"
 
 #
 # File: src/preferences.py, line: 264
 # File: src/ui.py, line: 292
-#: mcomix/keybindings.py:124 mcomix/ui.py:581
+#: mcomix/keybindings.py:124 mcomix/ui.py:584
 msgid "Fit height mode"
 msgstr "Přizpůsobit na výšku"
 
@@ -1201,11 +1199,11 @@ msgstr "Režim přizpůsobení velikosti"
 #
 # File: src/preferences.py, line: 265
 # File: src/ui.py, line: 294
-#: mcomix/keybindings.py:126 mcomix/ui.py:583
+#: mcomix/keybindings.py:126 mcomix/ui.py:586
 msgid "Manual zoom mode"
 msgstr "Ruční přiblížení"
 
-#: mcomix/keybindings.py:129 mcomix/osd.py:287 mcomix/ui.py:497
+#: mcomix/keybindings.py:129 mcomix/osd.py:285 mcomix/ui.py:500
 msgid "Leave fullscreen"
 msgstr "Opustit celou obrazovku"
 
@@ -1239,7 +1237,7 @@ msgstr "Klávesové zkratky"
 
 #
 # File: src/preferences.py, line: 271
-#: mcomix/keybindings.py:136 mcomix/preferences_dialog.py:182
+#: mcomix/keybindings.py:136 mcomix/preferences_dialog.py:188
 msgid "Fullscreen"
 msgstr "Celá obrazovka"
 
@@ -1269,7 +1267,7 @@ msgstr "Posuvníky"
 
 #
 # File: src/preferences.py, line: 109
-#: mcomix/keybindings.py:143 mcomix/preferences_dialog.py:156
+#: mcomix/keybindings.py:143 mcomix/preferences_dialog.py:162
 msgid "Thumbnails"
 msgstr "Náhledy"
 
@@ -1281,7 +1279,7 @@ msgstr "Skrýt vše"
 
 #
 # File: src/preferences.py, line: 279
-#: mcomix/keybindings.py:145 mcomix/slideshow.py:60 mcomix/ui.py:568
+#: mcomix/keybindings.py:145 mcomix/slideshow.py:60 mcomix/ui.py:571
 msgid "Start slideshow"
 msgstr "Spustit promítání"
 
@@ -1314,7 +1312,7 @@ msgstr "Smazat"
 msgid "File"
 msgstr "Soubor"
 
-#: mcomix/keybindings.py:155 mcomix/ui.py:449 mcomix/library/book_area.py:269
+#: mcomix/keybindings.py:155 mcomix/ui.py:452 mcomix/library/book_area.py:312
 msgid "Delete permanently"
 msgstr "Smazat trvale"
 
@@ -1385,8 +1383,8 @@ msgstr "Vlastnosti"
 msgid "Preferences"
 msgstr "Nastavení"
 
-#: mcomix/keybindings.py:173 mcomix/ui.py:451 mcomix/ui.py:454
-#: mcomix/library/book_area.py:277
+#: mcomix/keybindings.py:173 mcomix/ui.py:454 mcomix/ui.py:457
+#: mcomix/library/book_area.py:320
 msgid "Open containing folder"
 msgstr "Otevřít nadřazenou složku"
 
@@ -1400,7 +1398,7 @@ msgstr "Knihovna"
 msgid "Search the library's covers"
 msgstr "Hledat v obálkách knihovny"
 
-#: mcomix/keybindings.py:178 mcomix/ui.py:574
+#: mcomix/keybindings.py:178 mcomix/ui.py:577
 msgid "Invert image colors"
 msgstr "Inverze barev obrázku"
 
@@ -1448,7 +1446,7 @@ msgstr "Nepodařilo se načíst klávesové zkratky: %s"
 msgid "! Could not remove file \"%s\""
 msgstr "! Nepodařilo se smazat soubor „%s“"
 
-#: mcomix/main.py:1516
+#: mcomix/main.py:1536
 #, python-format
 msgid "Remove the page picked out of \"%s\"?"
 msgid_plural "Remove the pages picked out of \"%s\"?"
@@ -1456,7 +1454,7 @@ msgstr[0] "Odebrat vybranou stránku z „%s“?"
 msgstr[1] "Odebrat vybrané stránky z „%s“?"
 msgstr[2] "Odebrat vybrané stránky z „%s“?"
 
-#: mcomix/main.py:1519
+#: mcomix/main.py:1539
 msgid ""
 "They are taken out of the archive on disk, which is written again at once. "
 "Leaving the book without removing them forgets which pages they were."
@@ -1464,18 +1462,18 @@ msgstr ""
 "Budou odebrány z archivu na disku, který se ihned zapíše znovu. Opustíte-li "
 "knihu bez jejich odebrání, zapomene se, které stránky to byly."
 
-#: mcomix/main.py:1522
+#: mcomix/main.py:1542
 msgid "_Keep them"
 msgstr "Po_nechat"
 
-#: mcomix/main.py:1746
+#: mcomix/main.py:1766
 #, python-format
 msgid "Animation speed: %s"
 msgstr "Rychlost animace: %s"
 
 #
 # File: src/main.py, line: 666
-#: mcomix/main.py:2414
+#: mcomix/main.py:2434
 msgid "SLIDESHOW"
 msgstr "PROMÍTÁNÍ OBRÁZKŮ"
 
@@ -1727,7 +1725,7 @@ msgstr "! Nepodařilo se vykreslit další snímek: %s"
 
 #
 # File: src/ui.py, line: 69
-#: mcomix/pageselect.py:39 mcomix/ui.py:527 mcomix/ui.py:528
+#: mcomix/pageselect.py:39 mcomix/ui.py:530 mcomix/ui.py:531
 msgid "_Go"
 msgstr "_Přejít"
 
@@ -1770,45 +1768,57 @@ msgstr "Jazyk (vyžaduje restart):"
 msgid "Theme:"
 msgstr "Motiv:"
 
+#: mcomix/preferences_dialog.py:140
+msgid "Hide the pointer after (in seconds):"
+msgstr "Skrýt ukazatel po (v sekundách):"
+
+#: mcomix/preferences_dialog.py:144
+msgid ""
+"Once the mouse rests over the page. The Leave fullscreen button goes with "
+"it. 0 keeps both."
+msgstr ""
+"Jakmile myš nad stránkou spočine. Tlačítko „Opustit celou obrazovku“ zmizí s "
+"ním. 0 ponechá obojí."
+
 #
 # File: src/preferences.py, line: 93
-#: mcomix/preferences_dialog.py:140
+#: mcomix/preferences_dialog.py:146
 msgid "Background"
 msgstr "Pozadí"
 
 #
 # File: src/preferences.py, line: 95
-#: mcomix/preferences_dialog.py:143
+#: mcomix/preferences_dialog.py:149
 msgid "Use this colour as background:"
 msgstr "Použít tuto barvu jako pozadí:"
 
 #
 # File: src/preferences.py, line: 97
-#: mcomix/preferences_dialog.py:144
+#: mcomix/preferences_dialog.py:150
 msgid "Always use this selected colour as the background colour."
 msgstr "Vždy používat vybranou barvu jako barvu pozadí."
 
 #
 # File: src/preferences.py, line: 102
-#: mcomix/preferences_dialog.py:145 mcomix/preferences_dialog.py:161
+#: mcomix/preferences_dialog.py:151 mcomix/preferences_dialog.py:167
 msgid "Use dynamic background colour"
 msgstr "Používat dynamickou barvu pozadí"
 
 #
 # File: src/preferences.py, line: 106
-#: mcomix/preferences_dialog.py:147
+#: mcomix/preferences_dialog.py:153
 msgid "Automatically pick a background colour that fits the viewed image."
 msgstr "Automaticky vybírat barvu hodící se k prohlíženému obrázku."
 
 #
 # File: src/preferences.py, line: 153
-#: mcomix/preferences_dialog.py:152
+#: mcomix/preferences_dialog.py:158
 msgid "Use checkered background for transparent images"
 msgstr "Používat šachovnicové pozadí pro průhledné obrázky"
 
 #
 # File: src/preferences.py, line: 159
-#: mcomix/preferences_dialog.py:154
+#: mcomix/preferences_dialog.py:160
 msgid ""
 "Use a grey checkered background for transparent images. If this preference "
 "is unset, the background is plain white instead."
@@ -1818,19 +1828,19 @@ msgstr ""
 
 #
 # File: src/preferences.py, line: 95
-#: mcomix/preferences_dialog.py:159
+#: mcomix/preferences_dialog.py:165
 msgid "Use this colour as the thumbnail background:"
 msgstr "Použít tuto barvu jako pozadí náhledů:"
 
 #
 # File: src/preferences.py, line: 97
-#: mcomix/preferences_dialog.py:160
+#: mcomix/preferences_dialog.py:166
 msgid "Always use this selected colour as the thumbnail background colour."
 msgstr "Vždy použít zvolenou barvu jako barvu pozadí náhledů."
 
 #
 # File: src/preferences.py, line: 106
-#: mcomix/preferences_dialog.py:163
+#: mcomix/preferences_dialog.py:169
 msgid ""
 "Automatically use the colour that fits the viewed image for the thumbnail "
 "background."
@@ -1840,52 +1850,52 @@ msgstr ""
 
 #
 # File: src/preferences.py, line: 117
-#: mcomix/preferences_dialog.py:168
+#: mcomix/preferences_dialog.py:174
 msgid "Show page numbers on thumbnails"
 msgstr "Zobrazovat čísla stran na náhledech"
 
 #
 # File: src/preferences.py, line: 110
-#: mcomix/preferences_dialog.py:171
+#: mcomix/preferences_dialog.py:177
 msgid "Thumbnail size (in pixels):"
 msgstr "Velikost náhledů (v pixelech):"
 
-#: mcomix/preferences_dialog.py:176
+#: mcomix/preferences_dialog.py:182
 msgid "Thumbnail border width (in pixels):"
 msgstr "Šířka okraje náhledů (v pixelech):"
 
-#: mcomix/preferences_dialog.py:180
+#: mcomix/preferences_dialog.py:186
 msgid ""
 "The frame round the thumbnails of pages, and round the covers of the "
 "library. 0 draws none."
 msgstr ""
 "Okraj kolem náhledů stránek a obálek v knihovně. Při 0 se nekreslí žádný."
 
-#: mcomix/preferences_dialog.py:185
+#: mcomix/preferences_dialog.py:191
 msgid "Start in fullscreen"
 msgstr "Ve výchozím stavu používat celou obrazovku"
 
 #
 # File: src/preferences.py, line: 273
-#: mcomix/preferences_dialog.py:189
+#: mcomix/preferences_dialog.py:195
 msgid "Automatically hide all toolbars in fullscreen"
 msgstr "Automaticky skrýt všechny lišty v režimu celé obrazovky"
 
-#: mcomix/preferences_dialog.py:192
+#: mcomix/preferences_dialog.py:198
 msgid "Page number in fullscreen:"
 msgstr "Číslo strany v režimu celé obrazovky:"
 
-#: mcomix/preferences_dialog.py:204
+#: mcomix/preferences_dialog.py:210
 msgid "Startup"
 msgstr "Spuštění"
 
-#: mcomix/preferences_dialog.py:207
+#: mcomix/preferences_dialog.py:213
 msgid "Reopen the last book read"
 msgstr "Při spuštění automaticky otevřít naposledy prohlížený soubor"
 
 #
 # File: src/preferences.py, line: 211
-#: mcomix/preferences_dialog.py:209
+#: mcomix/preferences_dialog.py:215
 msgid ""
 "Automatically open, on startup, the file that was open when MComix was last "
 "closed."
@@ -1893,15 +1903,15 @@ msgstr ""
 "Při spuštění automaticky otevře soubor, který byl otevřený při posledním "
 "ukončení MComixu."
 
-#: mcomix/preferences_dialog.py:212
+#: mcomix/preferences_dialog.py:218
 msgid "Open the library on startup"
 msgstr "Při spuštění otevřít knihovnu"
 
-#: mcomix/preferences_dialog.py:216
+#: mcomix/preferences_dialog.py:222
 msgid "Show the library while no book is open"
 msgstr "Zobrazit knihovnu, dokud není otevřena žádná kniha"
 
-#: mcomix/preferences_dialog.py:218
+#: mcomix/preferences_dialog.py:224
 msgid ""
 "The window shows the covers of the books last read, or of every book in the "
 "library, where the pages would be. A double click on one opens it."
@@ -1909,11 +1919,11 @@ msgstr ""
 "Okno zobrazuje obálky naposledy čtených knih, nebo všech knih v knihovně, na "
 "místě stránek. Dvojklik na obálku knihu otevře."
 
-#: mcomix/preferences_dialog.py:221
+#: mcomix/preferences_dialog.py:227
 msgid "Open files in the window that is already open"
 msgstr "Otevírat soubory v okně, které je už otevřené"
 
-#: mcomix/preferences_dialog.py:223
+#: mcomix/preferences_dialog.py:229
 msgid ""
 "A book opened from a file manager or a command line goes to the MComix that "
 "is running, instead of starting another. Takes effect when MComix is next "
@@ -1925,17 +1935,17 @@ msgstr ""
 
 #
 # File: src/preferences.py, line: 196
-#: mcomix/preferences_dialog.py:225
+#: mcomix/preferences_dialog.py:231
 msgid "Files"
 msgstr "Soubory"
 
-#: mcomix/preferences_dialog.py:228
+#: mcomix/preferences_dialog.py:234
 msgid "Remember recently opened files"
 msgstr "Pamatovat si nedávno otevřené soubory"
 
 #
 # File: src/preferences.py, line: 219
-#: mcomix/preferences_dialog.py:230
+#: mcomix/preferences_dialog.py:236
 msgid ""
 "Add information about all files opened from within MComix to the shared "
 "recent files list."
@@ -1943,22 +1953,22 @@ msgstr ""
 "Přidá informace o všech souborech otevřených v MComixu do sdíleného seznamu "
 "nedávných souborů."
 
-#: mcomix/preferences_dialog.py:232
+#: mcomix/preferences_dialog.py:238
 msgid "Save page as opens at the last folder saved into"
 msgstr "„Uložit jako“ se otevře v adresáři, kam se ukládalo naposledy"
 
-#: mcomix/preferences_dialog.py:234
+#: mcomix/preferences_dialog.py:240
 msgid "Open the save dialog at the folder the last page was saved into."
 msgstr ""
 "Otevře dialog „Uložit jako“ v adresáři, kam byl uložen poslední soubor."
 
 #
 # File: src/library.py, line: 769
-#: mcomix/preferences_dialog.py:237
+#: mcomix/preferences_dialog.py:243
 msgid "Save an edited archive in the format it was opened in"
 msgstr "Uložit upravený archiv ve formátu, ve kterém byl otevřen"
 
-#: mcomix/preferences_dialog.py:239
+#: mcomix/preferences_dialog.py:245
 msgid ""
 "Write an edited archive back as a ZIP, a tar, a 7z or a RAR, whichever it "
 "was read as. The last two need the 7z and rar programs, which MComix does "
@@ -1968,23 +1978,23 @@ msgstr ""
 "načten. Poslední dva vyžadují programy 7z a rar, které MComix neinstaluje; "
 "formát, který zapsat nelze, se uloží jako ZIP."
 
-#: mcomix/preferences_dialog.py:241
+#: mcomix/preferences_dialog.py:247
 msgid "Comment file extensions:"
 msgstr "Přípony souborů s komentáři:"
 
-#: mcomix/preferences_dialog.py:244
+#: mcomix/preferences_dialog.py:250
 msgid "Prompts answered for good"
 msgstr "Dotazy zodpovězené jednou provždy"
 
 #
 # File: src/preferences.py, line: 169
-#: mcomix/preferences_dialog.py:263
+#: mcomix/preferences_dialog.py:269
 msgid "Use smart scrolling"
 msgstr "Používat chytré posouvání"
 
 #
 # File: src/preferences.py, line: 174
-#: mcomix/preferences_dialog.py:265
+#: mcomix/preferences_dialog.py:271
 msgid ""
 "With this preference set, the space key and mouse wheel do not only scroll "
 "down or up, but also sideways and so try to follow the natural reading order "
@@ -1994,28 +2004,28 @@ msgstr ""
 "nahoru, ale i do stran, a snaží se tak sledovat přirozené pořadí čtení "
 "komiksu."
 
-#: mcomix/preferences_dialog.py:269
+#: mcomix/preferences_dialog.py:275
 msgid "Arrow key step (in pixels):"
 msgstr "Počet pixelů posunutí na jedno stisknutí šipky:"
 
-#: mcomix/preferences_dialog.py:273
+#: mcomix/preferences_dialog.py:279
 msgid "Set the number of pixels to scroll on a page when using the arrow keys."
 msgstr ""
 "Nastaví, o kolik pixelů se strana posune při použití kláves se šipkami."
 
-#: mcomix/preferences_dialog.py:275
+#: mcomix/preferences_dialog.py:281
 msgid "Mouse wheel step (in pixels):"
 msgstr "Počet pixelů posunutí na jedno otočení kolečka myši:"
 
-#: mcomix/preferences_dialog.py:279
+#: mcomix/preferences_dialog.py:285
 msgid "Set the number of pixels to scroll on a page when using a mouse wheel."
 msgstr "Nastaví, o kolik pixelů se strana posune při použití kolečka myši."
 
-#: mcomix/preferences_dialog.py:281
+#: mcomix/preferences_dialog.py:287
 msgid "Space key step (in percent of the page):"
 msgstr "Část strany posunutá při stisknutí mezerníku (v procentech):"
 
-#: mcomix/preferences_dialog.py:285
+#: mcomix/preferences_dialog.py:291
 msgid ""
 "Sets the percentage by which the page will be scrolled down or up when the "
 "space key is pressed."
@@ -2023,15 +2033,15 @@ msgstr ""
 "Nastaví, o kolik procent se strana posune dolů nebo nahoru při stisknutí "
 "mezerníku."
 
-#: mcomix/preferences_dialog.py:288
+#: mcomix/preferences_dialog.py:294
 msgid "Page turning"
 msgstr "Listování"
 
-#: mcomix/preferences_dialog.py:291
+#: mcomix/preferences_dialog.py:297
 msgid "Turn the page when scrolling past its edge"
 msgstr "Listovat při posunutí za okraj strany"
 
-#: mcomix/preferences_dialog.py:293
+#: mcomix/preferences_dialog.py:299
 msgid ""
 "Flip pages when scrolling \"off the page\" with the scroll wheel or with the "
 "arrow keys. It takes n consecutive \"steps\" with the scroll wheel or the "
@@ -2040,11 +2050,11 @@ msgstr ""
 "Listuje při posouvání „mimo stranu“ kolečkem myši nebo klávesami se šipkami. "
 "K přelistování je potřeba n po sobě jdoucích „kroků“ kolečkem nebo šipkami."
 
-#: mcomix/preferences_dialog.py:295
+#: mcomix/preferences_dialog.py:301
 msgid "Steps past the edge before the page turns:"
 msgstr "Počet „kroků“ před přelistováním strany:"
 
-#: mcomix/preferences_dialog.py:299
+#: mcomix/preferences_dialog.py:305
 msgid ""
 "Set the number of \"steps\" needed to flip to the next or previous page.  "
 "Less steps will allow for very fast page turning but you might find yourself "
@@ -2054,11 +2064,11 @@ msgstr ""
 "stranu. Menší počet umožní listovat velmi rychle, ale snadněji se to stane "
 "omylem."
 
-#: mcomix/preferences_dialog.py:302
+#: mcomix/preferences_dialog.py:308
 msgid "Count the steps also when the page fits"
 msgstr "Počítat kroky i u strany, která se vejde"
 
-#: mcomix/preferences_dialog.py:304
+#: mcomix/preferences_dialog.py:310
 msgid ""
 "A page that fits the window turns on the first step past it. With this, it "
 "takes as many steps as above."
@@ -2066,22 +2076,22 @@ msgstr ""
 "Strana, která se vejde do okna, se přelistuje hned prvním krokem za ni. S "
 "touto volbou je potřeba tolik kroků jako výše."
 
-#: mcomix/preferences_dialog.py:306
+#: mcomix/preferences_dialog.py:312
 msgid "Wheel pause after a page turn (in milliseconds):"
 msgstr "Milisekundy, po které se kolečko po otočení strany ignoruje:"
 
-#: mcomix/preferences_dialog.py:310
+#: mcomix/preferences_dialog.py:316
 msgid ""
 "Keeps a fast wheel from turning several pages at once. 0 ignores nothing."
 msgstr ""
 "Zabrání rychlému kolečku přelistovat několik stran najednou. 0 nic "
 "neignoruje."
 
-#: mcomix/preferences_dialog.py:313
+#: mcomix/preferences_dialog.py:319
 msgid "Flip pages with a left click"
 msgstr "Listovat levým kliknutím"
 
-#: mcomix/preferences_dialog.py:315
+#: mcomix/preferences_dialog.py:321
 msgid ""
 "A left click on the page turns to the next one. Clicks with SHIFT or ALT "
 "turn pages either way."
@@ -2089,15 +2099,15 @@ msgstr ""
 "Levé kliknutí na stranu přejde na další. Kliknutí se SHIFT nebo ALT listují "
 "vždy."
 
-#: mcomix/preferences_dialog.py:317
+#: mcomix/preferences_dialog.py:323
 msgid "Where a click lands:"
 msgstr "Kam klepnutí míří:"
 
-#: mcomix/preferences_dialog.py:321
+#: mcomix/preferences_dialog.py:327
 msgid "Skip pages that cannot be shown"
 msgstr "Přeskakovat stránky, které nelze zobrazit"
 
-#: mcomix/preferences_dialog.py:323
+#: mcomix/preferences_dialog.py:329
 msgid ""
 "Turn past a page whose image is damaged or cannot be read, instead of "
 "showing the broken-image icon in its place."
@@ -2105,15 +2115,15 @@ msgstr ""
 "Přeskočit stránku, jejíž obrázek je poškozený nebo jej nelze přečíst, místo "
 "zobrazení ikony poškozeného obrázku na jejím místě."
 
-#: mcomix/preferences_dialog.py:325
+#: mcomix/preferences_dialog.py:331
 msgid "Between books"
 msgstr "Mezi knihami"
 
-#: mcomix/preferences_dialog.py:328
+#: mcomix/preferences_dialog.py:334
 msgid "Open the next book past the last page"
 msgstr "Automaticky otevírat následující archiv"
 
-#: mcomix/preferences_dialog.py:330
+#: mcomix/preferences_dialog.py:336
 msgid ""
 "Past the last page, open the next book in the folder; past the first page, "
 "the previous one."
@@ -2121,11 +2131,11 @@ msgstr ""
 "Automaticky otevírat následující archiv ve složce po otočení poslední "
 "strany, či naopak archiv předchozí při nalistování před první stranu."
 
-#: mcomix/preferences_dialog.py:333
+#: mcomix/preferences_dialog.py:339
 msgid "Go on into the next folder"
 msgstr "Automaticky otevírat následující adresář"
 
-#: mcomix/preferences_dialog.py:335
+#: mcomix/preferences_dialog.py:341
 msgid ""
 "Automatically open the first file in the next sibling directory when "
 "flipping past the last page of the last file in a directory, or the previous "
@@ -2135,31 +2145,31 @@ msgstr ""
 "přelistování poslední strany posledního souboru v adresáři, nebo předchozí "
 "adresář po přelistování zpět za první stranu prvního souboru."
 
-#: mcomix/preferences_dialog.py:338
+#: mcomix/preferences_dialog.py:344
 msgid "Open the previous book at its first page"
 msgstr "Otevřít první soubor při přechodu na předchozí archiv"
 
-#: mcomix/preferences_dialog.py:340
+#: mcomix/preferences_dialog.py:346
 msgid "Open the previous book at its first page rather than at its last."
 msgstr ""
 "Při přechodu na předchozí archiv automaticky otevře jeho první soubor místo "
 "posledního."
 
-#: mcomix/preferences_dialog.py:343
+#: mcomix/preferences_dialog.py:349
 msgid "Open the previous folder at its first page"
 msgstr "Otevřít první soubor při přechodu na předchozí adresář"
 
-#: mcomix/preferences_dialog.py:345
+#: mcomix/preferences_dialog.py:351
 msgid "Open the previous folder at its first page rather than at its last."
 msgstr ""
 "Při přechodu na předchozí adresář automaticky otevře jeho první soubor místo "
 "posledního."
 
-#: mcomix/preferences_dialog.py:348
+#: mcomix/preferences_dialog.py:354
 msgid "Open a folder with the folders in it as one book"
 msgstr "Otevřít složku i se složkami v ní jako jednu knihu"
 
-#: mcomix/preferences_dialog.py:350
+#: mcomix/preferences_dialog.py:356
 msgid ""
 "The files of the folders in a folder, two levels down, follow its own. The "
 "next directory is then the one beside it."
@@ -2167,37 +2177,37 @@ msgstr ""
 "Soubory složek ve složce, do hloubky dvou úrovní, následují za jejími "
 "vlastními. Následující adresář je pak ten vedle ní."
 
-#: mcomix/preferences_dialog.py:352
+#: mcomix/preferences_dialog.py:358
 msgid "File order"
 msgstr "Pořadí souborů"
 
-#: mcomix/preferences_dialog.py:354
+#: mcomix/preferences_dialog.py:360
 msgid "Sort files in a folder by:"
 msgstr "Řadit soubory a adresáře podle:"
 
-#: mcomix/preferences_dialog.py:357
+#: mcomix/preferences_dialog.py:363
 msgid "Sort pages inside an archive by:"
 msgstr "Řadit strany v archivu podle:"
 
 #
 # File: src/preferences.py, line: 279
-#: mcomix/preferences_dialog.py:360 mcomix/slideshow.py:26
+#: mcomix/preferences_dialog.py:366 mcomix/slideshow.py:26
 msgid "Slideshow"
 msgstr "Promítání snímků"
 
 #
 # File: src/preferences.py, line: 280
-#: mcomix/preferences_dialog.py:362
+#: mcomix/preferences_dialog.py:368
 msgid "Slideshow delay (in seconds):"
 msgstr "Prodleva promítání (v sekundách):"
 
 #
 # File: src/preferences.py, line: 280
-#: mcomix/preferences_dialog.py:367
+#: mcomix/preferences_dialog.py:373
 msgid "Slideshow step (in pixels):"
 msgstr "Krok promítání (v pixelech):"
 
-#: mcomix/preferences_dialog.py:371
+#: mcomix/preferences_dialog.py:377
 msgid ""
 "Specify the number of pixels to scroll while in slideshow mode. A positive "
 "value will scroll forward, a negative value will scroll backwards, and a "
@@ -2207,44 +2217,44 @@ msgstr ""
 "vpřed, záporná zpět a hodnota 0 způsobí, že promítání vždy přejde na novou "
 "stranu."
 
-#: mcomix/preferences_dialog.py:374
+#: mcomix/preferences_dialog.py:380
 msgid "Let the slideshow go on to the next book"
 msgstr "Během promítání automaticky otevírat následující archiv"
 
-#: mcomix/preferences_dialog.py:376
+#: mcomix/preferences_dialog.py:382
 msgid "Past the last page during a slideshow, open the next book."
 msgstr "Umožní v režimu promítání automaticky otevřít následující archiv."
 
-#: mcomix/preferences_dialog.py:389
+#: mcomix/preferences_dialog.py:395
 msgid "Turn two pages at a time"
 msgstr "Listovat po dvou stranách v režimu dvou stran"
 
 #
 # File: src/preferences.py, line: 184
-#: mcomix/preferences_dialog.py:391
+#: mcomix/preferences_dialog.py:397
 msgid ""
 "Flip two pages, instead of one, each time we flip pages in double page mode."
 msgstr "Obracet dvě strany místo jedné při listování ve dvoustránkovém režimu."
 
-#: mcomix/preferences_dialog.py:393
+#: mcomix/preferences_dialog.py:399
 msgid "Show a page alone:"
 msgstr "Zobrazovat jen jednu stranu tam, kde je to vhodné:"
 
-#: mcomix/preferences_dialog.py:396
+#: mcomix/preferences_dialog.py:402
 msgid "Page auto-resizing:"
 msgstr "Automatická změna velikosti stran:"
 
 #
 # File: src/preferences.py, line: 280
-#: mcomix/preferences_dialog.py:399
+#: mcomix/preferences_dialog.py:405
 msgid "Space between two pages (in pixels):"
 msgstr "Mezera mezi dvěma stranami (v pixelech):"
 
-#: mcomix/preferences_dialog.py:407
+#: mcomix/preferences_dialog.py:413
 msgid "Open long strips in continuous mode"
 msgstr "Otevírat dlouhé pásy v souvislém režimu"
 
-#: mcomix/preferences_dialog.py:409
+#: mcomix/preferences_dialog.py:415
 msgid ""
 "A book most of whose first pages are at least twice as high as wide is shown "
 "in continuous mode. The View menu turns it off for that book."
@@ -2255,40 +2265,40 @@ msgstr ""
 #
 # File: src/preferences.py, line: 263
 # File: src/ui.py, line: 290
-#: mcomix/preferences_dialog.py:411 mcomix/ui.py:582
+#: mcomix/preferences_dialog.py:417 mcomix/ui.py:585
 msgid "Fit to size mode"
 msgstr "Režim přizpůsobení velikosti"
 
 #
 # File: src/ui.py, line: 103
-#: mcomix/preferences_dialog.py:413
+#: mcomix/preferences_dialog.py:419
 msgid "Fixed width for wide pages:"
 msgstr "Pevná šířka pro široké strany:"
 
 #
 # File: src/preferences.py, line: 264
 # File: src/ui.py, line: 292
-#: mcomix/preferences_dialog.py:418
+#: mcomix/preferences_dialog.py:424
 msgid "Fixed height for wide pages:"
 msgstr "Pevná výška pro široké strany:"
 
 #
 # File: src/ui.py, line: 103
-#: mcomix/preferences_dialog.py:423
+#: mcomix/preferences_dialog.py:429
 msgid "Fixed width for other pages:"
 msgstr "Pevná šířka pro ostatní strany:"
 
 #
 # File: src/ui.py, line: 103
-#: mcomix/preferences_dialog.py:428
+#: mcomix/preferences_dialog.py:434
 msgid "Fixed height for other pages:"
 msgstr "Pevná výška pro ostatní strany:"
 
-#: mcomix/preferences_dialog.py:436
+#: mcomix/preferences_dialog.py:442
 msgid "Automatically rotate images according to their metadata"
 msgstr "Automaticky otáčet obrázky podle jejich metadat"
 
-#: mcomix/preferences_dialog.py:438
+#: mcomix/preferences_dialog.py:444
 msgid ""
 "Automatically rotate images when an orientation is specified in the image "
 "metadata, such as in an Exif tag."
@@ -2296,29 +2306,29 @@ msgstr ""
 "Automaticky pootáčet obrázky pokud jejich metadata obsahují údaj o "
 "orientaci, jako např. značku Exif."
 
-#: mcomix/preferences_dialog.py:440
+#: mcomix/preferences_dialog.py:446
 msgid "Animation mode:"
 msgstr "Režim animace:"
 
-#: mcomix/preferences_dialog.py:443
+#: mcomix/preferences_dialog.py:449
 msgid "Scaling quality:"
 msgstr "Režim škálování:"
 
-#: mcomix/preferences_dialog.py:446
+#: mcomix/preferences_dialog.py:452
 msgid "Screen colour profile:"
 msgstr "Barevný profil obrazovky:"
 
-#: mcomix/preferences_dialog.py:449
+#: mcomix/preferences_dialog.py:455
 msgid "Rendering intent:"
 msgstr "Cíl vykreslování:"
 
-#: mcomix/preferences_dialog.py:454
+#: mcomix/preferences_dialog.py:460
 msgid "Lens size (in pixels):"
 msgstr "Velikost lupy (v pixelech):"
 
 #
 # File: src/preferences.py, line: 131
-#: mcomix/preferences_dialog.py:458
+#: mcomix/preferences_dialog.py:464
 msgid ""
 "Set the size of the magnifying lens. It is a square with a side of this many "
 "pixels."
@@ -2327,25 +2337,25 @@ msgstr ""
 
 #
 # File: src/preferences.py, line: 133
-#: mcomix/preferences_dialog.py:460
+#: mcomix/preferences_dialog.py:466
 msgid "Magnification factor:"
 msgstr "Míra zvětšení:"
 
 #
 # File: src/preferences.py, line: 140
-#: mcomix/preferences_dialog.py:464
+#: mcomix/preferences_dialog.py:470
 msgid "Set the magnification factor of the magnifying lens."
 msgstr "Nastavit úroveň zvětšení lupy."
 
-#: mcomix/preferences_dialog.py:474
+#: mcomix/preferences_dialog.py:480
 msgid "Extraction and cache"
 msgstr "Rozbalování a mezipaměť"
 
-#: mcomix/preferences_dialog.py:482
+#: mcomix/preferences_dialog.py:488
 msgid "Extraction threads:"
 msgstr "Maximální počet souběžných vláken rozbalování:"
 
-#: mcomix/preferences_dialog.py:486
+#: mcomix/preferences_dialog.py:492
 msgid ""
 "Set the maximum number of concurrent threads for formats that support it. A "
 "value of 0 uses one thread for each processor. For PDFs, 0 also keeps within "
@@ -2355,11 +2365,11 @@ msgstr ""
 "Hodnota 0 použije jedno vlákno pro každý procesor. U PDF se 0 navíc drží v "
 "šestnáctině paměti."
 
-#: mcomix/preferences_dialog.py:488
+#: mcomix/preferences_dialog.py:494
 msgid "Thumbnail threads:"
 msgstr "Maximální počet souběžných vláken pro náhledy:"
 
-#: mcomix/preferences_dialog.py:492
+#: mcomix/preferences_dialog.py:498
 msgid ""
 "Set the maximum number of concurrent threads used to generate thumbnails. A "
 "value of 0 uses one thread for each processor. Takes effect the next time "
@@ -2369,15 +2379,15 @@ msgstr ""
 "použije jedno vlákno pro každý procesor. Projeví se při příštím spuštění "
 "MComixu."
 
-#: mcomix/preferences_dialog.py:494
+#: mcomix/preferences_dialog.py:500
 msgid "Unpack books in:"
 msgstr "Rozbalovat knihy do:"
 
-#: mcomix/preferences_dialog.py:497
+#: mcomix/preferences_dialog.py:503
 msgid "Pages to keep in the cache:"
 msgstr "Maximální počet stran uchovávaných v mezipaměti:"
 
-#: mcomix/preferences_dialog.py:501
+#: mcomix/preferences_dialog.py:507
 msgid ""
 "Set the max number of pages to cache. A value of -1 will cache the entire "
 "archive."
@@ -2386,13 +2396,13 @@ msgstr ""
 
 #
 # File: src/preferences.py, line: 222
-#: mcomix/preferences_dialog.py:504
+#: mcomix/preferences_dialog.py:510
 msgid "Store thumbnails for opened files"
 msgstr "Uchovávat náhledy otevřených souborů"
 
 #
 # File: src/preferences.py, line: 227
-#: mcomix/preferences_dialog.py:506
+#: mcomix/preferences_dialog.py:512
 msgid ""
 "Store thumbnails for opened files according to the freedesktop.org "
 "specification. These thumbnails are shared by many other applications, such "
@@ -2402,19 +2412,19 @@ msgstr ""
 "freedesktop.org. Tyto náhledy jsou používány mnoha jinými aplikacemi, jako "
 "například většinou správců souborů."
 
-#: mcomix/preferences_dialog.py:526
+#: mcomix/preferences_dialog.py:532
 msgid "_Reset keys"
 msgstr "_Obnovit klávesy"
 
-#: mcomix/preferences_dialog.py:528
+#: mcomix/preferences_dialog.py:534
 msgid "Resets all keyboard shortcuts to their default values."
 msgstr "Obnoví všem klávesovým zkratkám výchozí hodnoty."
 
-#: mcomix/preferences_dialog.py:531
+#: mcomix/preferences_dialog.py:537
 msgid "Clear _dialog choices"
 msgstr "Vymazat volby v _dialozích"
 
-#: mcomix/preferences_dialog.py:533
+#: mcomix/preferences_dialog.py:539
 msgid ""
 "Clears all dialog choices that you have previously chosen not to be asked "
 "again."
@@ -2422,11 +2432,11 @@ msgstr ""
 "Vymaže všechny odpovědi v dialozích, u kterých jste zvolili, že se MComix už "
 "nemá ptát."
 
-#: mcomix/preferences_dialog.py:575
+#: mcomix/preferences_dialog.py:581
 msgid "Ask every time"
 msgstr "Zeptat se pokaždé"
 
-#: mcomix/preferences_dialog.py:580
+#: mcomix/preferences_dialog.py:586
 msgid ""
 "What MComix answers this prompt with instead of asking. This is what the "
 "prompt's \"Do not ask again\" box sets."
@@ -2434,27 +2444,27 @@ msgstr ""
 "Odpověď, kterou MComix na tento dotaz dá místo toho, aby jej položil. "
 "Nastavuje ji políčko „Příště se neptat.“ v samotném dotazu."
 
-#: mcomix/preferences_dialog.py:602
+#: mcomix/preferences_dialog.py:608
 msgid "Auto-detect (Default)"
 msgstr "Zjistit automaticky (výchozí)"
 
-#: mcomix/preferences_dialog.py:644
+#: mcomix/preferences_dialog.py:650
 msgid "Follow the system"
 msgstr "Podle systému"
 
-#: mcomix/preferences_dialog.py:645
+#: mcomix/preferences_dialog.py:651
 msgid "Light"
 msgstr "Světlé"
 
-#: mcomix/preferences_dialog.py:646
+#: mcomix/preferences_dialog.py:652
 msgid "Dark"
 msgstr "Tmavé"
 
-#: mcomix/preferences_dialog.py:647
+#: mcomix/preferences_dialog.py:653
 msgid "Pitch black"
 msgstr "Úplně černý"
 
-#: mcomix/preferences_dialog.py:653
+#: mcomix/preferences_dialog.py:659
 msgid ""
 "How MComix itself is painted, whatever the desktop asks for. Pitch black is "
 "the dark theme with black backgrounds, which a screen that lights its pixels "
@@ -2464,11 +2474,11 @@ msgstr ""
 "prostředí. Úplně černý je tmavý motiv s černým pozadím, které obrazovka "
 "rozsvěcující pixely po jednom zobrazí jako naprostou tmu."
 
-#: mcomix/preferences_dialog.py:690
+#: mcomix/preferences_dialog.py:696
 msgid "Restart MComix in the language you picked?"
 msgstr "Restartovat MComix ve zvoleném jazyce?"
 
-#: mcomix/preferences_dialog.py:691
+#: mcomix/preferences_dialog.py:697
 msgid ""
 "MComix is translated as it starts, so most of the interface stays in the "
 "language it started in until it is started again. The book being read, its "
@@ -2478,24 +2488,24 @@ msgstr ""
 "kterém byl spuštěn, dokud jej nespustíte znovu. Čtená kniha, její stránka i "
 "velikost okna zůstanou zachovány."
 
-#: mcomix/preferences_dialog.py:705 mcomix/preferences_dialog.py:923
-#: mcomix/preferences_dialog.py:986 mcomix/ui.py:588
+#: mcomix/preferences_dialog.py:711 mcomix/preferences_dialog.py:929
+#: mcomix/preferences_dialog.py:992 mcomix/ui.py:591
 msgid "Never"
 msgstr "Nikdy"
 
-#: mcomix/preferences_dialog.py:706
+#: mcomix/preferences_dialog.py:712
 msgid "Only for title pages"
 msgstr "Jen pro titulní strany"
 
-#: mcomix/preferences_dialog.py:707
+#: mcomix/preferences_dialog.py:713
 msgid "Only for wide images"
 msgstr "Jen pro široké obrázky"
 
-#: mcomix/preferences_dialog.py:708 mcomix/preferences_dialog.py:924
+#: mcomix/preferences_dialog.py:714 mcomix/preferences_dialog.py:930
 msgid "Always"
 msgstr "Vždy"
 
-#: mcomix/preferences_dialog.py:715
+#: mcomix/preferences_dialog.py:721
 msgid ""
 "When showing the first page of an archive, or an image's width exceeds its "
 "height, only a single page will be displayed."
@@ -2505,58 +2515,58 @@ msgstr ""
 
 #
 # File: src/preferences.py, line: 78
-#: mcomix/preferences_dialog.py:733
+#: mcomix/preferences_dialog.py:739
 msgid "Prefer same scale"
 msgstr "Upřednostnit stejné měřítko"
 
 #
 # File: src/preferences.py, line: 78
-#: mcomix/preferences_dialog.py:734
+#: mcomix/preferences_dialog.py:740
 msgid "Prefer same size"
 msgstr "Upřednostnit stejnou velikost"
 
 #
 # File: src/preferences.py, line: 263
 # File: src/ui.py, line: 290
-#: mcomix/preferences_dialog.py:735
+#: mcomix/preferences_dialog.py:741
 msgid "Fit to same size"
 msgstr "Přizpůsobit stejné velikosti"
 
-#: mcomix/preferences_dialog.py:742
+#: mcomix/preferences_dialog.py:748
 msgid "Maintain relative size or fit to same size."
 msgstr "Zachová relativní velikost nebo přizpůsobí stejné velikosti."
 
-#: mcomix/preferences_dialog.py:756 mcomix/preferences_dialog.py:803
+#: mcomix/preferences_dialog.py:762 mcomix/preferences_dialog.py:809
 msgid "No sorting"
 msgstr "Bez řazení"
 
-#: mcomix/preferences_dialog.py:757
+#: mcomix/preferences_dialog.py:763
 msgid "File name"
 msgstr "Názvu souboru"
 
-#: mcomix/preferences_dialog.py:758
+#: mcomix/preferences_dialog.py:764
 msgid "File name (GLib)"
 msgstr "Názvu souboru (GLib)"
 
-#: mcomix/preferences_dialog.py:759 mcomix/library/book_area.py:351
+#: mcomix/preferences_dialog.py:765 mcomix/library/book_area.py:394
 msgid "File size"
 msgstr "Velikosti souboru"
 
-#: mcomix/preferences_dialog.py:760
+#: mcomix/preferences_dialog.py:766
 msgid "Last modified"
 msgstr "Času změny"
 
-#: mcomix/preferences_dialog.py:766 mcomix/preferences_dialog.py:812
-#: mcomix/library/book_area.py:359
+#: mcomix/preferences_dialog.py:772 mcomix/preferences_dialog.py:818
+#: mcomix/library/book_area.py:402
 msgid "Ascending"
 msgstr "Vzestupně"
 
-#: mcomix/preferences_dialog.py:767 mcomix/preferences_dialog.py:813
-#: mcomix/library/book_area.py:360
+#: mcomix/preferences_dialog.py:773 mcomix/preferences_dialog.py:819
+#: mcomix/library/book_area.py:403
 msgid "Descending"
 msgstr "Sestupně"
 
-#: mcomix/preferences_dialog.py:775
+#: mcomix/preferences_dialog.py:781
 msgid ""
 "Files will be opened and displayed according to the sort order specified "
 "here. This option does not affect ordering within archives."
@@ -2564,19 +2574,19 @@ msgstr ""
 "Soubory se budou otevírat a zobrazovat v pořadí určeném zde. Tato volba "
 "neovlivňuje pořadí uvnitř archivů."
 
-#: mcomix/preferences_dialog.py:804
+#: mcomix/preferences_dialog.py:810
 msgid "Natural order"
 msgstr "Přirozené pořadí"
 
-#: mcomix/preferences_dialog.py:805
+#: mcomix/preferences_dialog.py:811
 msgid "Literal order"
 msgstr "Doslovné pořadí"
 
-#: mcomix/preferences_dialog.py:806
+#: mcomix/preferences_dialog.py:812
 msgid "GLib order"
 msgstr "Pořadí GLib"
 
-#: mcomix/preferences_dialog.py:821
+#: mcomix/preferences_dialog.py:827
 msgid ""
 "Files within archives will be sorted according to the order specified here. "
 "Natural order will sort numbered files based on their natural order, i.e. 1, "
@@ -2592,11 +2602,11 @@ msgstr ""
 
 #
 # File: src/preferences.py, line: 214
-#: mcomix/preferences_dialog.py:865
+#: mcomix/preferences_dialog.py:871
 msgid "Delete information about recently opened files?"
 msgstr "Smazat informace o nedávno otevřených souborech?"
 
-#: mcomix/preferences_dialog.py:866
+#: mcomix/preferences_dialog.py:872
 msgid ""
 "This will remove all entries from the \"Recent\" menu, and clear information "
 "about last read pages."
@@ -2604,27 +2614,27 @@ msgstr ""
 "Tím se odstraní všechny položky z nabídky „Nedávné“ a informace o naposledy "
 "čtených stranách."
 
-#: mcomix/preferences_dialog.py:879
+#: mcomix/preferences_dialog.py:885
 msgid "Nearest (pixel art)"
 msgstr "Nejbližší soused (pixel art)"
 
-#: mcomix/preferences_dialog.py:880
+#: mcomix/preferences_dialog.py:886
 msgid "Normal (fast)"
 msgstr "Normální (rychlé)"
 
-#: mcomix/preferences_dialog.py:881
+#: mcomix/preferences_dialog.py:887
 msgid "Bilinear"
 msgstr "Bilineární"
 
-#: mcomix/preferences_dialog.py:882
+#: mcomix/preferences_dialog.py:888
 msgid "Bicubic"
 msgstr "Bikubické"
 
-#: mcomix/preferences_dialog.py:883
+#: mcomix/preferences_dialog.py:889
 msgid "Lanczos (slow)"
 msgstr "Lanczos (pomalé)"
 
-#: mcomix/preferences_dialog.py:889
+#: mcomix/preferences_dialog.py:895
 msgid ""
 "Changes how images are scaled. Slower algorithms result in higher quality "
 "resizing, but longer page loading times."
@@ -2632,19 +2642,19 @@ msgstr ""
 "Mění způsob škálování obrázků. Pomalejší algoritmy dávají vyšší kvalitu, ale "
 "strany se načítají déle."
 
-#: mcomix/preferences_dialog.py:906
+#: mcomix/preferences_dialog.py:912
 msgid "Anywhere: the next page"
 msgstr "Kamkoli: další strana"
 
-#: mcomix/preferences_dialog.py:907
+#: mcomix/preferences_dialog.py:913
 msgid "Halves: back and forward"
 msgstr "Poloviny: zpět a vpřed"
 
-#: mcomix/preferences_dialog.py:908
+#: mcomix/preferences_dialog.py:914
 msgid "Thirds: back, fullscreen, forward"
 msgstr "Třetiny: zpět, celá obrazovka, vpřed"
 
-#: mcomix/preferences_dialog.py:916
+#: mcomix/preferences_dialog.py:922
 msgid ""
 "With \"Flip pages with a left click\": the left half or third of the page "
 "turns back and the right one forward; the middle third enters or leaves "
@@ -2654,19 +2664,19 @@ msgstr ""
 "otáčí zpět a pravá vpřed; prostřední třetina přepíná celou obrazovku. V "
 "režimu manga se levá a pravá strana prohodí."
 
-#: mcomix/preferences_dialog.py:925
+#: mcomix/preferences_dialog.py:931
 msgid "For a few seconds after a page turn"
 msgstr "Na několik sekund po otočení stránky"
 
-#: mcomix/preferences_dialog.py:930
+#: mcomix/preferences_dialog.py:936
 msgid "The pages on screen and the number of pages, in the lower right corner."
 msgstr "Strany na obrazovce a počet stran, v pravém dolním rohu."
 
-#: mcomix/preferences_dialog.py:946
+#: mcomix/preferences_dialog.py:952
 msgid "None"
 msgstr "Žádný"
 
-#: mcomix/preferences_dialog.py:948
+#: mcomix/preferences_dialog.py:954
 msgid ""
 "The ICC profile of the screen, such as one made by calibrating it. Pages are "
 "converted into it from sRGB. Leave it empty where the desktop already "
@@ -2675,23 +2685,23 @@ msgstr ""
 "Profil ICC obrazovky, například vytvořený její kalibrací. Stránky se do něj "
 "převádějí ze sRGB. Nechte prázdné, pokud již převádí pracovní prostředí."
 
-#: mcomix/preferences_dialog.py:966
+#: mcomix/preferences_dialog.py:972
 msgid "Perceptual"
 msgstr "Perceptuální"
 
-#: mcomix/preferences_dialog.py:967
+#: mcomix/preferences_dialog.py:973
 msgid "Relative colorimetric"
 msgstr "Relativní kolorimetrický"
 
-#: mcomix/preferences_dialog.py:968
+#: mcomix/preferences_dialog.py:974
 msgid "Saturation"
 msgstr "Sytost"
 
-#: mcomix/preferences_dialog.py:969
+#: mcomix/preferences_dialog.py:975
 msgid "Absolute colorimetric"
 msgstr "Absolutní kolorimetrický"
 
-#: mcomix/preferences_dialog.py:980
+#: mcomix/preferences_dialog.py:986
 msgid ""
 "How colours the screen cannot show are brought within its range, when a "
 "screen colour profile is set. Perceptual keeps the colours in proportion; "
@@ -2701,19 +2711,19 @@ msgstr ""
 "je-li nastaven barevný profil obrazovky. Perceptuální zachová poměry barev; "
 "relativní kolorimetrický zachová přesně ty, které obrazovka zobrazit dokáže."
 
-#: mcomix/preferences_dialog.py:987 mcomix/library/book_area.py:367
+#: mcomix/preferences_dialog.py:993 mcomix/library/book_area.py:410
 msgid "Normal"
 msgstr "Normální"
 
-#: mcomix/preferences_dialog.py:993
+#: mcomix/preferences_dialog.py:999
 msgid "Controls how animated images should be displayed."
 msgstr "Určuje, jak se mají zobrazovat animované obrázky."
 
-#: mcomix/preferences_dialog.py:1033
+#: mcomix/preferences_dialog.py:1039
 msgid "The temporary folder"
 msgstr "Dočasná složka"
 
-#: mcomix/preferences_dialog.py:1035
+#: mcomix/preferences_dialog.py:1041
 msgid ""
 "The folder archives are unpacked into while they are read, such as a RAM "
 "disk. Empty, the system's temporary folder. Takes effect with the next book "
@@ -2724,7 +2734,7 @@ msgstr ""
 
 #
 # File: src/preferences.py, line: 295
-#: mcomix/preferences_dialog.py:1056
+#: mcomix/preferences_dialog.py:1062
 msgid ""
 "Treat all files found within archives, that have one of these file endings, "
 "as comments."
@@ -2817,11 +2827,11 @@ msgstr "Nenalezeny žádné položky"
 msgid "_Clear List"
 msgstr "Vy_mazat seznam"
 
-#: mcomix/rename_dialog.py:108
+#: mcomix/rename_dialog.py:115
 msgid "S_wap the names"
 msgstr "Pro_hodit názvy"
 
-#: mcomix/rename_dialog.py:109
+#: mcomix/rename_dialog.py:116
 msgid "_Replace"
 msgstr "Nahra_dit"
 
@@ -3227,7 +3237,7 @@ msgstr "Ikony"
 msgid "Vector icon"
 msgstr "Vektorová ikona"
 
-#: mcomix/thumbnail_tools.py:691
+#: mcomix/thumbnail_tools.py:707
 #, python-format
 msgid "! Could not save thumbnail \"%(thumbpath)s\": %(error)s"
 msgstr "! Nepodařilo se uložit náhled „%(thumbpath)s“: %(error)s"
@@ -3235,47 +3245,47 @@ msgstr "! Nepodařilo se uložit náhled „%(thumbpath)s“: %(error)s"
 #
 # File: src/librarybackend.py, line: 272
 # File: src/librarybackend.py, line: 274
-#: mcomix/ui.py:442 mcomix/library/book_area.py:274
+#: mcomix/ui.py:445 mcomix/library/book_area.py:317
 msgid "_Copy"
 msgstr "Kopí_rovat"
 
-#: mcomix/ui.py:442
+#: mcomix/ui.py:445
 msgid "Copies the current page to clipboard."
 msgstr "Zkopíruje aktuální stranu do schránky."
 
-#: mcomix/ui.py:444
+#: mcomix/ui.py:447
 msgid "_Copy page"
 msgstr "Kopí_rovat stránku"
 
-#: mcomix/ui.py:445
+#: mcomix/ui.py:448
 msgid "Copies the page the menu was opened over to the clipboard."
 msgstr "Zkopíruje do schránky stranu, nad kterou byla nabídka otevřena."
 
-#: mcomix/ui.py:447
+#: mcomix/ui.py:450
 msgid "_Delete"
 msgstr "_Smazat"
 
-#: mcomix/ui.py:447
+#: mcomix/ui.py:450
 msgid "Deletes the current file or archive from disk."
 msgstr "Smaže aktuální soubor nebo archiv z disku."
 
-#: mcomix/ui.py:452 mcomix/ui.py:455
+#: mcomix/ui.py:455 mcomix/ui.py:458
 msgid "Shows the open file in the file manager."
 msgstr "Zobrazí otevřený soubor ve správci souborů."
 
-#: mcomix/ui.py:458
+#: mcomix/ui.py:461
 msgid "Renames the page the menu was opened over."
 msgstr "Přejmenuje stranu, nad kterou byla nabídka otevřena."
 
-#: mcomix/ui.py:460
+#: mcomix/ui.py:463
 msgid "Rename arc_hive..."
 msgstr "Přejmenovat ar_chiv..."
 
-#: mcomix/ui.py:462
+#: mcomix/ui.py:465
 msgid "_Delete page"
 msgstr "S_mazat stránku"
 
-#: mcomix/ui.py:463
+#: mcomix/ui.py:466
 msgid ""
 "Removes the page the menu was opened over from the book. The archive on disk "
 "is not changed until it is saved."
@@ -3283,261 +3293,261 @@ msgstr ""
 "Odebere z knihy stránku, nad kterou byla nabídka otevřena. Archiv na disku "
 "se nezmění, dokud není uložen."
 
-#: mcomix/ui.py:465
+#: mcomix/ui.py:468
 msgid "_Remove bookmark"
 msgstr "O_debrat záložku"
 
-#: mcomix/ui.py:466
+#: mcomix/ui.py:469
 msgid "Removes the bookmark of the page the menu was opened over."
 msgstr "Odebere záložku strany, nad kterou byla nabídka otevřena."
 
-#: mcomix/ui.py:468
+#: mcomix/ui.py:471
 msgid "Pu_t back pages picked out"
 msgstr "Zrušit _výběr stránek"
 
-#: mcomix/ui.py:469
+#: mcomix/ui.py:472
 msgid "Puts back every page picked out with CTRL and a click."
 msgstr "Zruší výběr všech stránek vybraných pomocí CTRL a kliknutí."
 
-#: mcomix/ui.py:472
+#: mcomix/ui.py:475
 msgid "Takes back the last page removed from the book."
 msgstr "Vrátí zpět poslední stránku odebranou z knihy."
 
-#: mcomix/ui.py:475
+#: mcomix/ui.py:478
 msgid "Removes again the page the last undo brought back."
 msgstr "Znovu odebere stránku, kterou poslední vrácení zpět vrátilo."
 
 #
 # File: src/ui.py, line: 34
-#: mcomix/ui.py:477
+#: mcomix/ui.py:480
 msgid "_Next page"
 msgstr "_Následující strana"
 
 #
 # File: src/ui.py, line: 36
-#: mcomix/ui.py:478
+#: mcomix/ui.py:481
 msgid "_Previous page"
 msgstr "_Předchozí strana"
 
 #
 # File: src/ui.py, line: 38
-#: mcomix/ui.py:479
+#: mcomix/ui.py:482
 msgid "_First page"
 msgstr "P_rvní strana"
 
 #
 # File: src/ui.py, line: 40
-#: mcomix/ui.py:480
+#: mcomix/ui.py:483
 msgid "_Last page"
 msgstr "P_oslední strana"
 
-#: mcomix/ui.py:481
+#: mcomix/ui.py:484
 msgid "_Go to page..."
 msgstr "Přejít na _stranu..."
 
-#: mcomix/ui.py:481
+#: mcomix/ui.py:484
 msgid "Go to page..."
 msgstr "Přejít na stranu..."
 
-#: mcomix/ui.py:488
+#: mcomix/ui.py:491
 msgid "Re_fresh"
 msgstr "O_bnovit"
 
-#: mcomix/ui.py:488
+#: mcomix/ui.py:491
 msgid "Reloads the currently opened files or archive."
 msgstr "Znovu načte otevřené soubory nebo archiv."
 
-#: mcomix/ui.py:490
+#: mcomix/ui.py:493
 msgid "Next _book"
 msgstr "Následující _kniha"
 
-#: mcomix/ui.py:491
+#: mcomix/ui.py:494
 msgid "Previous b_ook"
 msgstr "P_ředchozí kniha"
 
-#: mcomix/ui.py:494
+#: mcomix/ui.py:497
 msgid "Zoom _in"
 msgstr "Z_většit"
 
 #
 # File: src/ui.py, line: 44
-#: mcomix/ui.py:495
+#: mcomix/ui.py:498
 msgid "Zoom _out"
 msgstr "Z_menšit"
 
-#: mcomix/ui.py:496
+#: mcomix/ui.py:499
 msgid "_Normal size"
 msgstr "_Normální velikost"
 
-#: mcomix/ui.py:499
+#: mcomix/ui.py:502
 msgid "Closes all opened files."
 msgstr "Zavře všechny otevřené soubory."
 
 #
 # File: src/ui.py, line: 50
-#: mcomix/ui.py:500
+#: mcomix/ui.py:503
 msgid "_Quit"
 msgstr "Ukon_čit"
 
-#: mcomix/ui.py:501
+#: mcomix/ui.py:504
 msgid "_Save and quit"
 msgstr "Uložit a _ukončit"
 
-#: mcomix/ui.py:501
+#: mcomix/ui.py:504
 msgid ""
 "Quits and restores the currently opened file next time the program starts."
 msgstr "Ukončí program a při příštím spuštění obnoví otevřený soubor."
 
-#: mcomix/ui.py:503 mcomix/ui.py:589 mcomix/ui.py:591
+#: mcomix/ui.py:506 mcomix/ui.py:592 mcomix/ui.py:594
 msgid "_Rotate 90° clockwise"
 msgstr "Pootočit o 90° _ve směru hodinových ručiček"
 
 #
 # File: src/ui.py, line: 54
-#: mcomix/ui.py:504
+#: mcomix/ui.py:507
 msgid "Rotate _180°"
 msgstr "Pootočit _o 180°"
 
-#: mcomix/ui.py:505 mcomix/ui.py:590 mcomix/ui.py:592
+#: mcomix/ui.py:508 mcomix/ui.py:593 mcomix/ui.py:595
 msgid "Rotat_e 90° anticlockwise"
 msgstr "Pootočit o 90° _proti směru hodinových ručiček"
 
 #
 # File: src/ui.py, line: 58
-#: mcomix/ui.py:506
+#: mcomix/ui.py:509
 msgid "Fli_p horizontally"
 msgstr "P_řevrátit vodorovně"
 
 #
 # File: src/ui.py, line: 60
-#: mcomix/ui.py:507
+#: mcomix/ui.py:510
 msgid "Flip _vertically"
 msgstr "Převrátit _svisle"
 
-#: mcomix/ui.py:508 mcomix/ui.py:509
+#: mcomix/ui.py:511 mcomix/ui.py:512
 msgid "Save page _as..."
 msgstr "Uložit stránku _jako..."
 
-#: mcomix/ui.py:509
+#: mcomix/ui.py:512
 msgid "Saves the page the menu was opened over."
 msgstr "Uloží stranu, nad kterou byla nabídka otevřena."
 
-#: mcomix/ui.py:511
+#: mcomix/ui.py:514
 msgid "_Zoom"
 msgstr "P_řiblížení"
 
-#: mcomix/ui.py:512
+#: mcomix/ui.py:515
 msgid "_Recent"
 msgstr "_Nedávné"
 
 #
 # File: src/ui.py, line: 64
-#: mcomix/ui.py:513 mcomix/ui.py:514
+#: mcomix/ui.py:516 mcomix/ui.py:517
 msgid "_Bookmarks"
 msgstr "Zálož_ky"
 
 #
 # File: src/ui.py, line: 65
-#: mcomix/ui.py:515
+#: mcomix/ui.py:518
 msgid "T_oolbars"
 msgstr "Lišty _nástrojů"
 
 #
 # File: src/ui.py, line: 66
-#: mcomix/ui.py:516
+#: mcomix/ui.py:519
 msgid "_Edit"
 msgstr "_Upravit"
 
 #
 # File: src/ui.py, line: 63
-#: mcomix/ui.py:517 mcomix/ui.py:518
+#: mcomix/ui.py:520 mcomix/ui.py:521
 msgid "Open _with"
 msgstr "O_tevřít pomocí"
 
-#: mcomix/ui.py:520
+#: mcomix/ui.py:523
 msgid "Mo_ve to"
 msgstr "P_řesunout do"
 
-#: mcomix/ui.py:521 mcomix/ui.py:523
+#: mcomix/ui.py:524 mcomix/ui.py:526
 msgid "Moves the file, or the archive the page is in, to another folder."
 msgstr "Přesune soubor, nebo archiv, v němž je stránka, do jiné složky."
 
-#: mcomix/ui.py:522
+#: mcomix/ui.py:525
 msgid "_Move to"
 msgstr "P_řesunout do"
 
 #
 # File: src/ui.py, line: 67
-#: mcomix/ui.py:524
+#: mcomix/ui.py:527
 msgid "_File"
 msgstr "_Soubor"
 
 #
 # File: src/ui.py, line: 68
-#: mcomix/ui.py:525 mcomix/ui.py:526
+#: mcomix/ui.py:528 mcomix/ui.py:529
 msgid "_View"
 msgstr "_Zobrazit"
 
-#: mcomix/ui.py:529
+#: mcomix/ui.py:532
 msgid "_Image"
 msgstr "_Obrázek"
 
 #
 # File: src/ui.py, line: 70
-#: mcomix/ui.py:534
+#: mcomix/ui.py:537
 msgid "_Help"
 msgstr "Nápo_věda"
 
-#: mcomix/ui.py:535
+#: mcomix/ui.py:538
 msgid "_Manual"
 msgstr "_Příručka"
 
-#: mcomix/ui.py:537
+#: mcomix/ui.py:540
 msgid "_Auto-rotate image"
 msgstr "_Automaticky otočit obrázek"
 
-#: mcomix/ui.py:538
+#: mcomix/ui.py:541
 msgid "...when width exceeds height"
 msgstr "...když šířka přesahuje výšku"
 
-#: mcomix/ui.py:539
+#: mcomix/ui.py:542
 msgid "...when height exceeds width"
 msgstr "...když výška přesahuje šířku"
 
 #
 # File: src/ui.py, line: 75
-#: mcomix/ui.py:543
+#: mcomix/ui.py:546
 msgid "_Fullscreen"
 msgstr "_Celá obrazovka"
 
-#: mcomix/ui.py:543
+#: mcomix/ui.py:546
 msgid "Fullscreen mode"
 msgstr "Režim celé obrazovky"
 
 #
 # File: src/ui.py, line: 77
-#: mcomix/ui.py:544
+#: mcomix/ui.py:547
 msgid "_Double page mode"
 msgstr "_Dvoustránkový režim"
 
-#: mcomix/ui.py:545
+#: mcomix/ui.py:548
 msgid "_Title page alone"
 msgstr "_Titulní strana zvlášť"
 
-#: mcomix/ui.py:546
+#: mcomix/ui.py:549
 msgid "Skip this page"
 msgstr "Přeskakovat tuto stránku"
 
-#: mcomix/ui.py:547
+#: mcomix/ui.py:550
 msgid ""
 "Passes this page over when the pages are turned. The book is not changed."
 msgstr "Při listování tuto stránku přeskočí. Kniha se nemění."
 
-#: mcomix/ui.py:549
+#: mcomix/ui.py:552
 msgid "Show this page alone"
 msgstr "Zobrazit tuto stránku samostatně"
 
-#: mcomix/ui.py:550
+#: mcomix/ui.py:553
 msgid ""
 "Shows this page on its own in double page mode. The pages after it pair up "
 "anew."
@@ -3545,190 +3555,190 @@ msgstr ""
 "V dvoustránkovém režimu zobrazí tuto stránku samostatně. Následující stránky "
 "se spárují znovu."
 
-#: mcomix/ui.py:552
+#: mcomix/ui.py:555
 msgid "Cover in the library"
 msgstr "Obálka v knihovně"
 
-#: mcomix/ui.py:553
+#: mcomix/ui.py:556
 msgid ""
 "Shows this page as the book's cover in the library. The book is not changed."
 msgstr "Zobrazí tuto stránku jako obálku knihy v knihovně. Kniha se nemění."
 
 #
 # File: src/ui.py, line: 79
-#: mcomix/ui.py:555
+#: mcomix/ui.py:558
 msgid "_Toolbar"
 msgstr "_Lišta nástrojů"
 
 #
 # File: src/ui.py, line: 81
-#: mcomix/ui.py:556
+#: mcomix/ui.py:559
 msgid "_Menubar"
 msgstr "Lišta _nabídky"
 
 #
 # File: src/ui.py, line: 83
-#: mcomix/ui.py:557
+#: mcomix/ui.py:560
 msgid "St_atusbar"
 msgstr "_Stavová lišta"
 
 #
 # File: src/ui.py, line: 85
-#: mcomix/ui.py:558
+#: mcomix/ui.py:561
 msgid "S_crollbars"
 msgstr "_Posuvníky"
 
 #
 # File: src/ui.py, line: 87
-#: mcomix/ui.py:559
+#: mcomix/ui.py:562
 msgid "Th_umbnails"
 msgstr "N_áhledy"
 
 #
 # File: src/ui.py, line: 89
-#: mcomix/ui.py:560
+#: mcomix/ui.py:563
 msgid "H_ide all"
 msgstr "Skrýt _vše"
 
 #
 # File: src/ui.py, line: 91
-#: mcomix/ui.py:561
+#: mcomix/ui.py:564
 msgid "_Manga mode"
 msgstr "_Manga režim"
 
-#: mcomix/ui.py:562
+#: mcomix/ui.py:565
 msgid "_Continuous mode"
 msgstr "S_ouvislý režim"
 
-#: mcomix/ui.py:563
+#: mcomix/ui.py:566
 msgid "Invert smart scrolling direction."
 msgstr "Obrátí směr chytrého posouvání."
 
-#: mcomix/ui.py:564
+#: mcomix/ui.py:567
 msgid "_Shuffle books"
 msgstr "_Zamíchat knihy"
 
-#: mcomix/ui.py:564
+#: mcomix/ui.py:567
 msgid "Next and Previous book open the books of the folder in random order."
 msgstr ""
 "Následující a Předchozí kniha otevírají knihy ve složce v náhodném pořadí."
 
 #
 # File: src/ui.py, line: 93
-#: mcomix/ui.py:566
+#: mcomix/ui.py:569
 msgid "_Keep transformation"
 msgstr "_Zachovat transformaci"
 
-#: mcomix/ui.py:566
+#: mcomix/ui.py:569
 msgid "Keeps the currently selected transformation for the next pages."
 msgstr "Zachová zvolenou transformaci i pro další strany."
 
 #
 # File: src/ui.py, line: 95
-#: mcomix/ui.py:568
+#: mcomix/ui.py:571
 msgid "Start slid_eshow"
 msgstr "_Spustit promítání"
 
 #
 # File: src/ui.py, line: 97
-#: mcomix/ui.py:569
+#: mcomix/ui.py:572
 msgid "Magnifying _lens"
 msgstr "_Lupa"
 
-#: mcomix/ui.py:570
+#: mcomix/ui.py:573
 msgid "Stretch images to fit to the screen, depending on zoom mode."
 msgstr "Roztáhne obrázky na velikost obrazovky podle režimu přiblížení."
 
-#: mcomix/ui.py:572
+#: mcomix/ui.py:575
 msgid "Cut off the plain margins around each page."
 msgstr "Ořízne prázdné okraje kolem každé stránky."
 
 #
 # File: src/ui.py, line: 101
-#: mcomix/ui.py:579
+#: mcomix/ui.py:582
 msgid "_Best fit mode"
 msgstr "_Optimální přiblížení"
 
 #
 # File: src/ui.py, line: 103
-#: mcomix/ui.py:580
+#: mcomix/ui.py:583
 msgid "Fit _width mode"
 msgstr "Přizpůsobit na _šířku"
 
 #
 # File: src/ui.py, line: 105
-#: mcomix/ui.py:581
+#: mcomix/ui.py:584
 msgid "Fit _height mode"
 msgstr "Přizpůsobit na _výšku"
 
 #
 # File: src/ui.py, line: 103
-#: mcomix/ui.py:582
+#: mcomix/ui.py:585
 msgid "Fit _size mode"
 msgstr "_Režim přizpůsobení velikosti"
 
 #
 # File: src/ui.py, line: 107
-#: mcomix/ui.py:583
+#: mcomix/ui.py:586
 msgid "M_anual zoom mode"
 msgstr "Režim ručního _přiblížení"
 
 #
 # File: src/ui.py, line: 113
-#: mcomix/ui.py:596
+#: mcomix/ui.py:599
 msgid "A_bout"
 msgstr "O p_rogramu"
 
-#: mcomix/ui.py:599
+#: mcomix/ui.py:602
 msgid "Co_mments..."
 msgstr "_Komentáře..."
 
-#: mcomix/ui.py:602
+#: mcomix/ui.py:605
 msgid "Proper_ties"
 msgstr "_Vlastnosti"
 
 #
 # File: src/ui.py, line: 128
-#: mcomix/ui.py:605
+#: mcomix/ui.py:608
 msgid "_Preferences"
 msgstr "Na_stavení"
 
-#: mcomix/ui.py:606
+#: mcomix/ui.py:609
 msgid "_Keyboard shortcuts"
 msgstr "_Klávesové zkratky"
 
 #
 # File: src/ui.py, line: 117
-#: mcomix/ui.py:611
+#: mcomix/ui.py:614
 msgid "_Edit archive..."
 msgstr "Upravit _archiv"
 
-#: mcomix/ui.py:611
+#: mcomix/ui.py:614
 msgid "Opens the archive editor."
 msgstr "Otevře editor archivu."
 
 #
 # File: src/ui.py, line: 119
-#: mcomix/ui.py:613
+#: mcomix/ui.py:616
 msgid "_Open..."
 msgstr "_Otevřít…"
 
-#: mcomix/ui.py:614
+#: mcomix/ui.py:617
 msgid "Enha_nce image..."
 msgstr "V_ylepšit obrázek..."
 
 #
 # File: src/ui.py, line: 132
-#: mcomix/ui.py:617
+#: mcomix/ui.py:620
 msgid "_Library..."
 msgstr "Kn_ihovna"
 
-#: mcomix/ui.py:721
+#: mcomix/ui.py:744
 #, python-format
 msgid "Could not open the manual: %s"
 msgstr "Příručku se nepodařilo otevřít: %s"
 
-#: mcomix/worker_thread.py:88
+#: mcomix/worker_thread.py:121
 #, python-format
 msgid "! Worker thread processing %(function)r failed: %(error)s"
 msgstr "! Pracovní vlákno zpracovávající %(function)r selhalo: %(error)s"
@@ -3800,43 +3810,42 @@ msgstr "Přidané knihy:"
 msgid "Adding '%s'..."
 msgstr "Přidává se „%s“…"
 
-#: mcomix/library/backend.py:292
+#: mcomix/library/backend.py:300
 #, python-format
 msgid "! Non-existent book #%i"
 msgstr "! Neexistující kniha #%i"
 
-#: mcomix/library/backend.py:356
+#: mcomix/library/backend.py:364
 #, python-format
 msgid "! Could not get cover for book \"%s\""
 msgstr "! Nepodařilo se získat obálku knihy „%s“"
 
-#: mcomix/library/backend.py:460 mcomix/library/backend.py:477
-#: mcomix/library/backend.py:490 mcomix/library/backend.py:519
-#: mcomix/library/shelf.py:154
+#: mcomix/library/backend.py:468 mcomix/library/backend.py:485
+#: mcomix/library/backend.py:498 mcomix/library/backend.py:527
 msgid "Recent"
 msgstr "Naposledy použité"
 
-#: mcomix/library/backend.py:599 mcomix/library/backend.py:646
+#: mcomix/library/backend.py:607 mcomix/library/backend.py:654
 #, python-format
 msgid "! Could not add book \"%s\" to the library"
 msgstr "! Nepodařilo se přidat knihu „%s“ do knihovny"
 
-#: mcomix/library/backend.py:675 mcomix/library/backend.py:757
+#: mcomix/library/backend.py:683 mcomix/library/backend.py:765
 #, python-format
 msgid "! Could not move book \"%s\" in the library"
 msgstr "! Nepodařilo se přesunout knihu „%s“ v knihovně"
 
-#: mcomix/library/backend.py:807
+#: mcomix/library/backend.py:815
 #, python-format
 msgid "! Could not add collection \"%s\""
 msgstr "! Nepodařilo se přidat sbírku „%s“"
 
-#: mcomix/library/backend.py:839
+#: mcomix/library/backend.py:847
 #, python-format
 msgid "! Could not add book %(book)s to collection %(collection)s"
 msgstr "! Nepodařilo se přidat knihu %(book)s do sbírky %(collection)s"
 
-#: mcomix/library/backend.py:866
+#: mcomix/library/backend.py:874
 #, python-format
 msgid "! Could not rename collection to \"%s\""
 msgstr "! Nepodařilo se přejmenovat sbírku na „%s“"
@@ -3844,15 +3853,15 @@ msgstr "! Nepodařilo se přejmenovat sbírku na „%s“"
 #
 # File: src/librarybackend.py, line: 272
 # File: src/librarybackend.py, line: 274
-#: mcomix/library/backend.py:883 mcomix/library/backend.py:885
+#: mcomix/library/backend.py:891 mcomix/library/backend.py:893
 msgid "(Copy)"
 msgstr "(Kopie)"
 
-#: mcomix/library/backend.py:1184
+#: mcomix/library/backend.py:1192
 msgid "Could not determine library database version!"
 msgstr "Nepodařilo se zjistit verzi databáze knihovny!"
 
-#: mcomix/library/backend.py:1234
+#: mcomix/library/backend.py:1242
 #, python-format
 msgid "Upgrading library database version from %(from)d to %(to)d."
 msgstr "Aktualizace verze databáze knihovny z %(from)d na %(to)d."
@@ -3860,184 +3869,184 @@ msgstr "Aktualizace verze databáze knihovny z %(from)d na %(to)d."
 #
 # File: src/library.py, line: 202
 #: mcomix/library/backend_types.py:437 mcomix/library/collection_area.py:223
-#: mcomix/library/control_area.py:97 mcomix/library/shelf.py:158
+#: mcomix/library/control_area.py:97
 msgid "All books"
 msgstr "Všechny knihy"
 
-#: mcomix/library/backend_types.py:588 mcomix/library/backend_types.py:594
+#: mcomix/library/backend_types.py:598 mcomix/library/backend_types.py:604
 #, python-format
 msgid "! Could not scan for new books: %s"
 msgstr "! Nepodařilo se vyhledat nové knihy: %s"
 
-#: mcomix/library/book_area.py:244
+#: mcomix/library/book_area.py:287
 msgid "Opens the selected books for viewing."
 msgstr "Otevře vybrané knihy k prohlížení."
 
-#: mcomix/library/book_area.py:246
+#: mcomix/library/book_area.py:289
 msgid "Open _without closing library"
 msgstr "Otevřít _bez zavření knihovny"
 
-#: mcomix/library/book_area.py:247
+#: mcomix/library/book_area.py:290
 msgid "Opens the selected books, but keeps the library window open."
 msgstr "Otevře vybrané knihy, ale ponechá okno knihovny otevřené."
 
-#: mcomix/library/book_area.py:249
+#: mcomix/library/book_area.py:292
 msgid "_Mark as read"
 msgstr "O_značit jako přečtené"
 
-#: mcomix/library/book_area.py:250
+#: mcomix/library/book_area.py:293
 msgid "Marks the selected books as read to the end."
 msgstr "Označí vybrané knihy jako přečtené do konce."
 
-#: mcomix/library/book_area.py:252
+#: mcomix/library/book_area.py:295
 msgid "Mark as u_nread"
 msgstr "Označit jako _nepřečtené"
 
-#: mcomix/library/book_area.py:253
+#: mcomix/library/book_area.py:296
 msgid "Forgets the page the selected books were left at."
 msgstr "Zapomene stranu, na které byly vybrané knihy opuštěny."
 
-#: mcomix/library/book_area.py:255 mcomix/library/collection_area.py:142
+#: mcomix/library/book_area.py:298 mcomix/library/collection_area.py:142
 msgid "_Add..."
 msgstr "_Přidat..."
 
 #
 # File: src/library.py, line: 793
-#: mcomix/library/book_area.py:256 mcomix/library/collection_area.py:143
+#: mcomix/library/book_area.py:299 mcomix/library/collection_area.py:143
 msgid "Add more books to the library."
 msgstr "Přidat další knihy do knihovny."
 
-#: mcomix/library/book_area.py:259
+#: mcomix/library/book_area.py:302
 msgid "Remove _from this collection"
 msgstr "Odebrat z této _sbírky"
 
-#: mcomix/library/book_area.py:260
+#: mcomix/library/book_area.py:303
 msgid "Removes the selected books from the current collection."
 msgstr "Odebere vybrané knihy z aktuální sbírky."
 
-#: mcomix/library/book_area.py:262
+#: mcomix/library/book_area.py:305
 msgid "Remove from the _library"
 msgstr "Odebrat z _knihovny"
 
-#: mcomix/library/book_area.py:263
+#: mcomix/library/book_area.py:306
 msgid "Completely removes the selected books from the library."
 msgstr "Zcela odebere vybrané knihy z knihovny."
 
-#: mcomix/library/book_area.py:265
+#: mcomix/library/book_area.py:308
 msgid "_Remove and move to the trash"
 msgstr "Odebrat a přes_unout do koše"
 
-#: mcomix/library/book_area.py:266
+#: mcomix/library/book_area.py:309
 msgid "Deletes the selected books from disk."
 msgstr "Smaže vybrané knihy z disku."
 
-#: mcomix/library/book_area.py:271 mcomix/library/collection_area.py:153
+#: mcomix/library/book_area.py:314 mcomix/library/collection_area.py:153
 msgid "Clean _up"
 msgstr "_Vyčistit"
 
-#: mcomix/library/book_area.py:272 mcomix/library/collection_area.py:154
+#: mcomix/library/book_area.py:315 mcomix/library/collection_area.py:154
 msgid "Removes no longer existent books from the collection."
 msgstr "Odebere ze sbírky knihy, které už neexistují."
 
 #
 # File: src/library.py, line: 806
-#: mcomix/library/book_area.py:275
+#: mcomix/library/book_area.py:318
 msgid "Copies the selected book's path to clipboard."
 msgstr "Zkopíruje cestu vybrané knihy do schránky."
 
-#: mcomix/library/book_area.py:278
+#: mcomix/library/book_area.py:321
 msgid "Shows the selected book in the file manager."
 msgstr "Zobrazí vybranou knihu ve správci souborů."
 
-#: mcomix/library/book_area.py:281
+#: mcomix/library/book_area.py:324
 msgid "R_ename"
 msgstr "Pře_jmenovat"
 
-#: mcomix/library/book_area.py:282
+#: mcomix/library/book_area.py:325
 msgid "Renames the selected book's file."
 msgstr "Přejmenuje soubor vybrané knihy."
 
 #
 # File: src/ui.py, line: 121
-#: mcomix/library/book_area.py:286
+#: mcomix/library/book_area.py:329
 msgid "_Properties"
 msgstr "Vl_astnosti"
 
-#: mcomix/library/book_area.py:287
+#: mcomix/library/book_area.py:330
 msgid "Describes the selected books."
 msgstr "Popíše vybrané knihy."
 
-#: mcomix/library/book_area.py:324
+#: mcomix/library/book_area.py:367
 msgid "Library books"
 msgstr "Knihy v knihovně"
 
-#: mcomix/library/book_area.py:338
+#: mcomix/library/book_area.py:381
 msgid "Move _to"
 msgstr "Př_esunout do"
 
-#: mcomix/library/book_area.py:349
+#: mcomix/library/book_area.py:392
 msgid "Book name"
 msgstr "Název knihy"
 
-#: mcomix/library/book_area.py:350
+#: mcomix/library/book_area.py:393
 msgid "Full path"
 msgstr "Celá cesta"
 
-#: mcomix/library/book_area.py:352
+#: mcomix/library/book_area.py:395
 msgid "Pages"
 msgstr "Stránky"
 
-#: mcomix/library/book_area.py:353 mcomix/library/book_properties.py:103
+#: mcomix/library/book_area.py:396 mcomix/library/book_properties.py:103
 msgid "Date added"
 msgstr "Datum přidání"
 
-#: mcomix/library/book_area.py:354
+#: mcomix/library/book_area.py:397
 msgid "Date modified"
 msgstr "Datum změny"
 
-#: mcomix/library/book_area.py:355 mcomix/library/book_properties.py:107
+#: mcomix/library/book_area.py:398 mcomix/library/book_properties.py:107
 msgid "Last read"
 msgstr "Naposledy čteno"
 
-#: mcomix/library/book_area.py:356
+#: mcomix/library/book_area.py:399
 msgid "By hand"
 msgstr "Ručně"
 
-#: mcomix/library/book_area.py:365
+#: mcomix/library/book_area.py:408
 msgid "Huge"
 msgstr "Obrovská"
 
-#: mcomix/library/book_area.py:366
+#: mcomix/library/book_area.py:409
 msgid "Large"
 msgstr "Velká"
 
-#: mcomix/library/book_area.py:368
+#: mcomix/library/book_area.py:411
 msgid "Small"
 msgstr "Malá"
 
-#: mcomix/library/book_area.py:369
+#: mcomix/library/book_area.py:412
 msgid "Tiny"
 msgstr "Drobná"
 
-#: mcomix/library/book_area.py:373
+#: mcomix/library/book_area.py:416
 msgid "Custom..."
 msgstr "Vlastní..."
 
-#: mcomix/library/book_area.py:377
+#: mcomix/library/book_area.py:420
 msgid "_Sort"
 msgstr "_Řadit"
 
-#: mcomix/library/book_area.py:378
+#: mcomix/library/book_area.py:421
 msgid "Cover si_ze"
 msgstr "Velikost obá_lek"
 
-#: mcomix/library/book_area.py:738
+#: mcomix/library/book_area.py:861
 msgid "Set library cover size"
 msgstr "Nastavit velikost obálek v knihovně"
 
 #
 # File: src/library.py, line: 588
-#: mcomix/library/book_area.py:1030
+#: mcomix/library/book_area.py:1153
 #, python-format
 msgid "Removed %(num)d book from '%(collection)s'."
 msgid_plural "Removed %(num)d books from '%(collection)s'."
@@ -4045,7 +4054,7 @@ msgstr[0] "Ze sbírky „%(collection)s“ byla odebrána %(num)d kniha."
 msgstr[1] "Ze sbírky „%(collection)s“ byly odebrány %(num)d knihy."
 msgstr[2] "Ze sbírky „%(collection)s“ bylo odebráno %(num)d knih."
 
-#: mcomix/library/book_area.py:1053 mcomix/library/collection_area.py:301
+#: mcomix/library/book_area.py:1176 mcomix/library/collection_area.py:308
 #, python-format
 msgid "Removed %d book from the library."
 msgid_plural "Removed %d books from the library."
@@ -4055,11 +4064,11 @@ msgstr[2] "Z knihovny bylo odebráno %d knih."
 
 #
 # File: src/library.py, line: 597
-#: mcomix/library/book_area.py:1075 mcomix/library/book_area.py:1096
+#: mcomix/library/book_area.py:1198 mcomix/library/book_area.py:1219
 msgid "Remove books from the library?"
 msgstr "Odstranit knihy z knihovny?"
 
-#: mcomix/library/book_area.py:1076
+#: mcomix/library/book_area.py:1199
 msgid ""
 "The selected books will be removed from the library. Any in a folder with no "
 "trash is deleted permanently and cannot be restored."
@@ -4067,12 +4076,12 @@ msgstr ""
 "Vybrané knihy budou odebrány z knihovny. Ty, které jsou ve složce bez koše, "
 "budou trvale smazány a nepůjde je obnovit."
 
-#: mcomix/library/book_area.py:1097
+#: mcomix/library/book_area.py:1220
 msgid ""
 "The selected books will be removed from the library and moved to the trash."
 msgstr "Vybrané knihy budou odebrány z knihovny a přesunuty do koše."
 
-#: mcomix/library/book_area.py:1122
+#: mcomix/library/book_area.py:1245
 #, python-format
 msgid "Delete %d book permanently?"
 msgid_plural "Delete %d books permanently?"
@@ -4080,7 +4089,7 @@ msgstr[0] "Trvale smazat %d knihu?"
 msgstr[1] "Trvale smazat %d knihy?"
 msgstr[2] "Trvale smazat %d knih?"
 
-#: mcomix/library/book_area.py:1246
+#: mcomix/library/book_area.py:1377
 #, python-format
 msgid "Remove the bookmarks in the deleted book?"
 msgid_plural "Remove the bookmarks in the %(count)d deleted books?"
@@ -4088,7 +4097,7 @@ msgstr[0] "Smazat záložky ve smazané knize?"
 msgstr[1] "Smazat záložky ve %(count)d smazaných knihách?"
 msgstr[2] "Smazat záložky v %(count)d smazaných knihách?"
 
-#: mcomix/library/book_area.py:1419
+#: mcomix/library/book_area.py:1550
 msgid "Open with"
 msgstr "Otevřít pomocí"
 
@@ -4163,19 +4172,19 @@ msgstr "Sbírky knihovny"
 
 #
 # File: src/library.py, line: 854
-#: mcomix/library/collection_area.py:252
+#: mcomix/library/collection_area.py:259
 msgid "Add new collection?"
 msgstr "Přidat novou sbírku?"
 
 #
 # File: src/library.py, line: 856
-#: mcomix/library/collection_area.py:253
+#: mcomix/library/collection_area.py:260
 msgid "Please enter a name for the new collection."
 msgstr "Prosím vložte jméno nové sbírky."
 
 #
 # File: src/library.py, line: 876
-#: mcomix/library/collection_area.py:284
+#: mcomix/library/collection_area.py:291
 #, python-format
 msgid "Could not add a new collection called '%s'."
 msgstr "Nelze přidat novou sbírku jménem „%s“."
@@ -4183,44 +4192,44 @@ msgstr "Nelze přidat novou sbírku jménem „%s“."
 #
 # File: src/library.py, line: 275
 # File: src/library.py, line: 881
-#: mcomix/library/collection_area.py:289 mcomix/library/collection_area.py:390
+#: mcomix/library/collection_area.py:296 mcomix/library/collection_area.py:397
 msgid "A collection by that name already exists."
 msgstr "Sbírka tohoto jména již existuje."
 
 #
 # File: src/library.py, line: 251
-#: mcomix/library/collection_area.py:358
+#: mcomix/library/collection_area.py:365
 msgid "Rename collection?"
 msgstr "Přejmenovat sbírku?"
 
 #
 # File: src/library.py, line: 253
-#: mcomix/library/collection_area.py:359
+#: mcomix/library/collection_area.py:366
 msgid "Please enter a new name for the selected collection."
 msgstr "Prosím vložte nové jméno vybrané sbírky."
 
 #
 # File: src/library.py, line: 271
-#: mcomix/library/collection_area.py:386
+#: mcomix/library/collection_area.py:393
 #, python-format
 msgid "Could not change the name to '%s'."
 msgstr "Nelze změnit jméno na „%s“."
 
 #
 # File: src/library.py, line: 285
-#: mcomix/library/collection_area.py:402
+#: mcomix/library/collection_area.py:409
 msgid "Could not duplicate collection."
 msgstr "Sbírku nelze zduplikovat."
 
 #
 # File: src/library.py, line: 382
-#: mcomix/library/collection_area.py:621
+#: mcomix/library/collection_area.py:628
 msgid "Root"
 msgstr "Kořen"
 
 #
 # File: src/library.py, line: 386
-#: mcomix/library/collection_area.py:624
+#: mcomix/library/collection_area.py:631
 #, python-format
 msgid ""
 "Put the collection '%(subcollection)s' in the collection "
@@ -4229,12 +4238,12 @@ msgstr "Vložit sbírku „%(subcollection)s“ do sbírky „%(supercollection)
 
 #
 # File: src/library.py, line: 407
-#: mcomix/library/collection_area.py:640
+#: mcomix/library/collection_area.py:647
 #, python-format
 msgid "Add books to '%s'."
 msgstr "Přidat knihy do „%s“."
 
-#: mcomix/library/collection_area.py:643
+#: mcomix/library/collection_area.py:650
 #, python-format
 msgid ""
 "Copy books from '%(source collection)s' to '%(destination collection)s'."
@@ -4243,7 +4252,7 @@ msgstr ""
 
 #
 # File: src/library.py, line: 411
-#: mcomix/library/collection_area.py:650
+#: mcomix/library/collection_area.py:657
 #, python-format
 msgid ""
 "Move books from '%(source collection)s' to '%(destination collection)s'."
@@ -4258,7 +4267,7 @@ msgstr "_Hledat:"
 
 #
 # File: src/library.py, line: 774
-#: mcomix/library/control_area.py:89 mcomix/library/shelf.py:87
+#: mcomix/library/control_area.py:89 mcomix/library/shelf.py:103
 msgid ""
 "Display only those books that have the specified text string in their full "
 "path. The search is not case sensitive."
@@ -4303,16 +4312,16 @@ msgstr "Otevřít vybranou knihu."
 msgid "Finished reading on %(date)s, %(time)s"
 msgstr "Dočteno %(date)s v %(time)s"
 
-#: mcomix/library/main_dialog.py:160
+#: mcomix/library/main_dialog.py:163
 msgid "Scanning for new books..."
 msgstr "Hledání nových knih..."
 
-#: mcomix/library/main_dialog.py:218
+#: mcomix/library/main_dialog.py:221
 #, python-format
 msgid "Added new book '%(bookname)s' from folder '%(directory)s'."
 msgstr "Přidána nová kniha „%(bookname)s“ z adresáře „%(directory)s“."
 
-#: mcomix/library/main_dialog.py:225
+#: mcomix/library/main_dialog.py:228
 #, python-format
 msgid "Added %(count)d new book from folder '%(directory)s'."
 msgid_plural "Added %(count)d new books from folder '%(directory)s'."
@@ -4320,12 +4329,12 @@ msgstr[0] "Přidána %(count)d nová kniha z adresáře „%(directory)s“."
 msgstr[1] "Přidány %(count)d nové knihy z adresáře „%(directory)s“."
 msgstr[2] "Přidáno %(count)d nových knih z adresáře „%(directory)s“."
 
-#: mcomix/library/main_dialog.py:233
+#: mcomix/library/main_dialog.py:236
 #, python-format
 msgid "No new books found in folder '%s'."
 msgstr "V adresáři „%s“ nebyly nalezeny žádné nové knihy."
 
-#: mcomix/library/main_dialog.py:287
+#: mcomix/library/main_dialog.py:290
 #, python-format
 msgid "Books relocated: %d"
 msgstr "Přemístěných knih: %d"
@@ -4354,7 +4363,7 @@ msgstr ""
 "Sdělí knihovně, kam byla přesunuta složka s knihami. Knihy si ponechají své "
 "sbírky, záložky i stránky, po které byly přečteny."
 
-#: mcomix/library/shelf.py:114
+#: mcomix/library/shelf.py:132
 msgid "The library holds no books yet. Add some in the library window."
 msgstr "Knihovna zatím neobsahuje žádné knihy. Přidejte je v okně knihovny."
 

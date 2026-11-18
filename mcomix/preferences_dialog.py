@@ -137,6 +137,12 @@ class _PreferencesDialog(Dialog):
         page.add_row(Gtk.Label(label=_('Theme:')),
                      self._create_theme_control())
 
+        page.add_row(Gtk.Label(label=_('Hide the pointer after (in seconds):')),
+                     self._create_pref_spinner(
+                         'pointer hide delay',
+                         1000.0, 0, 60, 0.5, 1, 1,
+                         _('Once the mouse rests over the page. The Leave fullscreen button goes with it. 0 keeps both.')))
+
         page.new_section(_('Background'))
 
         fixed_bg_button, dynamic_bg_button = self._create_binary_pref_radio_buttons(
@@ -1212,7 +1218,7 @@ class _PreferencesDialog(Dialog):
         # another unit than the spinner displays need converting.
         if preference == 'lens magnification':
             preferences.set_by_name(preference, value)
-        elif preference == 'slideshow delay':
+        elif preference in ('slideshow delay', 'pointer hide delay'):
             preferences.set_by_name(preference, int(round(value * 1000)))
         elif preference == 'smart scroll percentage':
             preferences.set_by_name(preference, value / 100.0)
@@ -1222,6 +1228,10 @@ class _PreferencesDialog(Dialog):
         # Preferences that take more than storing the new value.
         if preference == 'slideshow delay':
             self._window.slideshow.update_delay()
+
+        elif preference == 'pointer hide delay':
+            self._window.cursor_handler.delay_changed()
+            self._window.leave_fullscreen_button.delay_changed()
 
         elif preference == 'thumbnail size':
             self._window.thumbnailsidebar.resize()

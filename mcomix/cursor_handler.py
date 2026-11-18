@@ -3,6 +3,7 @@
 from gi.repository import Gdk, GLib
 
 from mcomix import constants
+from mcomix.preferences import prefs
 
 from typing import TYPE_CHECKING
 
@@ -19,11 +20,10 @@ class CursorHandler:
     the hide timer changes the pointer without going through
     set_cursor_type(), so that a move of the mouse can put back what the
     program wanted rather than the blank one the timer left.
-    """
 
-    #: How long the pointer stays visible after it stops moving, in
-    #: milliseconds, while it is hiding itself.
-    HIDE_DELAY = 2000
+    How long the pointer stays once it rests is the preference "pointer
+    hide delay", in milliseconds; 0 keeps it.
+    """
 
     def __init__(self, window: "main.MainWindow") -> None:
         self._window = window
@@ -116,9 +116,18 @@ class CursorHandler:
         self._timer_id = None
         return False
 
+    def delay_changed(self) -> None:
+        """Show the pointer again, and hide it after the new delay, once
+        the preference has changed."""
+        self._kill_timer()
+        if self._auto_hide and self._current_cursor == constants.NORMAL_CURSOR:
+            self.set_cursor_type(constants.NORMAL_CURSOR)
+
     def _set_hide_timer(self) -> None:
         self._kill_timer()
-        self._timer_id = GLib.timeout_add(self.HIDE_DELAY, self._on_timeout)
+        delay = prefs['pointer hide delay']
+        if delay > 0:
+            self._timer_id = GLib.timeout_add(delay, self._on_timeout)
 
     def release(self) -> None:
         """Stop the timer that would hide the pointer, once the window
