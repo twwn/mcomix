@@ -714,35 +714,8 @@ class MainWindow(Gtk.Window):
             if scroll_to is not None:
                 kept = None
             elif continuous:
-                # The strip has grown by the pages that arrived, below
-                # what is being read, which stays where it is; drawn at
-                # another width - a zoom, a resized window - the same
-                # part of it stays at the top of the view.
-                kept = self.page_area.get_position()
-                across = scaled_sizes[0][alignment_axis]
-                ratio = 1.0
-                if self._strip_across not in (0, across):
-                    ratio = across / self._strip_across
-                    moved = [kept[0] * ratio, kept[1] * ratio]
-                    if anchor is not None:
-                        # CTRL and the wheel: the part of the strip
-                        # under the pointer stays under it instead.
-                        at = anchor[distribution_axis]
-                        moved[distribution_axis] = max(
-                            0.0, (kept[distribution_axis] + at) * ratio - at)
-                    kept = (moved[0], moved[1])
-                if shift is not None:
-                    # The pages put on top push what was showing down
-                    # by their height; the pages dropped from the top
-                    # were taken off the offset when they went.  The
-                    # offset was measured on the strip as it was drawn,
-                    # so it changes with its width as the rest does.
-                    on_top, offset = shift
-                    moved = list(kept)
-                    moved[distribution_axis] += offset * ratio + sum(
-                        size[distribution_axis]
-                        for size in scaled_sizes[:on_top])
-                    kept = (moved[0], moved[1])
+                kept = self._strip_position(scaled_sizes, distribution_axis,
+                                            alignment_axis, anchor, shift)
             else:
                 # The same pages again, so the one of a spread that was
                 # being read still is.
@@ -809,6 +782,45 @@ class MainWindow(Gtk.Window):
         self._waiting_for_redraw = False
 
         return False
+
+    def _strip_position(self, scaled_sizes: "list[tuple[int, ...]]",
+                        distribution_axis: int, alignment_axis: int,
+                        anchor: "tuple[float, float] | None",
+                        shift: "tuple[int, float] | None",
+                        ) -> tuple[float, float]:
+        """Where the strip, drawn again with its pages at <scaled_sizes>,
+        is to be scrolled to.
+
+        The strip has grown by the pages that arrived, below what is
+        being read, which stays where it is; drawn at another width - a
+        zoom, a resized window - the same part of it stays at the top of
+        the view.
+        """
+        kept = self.page_area.get_position()
+        across = scaled_sizes[0][alignment_axis]
+        ratio = 1.0
+        if self._strip_across not in (0, across):
+            ratio = across / self._strip_across
+            moved = [kept[0] * ratio, kept[1] * ratio]
+            if anchor is not None:
+                # CTRL and the wheel: the part of the strip under the
+                # pointer stays under it instead.
+                at = anchor[distribution_axis]
+                moved[distribution_axis] = max(
+                    0.0, (kept[distribution_axis] + at) * ratio - at)
+            kept = (moved[0], moved[1])
+        if shift is not None:
+            # The pages put on top push what was showing down by their
+            # height; the pages dropped from the top were taken off the
+            # offset when they went.  The offset was measured on the
+            # strip as it was drawn, so it changes with its width as the
+            # rest does.
+            on_top, offset = shift
+            moved = list(kept)
+            moved[distribution_axis] += offset * ratio + sum(
+                size[distribution_axis] for size in scaled_sizes[:on_top])
+            kept = (moved[0], moved[1])
+        return kept
 
     def _fit_pages(self, pixbuf_list: "list[GdkPixbuf.Pixbuf]",
                    scaled_sizes: list[tuple[int, ...]],
