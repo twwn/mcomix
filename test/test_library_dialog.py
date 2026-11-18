@@ -1006,20 +1006,33 @@ class CoverInFlightTest(_OneBookTest):
 
         self._with_a_cover_in_flight(other_books)
 
-    def test_a_book_shown_again_does_not_have_its_cover_read_again(self):
+    def test_a_book_asked_for_again_is_not_read_twice_at_once(self):
         """Not waiting for the read must not mean starting another: eight
-        letters typed read that archive eight times at once."""
+        letters typed read that archive eight times at once.  A letter
+        typed keeps the entries on show now, so the book is asked for
+        again where they are made anew, as for a new cover size; the
+        worker that takes the order waits for the read under way."""
         area = self.dialog.book_area
+        waiting = threading.Event()
+        wait = area._reading.wait
 
-        def letters_typed():
-            for _letter in range(3):
-                area.display_covers(constants.COLLECTION_ALL)
-            # Time for a second read to begin, where nothing stops it.
-            wait_for(lambda: len(self.reads) > 1, seconds=0.5)
+        def wait_noted(*args, **kwargs):
+            waiting.set()
+            return wait(*args, **kwargs)
 
-        self._with_a_cover_in_flight(letters_typed)
-        area._covers.stop_update()
-        self.assertEqual(self.reads, [self.path])
+        def drawn_anew():
+            with unittest.mock.patch.object(area._reading, 'wait',
+                                            wait_noted):
+                for _size in range(3):
+                    area.load_covers()
+                # The new entry's order is taken by a worker that either
+                # waits for the read under way or begins one of its own.
+                self.assertTrue(wait_for(
+                    lambda: waiting.is_set() or len(self.reads) > 1,
+                    seconds=5), 'the book was not asked for again')
+            self.assertEqual(self.reads, [self.path])
+
+        self._with_a_cover_in_flight(drawn_anew)
 
 
     def test_closing_the_window_does_not_wait_for_the_cover(self):
