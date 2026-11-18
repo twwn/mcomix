@@ -705,6 +705,13 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
             answer = _BookArea._compare_books(key, first, second)
             return answer if ascending else -answer
 
+        items = list(self._each_item())
+        if items:
+            # Handed over in the new order, for the sorter to find them
+            # sorted (see _in_order()); without a sorter meanwhile, which
+            # would put them back in the old one first.
+            self._covers.set_sorter(None)
+            self._covers.set_items(self._in_order(items))
         self._covers.set_sorter(Gtk.CustomSorter.new(compare))
 
     @staticmethod
