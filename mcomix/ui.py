@@ -625,23 +625,19 @@ class MainUI:
         self._openwith = openwith_menu.OpenWithMenu(window)
         self.move_to = move_menu.MoveToMenu(window, self.recent)
 
-        # A GTK4 menu bar is a row of popovers.
-        self.menubar = Gtk.PopoverMenuBar.new_from_model(self._build(_MENUBAR))
+        # A GTK4 menu bar is a row of popovers.  Both menus are empty
+        # until build_menus(): a model is built with the keys its items
+        # show, and those are known once the window has registered them.
+        self.menubar = Gtk.PopoverMenuBar.new_from_model(None)
         # NESTED: a submenu opens as a popover of its own.  A sliding
         # popover menu keeps every page in one stack and is as wide as
         # the widest item on any of them, so the eight short entries of
         # the top level would be laid out to fit "Previous archive" and its
         # accelerator, three pages down.
         self.popup = Gtk.PopoverMenu.new_from_model_full(
-            self._build(_POPUP, hide_disabled=True), Gtk.PopoverMenuFlags.NESTED)
+            Gio.Menu(), Gtk.PopoverMenuFlags.NESTED)
         self.popup.set_parent(window)
         self.toolbar = self._build_toolbar()
-
-        # A middle click on a recent file or a bookmark opens it in an
-        # MComix of its own, and a menu model says nothing about which
-        # button reached an item.
-        widgets.watch_menu_clicks(self.menubar)
-        widgets.watch_menu_clicks(self.popup)
 
         # Only the menu bar, which is a widget in the window like any
         # other.  The popup is a Gtk.PopoverMenu, and a popover that is
@@ -671,13 +667,24 @@ class MainUI:
         <name>, if it has one."""
         return self._accelerators.get(name)
 
+    def build_menus(self) -> None:
+        """Build the menus now, rather than from the idle a change of
+        accelerator leaves.  The window calls this once it has
+        registered its keybindings, each of which changes one."""
+        if self._rebuild_pending is not None:
+            GLib.source_remove(self._rebuild_pending)
+        self._rebuild_menus()
+
     def _rebuild_menus(self) -> bool:
         self._rebuild_pending = None
         self.menubar.set_menu_model(self._build(_MENUBAR))
         self.popup.set_menu_model(self._build(_POPUP, hide_disabled=True))
         # The bookmarks menu builds its fixed entries itself.
         self.bookmarks.refresh()
-        # A new model is a new set of popovers below the two roots.
+        # A middle click on a recent file or a bookmark opens it in an
+        # MComix of its own, and a menu model says nothing about which
+        # button reached an item.  A new model is a new set of popovers
+        # below the two roots.
         widgets.watch_menu_clicks(self.menubar)
         widgets.watch_menu_clicks(self.popup)
         return GLib.SOURCE_REMOVE

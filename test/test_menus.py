@@ -77,6 +77,53 @@ class LayoutTest(MComixTest):
         self.assertEqual(sorted(set(names)), sorted(names))
 
 
+def _accelerators(model):
+    """Every accelerator the items of <model> and its submenus show."""
+    for index in range(model.get_n_items()):
+        accel = model.get_item_attribute_value(index, 'accel', None)
+        if accel is not None:
+            yield accel.get_string()
+        links = model.iterate_item_links(index)
+        while links.next():
+            yield from _accelerators(links.get_value())
+
+
+class MenusBuiltOnceTest(MComixTest):
+
+    """A new window built both menus, then built them again from an
+    idle once it had registered its keybindings, each of which changes
+    the key an item shows: 18 ms of the 65 a window with a book took to
+    build and draw first."""
+
+    def test_a_new_window_builds_each_menu_once_with_its_keys(self):
+        for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
+                          constants.THUMBNAIL_PATH):
+            os.makedirs(directory, exist_ok=True)
+        icons.load_icons()
+        keybindings._manager = None
+        built = []
+        build = ui.MainUI._build
+
+        def counted(uimanager, layout, hide_disabled=False):
+            if layout is ui._MENUBAR:
+                built.append('menu bar')
+            elif layout is ui._POPUP:
+                built.append('right-click menu')
+            return build(uimanager, layout, hide_disabled)
+        with unittest.mock.patch.object(ui.MainUI, '_build', counted):
+            window = main.MainWindow()
+            main.set_main_window(window)
+            self.addCleanup(main.set_main_window, None)
+            self.addCleanup(window.destroy)
+            self.addCleanup(window.terminate_program)
+            pump()
+        self.assertEqual(['menu bar', 'right-click menu'], built)
+        for menu in (window.menubar, window.popup):
+            with self.subTest(menu=type(menu).__name__):
+                self.assertIn('<Control>o', set(_accelerators(
+                    menu.get_menu_model())))
+
+
 class HelpMenuTest(MComixTest):
 
     def setUp(self):

@@ -255,6 +255,7 @@ class MainWindow(Gtk.Window):
 
         # Hook up keyboard shortcuts
         self.event_handler.register_key_events()
+        self.uimanager.build_menus()
 
         for img in self.images:
             self.page_area.put(img, 0, 0)
