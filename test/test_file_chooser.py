@@ -28,9 +28,7 @@ class FileChooserTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
-                          constants.THUMBNAIL_PATH):
-            os.makedirs(directory, exist_ok=True)
+        self.make_user_directories()
         icons.load_icons()
         self.window = main.MainWindow()
         main.set_main_window(self.window)
@@ -43,10 +41,7 @@ class FileChooserTest(MComixTest):
 
     def tearDown(self):
         self._module._close_main_filechooser_dialog()
-        self.window.terminate_program()
-        self.window.destroy()
-        main.set_main_window(None)
-        pump()
+        self.close_main_window()
         super().tearDown()
 
     # -- Walking from the search box into what it found -------------------
@@ -797,9 +792,7 @@ class LibraryFileChooserTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
-                          constants.THUMBNAIL_PATH):
-            os.makedirs(directory, exist_ok=True)
+        self.make_user_directories()
         icons.load_icons()
         self.window = main.MainWindow()
         main.set_main_window(self.window)
@@ -811,10 +804,7 @@ class LibraryFileChooserTest(MComixTest):
     def tearDown(self):
         self._module.close_library_filechooser_dialog()
         self.library.destroy()
-        self.window.terminate_program()
-        self.window.destroy()
-        main.set_main_window(None)
-        pump()
+        self.close_main_window()
         super().tearDown()
 
     def _open(self):

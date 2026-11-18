@@ -9,7 +9,6 @@ to them, held in C, keep the window from Python's collector.
 """
 
 import gc
-import os
 import weakref
 from unittest import mock
 
@@ -18,7 +17,6 @@ from gi.repository import Gtk
 from . import MComixTest, get_testfile_path, pump, wait_for
 from .test_dialog_freed import _holders
 
-from mcomix import constants
 from mcomix import icons
 from mcomix import keybindings
 from mcomix import main
@@ -28,9 +26,7 @@ class MainWindowFreedTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
-                          constants.THUMBNAIL_PATH):
-            os.makedirs(directory, exist_ok=True)
+        self.make_user_directories()
         icons.load_icons()
         keybindings._manager = None
 

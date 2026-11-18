@@ -39,9 +39,7 @@ class DirectoryWalkTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
-                          constants.THUMBNAIL_PATH):
-            os.makedirs(directory, exist_ok=True)
+        self.make_user_directories()
         self.root = os.path.join(self.tmp_dir, 'books')
         for name in ('a', 'b', 'c'):
             os.makedirs(os.path.join(self.root, name))
@@ -55,10 +53,7 @@ class DirectoryWalkTest(MComixTest):
         # Only terminate_program() stops the worker threads, and a GTK4
         # toplevel that is never destroyed goes on taking part in the
         # display's layout.
-        self.window.terminate_program()
-        self.window.destroy()
-        main.set_main_window(None)
-        pump()
+        self.close_main_window()
         super().tearDown()
 
     def _put_archive(self, directory):
@@ -493,9 +488,7 @@ class _WindowTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
-                          constants.THUMBNAIL_PATH):
-            os.makedirs(directory, exist_ok=True)
+        self.make_user_directories()
         icons.load_icons()
         self.window = main.MainWindow()
         main.set_main_window(self.window)
@@ -503,10 +496,7 @@ class _WindowTest(MComixTest):
         pump()
 
     def tearDown(self):
-        self.window.terminate_program()
-        self.window.destroy()
-        main.set_main_window(None)
-        pump()
+        self.close_main_window()
         super().tearDown()
 
 
@@ -614,9 +604,7 @@ class ResumedWindowTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
-                          constants.THUMBNAIL_PATH):
-            os.makedirs(directory, exist_ok=True)
+        self.make_user_directories()
         icons.load_icons()
         self.books = {}
         for name in ('a.cbz', 'b.cbz', 'c.cbz'):
@@ -1117,9 +1105,7 @@ class RememberedResumeAnswerTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
-                          constants.THUMBNAIL_PATH):
-            os.makedirs(directory, exist_ok=True)
+        self.make_user_directories()
         self.archive = os.path.join(self.tmp_dir, '01-ZIP-Normal.zip')
         shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'),
                     self.archive)
@@ -1132,10 +1118,7 @@ class RememberedResumeAnswerTest(MComixTest):
         pump()
 
     def tearDown(self):
-        self.window.terminate_program()
-        self.window.destroy()
-        main.set_main_window(None)
-        pump()
+        self.close_main_window()
         super().tearDown()
 
     def _open_and_settle(self):
@@ -1258,9 +1241,7 @@ class ExtractionOrderTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
-                          constants.THUMBNAIL_PATH):
-            os.makedirs(directory, exist_ok=True)
+        self.make_user_directories()
         self.archive = os.path.join(self.tmp_dir, 'book.zip')
         with open(get_testfile_path('images', 'red.png'), 'rb') as image:
             data = image.read()
@@ -1292,10 +1273,7 @@ class ExtractionOrderTest(MComixTest):
         self.addCleanup(patcher.stop)
 
     def tearDown(self):
-        self.window.terminate_program()
-        self.window.destroy()
-        main.set_main_window(None)
-        pump()
+        self.close_main_window()
         super().tearDown()
 
     def _unpacked(self):
@@ -1626,9 +1604,7 @@ class ABookWithNoPagesTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
-                          constants.THUMBNAIL_PATH):
-            os.makedirs(directory, exist_ok=True)
+        self.make_user_directories()
         self.archive = os.path.join(self.tmp_dir, 'no-pictures.zip')
         with zipfile.ZipFile(self.archive, 'w') as archive:
             archive.writestr('readme.txt', 'Nothing to look at.')
@@ -1640,10 +1616,7 @@ class ABookWithNoPagesTest(MComixTest):
         pump()
 
     def tearDown(self):
-        self.window.terminate_program()
-        self.window.destroy()
-        main.set_main_window(None)
-        pump()
+        self.close_main_window()
         super().tearDown()
 
     def test_closing_it_does_not_file_it_as_read(self):
@@ -1673,19 +1646,14 @@ class BeforeAPageIsChosenTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
-                          constants.THUMBNAIL_PATH):
-            os.makedirs(directory, exist_ok=True)
+        self.make_user_directories()
         icons.load_icons()
         self.window = main.MainWindow()
         main.set_main_window(self.window)
         pump()
 
     def tearDown(self):
-        self.window.terminate_program()
-        self.window.destroy()
-        main.set_main_window(None)
-        pump()
+        self.close_main_window()
         super().tearDown()
 
     def test_there_is_no_base_path_before_a_page_is_chosen(self):
@@ -2063,19 +2031,14 @@ class CommentExtensionsTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
-                          constants.THUMBNAIL_PATH):
-            os.makedirs(directory, exist_ok=True)
+        self.make_user_directories()
         icons.load_icons()
         self.window = main.MainWindow()
         main.set_main_window(self.window)
         pump()
 
     def tearDown(self):
-        self.window.terminate_program()
-        self.window.destroy()
-        main.set_main_window(None)
-        pump()
+        self.close_main_window()
         super().tearDown()
 
     def _pattern_for(self, *extensions):

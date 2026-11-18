@@ -18,7 +18,6 @@ from . import (MComixTest, fresh_bookmarks_store, get_testfile_path, pump,
                wait_for)
 
 from mcomix import archive_packer
-from mcomix import constants
 from mcomix import icons
 from mcomix import keybindings
 from mcomix import main
@@ -37,9 +36,7 @@ class LongSaveTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
-                          constants.THUMBNAIL_PATH):
-            os.makedirs(directory, exist_ok=True)
+        self.make_user_directories()
         icons.load_icons()
         keybindings._manager = None
         fresh_bookmarks_store()
@@ -81,10 +78,7 @@ class LongSaveTest(MComixTest):
 
     def tearDown(self):
         self.go_on.set()
-        self.window.terminate_program()
-        self.window.destroy()
-        main.set_main_window(None)
-        pump()
+        self.close_main_window()
         fresh_bookmarks_store()
         super().tearDown()
 

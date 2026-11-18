@@ -627,6 +627,33 @@ class MComixTest(unittest.TestCase):
         # from an earlier test is not this one's to make.
         preferences.cancel_scheduled_write()
 
+    def make_user_directories(self):
+        """Make the configuration, data and thumbnail directories under
+        the test's home, as a reader's MComix has them.
+
+        setUp() points constants at them without making them, so that a
+        test of what MComix does where they are missing can have them
+        missing; a test that opens a book or builds the main window
+        makes them first.
+        """
+        for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
+                          constants.THUMBNAIL_PATH):
+            os.makedirs(directory, exist_ok=True)
+
+    def close_main_window(self):
+        """Close self.window, the main window the test built, as MComix
+        does when it quits, and let what that queued run.
+
+        terminate_program() comes before destroy(): it stops the worker
+        threads, which are not daemons, and which destroying the window
+        alone leaves waiting.
+        """
+        from mcomix import main
+        self.window.terminate_program()
+        self.window.destroy()
+        main.set_main_window(None)
+        pump()
+
     def _no_window_left_on_screen(self):
         """Fail the test that leaves a window up, rather than a later one.
 

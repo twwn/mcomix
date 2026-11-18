@@ -117,9 +117,7 @@ class WindowDirectionTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
-                          constants.THUMBNAIL_PATH):
-            os.makedirs(directory, exist_ok=True)
+        self.make_user_directories()
         icons.load_icons()
         prefs['default manga mode'] = False
 
@@ -135,17 +133,11 @@ class WindowDirectionTest(MComixTest):
     def _open(self, path):
         self.window = main.MainWindow(open_path=path)
         main.set_main_window(self.window)
-        self.addCleanup(self._close)
+        self.addCleanup(self.close_main_window)
         self.assertTrue(wait_for(
             lambda: self.window.imagehandler.get_number_of_pages() > 0,
             seconds=20))
         return self.window
-
-    def _close(self):
-        self.window.terminate_program()
-        self.window.destroy()
-        main.set_main_window(None)
-        pump()
 
     def _manga_action(self):
         return self.window.actiongroup.get_action('manga_mode')

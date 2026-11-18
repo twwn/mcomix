@@ -14,7 +14,6 @@ from gi.repository import Gtk
 from . import MComixTest, get_testfile_path, pump, wait_for
 
 from mcomix import comment_dialog
-from mcomix import constants
 from mcomix import icons
 from mcomix import main
 
@@ -23,9 +22,7 @@ class CommentsDialogTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
-                          constants.THUMBNAIL_PATH):
-            os.makedirs(directory, exist_ok=True)
+        self.make_user_directories()
         icons.load_icons()
         self.window = None
         self.dialog = None

@@ -5,7 +5,6 @@ The menus are tuples in ui.py, so where an item stands is read from
 them; what an item does is read from the window it was built for.
 """
 
-import os
 import unittest.mock
 
 from gi.repository import GLib, Gtk
@@ -98,9 +97,7 @@ class MenusBuiltOnceTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
-                          constants.THUMBNAIL_PATH):
-            os.makedirs(directory, exist_ok=True)
+        self.make_user_directories()
         icons.load_icons()
         keybindings._manager = None
         self.built = []
@@ -157,9 +154,7 @@ class HelpMenuTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
-                          constants.THUMBNAIL_PATH):
-            os.makedirs(directory, exist_ok=True)
+        self.make_user_directories()
         icons.load_icons()
         self.window = main.MainWindow()
         main.set_main_window(self.window)
@@ -167,10 +162,7 @@ class HelpMenuTest(MComixTest):
 
     def tearDown(self):
         preferences_dialog._close_dialog()
-        self.window.terminate_program()
-        self.window.destroy()
-        main.set_main_window(None)
-        pump()
+        self.close_main_window()
         super().tearDown()
 
     def test_the_manual_is_handed_to_the_desktop_s_browser(self):

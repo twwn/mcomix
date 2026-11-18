@@ -40,9 +40,7 @@ class _StripTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
-                          constants.THUMBNAIL_PATH):
-            os.makedirs(directory, exist_ok=True)
+        self.make_user_directories()
         prefs['continuous mode'] = self.CONTINUOUS
         prefs['continuous for long strips'] = self.DETECT
         # As wide as the view, which keeps the sums in the tests short.
@@ -90,10 +88,7 @@ class _StripTest(MComixTest):
         self._redraw()
 
     def tearDown(self):
-        self.window.terminate_program()
-        self.window.destroy()
-        main.set_main_window(None)
-        pump()
+        self.close_main_window()
         super().tearDown()
 
     def _redraw(self):

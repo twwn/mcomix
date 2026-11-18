@@ -6,7 +6,6 @@ lower case, with Shift only where it was not needed to type the key.
 These go through the X server's own keymap, as a real key press does.
 """
 
-import os
 import unittest.mock
 
 from gi.repository import Gdk, Gtk
@@ -38,9 +37,7 @@ class _KeyPressWindowTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
-                          constants.THUMBNAIL_PATH):
-            os.makedirs(directory, exist_ok=True)
+        self.make_user_directories()
         icons.load_icons()
         prefs.update(self.WINDOW_PREFS)
         self.window = main.MainWindow()
@@ -48,10 +45,7 @@ class _KeyPressWindowTest(MComixTest):
         pump()
 
     def tearDown(self):
-        self.window.terminate_program()
-        self.window.destroy()
-        main.set_main_window(None)
-        pump()
+        self.close_main_window()
         super().tearDown()
 
     def _press(self, keyval, state=Gdk.ModifierType(0)):

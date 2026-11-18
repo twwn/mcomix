@@ -7,14 +7,12 @@ GTK drew them twice as large as they had been scaled: blurred.  They
 are now scaled to the screen's pixels and drawn into the layout's box.
 """
 
-import os
 import unittest.mock
 
 from gi.repository import Gdk, GdkPixbuf, Gtk
 
 from . import MComixTest, get_testfile_path, pump, wait_for
 
-from mcomix import constants
 from mcomix import edit_image_area
 from mcomix import icons
 from mcomix import image_tools
@@ -31,19 +29,14 @@ class DeviceScaleTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
-                          constants.THUMBNAIL_PATH):
-            os.makedirs(directory, exist_ok=True)
+        self.make_user_directories()
         icons.load_icons()
         keybindings._manager = None
         self.window = main.MainWindow()
         main.set_main_window(self.window)
 
     def tearDown(self):
-        self.window.terminate_program()
-        self.window.destroy()
-        main.set_main_window(None)
-        pump()
+        self.close_main_window()
         super().tearDown()
 
     def _draw_at(self, scale):
@@ -113,9 +106,7 @@ class ThumbnailScaleTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
-                          constants.THUMBNAIL_PATH):
-            os.makedirs(directory, exist_ok=True)
+        self.make_user_directories()
         prefs['show thumbnails'] = True
         icons.load_icons()
         keybindings._manager = None
@@ -174,9 +165,7 @@ class EditorScaleTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
-                          constants.THUMBNAIL_PATH):
-            os.makedirs(directory, exist_ok=True)
+        self.make_user_directories()
         icons.load_icons()
         self.window = main.MainWindow()
         main.set_main_window(self.window)
@@ -185,10 +174,7 @@ class EditorScaleTest(MComixTest):
     def tearDown(self):
         self.area.cleanup()
         self.area.release()
-        self.window.terminate_program()
-        self.window.destroy()
-        main.set_main_window(None)
-        pump()
+        self.close_main_window()
         super().tearDown()
 
     def _area_at(self, scale):
@@ -219,9 +205,7 @@ class PreviewScaleTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
-                          constants.THUMBNAIL_PATH):
-            os.makedirs(directory, exist_ok=True)
+        self.make_user_directories()
         icons.load_icons()
         self.window = main.MainWindow(open_path=get_testfile_path(
             'pepper-and-carrot',
@@ -237,10 +221,7 @@ class PreviewScaleTest(MComixTest):
             if hasattr(self.dialog, '_stop_thumbnailing'):
                 self.dialog._stop_thumbnailing()
             self.dialog.destroy()
-        self.window.terminate_program()
-        self.window.destroy()
-        main.set_main_window(None)
-        pump()
+        self.close_main_window()
         super().tearDown()
 
     def test_the_page_selector_asks_for_the_screen_s_pixels(self):

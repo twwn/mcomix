@@ -298,9 +298,7 @@ class DescribeDesktopTest(MComixTest):
 
     def test_the_main_window_logs_it(self):
         from mcomix import icons, main
-        for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
-                          constants.THUMBNAIL_PATH):
-            os.makedirs(directory, exist_ok=True)
+        self.make_user_directories()
         icons.load_icons()
         with self.assertLogs('mcomix', 'INFO') as logs:
             window = main.MainWindow()

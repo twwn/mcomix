@@ -13,7 +13,6 @@ from gi.repository import Gdk, Gtk
 
 from . import MComixTest, get_testfile_path, pump, wait_for
 
-from mcomix import constants
 from mcomix import icons
 from mcomix import main
 from mcomix import pageselect
@@ -25,9 +24,7 @@ class PageselectTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
-                          constants.THUMBNAIL_PATH):
-            os.makedirs(directory, exist_ok=True)
+        self.make_user_directories()
         icons.load_icons()
         self.window = main.MainWindow(
             open_path=get_testfile_path('archives', '01-ZIP-Normal.zip'))
@@ -46,10 +43,7 @@ class PageselectTest(MComixTest):
         for window in Gtk.Window.list_toplevels():
             if window.get_visible() and window is not self.window:
                 window.destroy()
-        self.window.terminate_program()
-        self.window.destroy()
-        main.set_main_window(None)
-        pump()
+        self.close_main_window()
         super().tearDown()
 
     def test_the_selector_covers_every_page(self):
@@ -210,9 +204,7 @@ class ChapterTest(MComixTest):
                     book.writestr(name, source.read(name))
             if comicinfo_xml is not None:
                 book.writestr('ComicInfo.xml', comicinfo_xml)
-        for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
-                          constants.THUMBNAIL_PATH):
-            os.makedirs(directory, exist_ok=True)
+        self.make_user_directories()
         icons.load_icons()
         self.window = main.MainWindow(open_path=path)
         main.set_main_window(self.window)
@@ -231,10 +223,7 @@ class ChapterTest(MComixTest):
         for window in Gtk.Window.list_toplevels():
             if window.get_visible() and window is not self.window:
                 window.destroy()
-        self.window.terminate_program()
-        self.window.destroy()
-        main.set_main_window(None)
-        pump()
+        self.close_main_window()
         super().tearDown()
 
     def _titles(self):
@@ -307,9 +296,7 @@ class NoBookTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
-                          constants.THUMBNAIL_PATH):
-            os.makedirs(directory, exist_ok=True)
+        self.make_user_directories()
         icons.load_icons()
         self.window = main.MainWindow()
         main.set_main_window(self.window)
@@ -319,10 +306,7 @@ class NoBookTest(MComixTest):
         for window in Gtk.Window.list_toplevels():
             if window.get_visible() and window is not self.window:
                 window.destroy()
-        self.window.terminate_program()
-        self.window.destroy()
-        main.set_main_window(None)
-        pump()
+        self.close_main_window()
         super().tearDown()
 
     def test_nothing_opens_without_a_book(self):

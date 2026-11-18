@@ -43,9 +43,7 @@ class EditArchiveDialogTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
-                          constants.THUMBNAIL_PATH):
-            os.makedirs(directory, exist_ok=True)
+        self.make_user_directories()
         icons.load_icons()
         self.window = main.MainWindow(
             open_path=get_testfile_path('archives', '01-ZIP-Normal.zip'))
@@ -63,10 +61,7 @@ class EditArchiveDialogTest(MComixTest):
                 window.destroy()
         self.dialog.destroy()
         edit_dialog.close_dialog()
-        self.window.terminate_program()
-        self.window.destroy()
-        main.set_main_window(None)
-        pump()
+        self.close_main_window()
         super().tearDown()
 
     def _chooser(self):
@@ -1112,9 +1107,7 @@ class SavedArchiveContentsTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
-                          constants.THUMBNAIL_PATH):
-            os.makedirs(directory, exist_ok=True)
+        self.make_user_directories()
         icons.load_icons()
         self.source = os.path.join(self.tmp_dir, 'Book.cbz')
         page = get_testfile_path('images', '03-PNG-RGB.png')
@@ -1173,10 +1166,7 @@ class SavedArchiveContentsTest(MComixTest):
     def tearDown(self):
         self.dialog.destroy()
         edit_dialog.close_dialog()
-        self.window.terminate_program()
-        self.window.destroy()
-        main.set_main_window(None)
-        pump()
+        self.close_main_window()
         super().tearDown()
 
     def _saved(self):

@@ -15,7 +15,7 @@ import zipfile
 
 from . import MComixTest, get_testfile_path, pump, wait_for
 
-from mcomix import constants, icons, main
+from mcomix import icons, main
 from mcomix.preferences import prefs
 
 _PAGES = {'N': get_testfile_path('images', 'portrait-no-exif.png'),
@@ -26,19 +26,14 @@ class DoublePageTurnsTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
-                          constants.THUMBNAIL_PATH):
-            os.makedirs(directory, exist_ok=True)
+        self.make_user_directories()
         icons.load_icons()
         prefs['default double page'] = True
         self.window = None
 
     def tearDown(self):
         if self.window is not None:
-            self.window.terminate_program()
-            self.window.destroy()
-            main.set_main_window(None)
-            pump()
+            self.close_main_window()
         super().tearDown()
 
     def _open(self, layout, archive=False):

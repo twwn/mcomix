@@ -17,7 +17,6 @@ from gi.repository import Gtk
 
 from . import MComixTest, get_testfile_path, pump, wait_for, wait_frames
 
-from mcomix import constants
 from mcomix import icons
 from mcomix import main
 from mcomix import properties_dialog
@@ -27,13 +26,11 @@ class PropertiesDialogTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
-                          constants.THUMBNAIL_PATH):
-            os.makedirs(directory, exist_ok=True)
+        self.make_user_directories()
         icons.load_icons()
 
     def tearDown(self):
-        # The dialogs only: _close(), a cleanup and so run after this,
+        # The dialogs only: close_main_window(), a cleanup and so run after this,
         # stops the main window before destroying it.  Destroyed first,
         # its menus let go of their actions, and closing the book then
         # reached for them: "There is no action named 'add'", 144 times
@@ -50,16 +47,10 @@ class PropertiesDialogTest(MComixTest):
         self.assertTrue(wait_for(
             lambda: self.window.imagehandler.get_number_of_pages() > 0,
             seconds=20))
-        self.addCleanup(self._close)
+        self.addCleanup(self.close_main_window)
         self.dialog = properties_dialog._PropertiesDialog(self.window)
         pump()
         return self.dialog
-
-    def _close(self):
-        self.window.terminate_program()
-        self.window.destroy()
-        main.set_main_window(None)
-        pump()
 
     def test_a_closed_dialog_does_not_read_the_pages_turned_to(self):
         """A destroyed dialog stayed listening, and read every page turned

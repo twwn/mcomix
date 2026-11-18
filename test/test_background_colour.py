@@ -8,7 +8,6 @@ from PIL import Image
 
 from . import MComixTest, pump, wait_for
 
-from mcomix import constants
 from mcomix import icons
 from mcomix import image_tools
 from mcomix import main
@@ -26,9 +25,7 @@ class DynamicBackgroundTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
-                          constants.THUMBNAIL_PATH):
-            os.makedirs(directory, exist_ok=True)
+        self.make_user_directories()
         prefs['smart bg'] = True
         icons.load_icons()
         book = os.path.join(self.tmp_dir, 'book')
@@ -50,10 +47,7 @@ class DynamicBackgroundTest(MComixTest):
         pump()
 
     def tearDown(self):
-        self.window.terminate_program()
-        self.window.destroy()
-        main.set_main_window(None)
-        pump()
+        self.close_main_window()
         super().tearDown()
 
     def _colour(self):
@@ -108,9 +102,7 @@ class DoublePageBackgroundTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
-                          constants.THUMBNAIL_PATH):
-            os.makedirs(directory, exist_ok=True)
+        self.make_user_directories()
         prefs['smart bg'] = True
         prefs['default double page'] = True
         prefs['default manga mode'] = self.MANGA
@@ -138,10 +130,7 @@ class DoublePageBackgroundTest(MComixTest):
         pump()
 
     def tearDown(self):
-        self.window.terminate_program()
-        self.window.destroy()
-        main.set_main_window(None)
-        pump()
+        self.close_main_window()
         super().tearDown()
 
     def test_the_colour_is_that_of_the_outer_sides(self):

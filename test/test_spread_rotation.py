@@ -10,11 +10,9 @@ same transform, is the step they are laid out along.
 """
 
 import itertools
-import os
 
 from . import MComixTest, get_testfile_path, pump, wait_for
 
-from mcomix import constants
 from mcomix import icons
 from mcomix import main
 from mcomix.preferences import prefs
@@ -24,9 +22,7 @@ class SpreadRotationTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
-                          constants.THUMBNAIL_PATH):
-            os.makedirs(directory, exist_ok=True)
+        self.make_user_directories()
         icons.load_icons()
         prefs['default double page'] = True
         self.window = main.MainWindow()
@@ -42,10 +38,7 @@ class SpreadRotationTest(MComixTest):
         self.assertEqual(2, self.window.displayed_page_count())
 
     def tearDown(self):
-        self.window.terminate_program()
-        self.window.destroy()
-        main.set_main_window(None)
-        pump()
+        self.close_main_window()
         super().tearDown()
 
     @staticmethod

@@ -60,9 +60,7 @@ class _LibraryWindowTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
-                          constants.THUMBNAIL_PATH):
-            os.makedirs(directory, exist_ok=True)
+        self.make_user_directories()
         icons.load_icons()
         self.window = main.MainWindow(
             open_path=get_testfile_path('archives', '01-ZIP-Normal.zip'))
@@ -76,10 +74,7 @@ class _LibraryWindowTest(MComixTest):
         for window in Gtk.Window.list_toplevels():
             if isinstance(window, main_dialog._LibraryDialog):
                 window.destroy()
-        self.window.terminate_program()
-        self.window.destroy()
-        main.set_main_window(None)
-        pump()
+        self.close_main_window()
         super().tearDown()
 
     def _open(self):

@@ -82,9 +82,7 @@ class MainWindowTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
-                          constants.THUMBNAIL_PATH):
-            os.makedirs(directory, exist_ok=True)
+        self.make_user_directories()
         prefs['show toolbar'] = True
         prefs['show menubar'] = True
         icons.load_icons()
@@ -6050,10 +6048,7 @@ class RestartTest(MComixTest):
         pump()
 
     def tearDown(self):
-        self.window.terminate_program()
-        self.window.destroy()
-        main.set_main_window(None)
-        pump()
+        self.close_main_window()
         super().tearDown()
 
     def test_it_carries_the_book_and_its_page_over(self):
@@ -6091,9 +6086,7 @@ class PageMenuSubmenusTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
-                          constants.THUMBNAIL_PATH):
-            os.makedirs(directory, exist_ok=True)
+        self.make_user_directories()
         icons.load_icons()
         keybindings._manager = None
         self.window = main.MainWindow(
@@ -6108,10 +6101,7 @@ class PageMenuSubmenusTest(MComixTest):
     def tearDown(self):
         self.window.popup.popdown()
         pump()
-        self.window.terminate_program()
-        self.window.destroy()
-        main.set_main_window(None)
-        pump()
+        self.close_main_window()
         super().tearDown()
 
     def _labels(self):
@@ -6203,9 +6193,7 @@ class RestartOnABookTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
-                          constants.THUMBNAIL_PATH):
-            os.makedirs(directory, exist_ok=True)
+        self.make_user_directories()
         icons.load_icons()
         keybindings._manager = None
         self.window = None
@@ -6282,9 +6270,7 @@ class WhatAPageCarriesThroughASaveTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
-                          constants.THUMBNAIL_PATH):
-            os.makedirs(directory, exist_ok=True)
+        self.make_user_directories()
         icons.load_icons()
         keybindings._manager = None
         fresh_bookmarks_store()
@@ -6297,10 +6283,7 @@ class WhatAPageCarriesThroughASaveTest(MComixTest):
         self._opened(4)
 
     def tearDown(self):
-        self.window.terminate_program()
-        self.window.destroy()
-        main.set_main_window(None)
-        pump()
+        self.close_main_window()
         fresh_bookmarks_store()
         super().tearDown()
 
@@ -6462,9 +6445,7 @@ class ResumeAfterSaveAndQuitTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
-                          constants.THUMBNAIL_PATH):
-            os.makedirs(directory, exist_ok=True)
+        self.make_user_directories()
         icons.load_icons()
 
     def _window(self, path=None):
@@ -6541,9 +6522,7 @@ class InvertedColoursAtStartUpTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
-                          constants.THUMBNAIL_PATH):
-            os.makedirs(directory, exist_ok=True)
+        self.make_user_directories()
         icons.load_icons()
         prefs['invert color'] = True
         self.window = main.MainWindow()
@@ -6551,10 +6530,7 @@ class InvertedColoursAtStartUpTest(MComixTest):
         pump()
 
     def tearDown(self):
-        self.window.terminate_program()
-        self.window.destroy()
-        main.set_main_window(None)
-        pump()
+        self.close_main_window()
         super().tearDown()
 
     def test_the_action_starts_as_inverted_as_the_pages(self):
@@ -6581,9 +6557,7 @@ class ZoomModeAtStartUpTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
-                          constants.THUMBNAIL_PATH):
-            os.makedirs(directory, exist_ok=True)
+        self.make_user_directories()
         icons.load_icons()
         prefs['zoom mode'] = constants.ZoomMode.MANUAL
         self.seen = []
@@ -6601,10 +6575,7 @@ class ZoomModeAtStartUpTest(MComixTest):
         pump()
 
     def tearDown(self):
-        self.window.terminate_program()
-        self.window.destroy()
-        main.set_main_window(None)
-        pump()
+        self.close_main_window()
         super().tearDown()
 
     def test_manual_mode_is_reached_without_passing_through_another(self):
@@ -6625,9 +6596,7 @@ class StartUpOptionsTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
-                          constants.THUMBNAIL_PATH):
-            os.makedirs(directory, exist_ok=True)
+        self.make_user_directories()
         icons.load_icons()
         keybindings._manager = None
 
@@ -6643,10 +6612,7 @@ class StartUpOptionsTest(MComixTest):
         main_dialog._close_dialog()
         if self.window.slideshow.is_running():
             self.window.actiongroup.get_action('slideshow').activate()
-        self.window.terminate_program()
-        self.window.destroy()
-        main.set_main_window(None)
-        pump()
+        self.close_main_window()
 
     def _active(self, name):
         return self.window.actiongroup.get_action(name).get_active()
@@ -6744,9 +6710,7 @@ class ResumeAtTheFileOfThePageTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
-                          constants.THUMBNAIL_PATH):
-            os.makedirs(directory, exist_ok=True)
+        self.make_user_directories()
         icons.load_icons()
         self.window = None
 

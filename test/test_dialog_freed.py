@@ -9,7 +9,6 @@ the user would, and checks that nothing is left holding it.
 """
 
 import gc
-import os
 import threading
 import types
 import unittest.mock
@@ -113,9 +112,7 @@ class MainWindowDialogsFreedTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
-                          constants.THUMBNAIL_PATH):
-            os.makedirs(directory, exist_ok=True)
+        self.make_user_directories()
         icons.load_icons()
         self.window = main.MainWindow(
             open_path=get_testfile_path('archives', '01-ZIP-Normal.zip'))
@@ -129,10 +126,7 @@ class MainWindowDialogsFreedTest(MComixTest):
         for window in Gtk.Window.list_toplevels():
             if window is not self.window and window.get_visible():
                 window.destroy()
-        self.window.terminate_program()
-        self.window.destroy()
-        main.set_main_window(None)
-        pump()
+        self.close_main_window()
         super().tearDown()
 
     def _opened_by(self, activate):

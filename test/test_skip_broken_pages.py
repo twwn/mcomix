@@ -8,7 +8,6 @@ import zipfile
 
 from . import MComixTest, get_testfile_path, pump, wait_for
 
-from mcomix import constants
 from mcomix import icons
 from mcomix import main
 from mcomix.preferences import prefs
@@ -18,9 +17,7 @@ class SkipBrokenPagesTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
-                          constants.THUMBNAIL_PATH):
-            os.makedirs(directory, exist_ok=True)
+        self.make_user_directories()
         prefs['skip broken pages'] = True
         prefs['default double page'] = False
         icons.load_icons()
@@ -29,10 +26,7 @@ class SkipBrokenPagesTest(MComixTest):
         pump()
 
     def tearDown(self):
-        self.window.terminate_program()
-        self.window.destroy()
-        main.set_main_window(None)
-        pump()
+        self.close_main_window()
         super().tearDown()
 
     def _book(self, pages):
@@ -203,9 +197,7 @@ class SkipBrokenPagesInTheSidebarTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
-                          constants.THUMBNAIL_PATH):
-            os.makedirs(directory, exist_ok=True)
+        self.make_user_directories()
         prefs['skip broken pages'] = True
         prefs['default double page'] = False
         prefs['show thumbnails'] = True
@@ -216,10 +208,7 @@ class SkipBrokenPagesInTheSidebarTest(MComixTest):
         pump()
 
     def tearDown(self):
-        self.window.terminate_program()
-        self.window.destroy()
-        main.set_main_window(None)
-        pump()
+        self.close_main_window()
         super().tearDown()
 
     _book = SkipBrokenPagesTest._book

@@ -6,7 +6,6 @@ it draws is a cursor, so nothing raises when it draws the wrong thing.
 """
 
 import hashlib
-import os
 import unittest.mock
 
 from gi.repository import GdkPixbuf, GLib
@@ -134,19 +133,14 @@ class LensCursorTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
-                          constants.THUMBNAIL_PATH):
-            os.makedirs(directory, exist_ok=True)
+        self.make_user_directories()
         icons.load_icons()
         self.window = main.MainWindow()
         main.set_main_window(self.window)
         pump()
 
     def tearDown(self):
-        self.window.terminate_program()
-        self.window.destroy()
-        main.set_main_window(None)
-        pump()
+        self.close_main_window()
         super().tearDown()
 
     def _open_a_file(self):
@@ -201,9 +195,7 @@ class LensFollowsThePagesTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
-                          constants.THUMBNAIL_PATH):
-            os.makedirs(directory, exist_ok=True)
+        self.make_user_directories()
         icons.load_icons()
         # A window of a size the test knows, whatever the screen, as
         # test_key_press's scrolling tests have it (_ScrollablePageTest).
@@ -240,10 +232,7 @@ class LensFollowsThePagesTest(MComixTest):
         self.lens._motion_event(None, width / 2, height / 2)
 
     def tearDown(self):
-        self.window.terminate_program()
-        self.window.destroy()
-        main.set_main_window(None)
-        pump()
+        self.close_main_window()
         super().tearDown()
 
     def _wait_for_the_page(self):

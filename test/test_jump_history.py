@@ -1,12 +1,10 @@
 """Tests for Go back and Go forward over the pages jumps left (issue 72)."""
 
-import os
 import random
 import unittest.mock
 
 from . import MComixTest, get_testfile_path, pump, wait_for
 
-from mcomix import constants
 from mcomix import icons
 from mcomix import keybindings
 from mcomix import main
@@ -17,30 +15,22 @@ class JumpHistoryTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
-                          constants.THUMBNAIL_PATH):
-            os.makedirs(directory, exist_ok=True)
+        self.make_user_directories()
         prefs['show menubar'] = True
         icons.load_icons()
         keybindings._manager = None
         self.window = main.MainWindow(
             open_path=get_testfile_path('archives', '01-ZIP-Normal.zip'))
         main.set_main_window(self.window)
-        self.addCleanup(self._close)
+        # Only terminate_program() stops the worker threads and closes
+        # the library the window opened.
+        self.addCleanup(self.close_main_window)
         self.assertTrue(wait_for(
             lambda: self.window.filehandler.file_loaded
             and self.window.imagehandler.get_number_of_pages() == 4,
             seconds=20))
         pump()
         self.assertEqual(1, self._page())
-
-    def _close(self):
-        # Only terminate_program() stops the worker threads and closes
-        # the library the window opened.
-        self.window.terminate_program()
-        self.window.destroy()
-        main.set_main_window(None)
-        pump()
 
     def _page(self):
         return self.window.imagehandler.get_current_page()

@@ -1,11 +1,9 @@
 """The Enhance image dialog, which draws a histogram of the page shown."""
 
-import os
 from unittest import mock
 
 from . import MComixTest, get_testfile_path, pump, wait_for
 
-from mcomix import constants
 from mcomix import enhance_dialog
 from mcomix import histogram
 from mcomix import icons
@@ -18,9 +16,7 @@ class EnhanceDialogTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        for directory in (constants.CONFIG_DIR, constants.DATA_DIR,
-                          constants.THUMBNAIL_PATH):
-            os.makedirs(directory, exist_ok=True)
+        self.make_user_directories()
         icons.load_icons()
         self.window = main.MainWindow(
             open_path=get_testfile_path('archives', '01-ZIP-Normal.zip'))
@@ -34,10 +30,7 @@ class EnhanceDialogTest(MComixTest):
 
     def tearDown(self):
         enhance_dialog._close_dialog()
-        self.window.terminate_program()
-        self.window.destroy()
-        main.set_main_window(None)
-        pump()
+        self.close_main_window()
         super().tearDown()
 
     def _histograms_drawn_turning_a_page(self):
