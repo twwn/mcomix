@@ -7,8 +7,8 @@ import unittest.mock
 
 from gi.repository import Gdk, GLib, Gtk
 
-from . import (MComixTest, MainWindowLaterTest, get_testfile_path, pump,
-               visible_prompts, wait_for)
+from . import (MComixTest, MainWindowLaterTest, NORMAL_ZIP, get_testfile_path,
+               pump, visible_prompts, wait_for)
 
 from mcomix import bookmark_backend
 from mcomix import bookmark_menu_item
@@ -493,7 +493,7 @@ class BookmarkInTheOpenBookTest(MainWindowLaterTest):
         self.assertEqual(3, self.window.imagehandler.get_current_page())
 
     def test_a_bookmark_in_the_open_archive_only_turns_the_page(self):
-        self._open(get_testfile_path('archives', '01-ZIP-Normal.zip'), 4)
+        self._open(NORMAL_ZIP, 4)
         path = self.window.imagehandler.get_real_path()
         self.window.selected_pages = {1}
         self.assertFalse(self._load(path, 3, constants.ZIP),
@@ -504,7 +504,7 @@ class BookmarkInTheOpenBookTest(MainWindowLaterTest):
     def test_a_bookmark_in_an_archive_follows_its_picture(self):
         """A bookmark in an archive kept the page number alone, so sorting
         the archive the other way moved it to another picture."""
-        self._open(get_testfile_path('archives', '01-ZIP-Normal.zip'), 4)
+        self._open(NORMAL_ZIP, 4)
         self.window.set_page(2)
         pump()
         store = bookmark_backend.BookmarksStore
@@ -528,7 +528,7 @@ class BookmarkInTheOpenBookTest(MainWindowLaterTest):
     def test_it_follows_its_picture_into_a_closed_archive_as_well(self):
         """Opened from elsewhere, the archive came up at the page
         number."""
-        self._open(get_testfile_path('archives', '01-ZIP-Normal.zip'), 4)
+        self._open(NORMAL_ZIP, 4)
         self.window.set_page(2)
         pump()
         store = bookmark_backend.BookmarksStore
@@ -551,23 +551,21 @@ class BookmarkInTheOpenBookTest(MainWindowLaterTest):
         """The second MComix opens the archive afresh, sorted as the
         preferences say, and finds the page by its file as a bookmark
         opened here does."""
-        self._open(get_testfile_path('archives', '01-ZIP-Normal.zip'), 4)
+        self._open(NORMAL_ZIP, 4)
         bookmark = bookmark_menu_item._Bookmark(
             self.window, self.window.filehandler, 'book',
-            get_testfile_path('archives', '01-ZIP-Normal.zip'), 2, 4,
+            NORMAL_ZIP, 2, 4,
             constants.ZIP, datetime.datetime.now(),
             member='images/02-JPG-RGB.jpg')
         with unittest.mock.patch.object(process, 'launch_mcomix') as launch:
             bookmark.open_in_new_instance()
-        launch.assert_called_once_with(
-            get_testfile_path('archives', '01-ZIP-Normal.zip'), 2,
-            'images/02-JPG-RGB.jpg')
+        launch.assert_called_once_with(NORMAL_ZIP, 2, 'images/02-JPG-RGB.jpg')
 
     def test_a_window_opened_at_the_file_of_a_page_shows_it(self):
         """What the second MComix does with it: the file decides over
         the page number."""
         self.open_main_window(
-            open_path=get_testfile_path('archives', '01-ZIP-Normal.zip'),
+            open_path=NORMAL_ZIP,
             open_page=2, open_member='images/03-PNG-RGB.png')
         self.assertTrue(wait_for(
             lambda: not self.window.filehandler.file_loading

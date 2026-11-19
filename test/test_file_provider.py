@@ -5,7 +5,7 @@ import sys
 import tempfile
 from unittest import mock
 
-from . import MComixTest, get_testfile_path
+from . import MComixTest, NORMAL_ZIP, get_testfile_path
 
 from mcomix import constants
 from mcomix import file_provider
@@ -506,7 +506,7 @@ class PreDefinedFileProviderTest(MComixTest):
     both in it."""
 
     def test_each_kind_is_listed_under_its_own_mode(self) -> None:
-        archive = get_testfile_path('archives', '01-ZIP-Normal.zip')
+        archive = NORMAL_ZIP
         image = get_testfile_path('images', 'red.png')
         provider = PreDefinedFileProvider([archive, image])
         self.assertEqual([image],
@@ -567,8 +567,7 @@ class GetFileProviderTest(MComixTest):
     def setUp(self) -> None:
         super().setUp()
         self.book = os.path.join(self.tmp_dir, 'book.cbz')
-        shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'),
-                    self.book)
+        shutil.copy(NORMAL_ZIP, self.book)
 
     def test_one_name_is_walked_among_its_neighbours(self) -> None:
         provider = file_provider.get_file_provider([self.book])

@@ -20,7 +20,10 @@ from gi.repository import Gdk, Gio, GLib, Gsk, Gtk
 from . import MComixTest, wait_for, wait_frames
 
 from mcomix import theme
+from mcomix import image_tools
+from mcomix import thumbnail_list
 from mcomix.preferences import prefs
+from mcomix.library import book_area
 
 
 def _painted(window, kind, done):
@@ -558,7 +561,6 @@ class ViewColourTest(MComixTest):
         return painted
 
     def test_the_thumbnail_bar_keeps_its_colour_whatever_the_scheme(self):
-        from mcomix import image_tools, thumbnail_list
         view = thumbnail_list.ThumbnailListView()
         view.set_background(self._COLOUR,
                             image_tools.text_color_for_background_color(
@@ -567,8 +569,6 @@ class ViewColourTest(MComixTest):
             self.assertEqual(colour, 'rgb(1,2,3)', scheme)
 
     def test_the_library_covers_stay_on_black_whatever_the_scheme(self):
-        from mcomix import thumbnail_list
-        from mcomix.library import book_area
         view = thumbnail_list.ThumbnailGridView()
         view.add_css_class(book_area._BookArea._BLACK_CSS_CLASS)
         book_area._paint_black(view.get_display(),

@@ -4,7 +4,7 @@ import unittest.mock
 
 from gi.repository import Gdk, Gio
 
-from . import MainWindowOpenTest, get_testfile_path
+from . import MainWindowOpenTest, NORMAL_ZIP, get_testfile_path
 
 
 class DropTest(MainWindowOpenTest):
@@ -30,8 +30,7 @@ class DropTest(MainWindowOpenTest):
 
     def test_a_book_dropped_is_opened(self):
         self.assertTrue(self._drop([self._file('01-ZIP-Normal.zip')]))
-        self.opened.assert_called_once_with(
-            get_testfile_path('archives', '01-ZIP-Normal.zip'))
+        self.opened.assert_called_once_with(NORMAL_ZIP)
 
     def test_several_books_dropped_are_opened_together(self):
         names = ('01-ZIP-Normal.zip', '02-TAR-Normal.tar')

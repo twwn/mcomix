@@ -10,7 +10,7 @@ import unittest.mock
 
 from gi.repository import GdkPixbuf, GLib
 
-from . import (MComixTest, MainWindowLaterTest, MainWindowOpenTest,
+from . import (MComixTest, MainWindowLaterTest, MainWindowOpenTest, NORMAL_ZIP,
                get_testfile_path, pump, wait_for)
 from . import test_key_press
 
@@ -131,8 +131,7 @@ class LensCursorTest(MainWindowOpenTest):
     """
 
     def _open_a_file(self):
-        self.window.filehandler.open_file(
-            get_testfile_path('archives', '01-ZIP-Normal.zip'))
+        self.window.filehandler.open_file(NORMAL_ZIP)
         self.wait_for_pages()
         pump()
 

@@ -16,12 +16,14 @@ import weakref
 
 from gi.repository import Gtk
 
-from . import MComixTest, get_testfile_path, pump, wait_for
+from . import MComixTest, NORMAL_ZIP, get_testfile_path, pump, wait_for
 
 from mcomix import constants
 from mcomix import dialog
 from mcomix import file_chooser_library_dialog
 from mcomix import message_dialog
+from mcomix import file_chooser_base_dialog
+from mcomix import file_provider
 from mcomix.library import add_progress_dialog
 from mcomix.library import book_properties
 from mcomix.library import main_dialog
@@ -213,13 +215,11 @@ class MainWindowDialogsFreedTest(MComixTest):
         """A file slow to look into, as one on a network share is, kept
         the closed chooser alive until the thread finding its details
         was done: the floors job on CI caught it once."""
-        from mcomix import file_chooser_base_dialog
         self._freed_while_previewing(
             get_testfile_path('images', 'red.png'),
             file_chooser_base_dialog, 'file_details')
 
     def test_a_file_chooser_closed_while_a_folder_is_looked_into(self):
-        from mcomix import file_provider
         self._freed_while_previewing(
             get_testfile_path('images'),
             file_provider.OrderedFileProvider, 'list_files')
@@ -256,8 +256,7 @@ class MainWindowDialogsFreedTest(MComixTest):
         to close; only to find it gone afterwards."""
         library = self._open_library()
         try:
-            library.add_books(
-                [get_testfile_path('archives', '01-ZIP-Normal.zip')])
+            library.add_books([NORMAL_ZIP])
             pump()
             gc.collect()
             left = [dialog for dialog in gc.get_objects()
@@ -271,10 +270,8 @@ class MainWindowDialogsFreedTest(MComixTest):
     def test_the_properties_of_a_book_in_the_library(self):
         library = self._open_library()
         try:
-            library.add_books(
-                [get_testfile_path('archives', '01-ZIP-Normal.zip')])
-            book = library.backend.get_book_by_path(
-                get_testfile_path('archives', '01-ZIP-Normal.zip'))
+            library.add_books([NORMAL_ZIP])
+            book = library.backend.get_book_by_path(NORMAL_ZIP)
             self.assertFreedOnClose(
                 lambda: book_properties.BookPropertiesDialog(
                     library, library.backend, [book]))
@@ -285,8 +282,7 @@ class MainWindowDialogsFreedTest(MComixTest):
         def activate():
             self._ui_action('library')()
             pump()
-            main_dialog._dialog.add_books(
-                [get_testfile_path('archives', '01-ZIP-Normal.zip')])
+            main_dialog._dialog.add_books([NORMAL_ZIP])
             main_dialog._dialog.book_area.display_covers(
                 constants.COLLECTION_ALL)
             covers = main_dialog._dialog.book_area._covers

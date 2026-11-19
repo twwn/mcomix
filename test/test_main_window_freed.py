@@ -14,7 +14,7 @@ from unittest import mock
 
 from gi.repository import Gtk
 
-from . import MComixTest, get_testfile_path, pump, wait_for
+from . import MComixTest, NORMAL_ZIP, pump, wait_for
 from .test_dialog_freed import _holders
 
 from mcomix import icons
@@ -60,8 +60,7 @@ class MainWindowFreedTest(MComixTest):
         self.assertFreedOnClose()
 
     def test_a_window_with_a_book(self):
-        self.assertFreedOnClose(
-            get_testfile_path('archives', '01-ZIP-Normal.zip'))
+        self.assertFreedOnClose(NORMAL_ZIP)
 
     def test_the_title_bar_is_left_to_the_window(self):
         # On Windows GTK draws the title bar itself, in a header bar it

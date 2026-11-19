@@ -3,15 +3,19 @@
 import contextlib
 import datetime
 import os
+import shutil
 import sqlite3
 import types
 import unittest.mock
 import warnings
+import zipfile
+
+import PIL.Image
 
 from gi.repository import Gdk, GdkPixbuf, Gio, GLib, Gtk
 
-from . import (MComixTest, children, hold_open, pump, take_activation_from,
-               wait_for)
+from . import (MComixTest, NORMAL_ZIP, children, get_testfile_path, hold_open,
+               pump, take_activation_from, wait_for)
 from .test_theme import background_of
 
 from mcomix import bookmark_backend
@@ -20,8 +24,11 @@ from mcomix import constants
 from mcomix import file_actions
 from mcomix import message_dialog
 from mcomix import process
+from mcomix import image_tools
+from mcomix import preview
+from mcomix import thumbnail_tools
 from mcomix.dialog import Response
-from mcomix.library import backend_types
+from mcomix.library import backend, backend_types
 from mcomix.library import book_area
 from mcomix.preferences import prefs
 
@@ -228,7 +235,6 @@ class _CoverBackend(_Backend):
         return self._book if book == 1 else None
 
     def get_book_thumbnail(self, path, size=constants.MAX_LIBRARY_COVER_SIZE):
-        from mcomix import thumbnail_tools
         self.asked_for = size
         return thumbnail_tools.Thumbnailer(
             dst_dir=self._store, store_on_disk=True, archive_support=True,
@@ -242,7 +248,6 @@ class _KeepingBackend(_CoverBackend):
     does."""
 
     def _covers(self):
-        from mcomix import thumbnail_tools
         return thumbnail_tools.Thumbnailer(dst_dir=self._store)
 
     def get_sized_book_cover(self, path, made_for):
@@ -282,9 +287,6 @@ class KeptCoverTest(_CoverAreaTest):
 
     def setUp(self):
         super().setUp()
-        import zipfile
-        from . import get_testfile_path
-        import PIL.Image
         self.archive = os.path.join(self.tmp_dir, 'book.cbz')
         # Three times the picture's size, its Exif kept: large enough
         # for the cover stored to be 500 pixels across.
@@ -364,7 +366,6 @@ class KeptCoverTest(_CoverAreaTest):
     def test_the_cover_is_read_as_large_as_the_screen_draws_the_largest(self):
         """In the screen's own pixels: on one of twice the scale, the
         largest cover size is drawn twice as many pixels high."""
-        from mcomix import preview
         largest = preview.scaled(constants.MAX_LIBRARY_COVER_SIZE, self.area)
         self.assertEqual(largest, self.backend.asked_for)
         self.area._covers.device_scale = 2.0
@@ -387,7 +388,6 @@ class KeptCoverTest(_CoverAreaTest):
     def test_the_missing_image_is_not_kept(self):
         """It is drawn, not read, and a book whose cover could not be
         read once is tried again."""
-        import zipfile
         with zipfile.ZipFile(self.archive, 'w') as book:
             book.writestr('01.jpg', b'not an image')
         # Written within the second the first was, by the clock a
@@ -416,8 +416,6 @@ class CoverAtHandTest(_CoverAreaTest):
 
     def setUp(self):
         super().setUp()
-        import zipfile
-        from . import get_testfile_path
         self.archive = os.path.join(self.tmp_dir, 'book.cbz')
         with zipfile.ZipFile(self.archive, 'w') as book:
             book.write(get_testfile_path('images', 'landscape-no-exif.jpg'),
@@ -466,8 +464,6 @@ class TurnedCoverTest(_CoverAreaTest):
 
     def setUp(self):
         super().setUp()
-        import zipfile
-        from . import get_testfile_path
         archive = os.path.join(self.tmp_dir, 'turned.cbz')
         with zipfile.ZipFile(archive, 'w') as book:
             book.write(get_testfile_path(
@@ -492,7 +488,6 @@ class UnreadableCoverTest(_CoverAreaTest):
 
     def setUp(self):
         super().setUp()
-        import zipfile
         archive = os.path.join(self.tmp_dir, 'unreadable.cbz')
         with zipfile.ZipFile(archive, 'w') as book:
             book.writestr('01.jpg', b'not an image')
@@ -500,7 +495,6 @@ class UnreadableCoverTest(_CoverAreaTest):
             archive, os.path.join(self.tmp_dir, 'covers')))
 
     def test_the_missing_image_is_drawn_at_the_size_of_a_cover(self):
-        from mcomix import image_tools
         prefs['library cover size'] = constants.SIZE_NORMAL
         width, height = self.area._pixbuf_size(framed=False)
         icon = image_tools.missing_image_icon(width, height)
@@ -520,7 +514,6 @@ class UnreadableCoverTest(_CoverAreaTest):
     def test_the_frame_is_as_wide_as_the_thumbnails_frame(self):
         """The white frame round each cover stood out on the black they
         are shown on; it is the thumbnails' frame, which can be none."""
-        from mcomix import image_tools
         prefs['library cover size'] = constants.SIZE_NORMAL
         width, height = self.area._pixbuf_size(framed=False)
         icon = image_tools.missing_image_icon(width, height)
@@ -544,7 +537,6 @@ class UnreadableCoverTest(_CoverAreaTest):
     def test_the_tick_of_a_finished_book_leaves_the_cover_as_it_was(self):
         """The cache's covers are drawn again and again, so the tick
         goes on a copy, which without a frame nothing else makes."""
-        from mcomix import image_tools
         prefs['library cover size'] = constants.SIZE_NORMAL
         prefs['thumbnail border width'] = 0
         cover = GdkPixbuf.Pixbuf.new(GdkPixbuf.Colorspace.RGB, True, 8,
@@ -1220,8 +1212,6 @@ class DeleteFromDiskTest(MComixTest):
     def _volume_set_selected(self):
         """The three volumes of Multivolume.rar in a folder of their
         own, the first selected as the book; the folder."""
-        import shutil
-        from . import get_testfile_path
         folder = os.path.join(self.tmp_dir, 'set')
         os.makedirs(folder)
         for part in (1, 2, 3):
@@ -1543,7 +1533,45 @@ class _PathLibrary:
         self.control_area = _ControlArea()
 
 
-class MiddleClickTest(MComixTest):
+class _AreaOnScreenTest(MComixTest):
+
+    """self.area, a book area the test builds, shown in a window of its
+    own; its menu, the area and the window are closed after the test."""
+
+    def _present(self, size=None):
+        self.window = Gtk.Window()
+        if size is not None:
+            self.window.set_default_size(*size)
+        self.window.set_child(self.area)
+        self.window.present()
+
+    def tearDown(self):
+        self.area._book_menu.popdown()
+        self.area.close()
+        self.window.destroy()
+        super().tearDown()
+
+
+class _FourCoversTest(_AreaOnScreenTest):
+
+    """Four covers of _PathLibrary's books, in a window 600 by 400 and
+    laid out, so that a point can be turned into a cover's position.
+    The thumbnailer thread starts as soon as there are items, and parks
+    on a condition if nobody stops it: tearDown closes the area."""
+
+    def setUp(self):
+        super().setUp()
+        self.library = _PathLibrary()
+        self.area = book_area._BookArea(self.library)
+        self.area._covers.set_items(
+            book_area._BookItem(_Book(index, '/books/%d.cbz' % index))
+            for index in range(4))
+        self._present((600, 400))
+        self.assertTrue(wait_for(
+            lambda: self.area._covers.position_at(60, 60) >= 0))
+
+
+class MiddleClickTest(_FourCoversTest):
 
     """The middle button over a cover opens that book on its own.
 
@@ -1553,27 +1581,6 @@ class MiddleClickTest(MComixTest):
     acts on, so the coordinates have to be turned into a position, which
     needs the view laid out - hence the window.
     """
-
-    def setUp(self):
-        super().setUp()
-        self.library = _PathLibrary()
-        self.area = book_area._BookArea(self.library)
-        self.area._covers.set_items(
-            book_area._BookItem(_Book(index, '/books/%d.cbz' % index))
-            for index in range(4))
-        self.window = Gtk.Window()
-        self.window.set_default_size(600, 400)
-        self.window.set_child(self.area)
-        self.window.present()
-        self.assertTrue(wait_for(
-            lambda: self.area._covers.position_at(*self.FIRST) >= 0))
-
-    def tearDown(self):
-        # The thumbnailer thread starts as soon as there are items, and
-        # parks on a condition if nobody stops it.
-        self.area.close()
-        self.window.destroy()
-        super().tearDown()
 
     #: A point inside the first cover, and one past the last one.
     FIRST = (60, 60)
@@ -1749,25 +1756,6 @@ class _MenuLibrary:
     backend = _Backend()
     collection_area = _CollectionArea()
     main_window = _main_window()
-
-
-class _AreaOnScreenTest(MComixTest):
-
-    """self.area, a book area the test builds, shown in a window of its
-    own; its menu, the area and the window are closed after the test."""
-
-    def _present(self, size=None):
-        self.window = Gtk.Window()
-        if size is not None:
-            self.window.set_default_size(*size)
-        self.window.set_child(self.area)
-        self.window.present()
-
-    def tearDown(self):
-        self.area._book_menu.popdown()
-        self.area.close()
-        self.window.destroy()
-        super().tearDown()
 
 
 class MenuKeyTest(_AreaOnScreenTest):
@@ -1967,7 +1955,6 @@ class _MarkingLibrary:
     main_window = _main_window()
 
     def __init__(self):
-        from mcomix.library import backend
         self.backend = backend.LibraryBackend()
         self.control_area = _ControlArea()
         self.collection_area = _CollectionArea()
@@ -1981,13 +1968,10 @@ class MarkReadTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        from . import get_testfile_path
         self.library = _MarkingLibrary()
         self.addCleanup(self.library.backend.close)
-        self.assertTrue(self.library.backend.add_book(
-            get_testfile_path('archives', '01-ZIP-Normal.zip')))
-        self.book = self.library.backend.get_book_by_path(
-            get_testfile_path('archives', '01-ZIP-Normal.zip'))
+        self.assertTrue(self.library.backend.add_book(NORMAL_ZIP))
+        self.book = self.library.backend.get_book_by_path(NORMAL_ZIP)
         self.area = book_area._BookArea(self.library)
         self.addCleanup(self.area.close)
         self.area._covers.set_items([book_area._BookItem(self.book)])
@@ -2024,31 +2008,12 @@ class MarkReadTest(MComixTest):
                              .get_enabled(), name)
 
 
-class RightClickFocusTest(MComixTest):
+class RightClickFocusTest(_FourCoversTest):
 
     """A right click on a cover selects it and gives it the keyboard
     focus.  It used to leave the focus on the cover clicked before, and
     Enter, after the menu, opened that book rather than the one shown
     selected."""
-
-    def setUp(self):
-        super().setUp()
-        self.library = _PathLibrary()
-        self.area = book_area._BookArea(self.library)
-        self.area._covers.set_items(
-            book_area._BookItem(_Book(index, '/books/%d.cbz' % index))
-            for index in range(4))
-        self.window = Gtk.Window()
-        self.window.set_default_size(600, 400)
-        self.window.set_child(self.area)
-        self.window.present()
-        self.assertTrue(wait_for(
-            lambda: self.area._covers.position_at(60, 60) >= 0))
-
-    def tearDown(self):
-        self.area.close()
-        self.window.destroy()
-        super().tearDown()
 
     def _focused(self):
         """The position of the cover that holds the keyboard focus."""
@@ -2111,10 +2076,9 @@ class RenameFromLibraryTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        from . import get_testfile_path
         self.library = _RenamingLibrary()
         self.addCleanup(self.library.backend.close)
-        path = get_testfile_path('archives', '01-ZIP-Normal.zip')
+        path = NORMAL_ZIP
         self.assertTrue(self.library.backend.add_book(path))
         self.book = self.library.backend.get_book_by_path(path)
         self.area = book_area._BookArea(self.library)
@@ -2167,7 +2131,6 @@ class MoveFromLibraryTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        from . import get_testfile_path
         self.library = _RenamingLibrary()
         self.addCleanup(self.library.backend.close)
         self.items = []

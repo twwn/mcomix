@@ -2,7 +2,7 @@ import unittest
 import tempfile
 import os
 
-from . import get_testfile_path
+from . import NORMAL_ZIP, get_testfile_path
 
 from mcomix import constants
 from mcomix import last_read_page
@@ -17,7 +17,7 @@ class OpenLastPageBasicTest(unittest.TestCase):
         constants.LIBRARY_DATABASE_PATH = self.db
 
         # Dummy archive (files are checked for existance)
-        self.archive1 = get_testfile_path('archives', '01-ZIP-Normal.zip')
+        self.archive1 = NORMAL_ZIP
         self.archive2 = get_testfile_path('archives', '02-TAR-Normal.tar')
 
         # Library backend

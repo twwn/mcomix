@@ -20,9 +20,10 @@ import warnings
 
 from gi.repository import Gdk, GdkPixbuf, Gio, GLib, Gtk
 
-from . import (MComixTest, MainWindowLaterTest, children, descendants,
-               fresh_bookmarks_store, get_testfile_path, hold_open,
-               prompts_over, pump, sample_pages, wait_for, windows_refusal)
+from . import (MComixTest, MainWindowLaterTest, NORMAL_ZIP, children,
+               descendants, fresh_bookmarks_store, get_testfile_path,
+               hold_open, prompts_over, pump, sample_pages, wait_for,
+               windows_refusal)
 
 from mcomix import archive_packer
 from mcomix import bookmark_backend
@@ -47,10 +48,13 @@ from mcomix import rename_dialog
 from mcomix import tools
 from mcomix import ui
 from mcomix import widgets
+from mcomix import openwith
+from mcomix import preferences_dialog
+from mcomix import theme
 from mcomix.archive import archive_base
 from mcomix.archive import password as archive_password
 from mcomix.dialog import Response
-from mcomix.library import backend
+from mcomix.library import backend, main_dialog
 from mcomix.preferences import prefs
 
 
@@ -87,8 +91,7 @@ class MainWindowTest(MComixTest):
         prefs['show toolbar'] = True
         prefs['show menubar'] = True
         icons.load_icons()
-        self.open_main_window(
-            open_path=get_testfile_path('archives', '01-ZIP-Normal.zip'))
+        self.open_main_window(open_path=NORMAL_ZIP)
         self._pump()
 
     def tearDown(self):
@@ -195,7 +198,6 @@ class MainWindowTest(MComixTest):
 
     def test_pitch_black_paints_the_page_area_black(self):
         # Whatever colour the preference holds, or the picture suggests.
-        from mcomix import theme
         prefs['colour scheme'] = theme.BLACK
         self.window.set_bg_colour([0.5, 0.5, 0.5, 1.0])
         self.assertEqual(self.window.get_bg_colour(), [0.0, 0.0, 0.0, 1.0])
@@ -267,8 +269,6 @@ class MainWindowTest(MComixTest):
         # A margin on a toplevel falls outside the part of the surface
         # it paints, so it comes out as a transparent strip along the
         # edges rather than as a border.
-        from gi.repository import Gtk
-        from mcomix import widgets
         window = Gtk.Window()
         child = Gtk.Box()
         window.set_child(child)
@@ -423,8 +423,7 @@ class MainWindowTest(MComixTest):
         """The dialog deletes a file from the disk, so Enter must answer
         it with the button that does nothing."""
         copied = os.path.join(self.tmp_dir, 'delete-me.zip')
-        shutil.copyfile(get_testfile_path('archives', '01-ZIP-Normal.zip'),
-                        copied)
+        shutil.copyfile(NORMAL_ZIP, copied)
         self.window.filehandler.open_file(copied)
         self._pump()
         self.window.file_actions.delete()
@@ -566,7 +565,6 @@ class MainWindowTest(MComixTest):
         self.assertEqual(constants.SHOW_DOUBLE_AS_ONE_WIDE, prefs[key])
 
     def test_the_title_page_toggle_follows_the_preferences_dialog(self):
-        from mcomix import preferences_dialog
         toggle = self.window.actiongroup.get_action('title_page_alone')
         toggle.show_active(False)
         preferences_dialog.open_dialog(None, self.window)
@@ -942,7 +940,7 @@ class MainWindowTest(MComixTest):
         """Open a copy of the fixture archive, Book.cbz in the test's
         folder, and return its path once its pages are listed."""
         source = os.path.join(self.tmp_dir, 'Book.cbz')
-        shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'), source)
+        shutil.copy(NORMAL_ZIP, source)
         self.window.filehandler.open_file(source)
         self.assertTrue(
             wait_for(lambda: self.window.imagehandler
@@ -1007,7 +1005,6 @@ class MainWindowTest(MComixTest):
     def test_a_number_key_runs_that_command_of_open_with(self):
         """Counted over the commands alone: a separator is no command a
         key could run."""
-        from mcomix import openwith
         prefs['openwith commands'] = [
             ('First', 'first', '', False), ('-', '', '', False),
             ('Second', 'second', '', False)]
@@ -1768,8 +1765,7 @@ class MainWindowTest(MComixTest):
     def test_a_random_archive_is_another_in_the_folder(self):
         """Upstream feature request 121."""
         for name in ('Earlier.cbz', 'Later.cbz'):
-            shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'),
-                        os.path.join(self.tmp_dir, name))
+            shutil.copy(NORMAL_ZIP, os.path.join(self.tmp_dir, name))
         source = self._movable_book()
         offered = []
         with unittest.mock.patch(
@@ -1794,8 +1790,7 @@ class MainWindowTest(MComixTest):
         others = []
         for name in ('a.cbz', 'b.cbz', 'c.cbz'):
             others.append(os.path.join(self.tmp_dir, name))
-            shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'),
-                        others[-1])
+            shutil.copy(NORMAL_ZIP, others[-1])
         source = self._movable_book()
         self.window.actiongroup.get_action('shuffle_books').activate()
         self.assertTrue(prefs['shuffle books'])
@@ -2356,7 +2351,7 @@ class MainWindowTest(MComixTest):
         trash had been tried: turning the offer down kept the file but
         not the place in it."""
         later = os.path.join(self.tmp_dir, 'Next.cbz')
-        shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'), later)
+        shutil.copy(NORMAL_ZIP, later)
         source = self._movable_book()
         self.window.set_page(3)
         self._pump()
@@ -2370,7 +2365,7 @@ class MainWindowTest(MComixTest):
 
     def test_taking_the_offer_opens_the_next_archive(self):
         later = os.path.join(self.tmp_dir, 'Next.cbz')
-        shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'), later)
+        shutil.copy(NORMAL_ZIP, later)
         source = self._movable_book()
         dialog = self._refused_by_the_trash(source)
         dialog.get_widget_for_response(Response.OK).emit('clicked')
@@ -2380,14 +2375,13 @@ class MainWindowTest(MComixTest):
 
     def test_deleting_an_archive_opens_the_next_in_its_folder(self):
         later = os.path.join(self.tmp_dir, 'Next.cbz')
-        shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'), later)
+        shutil.copy(NORMAL_ZIP, later)
         self._deleted_movable_book()
         self.assertEqual(self.window.filehandler.get_path_to_base(), later)
 
     def test_deleting_the_last_archive_opens_the_one_before(self):
         earlier = os.path.join(self.tmp_dir, 'Earlier.cbz')
-        shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'),
-                    earlier)
+        shutil.copy(NORMAL_ZIP, earlier)
         self._deleted_movable_book()
         self.assertEqual(self.window.filehandler.get_path_to_base(), earlier)
 
@@ -2953,8 +2947,7 @@ class MainWindowTest(MComixTest):
         first = os.path.join(self.tmp_dir, 'a.cbz')
         second = os.path.join(self.tmp_dir, 'b.cbz')
         for path in (first, second):
-            shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'),
-                        path)
+            shutil.copy(NORMAL_ZIP, path)
         with zipfile.ZipFile(second) as untouched:
             second_names = untouched.namelist()
         self.window.filehandler.open_file(first)
@@ -3097,7 +3090,7 @@ class MainWindowTest(MComixTest):
 
     def test_a_book_saved_twice_is_not_asked_about_its_own_save(self):
         source = os.path.join(self.tmp_dir, 'Book.cbz')
-        shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'), source)
+        shutil.copy(NORMAL_ZIP, source)
         self.window.filehandler.open_file(source)
         self._ready()
         actions = self.window.file_actions
@@ -3123,8 +3116,7 @@ class MainWindowTest(MComixTest):
         books = []
         for number in (1, 2, 3, 4):
             path = os.path.join(folder, 'Book %d.cbz' % number)
-            shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'),
-                        path)
+            shutil.copy(NORMAL_ZIP, path)
             # Newest first: Book 4, 3, 2, 1.
             os.utime(path, (1_000_000_000 + number, 1_000_000_000 + number))
             books.append(path)
@@ -3208,7 +3200,7 @@ class MainWindowTest(MComixTest):
         every page into the archive root, so there is no folder left for
         the entry to stand for."""
         source = os.path.join(self.tmp_dir, 'Book.cbz')
-        shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'), source)
+        shutil.copy(NORMAL_ZIP, source)
         with zipfile.ZipFile(source) as original:
             self.assertTrue(
                 [info.filename for info in original.infolist()
@@ -3437,7 +3429,7 @@ class MainWindowTest(MComixTest):
         os.mkdir(first)
         os.mkdir(second)
         book = os.path.join(first, 'book.zip')
-        shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'), book)
+        shutil.copy(NORMAL_ZIP, book)
         shutil.copy(get_testfile_path('images', '03-PNG-RGB.png'), second)
         prefs['auto open next archive'] = True
         prefs['auto open next directory'] = True
@@ -3698,7 +3690,7 @@ class MainWindowTest(MComixTest):
         files in the window that is already open" is set."""
         self._ready()
         book = os.path.join(self.tmp_dir, 'Handed over.cbz')
-        shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'), book)
+        shutil.copy(NORMAL_ZIP, book)
         with unittest.mock.patch.object(self.window, 'present') as shown:
             self.window.open_from_outside([book], 2)
         shown.assert_called_once_with()
@@ -4159,7 +4151,7 @@ class MainWindowTest(MComixTest):
     def _movable_book(self):
         """A copy of the fixture archive that a test may move about."""
         source = os.path.join(self.tmp_dir, 'Movable.cbz')
-        shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'), source)
+        shutil.copy(NORMAL_ZIP, source)
         self.window.filehandler.open_file(source)
         self._ready()
         return source
@@ -4558,8 +4550,7 @@ class MainWindowTest(MComixTest):
         others = []
         for name in ('Other.cbz', 'Taken.cbz'):
             other = os.path.join(self.tmp_dir, name)
-            shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'),
-                        other)
+            shutil.copy(NORMAL_ZIP, other)
             self.assertTrue(library.add_book(other))
             others.append(other)
         with open(os.path.join(destination, 'Taken.cbz'), 'wb') as handle:
@@ -4597,7 +4588,7 @@ class MainWindowTest(MComixTest):
         and the renamed one's records follow it."""
         source = self._movable_book()
         other = os.path.join(self.tmp_dir, 'Other.cbz')
-        shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'), other)
+        shutil.copy(NORMAL_ZIP, other)
         library = backend.LibraryBackend()
         self.assertTrue(library.add_book(other))
         recent = self.window.uimanager.recent
@@ -6023,8 +6014,7 @@ class PageMenuSubmenusTest(MComixTest):
     def test_they_are_back_when_a_book_is_opened_again(self):
         self.window.filehandler.close_file()
         pump()
-        self.window.filehandler.open_file(
-            get_testfile_path('archives', '01-ZIP-Normal.zip'))
+        self.window.filehandler.open_file(NORMAL_ZIP)
         self.wait_for_pages()
         shown = self._shown()
         for name in self._names():
@@ -6107,7 +6097,7 @@ class RestartOnABookTest(MComixTest):
     def test_an_archive_is_reopened_at_the_file_of_its_page(self):
         """By its name, which finds the page however the archive is
         sorted by the time it is opened again."""
-        archive = get_testfile_path('archives', '01-ZIP-Normal.zip')
+        archive = NORMAL_ZIP
         self._reading(archive, 4, 3)
         self.assertEqual((archive, 3, 'images/03-PNG-RGB.png'),
                          self._restarted_with())
@@ -6138,8 +6128,7 @@ class WhatAPageCarriesThroughASaveTest(MComixTest):
         icons.load_icons()
         fresh_bookmarks_store()
         self.book = os.path.join(self.tmp_dir, 'book.zip')
-        shutil.copyfile(get_testfile_path('archives', '01-ZIP-Normal.zip'),
-                        self.book)
+        shutil.copyfile(NORMAL_ZIP, self.book)
         self.open_main_window(open_path=self.book)
         self.handler = self.window.filehandler
         self._opened(4)
@@ -6350,8 +6339,7 @@ class ResumeAfterSaveAndQuitTest(MComixTest):
         return left, self._where(again)
 
     def test_an_archive_opens_at_the_page_it_was_left_on(self):
-        left, again = self._quit_and_start_again(
-            get_testfile_path('archives', '01-ZIP-Normal.zip'), 3)
+        left, again = self._quit_and_start_again(NORMAL_ZIP, 3)
         self.assertEqual((3, '03-PNG-RGB.png'), left)
         self.assertEqual(left, again)
 
@@ -6361,8 +6349,7 @@ class ResumeAfterSaveAndQuitTest(MComixTest):
         self.assertEqual(left, again)
 
     def test_a_plain_quit_before_it_opens_nothing(self):
-        window = self._window(
-            get_testfile_path('archives', '01-ZIP-Normal.zip'))
+        window = self._window(NORMAL_ZIP)
         self.assertTrue(wait_for(
             lambda: window.imagehandler.get_number_of_pages() > 0))
         window.write_config_files()
@@ -6454,7 +6441,6 @@ class StartUpOptionsTest(MComixTest):
         return self.window
 
     def _close(self):
-        from mcomix.library import main_dialog
         main_dialog._close_dialog()
         if self.window.slideshow.is_running():
             self.window.actiongroup.get_action('slideshow').activate()
@@ -6499,9 +6485,7 @@ class StartUpOptionsTest(MComixTest):
         """"mcomix --slideshow book.cbz" started no slideshow: the action
         was activated as the window was built, while the book was still
         being read, and an action is not usable without a book open."""
-        self._start(open_path=get_testfile_path('archives',
-                                                '01-ZIP-Normal.zip'),
-                    is_slideshow=True)
+        self._start(open_path=NORMAL_ZIP, is_slideshow=True)
         self.assertTrue(wait_for(lambda: self.window.filehandler.file_loaded))
         pump()
         self.assertTrue(self.window.slideshow.is_running())
@@ -6523,7 +6507,6 @@ class StartUpOptionsTest(MComixTest):
         self.assertTrue(self.window.slideshow.is_running())
 
     def test_the_library_can_be_asked_for_at_start(self):
-        from mcomix.library import main_dialog
         self._start(show_library=True)
         self.assertIsNotNone(main_dialog.get_dialog())
 
@@ -6555,7 +6538,7 @@ class ResumeAtTheFileOfThePageTest(MainWindowLaterTest):
     was kept, rather than at the page number."""
 
     def test_the_file_of_the_page_decides_over_its_number(self):
-        path = get_testfile_path('archives', '01-ZIP-Normal.zip')
+        path = NORMAL_ZIP
         with open(constants.FILEINFO_PICKLE_PATH, 'wb') as stored:
             pickle.dump([path, 1], stored)
             pickle.dump('images/03-PNG-RGB.png', stored)

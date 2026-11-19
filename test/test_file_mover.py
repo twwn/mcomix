@@ -2,10 +2,11 @@
 
 import errno
 import os
+import shutil
 import types
 import unittest.mock
 
-from . import MComixTest
+from . import MComixTest, get_testfile_path
 
 from mcomix import file_mover
 
@@ -105,8 +106,6 @@ class FileMoverTest(MComixTest):
 
     def _volume_set(self):
         """The three volumes of Multivolume.rar in the source folder."""
-        import shutil
-        from . import get_testfile_path
         volumes = []
         for part in (1, 2, 3):
             volume = os.path.join(self.source, 'Set.part%d.rar' % part)

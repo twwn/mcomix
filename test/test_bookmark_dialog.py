@@ -19,6 +19,7 @@ from mcomix import bookmark_dialog
 from mcomix import bookmark_menu_item
 from mcomix import constants
 from mcomix import tools
+from mcomix import message_dialog
 from mcomix.dialog import Response
 from mcomix.preferences import prefs
 
@@ -257,7 +258,6 @@ class BookmarksDialogTest(MComixTest):
 
     def _dialogs(self):
         """The prompts the dialog has put on screen."""
-        from mcomix import message_dialog
         return [window for window in Gtk.Window.list_toplevels()
                 if isinstance(window, message_dialog.MessageDialog)
                 and window.get_visible()]

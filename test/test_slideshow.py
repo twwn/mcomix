@@ -4,7 +4,7 @@ import unittest.mock
 
 from gi.repository import GLib
 
-from . import MComixTest, get_testfile_path, pump, wait_for
+from . import MComixTest, NORMAL_ZIP, pump, wait_for
 
 from mcomix.preferences import prefs
 
@@ -60,8 +60,7 @@ class SlideshowTest(MComixTest):
         self.assertFalse(self.slideshow.is_running())
         self.assertFalse(self.action.get_active())
         self.assertEqual('media-playback-start-symbolic', self._button()[0])
-        self.window.filehandler.open_file(
-            get_testfile_path('archives', '01-ZIP-Normal.zip'))
+        self.window.filehandler.open_file(NORMAL_ZIP)
         self.assertTrue(wait_for(lambda: self.window.filehandler.file_loaded))
         self.assertFalse(self.slideshow.is_running())
         self.assertNotIn('SLIDESHOW', self.window.get_title())
@@ -69,8 +68,7 @@ class SlideshowTest(MComixTest):
     def test_a_book_opened_over_the_last_keeps_it_going(self):
         """Which is how it goes on to the next book."""
         self.action.set_active(True)
-        self.window.filehandler.open_file(
-            get_testfile_path('archives', '01-ZIP-Normal.zip'))
+        self.window.filehandler.open_file(NORMAL_ZIP)
         self.assertTrue(wait_for(lambda: self.window.filehandler.file_loaded))
         self.assertTrue(self.slideshow.is_running())
         self.assertTrue(self.action.get_active())

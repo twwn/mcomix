@@ -15,8 +15,8 @@ from unittest import mock
 
 from gi.repository import Gtk
 
-from . import (MComixTest, children, descendants, get_testfile_path,
-               notebook_tabs, pump, wait_for, wait_frames)
+from . import (MComixTest, NORMAL_ZIP, children, descendants,
+               get_testfile_path, notebook_tabs, pump, wait_for, wait_frames)
 
 from mcomix import icons
 from mcomix import main
@@ -54,7 +54,7 @@ class PropertiesDialogTest(MComixTest):
         """A destroyed dialog stayed listening, and read every page turned
         to - its file, its size, its thumbnail - for the rest of the
         session."""
-        self._open(get_testfile_path('archives', '01-ZIP-Normal.zip'))
+        self._open(NORMAL_ZIP)
         with mock.patch.object(properties_dialog._PropertiesDialog,
                                '_update_image_page') as updated:
             self.window.flip_page(+1)
@@ -79,7 +79,7 @@ class PropertiesDialogTest(MComixTest):
                 for child in children(box) if isinstance(child, Gtk.Label)]
 
     def test_an_archive_is_described_on_a_page_of_its_own(self):
-        dialog = self._open(get_testfile_path('archives', '01-ZIP-Normal.zip'))
+        dialog = self._open(NORMAL_ZIP)
         self.assertEqual(notebook_tabs(self.dialog._notebook), ['Archive', 'Image'])
         self.assertTrue(dialog._notebook.get_show_tabs())
 
@@ -92,7 +92,7 @@ class PropertiesDialogTest(MComixTest):
         self.assertFalse(dialog._notebook.get_show_tabs())
 
     def test_the_page_says_which_archive_is_open(self):
-        dialog = self._open(get_testfile_path('archives', '01-ZIP-Normal.zip'))
+        dialog = self._open(NORMAL_ZIP)
         rows = self._rows(dialog._archive_page)
         self.assertIn('01-ZIP-Normal.zip', rows)
         self.assertTrue([row for row in rows if row.endswith(' pages')], rows)
@@ -111,7 +111,7 @@ class PropertiesDialogTest(MComixTest):
     def test_describing_the_archive_again_does_not_say_it_twice(self):
         """Every update resets the page first, and a reset that left the
         rows behind would stack the next book's on top of them."""
-        dialog = self._open(get_testfile_path('archives', '01-ZIP-Normal.zip'))
+        dialog = self._open(NORMAL_ZIP)
         before = self._rows(dialog._archive_page)
         dialog._update_archive_page()
         pump()
@@ -127,21 +127,20 @@ class PropertiesDialogTest(MComixTest):
         self.assertTrue(dialog._notebook.get_show_tabs())
 
     def test_offering_the_page_that_is_already_there_changes_nothing(self):
-        dialog = self._open(get_testfile_path('archives', '01-ZIP-Normal.zip'))
+        dialog = self._open(NORMAL_ZIP)
         dialog._offer_archive_page(True)
         self.assertEqual(notebook_tabs(self.dialog._notebook), ['Archive', 'Image'])
 
     def test_an_open_dialog_follows_the_book_to_a_loose_image_and_back(self):
         """The tabs follow each book opened while the dialog stands."""
-        self._open(get_testfile_path('archives', '01-ZIP-Normal.zip'))
+        self._open(NORMAL_ZIP)
         self.assertEqual(notebook_tabs(self.dialog._notebook), ['Archive', 'Image'])
         self.window.filehandler.open_file(
             get_testfile_path('images', 'blue.png'))
         self.assertTrue(wait_for(lambda: notebook_tabs(self.dialog._notebook) == ['Image'],
                                  seconds=10), notebook_tabs(self.dialog._notebook))
         self.assertFalse(self.dialog._notebook.get_show_tabs())
-        self.window.filehandler.open_file(
-            get_testfile_path('archives', '01-ZIP-Normal.zip'))
+        self.window.filehandler.open_file(NORMAL_ZIP)
         self.assertTrue(wait_for(lambda: notebook_tabs(self.dialog._notebook) == ['Archive', 'Image'],
                                  seconds=10), notebook_tabs(self.dialog._notebook))
         self.assertTrue(self.dialog._notebook.get_show_tabs())

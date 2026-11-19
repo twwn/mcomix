@@ -1,5 +1,6 @@
 import functools
 import itertools
+import ntpath
 import os
 import random
 import shutil
@@ -10,10 +11,12 @@ import types
 import unittest
 import unittest.mock
 import warnings
+from unittest import mock
 
 from . import replace_held_once, windows_refusal
 
 from mcomix import tools
+from mcomix.archive import rar
 
 
 class TestCompileRotations(unittest.TestCase):
@@ -355,8 +358,6 @@ class TestWindowsDirectories(unittest.TestCase):
     there: posixpath's leaves %APPDATA% as it is."""
 
     def test_everything_goes_into_mcomix_under_appdata(self):
-        import ntpath
-        from unittest import mock
         roaming = '/Users/reader/AppData/Roaming'
         with mock.patch.object(sys, 'platform', 'win32'), \
                 mock.patch.object(os.path, 'expandvars', ntpath.expandvars), \
@@ -658,7 +659,6 @@ class TestRemoveTree(unittest.TestCase):
         self.assertTrue(os.path.isdir(tree))
 
     def test_the_read_only_pages_of_a_rar_made_on_windows_are_removed(self):
-        from mcomix.archive import rar
         if not rar.RarArchive.is_available():
             self.skipTest('no UnRAR library')
         archive = rar.RarArchive(os.path.join(

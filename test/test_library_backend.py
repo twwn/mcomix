@@ -16,7 +16,7 @@ from sqlite3 import dbapi2
 
 import PIL.Image
 
-from . import get_testfile_path, posix_byte_names, refuse_passwords
+from . import NORMAL_ZIP, get_testfile_path, posix_byte_names, refuse_passwords
 
 from mcomix import constants
 from mcomix import thumbnail_tools
@@ -26,6 +26,8 @@ from mcomix import last_read_page
 from mcomix.library import backend
 from mcomix.library import backend_types
 from mcomix.library import pixbuf_cache
+from mcomix.archive import rar
+from mcomix.archive import rar_external
 
 
 #: The one book of the libraries the upgrade tests write, as add_book()
@@ -72,7 +74,7 @@ class LibraryDatabaseTest(unittest.TestCase):
         """A path that is really there, which the version 4 step
         requires of a book it is asked to carry over from the legacy
         database."""
-        return get_testfile_path('archives', '01-ZIP-Normal.zip')
+        return NORMAL_ZIP
 
     def _a_book_read_to_page_3(self):
         """A library of its own, closed after the test, holding one book
@@ -310,7 +312,6 @@ class RarSetTest(LibraryDatabaseTest):
                 self.assertIsNone(self.library.get_book_by_path(path))
 
     def test_the_first_volume_is_added_as_the_book(self):
-        from mcomix.archive import rar, rar_external
         if not (rar.RarArchive.is_available()
                 or rar_external.RarArchive.is_available()):
             self.skipTest('nothing here reads RAR')
@@ -1234,7 +1235,7 @@ class AddBookToCollectionTest(OpenLibraryTest):
         self.seen.append((book, collection))
 
     def test_a_book_that_exists_is_reported(self):
-        path = get_testfile_path('archives', '01-ZIP-Normal.zip')
+        path = NORMAL_ZIP
         collection = self.library.add_collection('files')
         self.assertTrue(self.library.add_book(path))
         book = self.library.get_book_by_path(path)
@@ -1269,7 +1270,7 @@ class MovedBookTest(OpenLibraryTest):
 
     def setUp(self):
         super().setUp()
-        self.path = get_testfile_path('archives', '01-ZIP-Normal.zip')
+        self.path = NORMAL_ZIP
         self.assertTrue(self.library.add_book(self.path))
         self.book = self.library.get_book_by_path(self.path)
 
@@ -2253,7 +2254,7 @@ class AddBookStatementTest(OpenLibraryTest):
     def setUp(self):
         super().setUp()
         self.collection = self.library.add_collection('files')
-        self.path = get_testfile_path('archives', '01-ZIP-Normal.zip')
+        self.path = NORMAL_ZIP
         self.seen = []
         self.reported = []
         self.library.book_added_to_collection += self._book_filed

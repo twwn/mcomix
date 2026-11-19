@@ -21,6 +21,7 @@ from gi.repository import GdkPixbuf, Gtk
 from . import MComixTest, pump, wait_for
 
 from mcomix import thumbnail_list
+from mcomix import properties_page
 
 
 def _cover():
@@ -99,7 +100,6 @@ class ThumbnailListViewTest(_ViewTest):
         """CONTAIN drew a 3 by 3 page 27 times over in an 82 pixel
         cell of the thumbnail bar, and the properties dialog's picture
         46 times; a Gtk.TreeView drew a thumbnail at its own size."""
-        from mcomix import properties_page
         cell = thumbnail_list._ThumbnailCell(Gtk.Orientation.HORIZONTAL)
         for picture in (cell.picture, properties_page._Page()._thumb):
             self.assertEqual(Gtk.ContentFit.SCALE_DOWN,

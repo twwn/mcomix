@@ -3,7 +3,7 @@
 import random
 import unittest.mock
 
-from . import MainWindowLaterTest, get_testfile_path, pump, wait_for
+from . import MainWindowLaterTest, NORMAL_ZIP, pump, wait_for
 
 from mcomix import main
 from mcomix.preferences import prefs
@@ -14,8 +14,7 @@ class JumpHistoryTest(MainWindowLaterTest):
     def setUp(self):
         super().setUp()
         prefs['show menubar'] = True
-        self.open_main_window(
-            open_path=get_testfile_path('archives', '01-ZIP-Normal.zip'))
+        self.open_main_window(open_path=NORMAL_ZIP)
         self.assertTrue(wait_for(
             lambda: self.window.filehandler.file_loaded
             and self.window.imagehandler.get_number_of_pages() == 4,

@@ -7,6 +7,7 @@ page is shown at.
 """
 
 import os
+from unittest import mock
 
 from PIL import Image, ImageDraw
 
@@ -73,7 +74,6 @@ class ViewActionsTest(MainWindowOpenTest):
         self.assertEqual(Transform.ID, self._transform())
 
     def test_the_thumbnails_take_the_page_s_colour_where_asked(self):
-        from unittest import mock
         prefs['smart thumb bg'] = True
         prefs['show thumbnails'] = True
         with mock.patch.object(self.window.thumbnailsidebar,

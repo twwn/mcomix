@@ -14,12 +14,13 @@ import unittest.mock
 
 from gi.repository import GLib, Gtk
 
-from . import (MComixTest, fresh_bookmarks_store, get_testfile_path, pump,
+from . import (MComixTest, NORMAL_ZIP, fresh_bookmarks_store, pump,
                visible_prompts, wait_for)
 
 from mcomix import archive_packer
 from mcomix import icons
 from mcomix import save_progress
+from mcomix import edit_dialog
 from mcomix.dialog import Response
 
 
@@ -39,8 +40,7 @@ class LongSaveTest(MComixTest):
         self.shelf = os.path.join(self.tmp_dir, 'shelf')
         os.makedirs(self.shelf)
         self.book = os.path.join(self.shelf, 'book.zip')
-        shutil.copyfile(get_testfile_path('archives', '01-ZIP-Normal.zip'),
-                        self.book)
+        shutil.copyfile(NORMAL_ZIP, self.book)
         self.open_main_window(open_path=self.book)
         images = self.window.imagehandler
         self.assertTrue(wait_for(
@@ -158,8 +158,7 @@ class LongSaveTest(MComixTest):
 
     def test_a_book_handed_over_during_the_save_opens_after_it(self):
         other = os.path.join(self.tmp_dir, 'other.zip')
-        shutil.copyfile(get_testfile_path('archives', '01-ZIP-Normal.zip'),
-                        other)
+        shutil.copyfile(NORMAL_ZIP, other)
         seen = []
 
         def step(dialog):
@@ -190,7 +189,6 @@ class LongSaveTest(MComixTest):
             self.assertEqual(self.before, fp.read())
 
     def test_save_as_from_the_editor_can_be_cancelled_as_well(self):
-        from mcomix import edit_dialog
         self.window.file_actions.forget_changes()
         edit_dialog.open_dialog(None, self.window)
         editor = edit_dialog._dialog

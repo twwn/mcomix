@@ -3,6 +3,7 @@ import errno
 import hashlib
 import io
 import locale
+import lzma
 import os
 import re
 import shutil
@@ -18,7 +19,7 @@ import warnings
 import zipfile
 import zlib
 
-from . import get_testfile_path, MComixTest, posix_byte_names
+from . import MComixTest, NORMAL_ZIP, get_testfile_path, posix_byte_names
 
 try:
     import chardet
@@ -315,7 +316,7 @@ class RecursiveArchiveCloseTest(MComixTest):
     def test_closes_an_archive_that_was_never_listed(self) -> None:
         # RecursiveArchive only learns about the main archive once listing
         # starts, so closing before that used to leave its handle open.
-        path = get_testfile_path('archives', '01-ZIP-Normal.zip')
+        path = NORMAL_ZIP
         recursive = archive_recursive.RecursiveArchive(
             zip.ZipArchive(path), tempfile.mkdtemp())
         main_archive = recursive._main_archive
@@ -323,7 +324,7 @@ class RecursiveArchiveCloseTest(MComixTest):
         self.assertIsNone(main_archive.zip.fp)
 
     def test_closes_every_archive_after_listing(self) -> None:
-        path = get_testfile_path('archives', '01-ZIP-Normal.zip')
+        path = NORMAL_ZIP
         recursive = archive_recursive.RecursiveArchive(
             zip.ZipArchive(path), tempfile.mkdtemp())
         recursive.list_contents()
@@ -338,7 +339,7 @@ class ExtractionThreadMemoryTest(MComixTest):
         self.assertGreater(parent.FitzArchive.extraction_thread_memory, 0)
 
     def test_nested_archives_cost_what_the_costliest_part_does(self):
-        path = get_testfile_path('archives', '01-ZIP-Normal.zip')
+        path = NORMAL_ZIP
         recursive = archive_recursive.RecursiveArchive(
             zip.ZipArchive(path), os.path.join(self.tmp_dir, 'extracted'))
         try:
@@ -391,7 +392,7 @@ class MissingProgramTest(MComixTest):
     """
 
     def test_nothing_is_listed_or_extracted(self):
-        path = get_testfile_path('archives', '01-ZIP-Normal.zip')
+        path = NORMAL_ZIP
         archive = zip_external.ZipArchive(path)
         with unittest.mock.patch.object(zip_external.ZipArchive,
                                         '_get_executable',
@@ -899,7 +900,6 @@ class SevenZipTarAtLegacyPathTest(MComixTest):
         """7z prints the archive's own path in the head of its listing,
         and the listing of a tarball tarfile cannot read, decoded
         strictly, raised UnicodeDecodeError at a Latin-1 path."""
-        import lzma
         content = io.BytesIO()
         with tarfile.open(fileobj=content, mode='w') as archive:
             info = tarfile.TarInfo('01.png')
@@ -1429,7 +1429,7 @@ class ExternalExecutableContractTest(MComixTest):
 
     def _handler(self, klass):
         # Nothing here reads the archive; it only has to be a path.
-        return klass(get_testfile_path('archives', '01-ZIP-Normal.zip'))
+        return klass(NORMAL_ZIP)
 
     def test_an_executable_is_named_or_reported_missing(self):
         for klass in self.HANDLERS:

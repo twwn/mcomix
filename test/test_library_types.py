@@ -5,7 +5,7 @@ import tempfile
 import shutil
 import os
 
-from . import get_testfile_path, posix_byte_names
+from . import NORMAL_ZIP, get_testfile_path, posix_byte_names
 
 from mcomix import constants
 from mcomix.library import backend
@@ -154,7 +154,7 @@ class CollectionTest(unittest.TestCase):
         """Add a copy of the fixture archive under each of <names>."""
         directory = tempfile.mkdtemp('mcomix-test')
         self.addCleanup(shutil.rmtree, directory)
-        source = get_testfile_path('archives', '01-ZIP-Normal.zip')
+        source = NORMAL_ZIP
         for name in names:
             shutil.copy(source, os.path.join(directory, name))
             self.library.add_book(os.path.join(directory, name), None)
@@ -519,7 +519,7 @@ class WatchListTest(unittest.TestCase):
         so it stayed in "Recent" alone and was found and added again at
         every scan."""
         read = os.path.join(self.watched, 'read.cbz')
-        shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'), read)
+        shutil.copy(NORMAL_ZIP, read)
         self.library.add_book(read, constants.COLLECTION_RECENT)
         entry = self.library.watchlist.get_watchlist_entry(self.watched)
         self.library.add_collection('Filed')

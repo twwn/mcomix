@@ -1,4 +1,5 @@
 
+import ast
 import contextlib
 import importlib.machinery
 import os
@@ -266,7 +267,6 @@ class NoConsoleWindowTest(unittest.TestCase):
     _STARTS = {'run', 'Popen', 'call', 'check_call', 'check_output'}
 
     def test_every_subprocess_call_passes_the_creation_flags(self):
-        import ast
         root = os.path.dirname(process.__file__)
         missing = []
         for directory, _dirs, files in os.walk(root):

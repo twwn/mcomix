@@ -10,7 +10,7 @@ import unittest.mock
 
 from gi.repository import Gdk, Gio, GLib, Graphene, Gtk
 
-from . import (MComixTest, MainWindowLaterTest, MainWindowOpenTest,
+from . import (MComixTest, MainWindowLaterTest, MainWindowOpenTest, NORMAL_ZIP,
                descendants, get_testfile_path, pump, refuse_passwords,
                wait_for, wait_for_deletions)
 
@@ -19,6 +19,9 @@ from mcomix import constants
 from mcomix import image_tools
 from mcomix import file_chooser_base_dialog
 from mcomix import widgets
+from mcomix import file_chooser_library_dialog
+from mcomix import file_chooser_simple_dialog
+from mcomix import preview
 from mcomix.dialog import Response
 from mcomix.preferences import prefs
 
@@ -91,7 +94,6 @@ class FileChooserTest(MainWindowOpenTest):
         self.assertIs(self.dialog.get_transient_for(), self.window)
 
     def test_a_chooser_with_no_parent_takes_the_main_window(self):
-        from mcomix import file_chooser_simple_dialog
         dialog = file_chooser_simple_dialog.SimpleFileChooserDialog()
         # GTK starts loading the folder once the loop turns, and a
         # chooser destroyed before then reports the cancelled load in
@@ -113,7 +115,6 @@ class FileChooserTest(MainWindowOpenTest):
                           self.dialog._preview_size))
 
     def test_the_preview_follows_the_screen(self):
-        from mcomix import preview
         base = file_chooser_base_dialog
         size, pixels = base.preview_size(self.dialog)
         self.assertGreaterEqual(size, base._PREVIEW_SIZE)
@@ -134,7 +135,6 @@ class FileChooserTest(MainWindowOpenTest):
         # the column - and the file list beside it - moved every time the
         # name under the preview changed, or a file with no preview was
         # picked.
-        import shutil
         folder = self._unlisted_folder('names')
         long_name = 'a-really-quite-extremely-long-file-name-for-testing.png'
         shutil.copy(get_testfile_path('images', 'blue.png'),
@@ -290,7 +290,7 @@ class FileChooserTest(MainWindowOpenTest):
         # asked for, so Open and a double click both did nothing at all.
         chosen = []
         self.dialog.files_chosen = chosen.extend
-        path = get_testfile_path('archives', '01-ZIP-Normal.zip')
+        path = NORMAL_ZIP
         self._select(path)
         self.dialog.response(Response.OK)
         self.assertEqual(chosen, [path])
@@ -359,7 +359,7 @@ class FileChooserTest(MainWindowOpenTest):
 
     def test_the_folder_a_file_was_chosen_in_is_remembered(self):
         prefs['store recent file info'] = True
-        path = get_testfile_path('archives', '01-ZIP-Normal.zip')
+        path = NORMAL_ZIP
         self.assertEqual([path], self._choose(path))
         self.assertEqual(os.path.dirname(path),
                          prefs['path of last browsed in filechooser'])
@@ -370,7 +370,7 @@ class FileChooserTest(MainWindowOpenTest):
         the chooser opens in the home folder next time."""
         prefs['store recent file info'] = False
         prefs['path of last browsed in filechooser'] = self.tmp_dir
-        path = get_testfile_path('archives', '01-ZIP-Normal.zip')
+        path = NORMAL_ZIP
         self.assertEqual([path], self._choose(path))
         self.assertEqual(constants.HOME_DIR,
                          prefs['path of last browsed in filechooser'])
@@ -407,7 +407,7 @@ class FileChooserTest(MainWindowOpenTest):
 
     def test_it_opens_on_the_file_last_chosen(self):
         prefs['store recent file info'] = True
-        path = get_testfile_path('archives', '01-ZIP-Normal.zip')
+        path = NORMAL_ZIP
         self._choose(path)
         self.assertEqual(os.path.dirname(path), self._reopened_in())
         # GTK selects the file once the folder has loaded, after the
@@ -422,14 +422,14 @@ class FileChooserTest(MainWindowOpenTest):
         the next chooser opened on the book chosen last, which the
         reader may have closed so as not to leave it on show."""
         prefs['store recent file info'] = False
-        path = get_testfile_path('archives', '01-ZIP-Normal.zip')
+        path = NORMAL_ZIP
         self._choose(path)
         self.assertEqual(os.path.realpath(constants.HOME_DIR),
                          os.path.realpath(self._reopened_in()))
 
     def test_a_file_chosen_before_the_history_was_turned_off_is_forgotten(self):
         prefs['store recent file info'] = True
-        path = get_testfile_path('archives', '01-ZIP-Normal.zip')
+        path = NORMAL_ZIP
         self._choose(path)
         prefs['store recent file info'] = False
         self.assertEqual(os.path.realpath(constants.HOME_DIR),
@@ -459,7 +459,7 @@ class FileChooserTest(MainWindowOpenTest):
     def _book_selected(self):
         """A folder with one book, which is selected, and the book."""
         path = os.path.join(self.tmp_dir, 'book.zip')
-        shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'), path)
+        shutil.copy(NORMAL_ZIP, path)
         self._select(path)
         return path
 
@@ -514,7 +514,7 @@ class FileChooserTest(MainWindowOpenTest):
         for name in names:
             path = os.path.join(folder, *name.split('/'))
             os.makedirs(os.path.dirname(path), exist_ok=True)
-            source = (get_testfile_path('archives', '01-ZIP-Normal.zip')
+            source = (NORMAL_ZIP
                       if name.endswith('.zip') else
                       get_testfile_path('images', '01-JPG-Indexed.jpg')
                       if name.endswith('.jpg') else
@@ -608,7 +608,7 @@ class FileChooserTest(MainWindowOpenTest):
             return real(*args, **kwargs)
 
         self.dialog._stop_previewing()
-        self.dialog._previewed = get_testfile_path('archives', '01-ZIP-Normal.zip')
+        self.dialog._previewed = NORMAL_ZIP
         with unittest.mock.patch.object(
                 archive_tools, 'get_recursive_archive_handler', slow):
             self.dialog._update_preview()
@@ -780,7 +780,6 @@ class LibraryFileChooserTest(MainWindowLaterTest):
         self.open_main_window()
         self.library = _Library()
         pump()
-        from mcomix import file_chooser_library_dialog
         self._module = file_chooser_library_dialog
 
     def tearDown(self):
@@ -913,8 +912,7 @@ class FileDetailsTest(MComixTest):
         """The four pictures, not the comment beside them."""
         self.assertEqual('4 pages, ZIP archive',
                          file_chooser_base_dialog.file_details(
-                             get_testfile_path('archives',
-                                               '01-ZIP-Normal.zip')))
+                             NORMAL_ZIP))
 
     def test_a_book_whose_listing_is_encrypted_gives_its_kind_alone(self):
         """Its names cannot be read without the password, which the

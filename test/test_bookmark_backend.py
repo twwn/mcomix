@@ -10,11 +10,15 @@ import os
 import pickle
 from unittest import mock
 
+from gi.repository import Gtk
+
 from . import MComixTest, fresh_bookmarks_store
 
 from mcomix import bookmark_backend
 from mcomix import bookmark_menu_item
 from mcomix import constants
+from mcomix import log
+from mcomix import message_dialog
 
 
 class _StoreTest(MComixTest):
@@ -103,8 +107,6 @@ class MergeTest(_StoreTest):
                                      for bookmark in self.store._bookmarks])
 
     def test_a_file_that_will_not_unpickle_costs_the_bookmarks_only(self):
-        from unittest import mock
-        from mcomix import log
         with open(constants.BOOKMARK_PICKLE_PATH, 'wb') as damaged:
             damaged.write(b'not a pickle')
         with mock.patch.object(log, 'error') as error:
@@ -177,8 +179,6 @@ class MergeTest(_StoreTest):
         self.assertIn('No space left on device', logs.output[0])
 
     def test_a_write_that_fails_is_said_on_screen(self):
-        from gi.repository import Gtk
-        from mcomix import message_dialog
         window = Gtk.Window()
         self.addCleanup(window.destroy)
         self.store._window = window

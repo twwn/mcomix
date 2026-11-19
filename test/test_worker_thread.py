@@ -1,11 +1,14 @@
 """How many orders a pool of worker threads works on at once."""
 
+import ast
+import inspect
 import threading
 import time
 import unittest
 import unittest.mock
 
 from mcomix import worker_thread
+from mcomix import thumbnail_list
 from mcomix.worker_thread import WorkerThread
 
 THREADS = 8
@@ -162,9 +165,6 @@ class ThumbnailViewPoolTest(unittest.TestCase):
     def test_the_thumbnail_views_start_narrow(self):
         """Covers and page thumbnails the disk or memory holds cost a
         fraction of a millisecond each."""
-        import ast
-        import inspect
-        from mcomix import thumbnail_list
         tree = ast.parse(inspect.getsource(thumbnail_list))
         pools = [call for call in ast.walk(tree)
                  if isinstance(call, ast.Call)

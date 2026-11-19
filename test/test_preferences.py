@@ -5,6 +5,8 @@ import os
 import shutil
 import pickle
 import stat
+import sys
+from unittest import mock
 
 from gi.repository import GdkPixbuf
 
@@ -449,8 +451,6 @@ class WindowsSettingsFolderTest(MComixTest):
     %APPDATA%, unless there is a settings folder there already."""
 
     def _migrate(self):
-        import sys
-        from unittest import mock
         with mock.patch.object(sys, 'platform', 'win32'):
             preferences.migrate_home_config_path()
 

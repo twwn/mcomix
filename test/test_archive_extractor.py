@@ -14,7 +14,7 @@ import os
 import threading
 import unittest.mock
 
-from . import MComixTest, get_testfile_path, pump, wait_for
+from . import MComixTest, NORMAL_ZIP, get_testfile_path, pump, wait_for
 
 from mcomix import archive_extractor
 from mcomix import archive_tools
@@ -38,9 +38,7 @@ class _ExtractorTest(MComixTest):
         self.destination = os.path.join(self.tmp_dir, 'extracted')
         os.makedirs(self.destination)
         self.extractor = archive_extractor.Extractor()
-        self.condition = self.extractor.setup(
-            get_testfile_path('archives', '01-ZIP-Normal.zip'),
-            self.destination)
+        self.condition = self.extractor.setup(NORMAL_ZIP, self.destination)
         self.assertTrue(wait_for(lambda: self.extractor.get_files() is not None,
                                  seconds=20),
                         'the archive was never listed')
@@ -85,7 +83,7 @@ class ExtractorSetupTest(_ExtractorTest):
     def test_a_listing_that_fails_names_the_archive(self):
         """The worker thread's message named the method and the error,
         and a reader had no way to tell which file would not open."""
-        path = get_testfile_path('archives', '01-ZIP-Normal.zip')
+        path = NORMAL_ZIP
         extractor = archive_extractor.Extractor()
         errors = []
         with unittest.mock.patch(
@@ -171,7 +169,7 @@ class AlreadyUnpackedTest(_ExtractorTest):
         self.extractor.close()
         self.extractor = archive_extractor.Extractor()
         self.condition = self.extractor.setup(
-            get_testfile_path('archives', '01-ZIP-Normal.zip'),
+            NORMAL_ZIP,
             self.destination,
             unpacked=list(self.MEMBERS[:2]) + ['images/gone.jpg'])
         self.assertTrue(wait_for(lambda: self.extractor.get_files() is not None,
@@ -392,9 +390,7 @@ class NoRoomTest(_ExtractorTest):
         return told
 
     def _assert_said_once(self, told):
-        self.assertEqual(
-            [(get_testfile_path('archives', '01-ZIP-Normal.zip'),
-              self.destination)], told)
+        self.assertEqual([(NORMAL_ZIP, self.destination)], told)
 
     def test_a_full_folder_is_said_once(self):
         self._assert_said_once(self._unpack(errno.ENOSPC, False))

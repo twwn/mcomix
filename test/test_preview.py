@@ -1,10 +1,16 @@
 """ How large a preview of a page is drawn. """
 
+import inspect
+
 from gi.repository import Gtk
 
 from . import MComixTest
 
 from mcomix import preview
+from mcomix import edit_image_area
+from mcomix import file_chooser_base_dialog
+from mcomix import thumbbar
+from mcomix.library import book_area
 
 
 class PreviewSizeTest(MComixTest):
@@ -29,10 +35,6 @@ class PreviewSizeTest(MComixTest):
     def test_every_previewer_asks_the_same_way(self):
         # The sidebar, the library and the archive editor all drew their
         # own fixed size, so all three were small on a tall screen.
-        import inspect
-        from mcomix import (edit_image_area, file_chooser_base_dialog,
-                            thumbbar)
-        from mcomix.library import book_area
         for module in (thumbbar, book_area, edit_image_area,
                        file_chooser_base_dialog):
             self.assertIn('preview.scaled', inspect.getsource(module),

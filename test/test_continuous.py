@@ -1,6 +1,7 @@
 """Continuous mode: the book as one strip, its pages one below the
 other without a gap (upstream feature requests 123 and 126)."""
 
+import inspect
 import os
 import unittest.mock
 import zipfile
@@ -18,6 +19,7 @@ from mcomix import page_marks
 from mcomix import page_rotations
 from mcomix import preferences
 from mcomix import ui
+from mcomix import preferences_dialog
 from mcomix.preferences import prefs
 
 
@@ -1223,8 +1225,6 @@ class DetectOffTest(_StripTest):
         self.assertEqual(1, len(self._boxes()))
 
     def test_the_preference_has_a_box_to_tick(self):
-        from mcomix import preferences_dialog
-        import inspect
         self.assertIn("'continuous for long strips'",
                       inspect.getsource(preferences_dialog))
         self.assertTrue(preferences._DEFAULTS['continuous for long strips'])

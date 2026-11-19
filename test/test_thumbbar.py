@@ -18,6 +18,8 @@ from . import MComixTest, get_testfile_path, pump, wait_for
 
 from mcomix import constants
 from mcomix import thumbbar
+from mcomix import bookmark_backend
+from mcomix import theme
 from mcomix.preferences import prefs
 
 
@@ -355,7 +357,6 @@ class ThumbnailSidebarTest(MComixTest):
                              len(list(self.sidebar._list._each_cell())))
 
     def test_a_page_picked_out_is_outlined_in_the_sidebar(self):
-        from mcomix import theme
         self._ready()
         self.window.select_page(2)
         self.window.select_page(3)
@@ -370,7 +371,6 @@ class ThumbnailSidebarTest(MComixTest):
         and styling every cell again cost each turn about a millisecond
         in a book of sixty pages.  A cell bound again is still styled:
         GTK 4.14 binds the row it selects once more on a turn."""
-        from mcomix import theme
         self._ready()
         self.window.select_page(3)
         pump()
@@ -384,7 +384,6 @@ class ThumbnailSidebarTest(MComixTest):
         self.assertEqual([3], self._outlined(theme.PICKED_OUT_CLASS))
 
     def test_the_page_marked_to_swap_is_outlined_in_the_sidebar(self):
-        from mcomix import theme
         self._ready()
         self.window.mark_for_swap(3)
         pump()
@@ -393,7 +392,6 @@ class ThumbnailSidebarTest(MComixTest):
     def _no_bookmarks(self):
         """The store, which MComixTest.setUp empties; this window's
         bookmarks menu attached it to this window."""
-        from mcomix import bookmark_backend
         return bookmark_backend.BookmarksStore
 
     def _badged(self):

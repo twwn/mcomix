@@ -1,5 +1,6 @@
 """ Walking from one directory to the next, and back again. """
 
+import argparse
 import errno
 import io
 import os
@@ -16,7 +17,7 @@ from unittest import mock
 from gi.repository import Gtk
 from PIL import Image
 
-from . import (MComixTest, MainWindowLaterTest, MainWindowOpenTest,
+from . import (MComixTest, MainWindowLaterTest, MainWindowOpenTest, NORMAL_ZIP,
                get_testfile_path, prompts_over, pump, wait_for)
 
 from mcomix import archive_extractor
@@ -27,8 +28,11 @@ from mcomix import icons
 from mcomix import main
 from mcomix import message_dialog
 from mcomix import tools
+from mcomix import run
 from mcomix.dialog import Response
 from mcomix.preferences import prefs
+from mcomix.archive import rar
+from mcomix.archive import rar_external
 
 from .test_main_window import _descriptors_on
 
@@ -50,7 +54,7 @@ class DirectoryWalkTest(MainWindowLaterTest):
     def _put_archive(self, directory):
         """ Copies the test archive into <directory>, and returns its path. """
         path = os.path.join(self.root, directory, '01-ZIP-Normal.zip')
-        shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'), path)
+        shutil.copy(NORMAL_ZIP, path)
         return path
 
     def _put_image(self, directory):
@@ -227,8 +231,7 @@ class DirectoryWalkTest(MainWindowLaterTest):
         last = os.path.join(self.root, 'b', 'last.cbz')
         middle = os.path.join(self.root, 'b', 'middle.cbz')
         for path in (first, middle, last):
-            shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'),
-                        path)
+            shutil.copy(NORMAL_ZIP, path)
         self._open(middle)
         os.remove(middle)
         self.assertFalse(self.handler.open_next_archive())
@@ -255,8 +258,7 @@ class DirectoryWalkTest(MainWindowLaterTest):
         first = os.path.join(self.root, 'a', 'Vol1.cbz')
         second = os.path.join(self.root, 'a', 'Vol2.cbz')
         for path in (first, second):
-            shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'),
-                        path)
+            shutil.copy(NORMAL_ZIP, path)
         typed = os.path.join(self.root, 'A', 'VOL1.CBZ')
         # Here too where the file system tells case apart: there the
         # typed path names no file until it is spelled as the disk does.
@@ -295,8 +297,7 @@ class DirectoryWalkTest(MainWindowLaterTest):
     def _put_archives(self, *names):
         paths = [os.path.join(self.root, 'b', name) for name in names]
         for path in paths:
-            shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'),
-                        path)
+            shutil.copy(NORMAL_ZIP, path)
         return paths
 
     @unittest.skipIf(sys.platform == 'win32',
@@ -373,7 +374,6 @@ class DirectoryWalkTest(MainWindowLaterTest):
     def _put_rar_set(self, directory):
         """Copy the RAR set packed in three volumes into <directory>, and
         return the path of its first volume."""
-        from mcomix.archive import rar, rar_external
         if not (rar.RarArchive.is_available()
                 or rar_external.RarArchive.is_available()):
             self.skipTest('nothing here reads RAR')
@@ -388,7 +388,7 @@ class DirectoryWalkTest(MainWindowLaterTest):
         of a page on; the set is read through part1."""
         first = self._put_rar_set('b')
         after = os.path.join(self.root, 'b', 'z.cbz')
-        shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'), after)
+        shutil.copy(NORMAL_ZIP, after)
         self._open(first)
         self.assertTrue(self.handler.open_next_archive())
         self.assertEqual(after, self._opened_file())
@@ -400,7 +400,7 @@ class DirectoryWalkTest(MainWindowLaterTest):
         a set in three volumes and one archive more are two."""
         first = self._put_rar_set('b')
         after = os.path.join(self.root, 'b', 'z.cbz')
-        shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'), after)
+        shutil.copy(NORMAL_ZIP, after)
         self._open(first)
         self.assertEqual((1, 2), self.handler.get_file_number())
         self._open(after)
@@ -494,8 +494,7 @@ class ResumedLibraryListTest(_WindowTest):
         self.books = {}
         for name in ('a.cbz', 'b.cbz', 'c.cbz'):
             self.books[name[0]] = os.path.join(self.tmp_dir, name)
-            shutil.copy2(get_testfile_path('archives', '01-ZIP-Normal.zip'),
-                         self.books[name[0]])
+            shutil.copy2(NORMAL_ZIP, self.books[name[0]])
         # The folder goes a, b, c; the library showed a, c, b.
         self.listed = [self.books[key] for key in 'acb']
 
@@ -591,8 +590,7 @@ class ResumedWindowTest(MComixTest):
         self.books = {}
         for name in ('a.cbz', 'b.cbz', 'c.cbz'):
             self.books[name[0]] = os.path.join(self.tmp_dir, name)
-            shutil.copy2(get_testfile_path('archives', '01-ZIP-Normal.zip'),
-                         self.books[name[0]])
+            shutil.copy2(NORMAL_ZIP, self.books[name[0]])
         # The folder goes a, b, c; the library showed a, c, b, and the
         # last session had picked a there.
         file_handler._keep_listed([self.books[key] for key in 'acb'])
@@ -773,8 +771,6 @@ class AFolderTreeAsOneBookTest(_WindowTest):
         self.window._remember_last_file()
         self.assertEqual(self.manga, prefs['path to last file'])
         self.assertEqual('Vol 1/Ch 2/1.jpg', prefs['member of last file'])
-        import argparse
-        from mcomix import run
         self.assertEqual(
             (self.manga, 4, 'Vol 1/Ch 2/1.jpg'),
             run.what_to_open(argparse.Namespace(page=None), []))
@@ -830,8 +826,7 @@ class AFolderTreeAsOneBookTest(_WindowTest):
         archives = []
         for name in ('b.zip', 'a.zip'):
             archives.append(os.path.join(folder, name))
-            shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'),
-                        archives[-1])
+            shutil.copy(NORMAL_ZIP, archives[-1])
         self.handler.open_file(folder)
         self.assertTrue(wait_for(
             lambda: self.window.imagehandler.get_number_of_pages() == 4))
@@ -844,8 +839,7 @@ class AFolderTreeAsOneBookTest(_WindowTest):
         folder = os.path.join(self.root, 'Series')
         archive = os.path.join(folder, 'Volume 1', 'a.zip')
         os.makedirs(os.path.dirname(archive))
-        shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'),
-                    archive)
+        shutil.copy(NORMAL_ZIP, archive)
         self.handler.open_file(folder)
         self.assertTrue(wait_for(
             lambda: self.window.imagehandler.get_number_of_pages() == 4))
@@ -857,7 +851,6 @@ class UnpackFolderTest(_WindowTest):
     """Where a book is unpacked (upstream feature request 114)."""
 
     def test_by_default_it_is_the_temporary_folder(self):
-        from mcomix import file_handler
         prefs['unpack folder'] = ''
         self.assertIsNone(file_handler.unpack_folder())
 
@@ -865,21 +858,18 @@ class UnpackFolderTest(_WindowTest):
         folder = os.path.join(self.tmp_dir, 'ramdisk')
         os.mkdir(folder)
         prefs['unpack folder'] = folder
-        self.assertTrue(self.handler.open_file(
-            get_testfile_path('archives', '01-ZIP-Normal.zip')))
+        self.assertTrue(self.handler.open_file(NORMAL_ZIP))
         self.wait_for_pages()
         self.assertEqual(folder, os.path.dirname(
             self.handler._tmp_dir.rstrip(os.sep)))
         self.assertTrue(os.listdir(folder))
 
     def test_a_folder_that_has_gone_is_passed_over(self):
-        from mcomix import file_handler
         prefs['unpack folder'] = os.path.join(self.tmp_dir, 'gone')
         with mock.patch.object(file_handler.log, 'warning') as warned:
             self.assertIsNone(file_handler.unpack_folder())
         warned.assert_called_once()
-        self.assertTrue(self.handler.open_file(
-            get_testfile_path('archives', '01-ZIP-Normal.zip')))
+        self.assertTrue(self.handler.open_file(NORMAL_ZIP))
         self.wait_for_pages()
 
 
@@ -910,7 +900,7 @@ class AnArchiveThatWillNotOpenTest(_WindowTest):
         no condition to wait on, so the next close raised ValueError: no
         other book would open after it, and quitting raised before the
         library was closed and the threads were joined."""
-        path = get_testfile_path('archives', '01-ZIP-Normal.zip')
+        path = NORMAL_ZIP
         with mock.patch.object(self.handler._extractor, 'setup',
                                side_effect=Exception('no handler')):
             self.assertFalse(self.handler.open_file(path))
@@ -929,7 +919,7 @@ class AnArchiveThatCannotBeListedTest(_WindowTest):
         """The listing thread logged the error and stopped, and nothing
         told the file handler: the wait cursor stayed for the session,
         and the window showed no book and said nothing."""
-        path = get_testfile_path('archives', '01-ZIP-Normal.zip')
+        path = NORMAL_ZIP
         busy = []
         self.window.cursor_handler.set_busy = busy.append
         with mock.patch('mcomix.archive.zip.ZipArchive.iter_contents',
@@ -965,7 +955,7 @@ class AnArchiveCutShortTest(_WindowTest):
         for name in ('red.png', 'blue.png'):
             shutil.copy(get_testfile_path('images', name),
                         os.path.join(folder, name))
-        with open(get_testfile_path('archives', '01-ZIP-Normal.zip'),
+        with open(NORMAL_ZIP,
                   'rb') as whole:
             data = whole.read()
         path = os.path.join(folder, 'book.cbz')
@@ -989,7 +979,7 @@ class AFullUnpackFolderTest(_WindowTest):
     said why."""
 
     def test_the_reader_is_told_once(self):
-        path = get_testfile_path('archives', '01-ZIP-Normal.zip')
+        path = NORMAL_ZIP
 
         def full(archive, name, destination):
             raise OSError(errno.ENOSPC, os.strerror(errno.ENOSPC),
@@ -1025,8 +1015,7 @@ class APathThatCannotBeOpenedTest(_WindowTest):
     to be open."""
 
     def _over_a_book(self, path):
-        self.assertTrue(self.handler.open_file(
-            get_testfile_path('archives', '01-ZIP-Normal.zip')))
+        self.assertTrue(self.handler.open_file(NORMAL_ZIP))
         self.wait_for_pages()
         pump()
         with mock.patch.object(self.window.osd, 'show') as shown:
@@ -1059,7 +1048,7 @@ class APathThatCannotBeOpenedTest(_WindowTest):
 
     def test_a_file_that_cannot_be_read(self):
         path = os.path.join(self.tmp_dir, 'locked.cbz')
-        shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'), path)
+        shutil.copy(NORMAL_ZIP, path)
         os.chmod(path, 0)
         self.addCleanup(os.chmod, path, 0o600)
         if os.access(path, os.R_OK):
@@ -1083,8 +1072,7 @@ class RememberedResumeAnswerTest(MainWindowLaterTest):
     def setUp(self):
         super().setUp()
         self.archive = os.path.join(self.tmp_dir, '01-ZIP-Normal.zip')
-        shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'),
-                    self.archive)
+        shutil.copy(NORMAL_ZIP, self.archive)
         self.open_main_window()
         self.handler = self.window.filehandler
         self.handler.last_read_page.set_enabled(True)
@@ -1284,7 +1272,7 @@ class AnUnpackedArchiveIsLetGoTest(_WindowTest):
 
     def test_the_archive_is_closed_once_every_member_is_out(self):
         source = os.path.join(self.tmp_dir, 'Book.cbz')
-        shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'), source)
+        shutil.copy(NORMAL_ZIP, source)
         self.handler.open_file(source)
         self.assertTrue(wait_for(
             lambda: self.handler.file_loaded
@@ -1314,8 +1302,7 @@ class UnpackedPagesKeptTest(_WindowTest):
         self.books = []
         for name in ('1.cbz', '2.cbz', '3.cbz', '4.cbz'):
             book = os.path.join(self.tmp_dir, name)
-            shutil.copy2(get_testfile_path('archives', '01-ZIP-Normal.zip'),
-                         book)
+            shutil.copy2(NORMAL_ZIP, book)
             self.books.append(book)
 
     def _open(self, number):
@@ -1681,7 +1668,7 @@ class BusyCursorTest(MComixTest):
 
     def test_listing_an_archive_sets_the_wait_cursor(self):
         handler = self._handler()
-        handler.open_file(get_testfile_path('archives', '01-ZIP-Normal.zip'))
+        handler.open_file(NORMAL_ZIP)
         try:
             self.assertIn(True, self.cursor.calls,
                           'nothing said the program was working')
@@ -1703,7 +1690,7 @@ class BusyCursorTest(MComixTest):
         cleared, so _archive_opened() is never reached and _close() is the
         only place left to clear it."""
         handler = self._handler()
-        handler.open_file(get_testfile_path('archives', '01-ZIP-Normal.zip'))
+        handler.open_file(NORMAL_ZIP)
         self.cursor.calls.clear()
         handler._close(close_provider=True)
         self.assertIn(False, self.cursor.calls,
@@ -2000,7 +1987,7 @@ class APageIsDatedAsItsArchiveRecordsItTest(_WindowTest):
 
     def test_the_member_date_is_found(self):
         source = os.path.join(self.tmp_dir, 'Book.cbz')
-        shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'), source)
+        shutil.copy(NORMAL_ZIP, source)
         self.handler.open_file(source)
         self.assertTrue(wait_for(
             lambda: self.handler.file_loaded

@@ -11,7 +11,7 @@ import shutil
 
 from gi.repository import Gtk
 
-from . import MComixTest, descendants, get_testfile_path, pump
+from . import MComixTest, NORMAL_ZIP, descendants, get_testfile_path, pump
 
 from mcomix import constants
 from mcomix.archive import rar
@@ -90,8 +90,7 @@ class AddProgressDialogTest(MComixTest):
         archives = []
         for name in ('one.cbz', 'two.cbz'):
             path = os.path.join(self.tmp_dir, name)
-            shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'),
-                        path)
+            shutil.copy(NORMAL_ZIP, path)
             archives.append(path)
 
         self._add(archives)
@@ -114,7 +113,7 @@ class AddProgressDialogTest(MComixTest):
         with open(damaged, 'wb') as book:
             book.write(data[:len(data) // 2])
         after = os.path.join(self.tmp_dir, 'after.cbz')
-        shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'), after)
+        shutil.copy(NORMAL_ZIP, after)
 
         self._add([damaged, after])
 
@@ -132,7 +131,7 @@ class AddProgressDialogTest(MComixTest):
         held it back: a folder of damaged books, or of a RAR set's later
         volumes, filled it a part of the way and no further."""
         good = os.path.join(self.tmp_dir, 'good.cbz')
-        shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'), good)
+        shutil.copy(NORMAL_ZIP, good)
         paths = [self._damaged('bad.cbz'), self._damaged('worse.cbz'), good,
                  self._damaged('worst.cbz')]
         real = self.backend.add_book
@@ -162,7 +161,7 @@ class AddProgressDialogTest(MComixTest):
 
     def test_the_reader_is_told_which_books_were_not_added(self):
         good = os.path.join(self.tmp_dir, 'good.cbz')
-        shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'), good)
+        shutil.copy(NORMAL_ZIP, good)
 
         self._add([self._damaged('bad.cbz'), good])
 
@@ -179,7 +178,7 @@ class AddProgressDialogTest(MComixTest):
 
     def test_books_all_added_leave_the_status_bar_alone(self):
         good = os.path.join(self.tmp_dir, 'good.cbz')
-        shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'), good)
+        shutil.copy(NORMAL_ZIP, good)
 
         self._add([good])
 

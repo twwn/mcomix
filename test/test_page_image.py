@@ -11,6 +11,7 @@ from . import MComixTest, get_testfile_path, pump, wait_for
 
 from mcomix import animation
 from mcomix import image_tools
+from mcomix import page_image
 from mcomix.page_image import PageImage
 
 
@@ -338,7 +339,6 @@ class AnimationSpeedTest(MComixTest):
     def _dues(self, speed, frames=4):
         """When the decoder asks for each of <frames> frames of 400 ms,
         with the page set to <speed>, and waiting costing nothing."""
-        from mcomix import page_image
 
         class Frames(animation.Frames):
             ahead = True
@@ -396,7 +396,6 @@ class DecoderEndsTest(MComixTest):
     def _decode(self, frames, stop_after_waits=3, stop_while_waiting=False):
         """Run the decoder over <frames>; answer with what happened in
         order ('wait', 'next', 'shown') and the playback."""
-        from mcomix import page_image
         events = []
         playback = page_image._Playback()
 

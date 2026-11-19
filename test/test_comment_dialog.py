@@ -11,8 +11,8 @@ from unittest import mock
 
 from gi.repository import Gtk
 
-from . import (MainWindowLaterTest, get_testfile_path, notebook_tabs, pump,
-               wait_for)
+from . import (MainWindowLaterTest, NORMAL_ZIP, get_testfile_path,
+               notebook_tabs, pump, wait_for)
 
 from mcomix import comment_dialog
 
@@ -108,7 +108,7 @@ class CommentsDialogTest(MainWindowLaterTest):
             'commented.zip', ('one.txt', 'first')))
         self.dialog = comment_dialog._CommentsDialog(self.window)
         self.assertTrue(wait_for(lambda: len(notebook_tabs(self.dialog._notebook)) == 1, seconds=20))
-        self._open(get_testfile_path('archives', '01-ZIP-Normal.zip'))
+        self._open(NORMAL_ZIP)
         wait_for(lambda: not notebook_tabs(self.dialog._notebook), seconds=20)
         self.assertEqual(notebook_tabs(self.dialog._notebook), [])
         # An empty notebook is hidden rather than shown with a tab strip

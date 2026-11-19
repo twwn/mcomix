@@ -14,7 +14,7 @@ import unittest.mock
 
 from gi.repository import GdkPixbuf, Gtk
 
-from . import (MainWindowOpenTest, descendants, get_testfile_path, pump,
+from . import (MainWindowOpenTest, NORMAL_ZIP, descendants, pump,
                visible_prompts)
 
 from mcomix import constants
@@ -26,6 +26,7 @@ from mcomix import theme
 from mcomix import image_tools
 from mcomix.dialog import Response
 from mcomix.preferences import prefs
+from mcomix.library import pixbuf_cache
 
 
 class PreferencesDialogTest(MainWindowOpenTest):
@@ -184,7 +185,6 @@ class PreferencesDialogTest(MainWindowOpenTest):
         """The library's covers are kept as they were drawn, turned or
         not; with the library closed, the next one opened would have
         drawn them the old way from what was kept."""
-        from mcomix.library import pixbuf_cache
         dialog = self._open()
         cache = pixbuf_cache.get_pixbuf_cache()
         cache.add('/books/kept.cbz', image_tools.missing_page())
@@ -483,7 +483,7 @@ class PreferencesDialogTest(MainWindowOpenTest):
         last_read = self.window.filehandler.last_read_page
         last_read.set_enabled(True)
         book = os.path.join(self.tmp_dir, 'book.cbz')
-        shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'), book)
+        shutil.copy(NORMAL_ZIP, book)
         last_read.set_page(book, 3)
         recent = unittest.mock.Mock()
         recent.count.return_value = recent_count

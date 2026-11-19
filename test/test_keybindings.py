@@ -14,6 +14,7 @@ from . import MComixTest
 
 from mcomix import constants
 from mcomix import keybindings
+from mcomix import preferences
 import mcomix.event
 
 
@@ -124,7 +125,6 @@ class StoredKeybindingsTest(MComixTest):
     def _escape_manager(self, stored):
         """A manager over <stored> with Leave fullscreen on Escape and
         Quit on Ctrl+Q by default, and Escape moved to Quit."""
-        from mcomix import preferences
         self.addCleanup(preferences.keybinding_moves.clear)
         preferences.keybinding_moves[:] = [('quit', 'Escape', None)]
         with open(constants.KEYBINDINGS_CONF_PATH, 'w') as fp:
@@ -161,7 +161,6 @@ class StoredKeybindingsTest(MComixTest):
     def _ten_page_manager(self, stored):
         """A manager over <stored> with SHIFT+ALT+Left moved, as format 7
         moves it, from Back 10 pages to 10 pages to the left."""
-        from mcomix import preferences
         self.addCleanup(preferences.keybinding_moves.clear)
         preferences.keybinding_moves[:] = [
             ('previous_page_ff_dynamic', '<Shift><Alt>Left',
@@ -199,7 +198,6 @@ class StoredKeybindingsTest(MComixTest):
     def _new_default_manager(self, stored):
         """A manager over <stored> with CTRL+Plus given to Zoom in as
         a new default, as format 10 gives it."""
-        from mcomix import preferences
         self.addCleanup(preferences.keybinding_moves.clear)
         preferences.keybinding_moves[:] = [('zoom_in', '<Control>plus', '')]
         with open(constants.KEYBINDINGS_CONF_PATH, 'w') as fp:

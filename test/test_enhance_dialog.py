@@ -2,10 +2,14 @@
 
 from unittest import mock
 
+from PIL import Image
+from gi.repository import Gtk
+
 from . import MComixTest, children, pump, wait_for
 
 from mcomix import enhance_dialog
 from mcomix import histogram
+from mcomix import image_tools
 from mcomix.dialog import Response
 from mcomix.preferences import prefs
 
@@ -47,7 +51,6 @@ class EnhanceDialogTest(MComixTest):
         self.assertEqual(1, self._histograms_drawn_turning_a_page())
 
     def test_the_histogram_is_not_enlarged_with_the_dialog(self):
-        from gi.repository import Gtk
         self._opened()
         self.assertEqual(Gtk.ContentFit.SCALE_DOWN,
                          enhance_dialog._dialog._hist_image.get_content_fit())
@@ -180,7 +183,6 @@ class EnhanceDialogTest(MComixTest):
         return drawn
 
     def test_moving_a_slider_draws_the_page_as_enhanced(self):
-        from mcomix import image_tools
         drawn = self._drawn(
             lambda dialog: dialog._invert_color_button.set_active(True))
         self.assertEqual(1, drawn.call_count)
@@ -205,8 +207,6 @@ class EnhanceDialogTest(MComixTest):
 class LogarithmicHistogramTest(MComixTest):
 
     def test_a_colour_few_pixels_have_still_shows(self):
-        from PIL import Image
-        from mcomix import image_tools
         im = Image.new('RGB', (100, 100), (255, 255, 255))
         im.putpixel((0, 0), (0, 0, 0))
         pixbuf = image_tools.pil_to_pixbuf(im)

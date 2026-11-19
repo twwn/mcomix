@@ -14,6 +14,8 @@ import types
 import unittest.mock
 
 from . import MComixTest
+from mcomix import archive_tools
+from mcomix.archive import kfx
 
 FUZZ = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
                     'fuzz')
@@ -68,8 +70,6 @@ class FuzzTargetTest(MComixTest):
         # JPEG XR is jxrlib's program to decode, and a page of an
         # embedded PDF the PDF handler's to render, as the target leaves
         # them out when it fuzzes.
-        from mcomix import archive_tools
-        from mcomix.archive import kfx
         with unittest.mock.patch.object(kfx, '_jxr_decoder', lambda: None), \
                 unittest.mock.patch.object(archive_tools, 'pdf_available', lambda: False):
             inputs = self._run('kfx')

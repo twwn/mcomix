@@ -11,6 +11,8 @@ from . import MComixTest, pump
 
 from mcomix import constants
 from mcomix import portability
+from mcomix import icons
+from mcomix import main
 
 
 class _Answer:
@@ -297,7 +299,6 @@ class DescribeDesktopTest(MComixTest):
                         .startswith('GdkOtherDisplay'))
 
     def test_the_main_window_logs_it(self):
-        from mcomix import icons, main
         self.make_user_directories()
         icons.load_icons()
         with self.assertLogs('mcomix', 'INFO') as logs:
@@ -311,7 +312,6 @@ class DescribeDesktopTest(MComixTest):
 
     @staticmethod
     def _close(window):
-        from mcomix import main
         window.terminate_program()
         window.destroy()
         main.set_main_window(None)

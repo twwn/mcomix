@@ -15,11 +15,14 @@ import shutil
 import threading
 import types
 import unittest.mock
+import zipfile
+
+import PIL.Image
 
 from gi.repository import Gdk, GdkPixbuf, Gio, GLib, Gtk, Pango
 
-from . import (FolderDialogStub, MComixTest, descendants, get_testfile_path,
-               pump, visible_prompts, wait_for)
+from . import (FolderDialogStub, MComixTest, NORMAL_ZIP, descendants,
+               get_testfile_path, pump, visible_prompts, wait_for)
 
 from mcomix import bookmark_backend
 from mcomix import bookmark_menu_item
@@ -110,8 +113,7 @@ class LibraryDialogTest(_LibraryWindowTest):
         gone - nothing was selected and no cover shown, until one was
         clicked."""
         dialog = self._open()
-        dialog.backend.add_book(get_testfile_path(
-            'archives', '01-ZIP-Normal.zip'))
+        dialog.backend.add_book(NORMAL_ZIP)
         dialog.close()
         pump()
         for chosen in (None, 12345):
@@ -375,7 +377,7 @@ class LibraryDialogTest(_LibraryWindowTest):
         self.assertEqual(constants.COLLECTION_ALL,
                          dialog.collection_area.get_current_collection())
         backend = dialog.backend
-        path = get_testfile_path('archives', '01-ZIP-Normal.zip')
+        path = NORMAL_ZIP
         backend.add_book(path)
         book = backend.get_book_by_path(path)
         dialog.close()
@@ -518,7 +520,7 @@ class FolderWatchTest(_LibraryWindowTest):
         """Copy a book into <folder>, as a file manager would: written,
         then closed."""
         path = os.path.join(folder, name)
-        shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'), path)
+        shutil.copy(NORMAL_ZIP, path)
         return path
 
     def _no_scan_after(self, folder, scan, act):
@@ -852,7 +854,7 @@ class _OneBookTest(_LibraryWindowTest):
 
     def _book(self):
         """The book the library holds."""
-        return get_testfile_path('archives', '01-ZIP-Normal.zip')
+        return NORMAL_ZIP
 
     def _left_on(self, page):
         lastread = last_read_page.LastReadPage(self.dialog.backend)
@@ -923,8 +925,6 @@ class CoverAtTheNextStartTest(_OneBookTest):
     def _book(self):
         # With a cover large enough to be stored 500 pixels high: one
         # drawn at nearly the size it is stored at is not kept.
-        import zipfile
-        import PIL.Image
         path = os.path.join(self.tmp_dir, 'book.cbz')
         page = io.BytesIO()
         PIL.Image.new('RGB', (1000, 1500), 'teal').save(page, 'JPEG')
@@ -1141,7 +1141,7 @@ class LibraryWalkTest(_LibraryWindowTest):
     def setUp(self):
         super().setUp()
         prefs['last library collection'] = constants.COLLECTION_ALL
-        source = get_testfile_path('archives', '01-ZIP-Normal.zip')
+        source = NORMAL_ZIP
         self.paths = {}
         for name in ('first/one.zip', 'first/two.zip', 'second/three.zip'):
             # Joined a part at a time: the handler's paths have Windows'
@@ -1212,7 +1212,7 @@ class ReadingListTest(_LibraryWindowTest):
         prefs['last library collection'] = constants.COLLECTION_ALL
         prefs['lib sort key'] = constants.SORT_HAND
         prefs['lib sort order'] = constants.SORT_ASCENDING
-        source = get_testfile_path('archives', '01-ZIP-Normal.zip')
+        source = NORMAL_ZIP
         self.dialog = self._open()
         self.area = self.dialog.book_area
         self.backend = self.dialog.backend
@@ -1507,7 +1507,7 @@ class MissingBooksTest(_LibraryWindowTest):
     def test_clean_up_in_the_covers_menu_takes_out_the_books_gone(self):
         dialog = self._open_all()
         path = os.path.join(self.tmp_dir, 'gone.cbz')
-        shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'), path)
+        shutil.copy(NORMAL_ZIP, path)
         dialog.backend.add_book(path)
         dialog.book_area.display_covers(constants.COLLECTION_ALL)
         pump()
@@ -1537,7 +1537,7 @@ class MissingBooksTest(_LibraryWindowTest):
         file is not there, rather than showing nothing."""
         dialog = self._open()
         path = os.path.join(self.tmp_dir, 'gone.cbz')
-        shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'), path)
+        shutil.copy(NORMAL_ZIP, path)
         dialog.backend.add_book(path)
         os.remove(path)
         book = dialog.backend.get_book_by_path(path)
@@ -1733,7 +1733,7 @@ class OpenFromLibraryTest(_LibraryWindowTest):
         to - so every cover still to be drawn stayed blank for good once
         the library was shown again."""
         dialog = self._open_all()
-        path = get_testfile_path('archives', '01-ZIP-Normal.zip')
+        path = NORMAL_ZIP
         dialog.backend.add_book(path)
         covers = dialog.book_area._covers
         # The cover is held back until the book has been opened, so it
@@ -2053,7 +2053,7 @@ class AddBooksTest(_LibraryWindowTest):
 
     def setUp(self):
         super().setUp()
-        self.path = get_testfile_path('archives', '01-ZIP-Normal.zip')
+        self.path = NORMAL_ZIP
 
     def _showing(self, collection):
         prefs['last library collection'] = collection
@@ -2241,7 +2241,7 @@ class CollectionMenuTest(_LibraryWindowTest):
     def test_clean_up_of_all_books_takes_out_the_books_gone(self):
         dialog = self._open_all()
         path = os.path.join(self.tmp_dir, 'gone.cbz')
-        shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'), path)
+        shutil.copy(NORMAL_ZIP, path)
         dialog.backend.add_book(path)
         pump()
         # The covers on show take the new book in, and read its cover on
@@ -2319,8 +2319,7 @@ class RelocateBooksTest(_LibraryWindowTest):
         for name in self.names:
             book = os.path.join(self.old, *name)
             os.makedirs(os.path.dirname(book), exist_ok=True)
-            shutil.copy2(get_testfile_path('archives', '01-ZIP-Normal.zip'),
-                         book)
+            shutil.copy2(NORMAL_ZIP, book)
             self.dialog.backend.add_book(book)
             self.assertIsNotNone(self.dialog.backend.get_book_thumbnail(book))
         self.dialog.book_area.stop_update()

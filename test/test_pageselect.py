@@ -11,7 +11,7 @@ from unittest import mock
 
 from gi.repository import Gdk, Gtk
 
-from . import MComixTest, children, get_testfile_path, pump, wait_for
+from . import MComixTest, NORMAL_ZIP, children, pump, wait_for
 
 from mcomix import icons
 from mcomix import main
@@ -194,8 +194,7 @@ class ChapterTest(_WindowTest):
 
     def _open(self, comicinfo_xml):
         path = os.path.join(self.tmp_dir, 'book.cbz')
-        with zipfile.ZipFile(get_testfile_path(
-                'archives', '01-ZIP-Normal.zip')) as source, \
+        with zipfile.ZipFile(NORMAL_ZIP) as source, \
                 zipfile.ZipFile(path, 'w') as book:
             for name in source.namelist():
                 if name.endswith(('.jpg', '.png')):

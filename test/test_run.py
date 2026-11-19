@@ -12,9 +12,10 @@ import gi
 # is first imported, so it has to be in before the tests patch that.
 import PIL.Image
 
-from . import MComixTest, get_testfile_path
+from . import MComixTest, NORMAL_ZIP
 
 from mcomix import run
+from mcomix import constants
 from mcomix.preferences import prefs
 
 PYPROJECT = os.path.join(os.path.dirname(os.path.dirname(
@@ -157,7 +158,7 @@ class ArgumentTest(MComixTest):
     def test_the_last_file_is_opened_at_the_file_of_its_page(self):
         """What 9c4095ef keeps for "auto load last file" reaches the
         window: the page's file as well as its number."""
-        book = get_testfile_path('archives', '01-ZIP-Normal.zip')
+        book = NORMAL_ZIP
         prefs['auto load last file'] = True
         prefs['path to last file'] = book
         prefs['page of last file'] = 2
@@ -165,7 +166,7 @@ class ArgumentTest(MComixTest):
         self.assertEqual((book, 2, 'images/02-JPG-RGB.jpg'), self._open([]))
 
     def test_a_last_file_kept_by_an_older_mcomix_has_no_file_of_its_page(self):
-        book = get_testfile_path('archives', '01-ZIP-Normal.zip')
+        book = NORMAL_ZIP
         prefs['auto load last file'] = True
         prefs['path to last file'] = book
         prefs['page of last file'] = 2
@@ -175,8 +176,7 @@ class ArgumentTest(MComixTest):
         """The last file's page and its file are about the last file,
         not about the book that was named."""
         prefs['auto load last file'] = True
-        prefs['path to last file'] = get_testfile_path(
-            'archives', '01-ZIP-Normal.zip')
+        prefs['path to last file'] = NORMAL_ZIP
         prefs['page of last file'] = 2
         prefs['member of last file'] = 'images/02-JPG-RGB.jpg'
         self.assertEqual(('/books/one.cbz', 0, None),
@@ -200,7 +200,6 @@ class MakeDirectoriesTest(MComixTest):
         """MComix runs one process per window, and two started at once
         on a new account both found the directories missing; the one
         that made them second died of FileExistsError."""
-        from mcomix import constants
         for directory in (constants.DATA_DIR, constants.CONFIG_DIR):
             os.makedirs(directory, exist_ok=True)
         # What the second process saw: missing when it looked, there by
@@ -213,7 +212,6 @@ class MakeDirectoriesTest(MComixTest):
     @unittest.skipIf(sys.platform == 'win32',
                      'Windows keeps no POSIX mode bits on a directory')
     def test_they_are_made_for_the_user_alone(self):
-        from mcomix import constants
         run.make_directories()
         for directory in (constants.DATA_DIR, constants.CONFIG_DIR):
             self.assertEqual(0o700, os.stat(directory).st_mode & 0o777)
@@ -222,7 +220,6 @@ class MakeDirectoriesTest(MComixTest):
 
     def test_the_library_opens_at_start_when_asked_for(self):
         """-l asks for it once; the preference asks every time."""
-        from mcomix.preferences import prefs
         opts, _args = run.parse_arguments([])
         self.assertFalse(run.shows_library(opts))
         opts, _args = run.parse_arguments(['-l'])

@@ -19,7 +19,7 @@ from mcomix.archive import (
     zip_external,
 )
 
-from . import MComixTest, get_testfile_path
+from . import MComixTest, NORMAL_ZIP, get_testfile_path
 
 _Usage = collections.namedtuple('_Usage', 'total used free')
 
@@ -127,8 +127,7 @@ class HandlerTest(MComixTest):
     @unittest.skipUnless(zip_external.ZipArchive.is_available(),
                          'needs unzip')
     def test_unzip(self):
-        self._written_by_a_full_disk(zip_external.ZipArchive(
-            get_testfile_path('archives', '01-ZIP-Normal.zip')))
+        self._written_by_a_full_disk(zip_external.ZipArchive(NORMAL_ZIP))
 
     @unittest.skipUnless(sevenzip_external.SevenZipArchive.is_available(),
                          'needs 7z')

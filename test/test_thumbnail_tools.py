@@ -9,7 +9,7 @@ from hashlib import md5
 
 import PIL.Image
 import PIL.PngImagePlugin
-from gi.repository import Gio
+from gi.repository import GdkPixbuf, Gio
 
 from . import (MComixTest, get_testfile_path, refuse_passwords,
                replace_held_once, wait_for)
@@ -194,7 +194,6 @@ class ThumbnailReuseTest(MComixTest):
         to be written to a temporary file in the same directory and
         renamed into place; it was written in place, where another
         reader could meet half of it, and made private only afterwards."""
-        from gi.repository import GdkPixbuf
         savev = GdkPixbuf.Pixbuf.savev
         written = []
 

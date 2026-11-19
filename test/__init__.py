@@ -811,8 +811,7 @@ class MComixTest(unittest.TestCase):
         from mcomix import icons
         self.make_user_directories()
         icons.load_icons()
-        self.open_main_window(
-            open_path=get_testfile_path('archives', '01-ZIP-Normal.zip'))
+        self.open_main_window(open_path=NORMAL_ZIP)
         self.wait_for_pages()
 
     def close_main_window(self, rounds=4000):
@@ -977,6 +976,11 @@ def sample_pages(count=3):
 
 def get_testfile_path(*components):
     return str(os.path.join(os.path.dirname(__file__), 'files', *components))
+
+
+#: The book most tests open: an archive of pictures, test/files'
+#: 01-ZIP-Normal.zip.
+NORMAL_ZIP = get_testfile_path('archives', '01-ZIP-Normal.zip')
 
 
 #: For a test of a file name that is not UTF-8.  Windows keeps names in

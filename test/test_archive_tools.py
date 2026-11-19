@@ -1,7 +1,10 @@
 
+import ctypes
 import io
 import lzma
 import os
+import shutil
+import sys
 import tarfile
 import time
 import unittest.mock
@@ -11,6 +14,7 @@ from . import MComixTest, get_testfile_path
 
 from mcomix import archive_tools
 from mcomix import constants
+from mcomix.archive import rar
 
 
 _EXTENSION_TO_MIME_TYPES = {
@@ -86,7 +90,6 @@ class ArchiveToolsTest(MComixTest):
                     get_testfile_path('archives', name)))
 
     def test_a_later_volume_leads_to_the_first_one_beside_it(self):
-        import shutil
         for width in (1, 2):
             with self.subTest(width=width):
                 directory = os.path.join(self.tmp_dir, 'width%d' % width)
@@ -106,7 +109,6 @@ class ArchiveToolsTest(MComixTest):
                 self.assertIsNone(archive_tools.first_volume(second))
 
     def _copy_set(self, directory, width=1, parts=(1, 2, 3)):
-        import shutil
         os.makedirs(directory, exist_ok=True)
         names = []
         for part in parts:
@@ -133,7 +135,6 @@ class ArchiveToolsTest(MComixTest):
         self.assertEqual([first], archive_tools.volume_set(first))
 
     def test_a_file_named_as_a_later_volume_that_is_none_is_left(self):
-        import shutil
         first = self._copy_set(self.tmp_dir, parts=(1,))[0]
         shutil.copy(get_testfile_path('archives', 'RAR5.rar'),
                     os.path.join(self.tmp_dir, 'Set.part2.rar'))
@@ -370,10 +371,6 @@ class UnrarLibraryTest(MComixTest):
         """Where the system had no libunrar, the one in whatever
         directory MComix was started from was loaded: a library planted
         in a folder of downloads ran as MComix."""
-        import ctypes
-        import sys
-        import unittest.mock
-        from mcomix.archive import rar
         if sys.platform == 'win32':
             self.skipTest('Windows searches for DLLs by its own rules')
         tried = []
@@ -402,10 +399,6 @@ class FlatpakUnrarTest(MComixTest):
     def test_the_flatpak_s_libunrar_is_tried(self):
         """libunrar's makefile gives the library no soname, so
         find_library() does not answer for the one the Flatpak builds."""
-        import ctypes
-        import sys
-        import unittest.mock
-        from mcomix.archive import rar
         if sys.platform == 'win32':
             self.skipTest('Windows searches for DLLs by its own rules')
         tried = []

@@ -9,7 +9,8 @@ import zipfile
 
 from gi.repository import Gdk, Gtk
 
-from . import MComixTest, descendants, get_testfile_path, pump, wait_for
+from . import (MComixTest, NORMAL_ZIP, descendants, get_testfile_path, pump,
+               wait_for)
 from .test_book_area import _MarkingLibrary
 
 from mcomix import image_tools
@@ -34,8 +35,7 @@ class BookPropertiesTest(MComixTest):
         self.paths = []
         for name in ('First.cbz', 'Second.cbz'):
             path = os.path.join(self.tmp_dir, name)
-            shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'),
-                        path)
+            shutil.copy(NORMAL_ZIP, path)
             self.assertTrue(self.backend.add_book(path))
             self.paths.append(path)
         self.books = [self.backend.get_book_by_path(path)
@@ -222,10 +222,8 @@ class BookAreaPropertiesTest(MComixTest):
         super().setUp()
         self.library = _PropertiesLibrary()
         self.addCleanup(self.library.backend.close)
-        self.assertTrue(self.library.backend.add_book(
-            get_testfile_path('archives', '01-ZIP-Normal.zip')))
-        self.book = self.library.backend.get_book_by_path(
-            get_testfile_path('archives', '01-ZIP-Normal.zip'))
+        self.assertTrue(self.library.backend.add_book(NORMAL_ZIP))
+        self.book = self.library.backend.get_book_by_path(NORMAL_ZIP)
         self.area = book_area._BookArea(self.library)
         self.area._covers.set_items([book_area._BookItem(self.book)])
 
