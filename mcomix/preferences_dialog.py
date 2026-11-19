@@ -74,7 +74,6 @@ class _PreferencesDialog(Dialog):
         self.add_button(_('_Close'), Response.CLOSE)
 
         self._window = window
-        self.set_resizable(True)
         # Wide enough for the Shortcuts tab, which is a name and four
         # shortcut columns beside it and needs more room than any of
         # the others; the height is whatever the tabs come to.

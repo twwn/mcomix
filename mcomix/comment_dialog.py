@@ -28,7 +28,6 @@ class _CommentsDialog(Dialog):
         super().__init__(title=_('Comments'), transient_for=window)
         self.add_buttons(_('_Close'), Response.CLOSE)
 
-        self.set_resizable(True)
         self.set_default_response(Response.CLOSE)
         self.set_default_size(600, 550)
         widgets.set_border(self, 4)

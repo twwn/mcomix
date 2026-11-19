@@ -39,7 +39,6 @@ class Pageselector(Dialog):
                          _('_Go'), Response.OK)
         self.set_default_response(Response.OK)
         self.connect('response', self._response)
-        self.set_resizable(True)
 
         self._number_of_pages = self._window.imagehandler.get_number_of_pages()
 

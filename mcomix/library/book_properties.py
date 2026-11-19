@@ -60,7 +60,6 @@ class BookPropertiesDialog(Dialog):
         self.add_buttons(_('_Close'), Response.CLOSE)
         self.set_default_response(Response.CLOSE)
         self.set_default_size(500, 430)
-        self.set_resizable(True)
         widgets.set_border(self, 4)
 
         #: The thread reading a single book's ComicInfo.xml, while it

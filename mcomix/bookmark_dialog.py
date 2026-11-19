@@ -39,7 +39,6 @@ class _BookmarksDialog(Dialog):
 
         self._bookmarks_store = bookmarks_store
 
-        self.set_resizable(True)
         self.set_default_response(Response.CLOSE)
         # No margin around what the window holds, so that the list of
         # bookmarks reaches its edges; the button row below the content

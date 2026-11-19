@@ -39,7 +39,6 @@ class _PropertiesDialog(Dialog):
 
         self._window = window
         self.set_default_size(500, 430)
-        self.set_resizable(True)
         self.set_default_response(Response.CLOSE)
         notebook = Gtk.Notebook()
         widgets.set_border(self, 4)
