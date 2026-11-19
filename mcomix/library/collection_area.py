@@ -12,6 +12,7 @@ import weakref
 from gi.repository import Gdk, Gio, GLib, Gtk
 from typing import TYPE_CHECKING
 
+from mcomix.library import LibraryPart
 from mcomix.preferences import prefs
 from mcomix import column_list
 from mcomix import widgets
@@ -39,7 +40,8 @@ _SIDEBAR_MIN_CHARS = 14
 _SIDEBAR_MAX_CHARS = 28
 
 
-class _CollectionArea(Gtk.ScrolledWindow, widgets.Releasable):
+class _CollectionArea(Gtk.ScrolledWindow, widgets.Releasable,
+                      LibraryPart):
 
     """The _CollectionArea is the sidebar area in the library where
     different collections are displayed in a tree.
@@ -120,18 +122,6 @@ class _CollectionArea(Gtk.ScrolledWindow, widgets.Releasable):
         # makes another such cycle for as long as the area is its parent.
         self.set_child(None)
         widgets.empty_action_group(self._popup_actions)
-
-    @property
-    def _library(self) -> "_LibraryDialog":
-        """The library window this area is part of.
-
-        Held weakly: GTK holds the area for as long as the window's
-        widgets stand, which is for good once the window is closed,
-        and a plain reference would keep the window alive with it.
-        """
-        library = self._library_ref()
-        assert library is not None, 'the library window is gone'
-        return library
 
     #: The keys _key_press() answers for a popup entry, shown beside it.
     _MENU_KEYS = {'rename': 'F2', 'remove': 'Delete'}

@@ -17,6 +17,7 @@ from gi.repository import Gdk, GdkPixbuf, Gio, GLib, Gtk
 import PIL.Image as Image
 import PIL.ImageDraw as ImageDraw
 
+from mcomix.library import LibraryPart
 from mcomix.preferences import prefs
 from mcomix import thumbnail_list
 from mcomix import archive_tools
@@ -139,7 +140,7 @@ class _BookItem(thumbnail_list.ThumbnailItem):
         return self._modified
 
 
-class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
+class _BookArea(Gtk.ScrolledWindow, widgets.Releasable, LibraryPart):
 
     """The _BookArea is the central area in the library where the book
     covers are displayed.
@@ -266,18 +267,6 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
         # makes another such cycle for as long as the area is its parent.
         self.set_child(None)
         widgets.empty_action_group(self._popup_actions)
-
-    @property
-    def _library(self) -> 'main_dialog._LibraryDialog':
-        """The library window this area is part of.
-
-        Held weakly: GTK holds the area for as long as the window's
-        widgets stand, which is for good once the window is closed,
-        and a plain reference would keep the window alive with it.
-        """
-        library = self._library_ref()
-        assert library is not None, 'the library window is gone'
-        return library
 
     #: The keys _key_press() answers for a popup entry, shown beside it.
     _MENU_KEYS = {'open-by-hand': '<Control>Return',

@@ -12,6 +12,7 @@ from gi.repository import Gtk
 from gi.repository import GLib
 from gi.repository import Pango
 
+from mcomix.library import LibraryPart
 from mcomix import i18n
 from mcomix import labels
 from mcomix import tools
@@ -27,7 +28,7 @@ if TYPE_CHECKING:
     from mcomix.library import main_dialog
 
 
-class _ControlArea(Gtk.Box):
+class _ControlArea(Gtk.Box, LibraryPart):
 
     """The _ControlArea is the bottom area of the library window where
     information is displayed and controls such as buttons reside.
@@ -116,18 +117,6 @@ class _ControlArea(Gtk.Box):
         self._open_button.set_tooltip_text(_('Open the selected book.'))
         self._open_button.set_sensitive(False)
         widgets.pack(hbox, self._open_button, True, True, 0)
-
-    @property
-    def _library(self) -> "main_dialog._LibraryDialog":
-        """The library window this area is part of.
-
-        Held weakly: GTK holds the area for as long as the window's
-        widgets stand, which is for good once the window is closed,
-        and a plain reference would keep the window alive with it.
-        """
-        library = self._library_ref()
-        assert library is not None, 'the library window is gone'
-        return library
 
     def update_info(self, selected: Sequence[int]) -> None:
         """Update the info box using the currently <selected> books from
