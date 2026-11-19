@@ -633,14 +633,15 @@ class ImageHandler:
         return image_tools.get_image_header(page_path)[0]
 
     def get_thumbnail(self, page: int | None = None, width: int = 128,
-                      height: int = 128, create: bool = False,
+                      height: int = 128,
                       nowait: bool = False) -> GdkPixbuf.Pixbuf | None:
         """Return a thumbnail pixbuf of <page> that fit in a box with
         dimensions <width>x<height>. Return a thumbnail for the current
         page if <page> is None.
 
-        If <create> is True, and <width>x<height> <= 128x128, the
-        thumbnail is also stored on disk.
+        Nothing is stored on disk: a page is a file of the book, often
+        one extracted to a temporary folder, which is no name for the
+        shared thumbnail store to keep a picture under.
 
         If <nowait> is True, don't wait for <page> to be available.
         """
@@ -652,7 +653,7 @@ class ImageHandler:
         if path is None:
             return None
 
-        thumbnailer = thumbnail_tools.Thumbnailer(store_on_disk=create,
+        thumbnailer = thumbnail_tools.Thumbnailer(store_on_disk=False,
                                                   size=(width, height))
         pixbuf = thumbnailer.thumbnail(path)
         # None from the thumbnailer is a page that would not load, which
