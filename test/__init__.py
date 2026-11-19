@@ -508,6 +508,59 @@ def pixel(pixbuf, x, y):
     return tuple(pixbuf.get_pixels()[offset:offset + channels])
 
 
+def visible_prompts():
+    """Every message dialog on screen."""
+    from gi.repository import Gtk
+    from mcomix import message_dialog
+    return [window for window in Gtk.Window.list_toplevels()
+            if isinstance(window, message_dialog.MessageDialog)
+            and window.get_visible()]
+
+
+def prompts_over(window):
+    """Every message dialog standing over <window>, shown or not yet."""
+    from gi.repository import Gtk
+    from mcomix import message_dialog
+    return [dialog for dialog in Gtk.Window.list_toplevels()
+            if isinstance(dialog, message_dialog.MessageDialog)
+            and dialog.get_transient_for() is window]
+
+
+def notebook_tabs(notebook):
+    """The labels of <notebook>'s tabs, in order."""
+    return [notebook.get_tab_label_text(notebook.get_nth_page(index))
+            for index in range(notebook.get_n_pages())]
+
+
+class FolderDialogStub:
+
+    """Stands in for the Gtk.FileDialog a folder is chosen in, answering
+    with <folder>, or raising as a dismissed one does when <folder> is
+    None."""
+
+    def __init__(self, folder):
+        self._folder = folder
+
+    def select_folder_finish(self, result):
+        from gi.repository import Gio, GLib
+        if self._folder is None:
+            raise GLib.Error('dismissed')
+        return Gio.File.new_for_path(self._folder)
+
+
+def windows_refusal(name):
+    """A patch of os.<name>, remove or unlink, that refuses a read-only
+    file as Windows does, and removes any other."""
+    from unittest import mock
+    function = getattr(os, name)
+
+    def refusing(path, *, dir_fd=None):
+        if not os.stat(path, dir_fd=dir_fd).st_mode & 0o200:
+            raise PermissionError(13, 'Access is denied', path)
+        function(path, dir_fd=dir_fd)
+    return mock.patch('os.' + name, side_effect=refusing)
+
+
 def fresh_bookmarks_store():
     """Have the bookmarks store read its file again, which for a test
     that has just been given its own directories is no file at all.
@@ -676,6 +729,14 @@ class MComixTest(unittest.TestCase):
         # Resetting them is not changing them, and a write left over
         # from an earlier test is not this one's to make.
         preferences.cancel_scheduled_write()
+
+    def extracted(self, archive, name):
+        """What <archive> extracts <name> as, into the test's folder
+        "out"."""
+        destination = os.path.join(self.tmp_dir, 'out')
+        archive.extract(name, destination)
+        with open(os.path.join(destination, name), 'rb') as member:
+            return member.read()
 
     def make_user_directories(self):
         """Make the configuration, data and thumbnail directories under

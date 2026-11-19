@@ -21,8 +21,8 @@ import warnings
 from gi.repository import Gdk, GdkPixbuf, Gio, GLib, Gtk
 
 from . import (MComixTest, MainWindowLaterTest, children, descendants,
-               fresh_bookmarks_store, get_testfile_path, hold_open, pump,
-               wait_for)
+               fresh_bookmarks_store, get_testfile_path, hold_open,
+               prompts_over, pump, wait_for, windows_refusal)
 
 from mcomix import archive_packer
 from mcomix import bookmark_backend
@@ -424,12 +424,6 @@ class MainWindowTest(MComixTest):
             dialog.destroy()
             self._pump()
 
-    def _message_dialogs(self):
-        """Every message dialog this window has standing open."""
-        return [window for window in Gtk.Window.list_toplevels()
-                if isinstance(window, message_dialog.MessageDialog)
-                and window.get_transient_for() is self.window]
-
     def test_deleting_a_file_asks_before_it_does_and_defaults_to_cancel(self):
         """The dialog deletes a file from the disk, so Enter must answer
         it with the button that does nothing."""
@@ -440,7 +434,7 @@ class MainWindowTest(MComixTest):
         self._pump()
         self.window.file_actions.delete()
         self._pump()
-        dialogs = self._message_dialogs()
+        dialogs = prompts_over(self.window)
         self.assertEqual(1, len(dialogs), 'nothing asked before deleting')
         dialog = dialogs[0]
         try:
@@ -2222,7 +2216,7 @@ class MainWindowTest(MComixTest):
             self.window.file_actions.delete()
         self._pump()
         self.assertEqual(self._pages(), before[1:])
-        self.assertEqual(self._delete_dialogs(), [],
+        self.assertEqual(prompts_over(self.window), [],
                          'it asked about the file as well')
 
     def _bookmark_store(self):
@@ -2245,7 +2239,7 @@ class MainWindowTest(MComixTest):
         self.window.file_actions._delete_answered(Response.OK, source)
         self._pump()
 
-        dialogs = self._delete_dialogs()
+        dialogs = prompts_over(self.window)
         self.assertEqual(len(dialogs), 1, 'nothing asked about the bookmark')
         self.assertEqual(len(store.get_bookmarks()), 1,
                          'the bookmark went without being asked about')
@@ -2275,7 +2269,7 @@ class MainWindowTest(MComixTest):
         with unittest.mock.patch.object(tools, 'move_to_trash', refuse):
             self.window.file_actions._delete_answered(Response.OK, source)
             self._pump()
-        dialogs = self._delete_dialogs()
+        dialogs = prompts_over(self.window)
         self.addCleanup(self._pump)
         for dialog in dialogs:
             self.addCleanup(dialog.destroy)
@@ -2310,7 +2304,7 @@ class MainWindowTest(MComixTest):
             self._pump()
         self.assertTrue(os.path.isfile(source))
         forgotten.assert_not_called()
-        self.assertEqual(self._delete_dialogs(), [],
+        self.assertEqual(prompts_over(self.window), [],
                          'the button did not close the message')
 
     def test_turning_down_the_offer_leaves_the_book_open(self):
@@ -2387,7 +2381,7 @@ class MainWindowTest(MComixTest):
             dialog.get_widget_for_response(Response.OK).emit('clicked')
             self._pump()
         self.assertTrue(os.path.isfile(source))
-        said = self._delete_dialogs()
+        said = prompts_over(self.window)
         for message in said:
             self.addCleanup(message.destroy)
         self.assertEqual([('Could not delete "Movable.cbz"',
@@ -2410,7 +2404,7 @@ class MainWindowTest(MComixTest):
                 paths)
         self._pump()
         self.assertEqual([], deleted)
-        said = self._delete_dialogs()
+        said = prompts_over(self.window)
         for message in said:
             self.addCleanup(message.destroy)
         self.assertEqual([('2 books could not be deleted.',
@@ -2435,7 +2429,7 @@ class MainWindowTest(MComixTest):
         """Press Shift+Delete on <source> and return the question."""
         self.window.file_actions.delete_permanently()
         self._pump()
-        dialogs = self._delete_dialogs()
+        dialogs = prompts_over(self.window)
         self.addCleanup(self._pump)
         for dialog in dialogs:
             self.addCleanup(dialog.destroy)
@@ -2554,14 +2548,8 @@ class MainWindowTest(MComixTest):
         and deletes it, and MComix said "Could not delete"."""
         source = self._movable_book()
         os.chmod(source, 0o444)
-        remove = os.remove
-
-        def refusing(name, *, dir_fd=None):
-            if not os.stat(name, dir_fd=dir_fd).st_mode & 0o200:
-                raise PermissionError(13, 'Access is denied', name)
-            remove(name, dir_fd=dir_fd)
         dialog = self._asked_to_delete_permanently(source)
-        with unittest.mock.patch('os.remove', side_effect=refusing), \
+        with windows_refusal('remove'), \
                 unittest.mock.patch('sys.platform', 'win32'):
             dialog.get_widget_for_response(Response.OK).emit('clicked')
             self._pump()
@@ -2583,7 +2571,7 @@ class MainWindowTest(MComixTest):
                                         return_value=True):
             self.window.file_actions.delete()
             self._pump()
-        dialogs = self._delete_dialogs()
+        dialogs = prompts_over(self.window)
         self.addCleanup(self._pump)
         for dialog in dialogs:
             self.addCleanup(dialog.destroy)
@@ -2618,7 +2606,7 @@ class MainWindowTest(MComixTest):
             self._pump()
         trash.assert_not_called()
         self.assertFalse(os.path.exists(source))
-        self.assertEqual(self._delete_dialogs(), [],
+        self.assertEqual(prompts_over(self.window), [],
                          'a second question followed the first')
 
     def test_where_the_trash_refuses_no_leaves_the_book_open(self):
@@ -2648,7 +2636,7 @@ class MainWindowTest(MComixTest):
             self.window.file_actions.delete_permanently()
         self._pump()
         self.assertEqual(self._pages(), before[1:])
-        self.assertEqual(self._delete_dialogs(), [],
+        self.assertEqual(prompts_over(self.window), [],
                          'it asked about the file as well')
 
     def test_keeping_the_bookmarks_of_a_deleted_file_keeps_them(self):
@@ -2660,7 +2648,7 @@ class MainWindowTest(MComixTest):
         self.window.file_actions._delete_answered(Response.OK, source)
         self._pump()
 
-        dialogs = self._delete_dialogs()
+        dialogs = prompts_over(self.window)
         self.assertEqual(len(dialogs), 1)
         dialogs[0].emit('response', Response.NO)
         self._pump()
@@ -2673,7 +2661,7 @@ class MainWindowTest(MComixTest):
         self.window.file_actions._delete_answered(Response.OK, source)
         self._pump()
 
-        self.assertEqual(self._delete_dialogs(), [])
+        self.assertEqual(prompts_over(self.window), [])
 
     def test_the_library_lets_go_of_a_book_that_was_deleted(self):
         """The library holds a record of a file; deleting the file left
@@ -2753,15 +2741,10 @@ class MainWindowTest(MComixTest):
         self.assertFalse(os.path.exists(paths[0]))
         self.assertFalse(self.window.filehandler.file_loaded)
 
-    def _delete_dialogs(self):
-        return [window for window in Gtk.Window.list_toplevels()
-                if isinstance(window, message_dialog.MessageDialog)
-                and window.get_transient_for() is self.window]
-
     # -- Writing the book back over its archive ---------------------------
 
     def _save_prompts(self):
-        return [window for window in self._delete_dialogs()
+        return [window for window in prompts_over(self.window)
                 if window.dialog_id == message_dialog.RememberedDialog
                 .SAVE_EDITED_ARCHIVE]
 
@@ -3056,7 +3039,7 @@ class MainWindowTest(MComixTest):
         return source
 
     def _overwrite_prompts(self):
-        return [dialog for dialog in self._delete_dialogs()
+        return [dialog for dialog in prompts_over(self.window)
                 if dialog.dialog_id is None
                 and 'changed since' in dialog._primary.get_text()]
 
@@ -3570,7 +3553,7 @@ class MainWindowTest(MComixTest):
     # -- Leaving a book with pages still picked out -----------------------
 
     def _leaving_prompts(self):
-        return [window for window in self._delete_dialogs()
+        return [window for window in prompts_over(self.window)
                 if window.dialog_id == message_dialog.RememberedDialog
                 .REMOVE_PICKED_OUT_PAGES]
 
@@ -4287,7 +4270,7 @@ class MainWindowTest(MComixTest):
         source = self.window.filehandler.get_path_to_base()
         self.window.file_actions.move_current_file(destination)
         self._pump()
-        messages = self._message_dialogs()
+        messages = prompts_over(self.window)
         self.assertEqual(1, len(messages), 'nothing said it did not move')
         self.addCleanup(messages[0].destroy)
         self.assertTrue(os.path.isfile(source), 'the book moved all the same')
@@ -4424,12 +4407,12 @@ class MainWindowTest(MComixTest):
         self._pump()
 
         self.assertTrue(os.path.isfile(source), 'the book moved anyway')
-        self.assertEqual(len(self._delete_dialogs()), 1,
+        self.assertEqual(len(prompts_over(self.window)), 1,
                          'nothing said why the move did not happen')
         self.assertEqual(prefs['recent move destinations'], [])
         # Left standing it would be answered by the next test that goes
         # looking for a dialog.
-        for dialog in self._delete_dialogs():
+        for dialog in prompts_over(self.window):
             dialog.destroy()
         self._pump()
 
@@ -4543,7 +4526,7 @@ class MainWindowTest(MComixTest):
         asked = self._rename_book_as('Renamed')
         self.assertIsNotNone(asked['clash']('Renamed'))
         self.assertIsNone(asked['clash']('Other'))
-        for dialog in self._delete_dialogs():
+        for dialog in prompts_over(self.window):
             dialog.destroy()
         self.assertTrue(all(os.path.isfile(volume) for volume in volumes))
         self.assertFalse(os.path.exists(
@@ -4561,7 +4544,7 @@ class MainWindowTest(MComixTest):
 
         with unittest.mock.patch('os.rename', refused):
             self._rename_book_as('Renamed')
-        for dialog in self._delete_dialogs():
+        for dialog in prompts_over(self.window):
             dialog.destroy()
         self.assertEqual(['Set.part1.rar', 'Set.part2.rar', 'Set.part3.rar'],
                          sorted(os.listdir(folder)))
@@ -4593,9 +4576,9 @@ class MainWindowTest(MComixTest):
         self.assertTrue(os.path.isfile(source))
         with open(taken, 'rb') as handle:
             self.assertEqual(handle.read(), b'not the book')
-        self.assertEqual(len(self._delete_dialogs()), 1,
+        self.assertEqual(len(prompts_over(self.window)), 1,
                          'nothing said why the rename did not happen')
-        for dialog in self._delete_dialogs():
+        for dialog in prompts_over(self.window):
             dialog.destroy()
         self._pump()
 
@@ -4637,9 +4620,9 @@ class MainWindowTest(MComixTest):
         self.assertIsNotNone(library.get_book_by_path(other))
         self.assertIsNotNone(library.get_book_by_path(landed))
         self.assertTrue(os.path.isfile(others[1]), 'a taken name moved')
-        self.assertEqual(len(self._delete_dialogs()), 1,
+        self.assertEqual(len(prompts_over(self.window)), 1,
                          'nothing said why a book did not move')
-        for dialog in self._delete_dialogs():
+        for dialog in prompts_over(self.window):
             dialog.destroy()
         self.assertTrue(wait_for(
             lambda: self.window.imagehandler.get_current_page() == 3,
@@ -4723,7 +4706,7 @@ class MainWindowTest(MComixTest):
         self._remember_answer(Response.NO)
         self.window.file_actions.move_current_file(destination)
         self._pump()
-        for dialog in self._delete_dialogs():
+        for dialog in prompts_over(self.window):
             dialog.destroy()
         self._pump()
         self._forget_stored_answer()
@@ -4911,7 +4894,7 @@ class MainWindowTest(MComixTest):
         self.window.file_actions.rename_popup_page()
         self._pump()
 
-        dialogs = self._delete_dialogs()
+        dialogs = prompts_over(self.window)
         self.assertEqual(len(dialogs), 1, 'nothing asked for a name')
         entries = [child
                    for child in self._children(dialogs[0].get_content_area())
@@ -4963,9 +4946,9 @@ class MainWindowTest(MComixTest):
         self._pump()
 
         self.assertTrue(os.path.isfile(os.path.join(directory, '0.png')))
-        self.assertEqual(len(self._delete_dialogs()), 1,
+        self.assertEqual(len(prompts_over(self.window)), 1,
                          'nothing said why the page was not renamed')
-        for dialog in self._delete_dialogs():
+        for dialog in prompts_over(self.window):
             dialog.destroy()
         self._pump()
 
@@ -4999,7 +4982,7 @@ class MainWindowTest(MComixTest):
         self.assertEqual(renamed, '0.PNG')
         self.assertEqual(sorted(os.listdir(directory)),
                          ['0.PNG', '1.png', '2.png'])
-        self.assertEqual(self._delete_dialogs(), [])
+        self.assertEqual(prompts_over(self.window), [])
 
     # -- Renaming to a name another page holds ----------------------------
 
@@ -5077,7 +5060,7 @@ class MainWindowTest(MComixTest):
         self.window.popup_page = page
         self.window.file_actions.rename_popup_page()
         self._pump()
-        dialogs = self._delete_dialogs()
+        dialogs = prompts_over(self.window)
         self.assertEqual(len(dialogs), 1, 'nothing asked for a name')
         return dialogs[0]
 
@@ -5247,7 +5230,7 @@ class MainWindowTest(MComixTest):
         and close it.  The log alone had said so, and a reader renaming
         a page in a folder they may not write to saw nothing happen."""
         self._pump()
-        dialogs = self._delete_dialogs()
+        dialogs = prompts_over(self.window)
         self.assertEqual(len(dialogs), 1,
                          'nothing said why the name did not change')
         for dialog in dialogs:
@@ -5498,11 +5481,11 @@ class MainWindowTest(MComixTest):
         self.window.file_actions._save_page_to(page, target)
         self._pump()
 
-        self.assertEqual(len(self._delete_dialogs()), 1,
+        self.assertEqual(len(prompts_over(self.window)), 1,
                          'nothing said why the page was not saved')
         self.assertEqual(prefs['path of last saved in filechooser'], before,
                          'a save that failed moved where the next starts')
-        for dialog in self._delete_dialogs():
+        for dialog in prompts_over(self.window):
             dialog.destroy()
         self._pump()
 
@@ -5531,7 +5514,7 @@ class MainWindowTest(MComixTest):
                 unittest.mock.patch('time.sleep'):
             self.window.file_actions._save_page_to(page, target)
         self._pump()
-        self.assertEqual([], self._delete_dialogs())
+        self.assertEqual([], prompts_over(self.window))
         self.assertEqual(os.path.getsize(page), os.path.getsize(target))
 
     def test_a_page_saved_where_there_is_no_room_says_how_large_it_is(self):
@@ -5547,7 +5530,7 @@ class MainWindowTest(MComixTest):
             self.window.file_actions._save_page_to(
                 page, os.path.join(self.tmp_dir, 'saved.png'))
         self._pump()
-        dialogs = self._delete_dialogs()
+        dialogs = prompts_over(self.window)
         self.assertEqual(1, len(dialogs),
                          'nothing said why the page was not saved')
         self.addCleanup(dialogs[0].destroy)
@@ -5580,7 +5563,7 @@ class MainWindowTest(MComixTest):
                                         side_effect=half_a_copy):
             self.window.file_actions._save_page_to(page, target)
         self._pump()
-        dialogs = self._delete_dialogs()
+        dialogs = prompts_over(self.window)
         self.assertEqual(1, len(dialogs))
         self.addCleanup(dialogs[0].destroy)
         self.assertEqual(os.listdir(folder), ['saved.png'],
@@ -5604,7 +5587,7 @@ class MainWindowTest(MComixTest):
         self._pump()
 
         self.assertTrue(os.path.isfile(target))
-        self.assertEqual(self._delete_dialogs(), [])
+        self.assertEqual(prompts_over(self.window), [])
 
     def test_the_right_click_menu_offers_the_archive_editor(self):
         """The editor was on the Edit menu and nowhere else, so a reader

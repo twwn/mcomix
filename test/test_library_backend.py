@@ -1482,37 +1482,19 @@ class ChosenCoverTest(LibraryDatabaseTest):
     def test_a_cover_being_made_as_another_is_chosen_does_not_stay(self):
         """The read in flight stored the old picture after the choice had
         deleted what was stored, and every later read found it there."""
-        made, go_on = threading.Event(), threading.Event()
-        self.addCleanup(go_on.set)
-        make = thumbnail_tools.Thumbnailer._create_thumbnail_pixbuf
-        answers = []
-
-        def parked(thumbnailer, filepath):
-            answer = make(thumbnailer, filepath)
-            made.set()
-            go_on.wait(10)
-            return answer
-
-        def reader():
-            answers.append(self.backend.get_book_thumbnail(self.path))
-
-        with unittest.mock.patch.object(thumbnail_tools.Thumbnailer,
-                                        '_create_thumbnail_pixbuf', parked):
-            thread = threading.Thread(target=reader)
-            thread.start()
-            self.assertTrue(made.wait(10))
-            self.assertTrue(self.backend.set_chosen_cover(self.path, 'b.png'))
-            go_on.set()
-            thread.join(10)
-        self.assertFalse(thread.is_alive())
+        chosen = []
+        answer = self._while_the_cover_is_read(lambda: chosen.append(
+            self.backend.set_chosen_cover(self.path, 'b.png')))
+        self.assertEqual([True], chosen)
 
         # What is kept, and what the reader was given, which goes on screen.
         self.assertEqual('b.png', self._cover())
-        self.assertEqual('b.png', self._page_coloured(answers[0]))
+        self.assertEqual('b.png', self._page_coloured(answer))
 
     def _while_the_cover_is_read(self, act):
         """Run <act> while another thread reads the book's cover, between
-        the read and the store of what it read."""
+        the read and the store of what it read, and return what the
+        read answered."""
         made, go_on = threading.Event(), threading.Event()
         self.addCleanup(go_on.set)
         make = thumbnail_tools.Thumbnailer._create_thumbnail_pixbuf
@@ -1523,8 +1505,9 @@ class ChosenCoverTest(LibraryDatabaseTest):
             go_on.wait(10)
             return answer
 
-        thread = threading.Thread(
-            target=self.backend.get_book_thumbnail, args=(self.path,))
+        answers = []
+        thread = threading.Thread(target=lambda: answers.append(
+            self.backend.get_book_thumbnail(self.path)))
         with unittest.mock.patch.object(thumbnail_tools.Thumbnailer,
                                         '_create_thumbnail_pixbuf', parked):
             thread.start()
@@ -1533,6 +1516,7 @@ class ChosenCoverTest(LibraryDatabaseTest):
             go_on.set()
             thread.join(10)
         self.assertFalse(thread.is_alive())
+        return answers[0]
 
     def test_a_cover_being_made_as_its_book_is_removed_is_not_kept(self):
         """The read stored the cover after remove_book() had deleted it,

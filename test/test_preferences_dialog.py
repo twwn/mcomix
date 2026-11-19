@@ -14,7 +14,8 @@ import unittest.mock
 
 from gi.repository import GdkPixbuf, Gtk
 
-from . import MainWindowOpenTest, descendants, get_testfile_path, pump
+from . import (MainWindowOpenTest, descendants, get_testfile_path, pump,
+               visible_prompts)
 
 from mcomix import constants
 from mcomix import i18n
@@ -357,18 +358,12 @@ class PreferencesDialogTest(MainWindowOpenTest):
 
     # -- Changing the interface language -----------------------------------
 
-    def _prompts(self):
-        """The prompts the dialog has put on screen."""
-        return [window for window in Gtk.Window.list_toplevels()
-                if isinstance(window, message_dialog.MessageDialog)
-                and window.get_visible()]
-
     def _pick_language(self, language):
         """Pick <language> in the dialog's language chooser."""
         self._open()
         self.dialog._language_chooser.set_value(language)
         pump()
-        return self._prompts()
+        return visible_prompts()
 
     def test_picking_another_language_offers_a_restart(self):
         """Most of the interface is translated before any window exists,
@@ -384,12 +379,12 @@ class PreferencesDialogTest(MainWindowOpenTest):
         self._open()
         self.dialog._language_chooser.set_value('de')
         pump()
-        for prompt in self._prompts():
+        for prompt in visible_prompts():
             prompt.destroy()
         pump()
         self.dialog._language_chooser.set_value('auto')
         pump()
-        self.assertEqual([], self._prompts())
+        self.assertEqual([], visible_prompts())
         self.assertEqual('auto', prefs['language'])
 
     def test_every_translation_can_be_picked(self):
@@ -421,7 +416,7 @@ class PreferencesDialogTest(MainWindowOpenTest):
             self._open()
             self.dialog._language_chooser.set_value('auto')
             pump()
-            self.assertEqual([], self._prompts())
+            self.assertEqual([], visible_prompts())
             self.assertEqual('auto', prefs['language'])
 
     def test_answering_yes_starts_mcomix_again(self):

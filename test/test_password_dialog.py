@@ -8,10 +8,9 @@ import unittest.mock
 from gi.repository import GLib, Gtk
 
 from . import (MComixTest, descendants, get_testfile_path, pump as _pump,
-               wait_for)
+               visible_prompts, wait_for)
 
 from mcomix import archive_extractor
-from mcomix import message_dialog
 from mcomix.archive import password as archive_password
 from mcomix.archive import rar
 from mcomix.archive import rar_external
@@ -23,13 +22,6 @@ from mcomix.dialog import Response
 def pump(rounds=200):
     """Let the main loop run through whatever is pending."""
     _pump(rounds)
-
-
-def visible_prompts():
-    """Every password prompt currently on screen."""
-    return [window for window in Gtk.Window.list_toplevels()
-            if isinstance(window, message_dialog.MessageDialog)
-            and window.get_visible()]
 
 
 class PasswordDialogTest(MComixTest):

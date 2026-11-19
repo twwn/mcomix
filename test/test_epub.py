@@ -127,12 +127,6 @@ class EpubTest(MComixTest):
         self.addCleanup(archive.close)
         return archive
 
-    def extracted(self, archive, name):
-        destination = os.path.join(self.tmp_dir, 'out')
-        archive.extract(name, destination)
-        with open(os.path.join(destination, name), 'rb') as fp:
-            return fp.read()
-
     def test_a_page_has_the_date_its_member_was_stored_with(self):
         """An EPUB is a ZIP, so the status bar has a date for each page
         and need not fall back on the date of the book."""

@@ -18,7 +18,8 @@ import unittest.mock
 
 from gi.repository import Gdk, GdkPixbuf, Gio, GLib, Gtk, Pango
 
-from . import MComixTest, descendants, get_testfile_path, pump, wait_for
+from . import (FolderDialogStub, MComixTest, descendants, get_testfile_path,
+               pump, visible_prompts, wait_for)
 
 from mcomix import bookmark_backend
 from mcomix import bookmark_menu_item
@@ -818,11 +819,6 @@ class LibraryMenuPositionTest(_LibraryWindowTest):
 
 class CustomCoverSizeTest(_LibraryWindowTest):
 
-    def _prompts(self):
-        return [window for window in Gtk.Window.list_toplevels()
-                if isinstance(window, message_dialog.MessageDialog)
-                and window.get_visible()]
-
     def test_cancelling_the_custom_size_leaves_the_size_that_was_ticked(self):
         """Picking "Custom..." ticked it before the size dialog had been
         answered, and cancelling that dialog left it ticked over a size
@@ -833,7 +829,7 @@ class CustomCoverSizeTest(_LibraryWindowTest):
         self.assertEqual(constants.SIZE_NORMAL, action.get_state().get_int32())
         action.change_state(GLib.Variant('i', 0))
         pump()
-        prompts = self._prompts()
+        prompts = visible_prompts()
         self.assertEqual(1, len(prompts))
         prompts[0].response(Response.CANCEL)
         pump()
@@ -2469,30 +2465,17 @@ class RelocateBooksTest(_LibraryWindowTest):
         self.assertEqual(os.path.join(os.path.expanduser('~'), 'shelf'),
                          os.path.normpath(prompt.folders()[0]))
 
-    class _FolderDialog:
-
-        """Stands in for the Gtk.FileDialog, answering with <folder>, or
-        raising as a dismissed one does."""
-
-        def __init__(self, folder):
-            self._folder = folder
-
-        def select_folder_finish(self, result):
-            if self._folder is None:
-                raise GLib.Error('dismissed')
-            return Gio.File.new_for_path(self._folder)
-
     def test_a_folder_chosen_is_written_as_the_new_one(self):
         self._move()
         prompt = self._ask()
-        prompt._folder_chosen(self._FolderDialog(self.new), None)
+        prompt._folder_chosen(FolderDialogStub(self.new), None)
         self.assertEqual(self.new, prompt._new.get_text())
         self.assertTrue(self._offers_ok(prompt))
 
     def test_a_dismissed_chooser_leaves_what_was_typed(self):
         prompt = self._ask()
         prompt._new.set_text('typed')
-        prompt._folder_chosen(self._FolderDialog(None), None)
+        prompt._folder_chosen(FolderDialogStub(None), None)
         self.assertEqual('typed', prompt._new.get_text())
 
     def test_the_chooser_opens_over_the_question_at_the_folder_typed(self):

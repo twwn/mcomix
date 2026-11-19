@@ -15,11 +15,10 @@ import unittest.mock
 from gi.repository import GLib, Gtk
 
 from . import (MComixTest, fresh_bookmarks_store, get_testfile_path, pump,
-               wait_for)
+               visible_prompts, wait_for)
 
 from mcomix import archive_packer
 from mcomix import icons
-from mcomix import message_dialog
 from mcomix import save_progress
 from mcomix.dialog import Response
 
@@ -87,11 +86,6 @@ class LongSaveTest(MComixTest):
             return GLib.SOURCE_REMOVE
         GLib.timeout_add(20, look)
 
-    def _message_dialogs(self):
-        return [window for window in Gtk.Window.list_toplevels()
-                if isinstance(window, message_dialog.MessageDialog)
-                and window.get_visible()]
-
     def test_a_long_save_shows_its_progress_and_keeps_the_window_drawn(self):
         seen = {}
 
@@ -125,7 +119,7 @@ class LongSaveTest(MComixTest):
             self.assertEqual(self.before, fp.read(),
                              'the archive was written over')
         self.assertEqual(['book.zip'], os.listdir(self.shelf))
-        self.assertEqual([], self._message_dialogs(),
+        self.assertEqual([], visible_prompts(),
                          'a stopped save was reported as failed')
         self.assertTrue(self.window.file_actions.has_unsaved_changes(),
                         'the changes went with the save')
@@ -221,7 +215,7 @@ class LongSaveTest(MComixTest):
                       'the editor closed after Cancel')
         self.assertTrue(editor.get_sensitive())
         self.assertTrue(self.window.get_sensitive())
-        self.assertEqual([], self._message_dialogs())
+        self.assertEqual([], visible_prompts())
 
 
 # vim: expandtab:sw=4:ts=4

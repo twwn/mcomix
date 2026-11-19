@@ -42,7 +42,10 @@ def shown_text(bar):
                       if field.get_visible())
 
 
-class StatusbarTextTest(MComixTest):
+class StatusbarTest(MComixTest):
+
+    """A status bar showing the page and the file name, in a window of
+    its own that is not presented."""
 
     def setUp(self):
         super().setUp()
@@ -55,6 +58,10 @@ class StatusbarTextTest(MComixTest):
     def tearDown(self):
         self.window.destroy()
         super().tearDown()
+
+
+
+class StatusbarTextTest(StatusbarTest):
 
     def _text(self):
         return shown_text(self.bar)

@@ -210,12 +210,6 @@ class KfxTest(MComixTest):
         self.addCleanup(archive.close)
         return archive
 
-    def extracted(self, archive, name):
-        destination = os.path.join(self.tmp_dir, 'out')
-        archive.extract(name, destination)
-        with open(os.path.join(destination, name), 'rb') as fp:
-            return fp.read()
-
     def test_a_comic(self):
         """A book of one container lists its pages in reading order, and
         each holds its picture's bytes as the book stores them; a file

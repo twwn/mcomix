@@ -15,8 +15,8 @@ from unittest import mock
 
 from gi.repository import Gtk
 
-from . import (MComixTest, children, descendants, get_testfile_path, pump,
-               wait_for, wait_frames)
+from . import (MComixTest, children, descendants, get_testfile_path,
+               notebook_tabs, pump, wait_for, wait_frames)
 
 from mcomix import icons
 from mcomix import main
@@ -74,11 +74,6 @@ class PropertiesDialogTest(MComixTest):
             pump()
         updated.assert_not_called()
 
-    def _tabs(self):
-        notebook = self.dialog._notebook
-        return [notebook.get_tab_label_text(notebook.get_nth_page(index))
-                for index in range(notebook.get_n_pages())]
-
     def _rows(self, page):
         """What a page says about the file, top box first."""
         return [child.get_text()
@@ -87,12 +82,12 @@ class PropertiesDialogTest(MComixTest):
 
     def test_an_archive_is_described_on_a_page_of_its_own(self):
         dialog = self._open(get_testfile_path('archives', '01-ZIP-Normal.zip'))
-        self.assertEqual(self._tabs(), ['Archive', 'Image'])
+        self.assertEqual(notebook_tabs(self.dialog._notebook), ['Archive', 'Image'])
         self.assertTrue(dialog._notebook.get_show_tabs())
 
     def test_a_loose_image_is_offered_no_archive_page(self):
         self._open(get_testfile_path('images', 'blue.png'))
-        self.assertEqual(self._tabs(), ['Image'])
+        self.assertEqual(notebook_tabs(self.dialog._notebook), ['Image'])
 
     def test_one_page_is_shown_without_tabs_to_choose_between(self):
         dialog = self._open(get_testfile_path('images', 'blue.png'))
@@ -128,29 +123,29 @@ class PropertiesDialogTest(MComixTest):
         """Opening an archive after a loose image puts the page back,
         and the tabs with it."""
         dialog = self._open(get_testfile_path('images', 'blue.png'))
-        self.assertEqual(self._tabs(), ['Image'])
+        self.assertEqual(notebook_tabs(self.dialog._notebook), ['Image'])
         dialog._offer_archive_page(True)
-        self.assertEqual(self._tabs(), ['Archive', 'Image'])
+        self.assertEqual(notebook_tabs(self.dialog._notebook), ['Archive', 'Image'])
         self.assertTrue(dialog._notebook.get_show_tabs())
 
     def test_offering_the_page_that_is_already_there_changes_nothing(self):
         dialog = self._open(get_testfile_path('archives', '01-ZIP-Normal.zip'))
         dialog._offer_archive_page(True)
-        self.assertEqual(self._tabs(), ['Archive', 'Image'])
+        self.assertEqual(notebook_tabs(self.dialog._notebook), ['Archive', 'Image'])
 
     def test_an_open_dialog_follows_the_book_to_a_loose_image_and_back(self):
         """The tabs follow each book opened while the dialog stands."""
         self._open(get_testfile_path('archives', '01-ZIP-Normal.zip'))
-        self.assertEqual(self._tabs(), ['Archive', 'Image'])
+        self.assertEqual(notebook_tabs(self.dialog._notebook), ['Archive', 'Image'])
         self.window.filehandler.open_file(
             get_testfile_path('images', 'blue.png'))
-        self.assertTrue(wait_for(lambda: self._tabs() == ['Image'],
-                                 seconds=10), self._tabs())
+        self.assertTrue(wait_for(lambda: notebook_tabs(self.dialog._notebook) == ['Image'],
+                                 seconds=10), notebook_tabs(self.dialog._notebook))
         self.assertFalse(self.dialog._notebook.get_show_tabs())
         self.window.filehandler.open_file(
             get_testfile_path('archives', '01-ZIP-Normal.zip'))
-        self.assertTrue(wait_for(lambda: self._tabs() == ['Archive', 'Image'],
-                                 seconds=10), self._tabs())
+        self.assertTrue(wait_for(lambda: notebook_tabs(self.dialog._notebook) == ['Archive', 'Image'],
+                                 seconds=10), notebook_tabs(self.dialog._notebook))
         self.assertTrue(self.dialog._notebook.get_show_tabs())
 
     # -- What the archive's ComicInfo.xml says ----------------------------

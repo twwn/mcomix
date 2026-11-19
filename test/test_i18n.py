@@ -94,6 +94,9 @@ class LanguageTest(MComixTest):
         self.assertEqual('fa', i18n.get_language())
 
     def test_locale_is_used_when_the_preference_is_auto(self):
+        # install_gettext() reuses the name while looking for a catalogue,
+        # and 'he_IL' has none: the loop runs to its end on 'he', and the
+        # language must still be the locale's.
         prefs['language'] = 'auto'
         portability.get_default_locale = lambda: 'he_IL'
         i18n.install_gettext()
@@ -114,14 +117,6 @@ class LanguageTest(MComixTest):
         prefs['language'] = 'auto'
         i18n.install_gettext('he')
         self.assertEqual('he', i18n.get_language_preference())
-
-    def test_the_search_loop_does_not_overwrite_the_language(self):
-        # install_gettext() reuses the name while looking for a catalogue,
-        # and 'he_IL' has none: the loop runs to its end on 'he'.
-        prefs['language'] = 'auto'
-        portability.get_default_locale = lambda: 'he_IL'
-        i18n.install_gettext()
-        self.assertEqual('he_IL', i18n.get_language())
 
     def test_a_locale_the_system_lacks_does_not_stop_startup(self):
         # The environment routinely names a locale that was never

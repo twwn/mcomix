@@ -11,7 +11,8 @@ from unittest import mock
 
 from gi.repository import Gtk
 
-from . import MainWindowLaterTest, get_testfile_path, pump, wait_for
+from . import (MainWindowLaterTest, get_testfile_path, notebook_tabs, pump,
+               wait_for)
 
 from mcomix import comment_dialog
 
@@ -47,17 +48,12 @@ class CommentsDialogTest(MainWindowLaterTest):
             seconds=20))
         # The comments are known from the same listing as the pages.
 
-    def _tabs(self):
-        notebook = self.dialog._notebook
-        return [notebook.get_tab_label_text(notebook.get_nth_page(index))
-                for index in range(notebook.get_n_pages())]
-
     def test_every_comment_gets_a_tab_of_its_own(self):
         self._open(self._archive_with_comments(
             'commented.zip', ('one.txt', 'first'), ('two.txt', 'second')))
         self.dialog = comment_dialog._CommentsDialog(self.window)
-        wait_for(lambda: len(self._tabs()) == 2, seconds=20)
-        self.assertEqual(sorted(self._tabs()), ['one.txt', 'two.txt'])
+        wait_for(lambda: len(notebook_tabs(self.dialog._notebook)) == 2, seconds=20)
+        self.assertEqual(sorted(notebook_tabs(self.dialog._notebook)), ['one.txt', 'two.txt'])
 
     def test_a_long_file_name_does_not_widen_the_window(self):
         """A tab named for a 150-character file made the window 1385
@@ -66,7 +62,7 @@ class CommentsDialogTest(MainWindowLaterTest):
         self._open(self._archive_with_comments(
             'commented.zip', (name, 'first')))
         self.dialog = comment_dialog._CommentsDialog(self.window)
-        self.assertTrue(wait_for(lambda: len(self._tabs()) == 1,
+        self.assertTrue(wait_for(lambda: len(notebook_tabs(self.dialog._notebook)) == 1,
                                  seconds=20))
         self.dialog.present()
         notebook = self.dialog._notebook
@@ -94,7 +90,7 @@ class CommentsDialogTest(MainWindowLaterTest):
             seconds=20))
         os.remove(handler.get_comment_name(1))
         self.dialog = comment_dialog._CommentsDialog(self.window)
-        self.assertTrue(wait_for(lambda: len(self._tabs()) == 1, seconds=20))
+        self.assertTrue(wait_for(lambda: len(notebook_tabs(self.dialog._notebook)) == 1, seconds=20))
         self.assertEqual('Could not read one.txt', self._shown_text(0))
 
     def test_a_comment_announced_after_it_was_shown_is_not_shown_twice(self):
@@ -105,18 +101,18 @@ class CommentsDialogTest(MainWindowLaterTest):
         self._open(self._archive_with_comments(
             'commented.zip', ('one.txt', 'first'), ('two.txt', 'second')))
         self.dialog = comment_dialog._CommentsDialog(self.window)
-        wait_for(lambda: len(self._tabs()) == 2, seconds=20)
+        wait_for(lambda: len(notebook_tabs(self.dialog._notebook)) == 2, seconds=20)
         self.dialog._on_file_available(list(self.dialog._comments))
-        self.assertEqual(sorted(self._tabs()), ['one.txt', 'two.txt'])
+        self.assertEqual(sorted(notebook_tabs(self.dialog._notebook)), ['one.txt', 'two.txt'])
 
     def test_the_comments_of_the_book_before_are_taken_off_the_dialog(self):
         self._open(self._archive_with_comments(
             'commented.zip', ('one.txt', 'first')))
         self.dialog = comment_dialog._CommentsDialog(self.window)
-        self.assertTrue(wait_for(lambda: len(self._tabs()) == 1, seconds=20))
+        self.assertTrue(wait_for(lambda: len(notebook_tabs(self.dialog._notebook)) == 1, seconds=20))
         self._open(get_testfile_path('archives', '01-ZIP-Normal.zip'))
-        wait_for(lambda: not self._tabs(), seconds=20)
-        self.assertEqual(self._tabs(), [])
+        wait_for(lambda: not notebook_tabs(self.dialog._notebook), seconds=20)
+        self.assertEqual(notebook_tabs(self.dialog._notebook), [])
         # An empty notebook is hidden rather than shown with a tab strip
         # that has nothing in it, which GTK warns about.
         self.assertFalse(self.dialog._notebook.get_visible())
@@ -127,8 +123,8 @@ class CommentsDialogTest(MainWindowLaterTest):
         self._open(self._archive_with_comments(
             'commented.zip', ('late.txt', 'read me')))
         self.dialog = comment_dialog._CommentsDialog(self.window)
-        wait_for(lambda: len(self._tabs()) == 1, seconds=20)
-        self.assertEqual(self._tabs(), ['late.txt'])
+        wait_for(lambda: len(notebook_tabs(self.dialog._notebook)) == 1, seconds=20)
+        self.assertEqual(notebook_tabs(self.dialog._notebook), ['late.txt'])
         self.assertTrue(self.dialog._notebook.get_visible())
 
 
@@ -155,14 +151,14 @@ class CommentsDialogTest(MainWindowLaterTest):
         self._open(self._archive_with_comments(
             'latin.zip', ('note.txt', text.encode('latin-1'))))
         self.dialog = comment_dialog._CommentsDialog(self.window)
-        self.assertTrue(wait_for(lambda: len(self._tabs()) == 1, seconds=20))
+        self.assertTrue(wait_for(lambda: len(notebook_tabs(self.dialog._notebook)) == 1, seconds=20))
         self.assertEqual(text, self._text_of(0))
 
     def test_a_comment_in_utf_8_is_shown_as_it_was_written(self):
         self._open(self._archive_with_comments(
             'utf8.zip', ('note.txt', 'caf\xe9 \u3042'.encode('utf-8'))))
         self.dialog = comment_dialog._CommentsDialog(self.window)
-        self.assertTrue(wait_for(lambda: len(self._tabs()) == 1, seconds=20))
+        self.assertTrue(wait_for(lambda: len(notebook_tabs(self.dialog._notebook)) == 1, seconds=20))
         self.assertEqual('caf\xe9 \u3042', self._text_of(0))
 
     def test_a_closed_dialog_does_not_read_the_comments_of_the_next_book(self):
@@ -171,7 +167,7 @@ class CommentsDialogTest(MainWindowLaterTest):
         self._open(self._archive_with_comments(
             'first.zip', ('one.txt', 'first')))
         self.dialog = comment_dialog._CommentsDialog(self.window)
-        wait_for(lambda: len(self._tabs()) == 1, seconds=20)
+        wait_for(lambda: len(notebook_tabs(self.dialog._notebook)) == 1, seconds=20)
         self.dialog.destroy()
         self.dialog = None
         pump()

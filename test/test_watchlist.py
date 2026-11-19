@@ -9,9 +9,9 @@ edited.
 
 import os
 
-from gi.repository import Gdk, Gio, GLib, Gtk
+from gi.repository import Gdk, Gtk
 
-from . import MComixTest, pump
+from . import FolderDialogStub, MComixTest, pump
 
 from mcomix import constants
 from mcomix.dialog import Response
@@ -156,23 +156,10 @@ class WatchListDialogTest(MComixTest):
 
     # -- Adding a directory -----------------------------------------------
 
-    class _FolderDialog:
-
-        """Stands in for the Gtk.FileDialog, answering with <folder>, or
-        raising as a dismissed one does."""
-
-        def __init__(self, folder):
-            self._folder = folder
-
-        def select_folder_finish(self, result):
-            if self._folder is None:
-                raise GLib.Error('dismissed')
-            return Gio.File.new_for_path(self._folder)
-
     def test_a_folder_chosen_is_watched(self):
         folder = os.path.join(self.tmp_dir, 'three')
         os.makedirs(folder)
-        self.dialog._directory_chosen(self._FolderDialog(folder), None)
+        self.dialog._directory_chosen(FolderDialogStub(folder), None)
         self.assertIn(os.path.normpath(folder), self._directories())
         self.assertIsNotNone(
             self.backend.watchlist.get_watchlist_entry(folder))
@@ -180,9 +167,9 @@ class WatchListDialogTest(MComixTest):
 
     def test_a_dismissed_chooser_or_a_path_that_is_no_folder_adds_nothing(self):
         before = self._directories()
-        self.dialog._directory_chosen(self._FolderDialog(None), None)
+        self.dialog._directory_chosen(FolderDialogStub(None), None)
         self.dialog._directory_chosen(
-            self._FolderDialog(os.path.join(self.tmp_dir, 'not-there')), None)
+            FolderDialogStub(os.path.join(self.tmp_dir, 'not-there')), None)
         self.assertEqual(before, self._directories())
         self.assertFalse(self.dialog._changed)
 

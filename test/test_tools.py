@@ -11,6 +11,8 @@ import unittest
 import unittest.mock
 import warnings
 
+from . import windows_refusal
+
 from mcomix import tools
 
 
@@ -599,16 +601,6 @@ class TestRemoveTree(unittest.TestCase):
         self.folder = tempfile.mkdtemp()
         self.addCleanup(shutil.rmtree, self.folder, True)
 
-    def _windows_unlink(self):
-        """os.unlink as Windows has it: a read-only file is refused."""
-        unlink = os.unlink
-
-        def refusing(name, *, dir_fd=None):
-            if not os.stat(name, dir_fd=dir_fd).st_mode & 0o200:
-                raise PermissionError(13, 'Access is denied', name)
-            unlink(name, dir_fd=dir_fd)
-        return unittest.mock.patch('os.unlink', side_effect=refusing)
-
     def test_a_read_only_file_is_removed_with_its_folder(self):
         """The UnRAR library extracts a file of a RAR made on Windows
         read-only, where it was; the book's temporary folder stayed."""
@@ -619,7 +611,7 @@ class TestRemoveTree(unittest.TestCase):
             with open(path, 'wb') as page:
                 page.write(b'page')
             os.chmod(path, 0o444)
-        with self._windows_unlink():
+        with windows_refusal('unlink'):
             tools.remove_tree(tree)
         self.assertFalse(os.path.exists(tree))
 
@@ -629,13 +621,7 @@ class TestRemoveTree(unittest.TestCase):
         with open(path, 'wb') as book:
             book.write(b'book')
         os.chmod(path, 0o444)
-        remove = os.remove
-
-        def refusing(name, *, dir_fd=None):
-            if not os.stat(name, dir_fd=dir_fd).st_mode & 0o200:
-                raise PermissionError(13, 'Access is denied', name)
-            remove(name, dir_fd=dir_fd)
-        with unittest.mock.patch('os.remove', side_effect=refusing), \
+        with windows_refusal('remove'), \
                 unittest.mock.patch('sys.platform', 'win32'):
             tools.remove_file(path)
         self.assertFalse(os.path.exists(path))

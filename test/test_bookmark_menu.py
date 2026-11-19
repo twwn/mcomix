@@ -8,7 +8,7 @@ import unittest.mock
 from gi.repository import Gdk, GLib, Gtk
 
 from . import (MComixTest, MainWindowLaterTest, get_testfile_path, pump,
-               wait_for)
+               visible_prompts, wait_for)
 
 from mcomix import bookmark_backend
 from mcomix import bookmark_menu_item
@@ -115,7 +115,7 @@ class BookmarksMenuTest(MComixTest):
     def tearDown(self):
         # Anything left on screen would be answered by the next test that
         # goes looking for a dialog.
-        for dialog in self._dialogs():
+        for dialog in visible_prompts():
             dialog.destroy()
         if self.menu._dialog is not None:
             self.menu._dialog.destroy()
@@ -124,17 +124,6 @@ class BookmarksMenuTest(MComixTest):
         self.menu.release()
         pump()
         super().tearDown()
-
-    def _dialogs(self):
-        """The prompts this menu has put on screen.
-
-        They are message_dialog.MessageDialog, which is a Gtk.Window of
-        its own making: there has been no Gtk.MessageDialog to look for
-        since the dialogs were ported.
-        """
-        return [window for window in Gtk.Window.list_toplevels()
-                if isinstance(window, message_dialog.MessageDialog)
-                and window.get_visible()]
 
     def test_a_bookmark_in_the_open_file_leaves_the_tool_bar_alone(self):
         """Loading a bookmark that is already the open file only turns the
@@ -191,7 +180,7 @@ class BookmarksMenuTest(MComixTest):
         self._bookmark(3)
         self._bookmark(page)
         pump()
-        prompts = self._dialogs()
+        prompts = visible_prompts()
         self.assertEqual(1, len(prompts), 'nothing asked about page 3')
         prompts[0].response(response)
         pump()
@@ -200,7 +189,7 @@ class BookmarksMenuTest(MComixTest):
         self._bookmark(3)
         self._bookmark(3)
         pump()
-        self.assertEqual([], self._dialogs())
+        self.assertEqual([], visible_prompts())
         self.assertEqual([3], self._pages())
 
     def test_yes_replaces_the_bookmarks_already_in_the_book(self):
@@ -223,7 +212,7 @@ class BookmarksMenuTest(MComixTest):
         self._bookmark(3)
         self._bookmark(5)
         pump()
-        self.assertEqual([], self._dialogs())
+        self.assertEqual([], visible_prompts())
         self.assertEqual([5], self._pages())
 
     def test_the_fixed_entries_are_always_there(self):
@@ -267,7 +256,7 @@ class BookmarksMenuTest(MComixTest):
         self._mark(4, '/tmp/other.cbz')
         self.menu._remove_activated()
         pump()
-        dialogs = self._dialogs()
+        dialogs = visible_prompts()
         self.assertEqual(1, len(dialogs))
         self.assertIs(dialogs[0].get_default_widget(),
                       dialogs[0].get_widget_for_response(Response.NO))
@@ -282,7 +271,7 @@ class BookmarksMenuTest(MComixTest):
         self._mark(3)
         self.menu._remove_activated()
         pump()
-        self._dialogs()[0].response(Response.NO)
+        visible_prompts()[0].response(Response.NO)
         pump()
         self.assertEqual(1, len(self.store.get_bookmarks()))
 
@@ -300,7 +289,7 @@ class BookmarksMenuTest(MComixTest):
         self._bookmark(3)
         self.menu._clear_activated()
         pump()
-        self.assertEqual(len(self._dialogs()), 1, 'nothing was asked')
+        self.assertEqual(len(visible_prompts()), 1, 'nothing was asked')
         self.assertEqual(len(self.store.get_bookmarks()), 1,
                          'the bookmarks went before the question was answered')
 
@@ -308,7 +297,7 @@ class BookmarksMenuTest(MComixTest):
         self._bookmark(3)
         self.menu._clear_activated()
         pump()
-        dialog = self._dialogs()[0]
+        dialog = visible_prompts()[0]
         keeps = dialog.get_widget_for_response(Response.NO)
         clears = dialog.get_widget_for_response(Response.YES)
         self.assertIs(dialog.get_default_widget(), keeps,
@@ -320,7 +309,7 @@ class BookmarksMenuTest(MComixTest):
         self._bookmark(3)
         self.menu._clear_activated()
         pump()
-        self._dialogs()[0].response(Response.NO)
+        visible_prompts()[0].response(Response.NO)
         pump()
         self.assertEqual(len(self.store.get_bookmarks()), 1)
 
@@ -329,7 +318,7 @@ class BookmarksMenuTest(MComixTest):
         self._bookmark(4, '/tmp/two.cbz')
         self.menu._clear_activated()
         pump()
-        self._dialogs()[0].response(Response.YES)
+        visible_prompts()[0].response(Response.YES)
         pump()
         self.assertEqual(self.store.get_bookmarks(), [])
         self.assertEqual(self._sections(),

@@ -493,12 +493,6 @@ class ZipSameNameTest(MComixTest):
         self.addCleanup(handler.close)
         return handler
 
-    def _extracted(self, handler, name):
-        destination = os.path.join(self.tmp_dir, 'extracted')
-        handler.extract(name, destination)
-        with open(os.path.join(destination, name), 'rb') as page:
-            return page.read()
-
     def test_each_page_shows_its_own_picture(self):
         handler = self._book(('a/p.jpg', b'first', (2001, 1, 1, 0, 0, 0)),
                              ('a/p.jpg', b'second', (2002, 2, 2, 0, 0, 0)),
@@ -506,8 +500,8 @@ class ZipSameNameTest(MComixTest):
         names = list(handler.iter_contents())
         first, second = os.path.join('a', 'p.jpg'), os.path.join('a', 'p~2.jpg')
         self.assertEqual([first, second, os.path.join('a', 'q.jpg')], names)
-        self.assertEqual(b'first', self._extracted(handler, first))
-        self.assertEqual(b'second', self._extracted(handler, second))
+        self.assertEqual(b'first', self.extracted(handler, first))
+        self.assertEqual(b'second', self.extracted(handler, second))
         self.assertEqual(time.mktime((2001, 1, 1, 0, 0, 0, 0, 0, -1)),
                          handler.member_date(first))
         self.assertEqual(time.mktime((2002, 2, 2, 0, 0, 0, 0, 0, -1)),
@@ -526,8 +520,8 @@ class ZipSameNameTest(MComixTest):
                              ('p~2.jpg', b'third', (2003, 3, 3, 0, 0, 0)))
         names = list(handler.iter_contents())
         self.assertEqual(['p.jpg', 'p~3.jpg', 'p~2.jpg'], names)
-        self.assertEqual(b'second', self._extracted(handler, 'p~3.jpg'))
-        self.assertEqual(b'third', self._extracted(handler, 'p~2.jpg'))
+        self.assertEqual(b'second', self.extracted(handler, 'p~3.jpg'))
+        self.assertEqual(b'third', self.extracted(handler, 'p~2.jpg'))
 
     def test_a_listing_read_twice_says_the_same(self):
         handler = self._book(('p.jpg', b'first', (2001, 1, 1, 0, 0, 0)),
@@ -545,8 +539,8 @@ class ZipSameNameTest(MComixTest):
             names = list(handler.iter_contents())
             self.assertEqual(['Page1.jpg', 'page1~2.jpg'], names)
             self.assertEqual(names, list(handler.iter_contents()))
-        self.assertEqual(b'upper', self._extracted(handler, 'Page1.jpg'))
-        self.assertEqual(b'lower', self._extracted(handler, 'page1~2.jpg'))
+        self.assertEqual(b'upper', self.extracted(handler, 'Page1.jpg'))
+        self.assertEqual(b'lower', self.extracted(handler, 'page1~2.jpg'))
 
     def test_a_page_named_as_a_windows_device_is_given_another_name(self):
         """CON.jpg or aux.png is a device on Windows, never a file:
@@ -559,7 +553,7 @@ class ZipSameNameTest(MComixTest):
             names = list(handler.iter_contents())
         self.assertEqual(['_CON.jpg', os.path.join('a', '_aux.png'),
                           'console.jpg'], names)
-        self.assertEqual(b'one', self._extracted(handler, '_CON.jpg'))
+        self.assertEqual(b'one', self.extracted(handler, '_CON.jpg'))
 
 
 class ZipCompressionMethodTest(MComixTest):
@@ -622,6 +616,18 @@ class ZipCompressionMethodTest(MComixTest):
                              archive_tools.archive_mime_type(path))
 
 
+def _zip_listed(path):
+    """The names a zip lists, with "/" as the archive writes them: MComix
+    lists them with the system's separator, and what is tested here is
+    how they are decoded."""
+    archive = zip.ZipArchive(path)
+    try:
+        return [name.replace(os.sep, '/')
+                for name in archive.list_contents()]
+    finally:
+        archive.close()
+
+
 class ZipLegacyNameTest(MComixTest):
 
     """Names a zip stores without its UTF-8 flag.
@@ -656,15 +662,8 @@ class ZipLegacyNameTest(MComixTest):
         return path
 
     def _listed(self, path):
-        """The names listed, with "/" as the archive writes them: MComix
-        lists them with the system's separator, and what is tested here
-        is how they are decoded."""
-        archive = zip.ZipArchive(path)
-        try:
-            return [name.replace(os.sep, '/')
-                    for name in archive.list_contents()]
-        finally:
-            archive.close()
+        """The names listed; SevenZipLegacyNameTest lists with 7z."""
+        return _zip_listed(path)
 
     def test_utf_8_names_without_the_flag_are_read_as_utf_8(self):
         names = ['Übersicht.jpg', 'Café/01.jpg']
@@ -741,18 +740,10 @@ class ZipUnicodePathTest(MComixTest):
             fp.write(data)
         return path
 
-    def _listed(self, path):
-        archive = zip.ZipArchive(path)
-        try:
-            return [name.replace(os.sep, '/')
-                    for name in archive.list_contents()]
-        finally:
-            archive.close()
-
     def test_a_name_outside_code_page_437_is_listed(self):
         name = '001 \uff5c \u8868\u7d19.jpg'
         self.assertEqual([name],
-                         self._listed(self._zip([(name, b'001 _ __.jpg')])))
+                         _zip_listed(self._zip([(name, b'001 _ __.jpg')])))
 
     def test_a_name_in_its_field_is_not_read_again_in_a_code_page(self):
         """The names without a field are Windows-1252, and the one with
@@ -762,7 +753,7 @@ class ZipUnicodePathTest(MComixTest):
                    (None, '\u00dcbersicht.jpg'.encode('cp1252')),
                    (None, 'Caf\u00e9.jpg'.encode('cp1252'))]
         self.assertEqual('Gr\u00f6\u00dfe.jpg',
-                         self._listed(self._zip(entries))[0])
+                         _zip_listed(self._zip(entries))[0])
 
     def test_a_name_from_its_field_is_extracted(self):
         name = '001 \uff5c \u8868\u7d19.jpg'

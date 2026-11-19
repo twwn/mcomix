@@ -1785,7 +1785,26 @@ class _MenuLibrary:
     main_window = _main_window()
 
 
-class MenuKeyTest(MComixTest):
+class _AreaOnScreenTest(MComixTest):
+
+    """self.area, a book area the test builds, shown in a window of its
+    own; its menu, the area and the window are closed after the test."""
+
+    def _present(self, size=None):
+        self.window = Gtk.Window()
+        if size is not None:
+            self.window.set_default_size(*size)
+        self.window.set_child(self.area)
+        self.window.present()
+
+    def tearDown(self):
+        self.area._book_menu.popdown()
+        self.area.close()
+        self.window.destroy()
+        super().tearDown()
+
+
+class MenuKeyTest(_AreaOnScreenTest):
 
     """The keys that ask the cover area for its popup menu.
 
@@ -1799,16 +1818,7 @@ class MenuKeyTest(MComixTest):
         # Held here: an area holds its library window only weakly.
         self.library = _MenuLibrary()
         self.area = book_area._BookArea(self.library)
-        self.window = Gtk.Window()
-        self.window.set_default_size(400, 300)
-        self.window.set_child(self.area)
-        self.window.present()
-
-    def tearDown(self):
-        self.area._book_menu.popdown()
-        self.area.close()
-        self.window.destroy()
-        super().tearDown()
+        self._present((400, 300))
 
     def _press(self, keyval, state):
         return self.area._key_press(None, keyval, 0, state)
@@ -1862,7 +1872,7 @@ class MenuKeyTest(MComixTest):
                           'books.properties': '<Alt>Return'}, accels)
 
 
-class OpenAndClickTest(MComixTest):
+class OpenAndClickTest(_AreaOnScreenTest):
 
     """Opening the books picked out, with the library left open or not,
     and what a right click picks out before the menu opens."""
@@ -1888,15 +1898,7 @@ class OpenAndClickTest(MComixTest):
         self.area._covers.set_items(
             book_area._BookItem(_Book(index, '/books/%d.cbz' % index))
             for index in range(3))
-        self.window = Gtk.Window()
-        self.window.set_child(self.area)
-        self.window.present()
-
-    def tearDown(self):
-        self.area._book_menu.popdown()
-        self.area.close()
-        self.window.destroy()
-        super().tearDown()
+        self._present()
 
     def test_the_books_picked_out_open_with_the_library_closing(self):
         self.area._covers.select_only(1)

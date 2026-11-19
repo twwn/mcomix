@@ -6,25 +6,14 @@ import unittest.mock
 from gi.repository import GLib, Gtk
 
 from . import MComixTest
+from .test_statusbar import StatusbarTest
 
 from mcomix import constants
 from mcomix import status
 from mcomix.preferences import prefs
 
 
-class StatusbarFieldsMenuTest(MComixTest):
-
-    def setUp(self):
-        super().setUp()
-        prefs['statusbar fields'] = (constants.STATUS_PAGE |
-                                     constants.STATUS_FILENAME)
-        self.bar = status.Statusbar()
-        self.window = Gtk.Window()
-        self.window.set_child(self.bar)
-
-    def tearDown(self):
-        self.window.destroy()
-        super().tearDown()
+class StatusbarFieldsMenuTest(StatusbarTest):
 
     def _ticks(self):
         """What each entry would show, read from the action behind it.

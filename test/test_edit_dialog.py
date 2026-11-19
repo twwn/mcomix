@@ -12,8 +12,8 @@ import zipfile
 
 from gi.repository import Gdk, Gtk
 
-from . import (MComixTest, children, descendants, get_testfile_path, hold_open, pump,
-               take_activation_from, wait_for)
+from . import (MComixTest, children, descendants, get_testfile_path, hold_open,
+               prompts_over, pump, take_activation_from, wait_for)
 
 from mcomix import archive_packer
 from mcomix import constants
@@ -294,12 +294,6 @@ class EditArchiveDialogTest(MComixTest):
         self.assertEqual(len(area.get_file_listing()), pages - 1,
                          'the page with no path was not left out')
 
-    def _packing_dialogs(self):
-        """Every message dialog standing over this window."""
-        return [window for window in Gtk.Window.list_toplevels()
-                if isinstance(window, message_dialog.MessageDialog)
-                and window.get_transient_for() is self.window]
-
     def test_a_page_arriving_after_the_editor_closed_leaves_it_closed(self):
         """cleanup() stops the thumbnailing thread, and the
         page_available listener's refresh() starts it again: a page
@@ -350,7 +344,7 @@ class EditArchiveDialogTest(MComixTest):
         fit beside the old one, which does not give its room up until it
         has been replaced."""
         target = os.path.join(self.tmp_dir, 'saved.cbz')
-        standing = len(self._packing_dialogs())
+        standing = len(prompts_over(self.window))
         real = shutil.disk_usage
 
         def nearly_full(path):
@@ -362,14 +356,14 @@ class EditArchiveDialogTest(MComixTest):
         pump()
 
         try:
-            self.assertEqual(len(self._packing_dialogs()), standing + 1,
+            self.assertEqual(len(prompts_over(self.window)), standing + 1,
                              'the failure was not reported')
             self.assertFalse(os.path.exists(target))
             self.assertEqual([name for name in os.listdir(self.tmp_dir)
                               if name.startswith('tmp.')], [],
                              'a temporary archive was written anyway')
         finally:
-            for dialog in self._packing_dialogs():
+            for dialog in prompts_over(self.window):
                 dialog.destroy()
             pump()
 
@@ -387,7 +381,7 @@ class EditArchiveDialogTest(MComixTest):
         escaped into the signal handler that asked for the save and left
         the dialog insensitive under a wait cursor."""
         target = os.path.join(self.tmp_dir, 'saved.cbz')
-        standing = len(self._packing_dialogs())
+        standing = len(prompts_over(self.window))
 
         def refuse(*args, **kwargs):
             raise OSError(13, 'Permission denied')
@@ -398,7 +392,7 @@ class EditArchiveDialogTest(MComixTest):
         pump()
 
         try:
-            self.assertEqual(len(self._packing_dialogs()), standing + 1,
+            self.assertEqual(len(prompts_over(self.window)), standing + 1,
                              'the failure was not reported')
             self.assertFalse(os.path.exists(target),
                              'a broken archive was left under the real name')
@@ -408,7 +402,7 @@ class EditArchiveDialogTest(MComixTest):
         finally:
             # A dialog left standing is answered by whichever test goes
             # looking for one next.
-            for dialog in self._packing_dialogs():
+            for dialog in prompts_over(self.window):
                 dialog.destroy()
             pump()
 
