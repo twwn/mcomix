@@ -66,7 +66,7 @@ While no book is open, the main window shows the covers of "Recent" itself, or o
 - A middle click on a cover starts a second MComix on that book.
 - A book opened from the library is one of the books shown. The next and previous archive are the next and previous of those, in the order shown, not of its folder. Past the last one shown there is no next.
 - Reopened at the next start, by "Reopen the last book read" or "Save and quit", it still walks those books. Opened any other way, a book walks its folder.
-- CTRL+Enter opens the selected book as if it were opened from its folder: the next and previous archive are those of its folder, in natural order. A middle click does the same in a second MComix.
+- CTRL+Enter opens the selected book as if it were opened from its folder: the next and previous archive are those of its folder, in natural order. CTRL and a double click open a cover so, as does "Open among its folder's books" in the right-click menu. A middle click does the same in a second MComix.
 - A book that cannot be read is not added. The status bar names it.
 - A RAR book in volumes is added as its first volume; the others are left out.
   Deleting, moving or renaming the book takes all of its volumes.

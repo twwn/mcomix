@@ -1842,7 +1842,8 @@ class MenuKeyTest(MComixTest):
                     j, 'accel', GLib.VariantType('s'))
                 if action is not None and accel is not None:
                     accels[action.get_string()] = accel.get_string()
-        self.assertEqual({'books.remove-from-collection': 'Delete',
+        self.assertEqual({'books.open-by-hand': '<Control>Return',
+                          'books.remove-from-collection': 'Delete',
                           'books.delete-permanently': '<Shift>Delete',
                           'books.copy-to-clipboard': '<Control>c',
                           'books.rename': 'F2',
@@ -1865,9 +1866,12 @@ class OpenAndClickTest(MComixTest):
         self.library = _MenuLibrary()
         self.library.control_area = _ControlArea()
         self.opened = []
+        #: Each open's among_shown, beside self.opened.
+        self.among_shown = []
         self.library.open_book = (
-            lambda books, keep_library_open, among_shown=True: self.opened.append(
-                (books, keep_library_open)))
+            lambda books, keep_library_open, among_shown=True: (
+                self.opened.append((books, keep_library_open)),
+                self.among_shown.append(among_shown)))
         self.area = book_area._BookArea(self.library)
         self.area._covers.set_items(
             book_area._BookItem(_Book(index, '/books/%d.cbz' % index))
@@ -1896,6 +1900,54 @@ class OpenAndClickTest(MComixTest):
         self.area._covers.select_only(2)
         self.area._covers.emit('activate', 0)
         self.assertEqual([([0], False)], self.opened)
+
+    def test_or_among_its_folder_s_books_as_ctrl_enter_does(self):
+        self.area._covers.select_only(1)
+        self.area.open_selected_book_by_hand()
+        self.assertEqual([([1], False)], self.opened)
+        self.assertEqual([False], self.among_shown)
+
+    class _DoubleClick:
+
+        """Stands in for the gesture that hears the covers' clicks
+        first, as one pressed with <state> held."""
+
+        def __init__(self, state):
+            self.state = state
+            self.claimed = False
+
+        def get_current_event_state(self):
+            return self.state
+
+        def set_state(self, state):
+            self.claimed = state == Gtk.EventSequenceState.CLAIMED
+
+    def _double_click(self, state, n_press=2, position=2):
+        gesture = self._DoubleClick(state)
+        with unittest.mock.patch.object(self.area._covers, 'position_at',
+                                        return_value=position):
+            self.area._control_double_click(gesture, n_press, 5.0, 5.0)
+        return gesture
+
+    def test_ctrl_and_a_double_click_open_the_cover_as_ctrl_enter_does(self):
+        self.area._covers.select_only(0)
+        gesture = self._double_click(Gdk.ModifierType.CONTROL_MASK)
+        self.assertEqual([([2], False)], self.opened)
+        self.assertEqual([False], self.among_shown)
+        # Claimed, so the covers do not open it once more among those
+        # shown.
+        self.assertTrue(gesture.claimed)
+
+    def test_other_double_clicks_are_left_to_the_covers(self):
+        for state, n_press, position in (
+                (Gdk.ModifierType(0), 2, 2),
+                (Gdk.ModifierType.CONTROL_MASK, 1, 2),
+                (Gdk.ModifierType.CONTROL_MASK
+                 | Gdk.ModifierType.SHIFT_MASK, 2, 2),
+                (Gdk.ModifierType.CONTROL_MASK, 2, -1)):
+            gesture = self._double_click(state, n_press, position)
+            self.assertFalse(gesture.claimed)
+        self.assertEqual([], self.opened)
 
     def test_or_with_it_left_open(self):
         self.area._covers.select_only(2)

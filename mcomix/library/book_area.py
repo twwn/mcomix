@@ -200,6 +200,14 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
         middle_clicks.connect('pressed', self._middle_click)
         self._covers.add_controller(middle_clicks)
 
+        # Ahead of the covers' own clicks, which open a book on the
+        # second press of a double click whatever keys are held.
+        control_clicks = Gtk.GestureClick()
+        control_clicks.set_button(Gdk.BUTTON_PRIMARY)
+        control_clicks.set_propagation_phase(Gtk.PropagationPhase.CAPTURE)
+        control_clicks.connect('pressed', self._control_double_click)
+        self._covers.add_controller(control_clicks)
+
         keys = Gtk.EventControllerKey()
         keys.connect('key-pressed', self._key_press)
         self._covers.add_controller(keys)
@@ -274,7 +282,8 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
         return library
 
     #: The keys _key_press() answers for a popup entry, shown beside it.
-    _MENU_KEYS = {'remove-from-collection': 'Delete',
+    _MENU_KEYS = {'open-by-hand': '<Control>Return',
+                  'remove-from-collection': 'Delete',
                   'delete-permanently': '<Shift>Delete',
                   'copy-to-clipboard': '<Control>c',
                   'rename': 'F2',
@@ -284,6 +293,8 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
     def _menu_entries(self) -> "tuple[tuple[str, str, Callable[..., None]], ...]":  # type: ignore[explicit-any]  # the menu items differ in what their handlers take
         return (
             ('open', _('_Open'), self.open_selected_book),
+            ('open-by-hand', _("Open among its fol_der's books"),
+             self.open_selected_book_by_hand),
             ('open-keep-library', _('Open _without closing library'),
              self.open_selected_book_noclose),
             ('mark-read', _('_Mark as read'), self._mark_read),
@@ -344,9 +355,9 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
         # popover draws as a title over it.
         model = Gio.Menu()
         entries = self._menu_entries()
-        for heading, group in ((_('Library books'), entries[0:2]),
-                               (None, entries[2:4]), (None, entries[4:5]),
-                               (None, entries[5:10]), (None, entries[10:14])):
+        for heading, group in ((_('Library books'), entries[0:3]),
+                               (None, entries[3:5]), (None, entries[5:6]),
+                               (None, entries[6:11]), (None, entries[11:15])):
             section = Gio.Menu()
             for name, label, _handler in group:
                 item = Gio.MenuItem.new(label, 'books.' + name)
@@ -630,6 +641,11 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
     def open_selected_book(self, *args: object) -> None:
         """Open the currently selected book."""
         self._open_books(False)
+
+    def open_selected_book_by_hand(self, *args: object) -> None:
+        """Open the selected book as one opened by hand is opened:
+        Next and Previous book walk its folder, not the covers shown."""
+        self._open_books(False, among_shown=False)
 
     def open_selected_book_noclose(self, *args: object) -> None:
         """Open the currently selected book, keeping the library open."""
@@ -1456,6 +1472,31 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
             return
         process.launch_mcomix(path)
 
+    def _control_double_click(self, gesture: Gtk.GestureClick,
+                              n_press: int, x: float, y: float) -> None:
+        """Open the book under the pointer as CTRL+Enter opens one:
+        among its folder's books rather than among the covers shown.
+
+        The press is claimed, so the covers do not open the book again
+        among the covers shown.
+        """
+        if n_press != 2:
+            return
+        state = gesture.get_current_event_state() & (
+            Gdk.ModifierType.CONTROL_MASK | Gdk.ModifierType.SHIFT_MASK
+            | Gdk.ModifierType.ALT_MASK)
+        if state != Gdk.ModifierType.CONTROL_MASK:
+            return
+        position = self._covers.position_at(x, y)
+        if position < 0:
+            return
+        book = self.get_book_at_path(position)
+        if book is None:
+            return
+        gesture.set_state(Gtk.EventSequenceState.CLAIMED)
+        self._library.open_book([book], keep_library_open=False,
+                                among_shown=False)
+
     def _button_press(self, gesture: Gtk.GestureClick, n_press: int,
                       x: float, y: float) -> None:
         """Handle mouse button presses on the _BookArea."""
@@ -1480,7 +1521,8 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
         collection = self._library.collection_area.get_current_collection()
         is_collection_all = collection == constants.COLLECTION_ALL
 
-        for action in ('open', 'open-keep-library', 'mark-read',
+        for action in ('open', 'open-by-hand', 'open-keep-library',
+                       'mark-read',
                        'mark-unread', 'remove-from-library',
                        'completely-remove', 'delete-permanently',
                        'properties'):
@@ -1592,8 +1634,9 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
             self.rename_selected()
             return Gdk.EVENT_STOP
         # CTRL+Enter opens the book as one opened by hand: Next and
-        # Previous book walk its folder, not the covers shown.  A middle
-        # click does the same in an MComix of its own.
+        # Previous book walk its folder, not the covers shown.  CTRL and
+        # a double click do the same, and a middle click does in an
+        # MComix of its own.
         if state & Gdk.ModifierType.CONTROL_MASK \
                 and not state & (Gdk.ModifierType.ALT_MASK
                                  | Gdk.ModifierType.SHIFT_MASK) \
