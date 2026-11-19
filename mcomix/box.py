@@ -67,10 +67,6 @@ class Box:
         """ Returns a new Box of this size at <position>. """
         return Box(self.get_size(), position)
 
-    def set_size(self, size: Sequence[int]) -> 'Box':
-        """ Returns a new Box of <size> at this position. """
-        return Box(size, self.get_position())
-
     def distance_point_squared(self, point: Sequence[int]) -> int:
         """Return the square of the Euclidean distance to <point>.
 
