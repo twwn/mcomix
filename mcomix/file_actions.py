@@ -156,7 +156,7 @@ class FileActions:
             return None
         name = typed
         if self._window.filehandler.archive_type is None:
-            return self._rename_on_disk(page, path, name)
+            return self._rename_on_disk(path, name)
         self._give_name(path, name)
         self._close_offer_answered = False
         self.offer_to_save()
@@ -304,8 +304,7 @@ class FileActions:
                 if held in moved:
                     kept[index] = moved[held]
 
-    def _rename_on_disk(self, page: int, path: str,
-                        name: str) -> "str | None":
+    def _rename_on_disk(self, path: str, name: str) -> "str | None":
         """Rename the file of a page that is a file: a book read as a
         folder of images has no archive to write, so the rename happens
         at once, and is what the window shows from then on.

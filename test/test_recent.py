@@ -115,12 +115,12 @@ class RecentFilesMenuTest(MComixTest):
 
     def test_a_supported_file_is_offered(self):
         self._add('book.cbz')
-        menu = recent.RecentFilesMenu(None, self.window)
+        menu = recent.RecentFilesMenu(self.window)
         self.assertEqual(self._labels(menu), ['book.cbz'])
 
     def test_an_unsupported_file_is_not(self):
         self._add('notes.txt', mime_type='text/plain')
-        menu = recent.RecentFilesMenu(None, self.window)
+        menu = recent.RecentFilesMenu(self.window)
         self.assertNotIn('notes.txt', self._labels(menu))
 
     def test_a_closed_window_s_menu_stops_following_the_list(self):
@@ -132,7 +132,7 @@ class RecentFilesMenuTest(MComixTest):
         the test tells of a change itself, at once."""
         self.window.present()
         pump()
-        menu = recent.RecentFilesMenu(None, self.window)
+        menu = recent.RecentFilesMenu(self.window)
         rebuilds = []
         menu._rebuild = lambda: rebuilds.append(True)
         self.manager.emit('changed')
@@ -143,7 +143,7 @@ class RecentFilesMenuTest(MComixTest):
         self.assertEqual(rebuilds, [])
 
     def test_an_empty_list_says_so(self):
-        menu = recent.RecentFilesMenu(None, self.window)
+        menu = recent.RecentFilesMenu(self.window)
         self.assertEqual(len(self._labels(menu)), 1)
         placeholder = menu._actions.lookup_action('nothing')
         self.assertFalse(placeholder.get_enabled(),
@@ -152,7 +152,7 @@ class RecentFilesMenuTest(MComixTest):
     def test_no_more_than_the_limit_is_shown(self):
         for number in range(recent.RecentFilesMenu._LIMIT + 5):
             self._add('book%02d.cbz' % number)
-        menu = recent.RecentFilesMenu(None, self.window)
+        menu = recent.RecentFilesMenu(self.window)
         self.assertEqual(len(self._labels(menu)),
                          recent.RecentFilesMenu._LIMIT)
 
@@ -174,7 +174,7 @@ class RecentFilesMenuTest(MComixTest):
 
         with unittest.mock.patch.object(Gtk.RecentInfo, 'get_modified',
                                         get_modified):
-            menu = recent.RecentFilesMenu(None, self.window)
+            menu = recent.RecentFilesMenu(self.window)
         self.assertEqual(self._labels(menu)[:2], ['newer.cbz', 'older.cbz'])
 
     def test_an_underscore_in_a_file_name_is_not_eaten(self):
@@ -183,7 +183,7 @@ class RecentFilesMenuTest(MComixTest):
         is read as.  Gtk.RecentChooserMenu, and the Gtk.MenuItem the
         menu was made of before the port, showed it."""
         self._add('two_words.cbz')
-        menu = recent.RecentFilesMenu(None, self.window)
+        menu = recent.RecentFilesMenu(self.window)
         self.assertEqual(self._labels(menu), ['two__words.cbz'])
 
     def test_a_modification_time_is_a_datetime(self):
@@ -198,7 +198,7 @@ class RecentFilesMenuTest(MComixTest):
 
     def test_activating_an_entry_opens_it(self):
         path = self._add('book.cbz')
-        menu = recent.RecentFilesMenu(None, self.window)
+        menu = recent.RecentFilesMenu(self.window)
         target = menu.model.get_item_attribute_value(0, 'target')
         menu._actions.lookup_action(
             recent.RecentFilesMenu.OPEN_ACTION).activate(target)
@@ -208,7 +208,7 @@ class RecentFilesMenuTest(MComixTest):
         """The book being read stays where it is, which is what the
         middle button means everywhere it opens something."""
         path = self._add('book.cbz')
-        menu = recent.RecentFilesMenu(None, self.window)
+        menu = recent.RecentFilesMenu(self.window)
         target = menu.model.get_item_attribute_value(0, 'target')
         launched = []
         with unittest.mock.patch.object(
@@ -239,7 +239,7 @@ class RecentFilesMenuTest(MComixTest):
         self.manager.add_full(Gio.File.new_for_path(path).get_uri(), data)
         self.assertEqual(1, len(self.manager.get_items()))
         self.window.open_file = lambda path: False
-        menu = recent.RecentFilesMenu(None, self.window)
+        menu = recent.RecentFilesMenu(self.window)
         target = menu.model.get_item_attribute_value(0, 'target')
         menu._actions.lookup_action(
             recent.RecentFilesMenu.OPEN_ACTION).activate(target)
@@ -255,7 +255,7 @@ class RecentFilesMenuTest(MComixTest):
         else - not just the books and pages the menu offers."""
         notes = self._add('notes.txt', mime_type='text/plain')
         self._add('book.cbz')
-        menu = recent.RecentFilesMenu(None, self.window)
+        menu = recent.RecentFilesMenu(self.window)
         self.assertEqual(1, menu.count())
 
         menu.remove_all()
@@ -270,7 +270,7 @@ class RecentFilesMenuTest(MComixTest):
         opened files" to "Never" and back (a review on SourceForge)."""
         notes = self._add('notes.txt', mime_type='text/plain')
         self._add('book.cbz')
-        menu = recent.RecentFilesMenu(None, self.window)
+        menu = recent.RecentFilesMenu(self.window)
         label, action = self._clear_entry(menu)
         self.assertEqual('_Clear List', label)
         self.assertEqual('recent.clear', action)
@@ -285,13 +285,13 @@ class RecentFilesMenuTest(MComixTest):
         self.assertEqual(0, menu.count())
 
     def test_an_empty_list_cannot_be_cleared(self):
-        menu = recent.RecentFilesMenu(None, self.window)
+        menu = recent.RecentFilesMenu(self.window)
         self._clear_entry(menu)
         clear = menu._actions.lookup_action(recent.RecentFilesMenu.CLEAR_ACTION)
         self.assertFalse(clear.get_enabled())
 
     def test_the_menu_follows_the_list(self):
-        menu = recent.RecentFilesMenu(None, self.window)
+        menu = recent.RecentFilesMenu(self.window)
         self._add('book.cbz')
         # The manager coalesces writes and announces them on a timeout,
         # so give the signal a bounded while to arrive.

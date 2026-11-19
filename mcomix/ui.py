@@ -274,7 +274,7 @@ class Actions:
         """
         action = Gio.SimpleAction.new_stateful(
             name, GLib.VariantType.new('i'), GLib.Variant('i', value))
-        action.connect('change-state', self._radio_changed, name, on_change)
+        action.connect('change-state', self._radio_changed, on_change)
         self.group.add_action(action)
         for choice in entries:
             self._remember(choice, action,
@@ -299,7 +299,6 @@ class Actions:
             callback(self._by_name[name])
 
     def _radio_changed(self, action: Gio.SimpleAction, value: GLib.Variant,
-                       name: str,
                        on_change: "_ToggleCallback | None") -> None:
         action.set_state(value)
         if on_change is not None:
@@ -624,7 +623,7 @@ class MainUI:
         # The three menus whose contents change while the program runs
         # keep models of their own, spliced into the layouts below.
         self.bookmarks = bookmark_menu.BookmarksMenu(self, window)
-        self.recent = recent.RecentFilesMenu(self, window)
+        self.recent = recent.RecentFilesMenu(window)
         self._openwith = openwith_menu.OpenWithMenu(window)
         self.move_to = move_menu.MoveToMenu(window, self.recent)
 

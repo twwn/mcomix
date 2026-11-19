@@ -7,7 +7,6 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from mcomix import main
-    from mcomix import ui as ui_module
 
 from mcomix import preferences
 from mcomix import process
@@ -52,8 +51,7 @@ class RecentFilesMenu:
     #: How many entries to show, which is what Gtk.RecentChooserMenu did.
     _LIMIT = 10
 
-    def __init__(self, ui: "ui_module.MainUI",
-                 window: "main.MainWindow") -> None:
+    def __init__(self, window: "main.MainWindow") -> None:
         self._window = window
         self._manager = Gtk.RecentManager.get_default()
 
