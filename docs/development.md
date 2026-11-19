@@ -30,6 +30,32 @@ xvfb-run -a .venv/bin/python -m pytest test/ -n auto
 - mypy runs strict, with no explicit `Any`: new code is fully annotated.
 - Base a new test on `test.MComixTest`. It points the preferences, library, bookmarks and recent files at a temporary home, so no test touches yours.
 
+## Writing tests
+
+Use what `test/__init__.py` has before writing a set-up or helper of your own.
+`test/test_copies.py` fails when a function body of some size appears twice, in the tests or the program.
+
+Class or helper | For
+----------------|----
+`MComixTest` | Every test: a temporary home, preferences reset. `self.extracted(archive, name)` reads a member as the archive extracts it.
+`MainWindowOpenTest` | A test with the main window open and no book.
+`MainWindowLaterTest` | A test that opens the main window itself, if at all; it is closed afterwards.
+`open_main_window()`, `close_main_window()` | The main window as MComix opens and quits it.
+`pump()`, `wait_for()`, `wait_frames()` | Let the main loop run; wait for a condition rather than a time.
+`children()`, `descendants()` | The widgets inside a widget.
+`visible_prompts()`, `prompts_over(window)` | The message dialogs on screen, or standing over a window.
+`notebook_tabs(notebook)` | The labels of a notebook's tabs.
+`hold_open(popover)` | A popover that stays open under Xvfb.
+`refuse_passwords(test)` | Cancel every password prompt; the archives asked about are listed.
+`FolderDialogStub(folder)` | Stands in for a folder chooser's answer.
+`windows_refusal(name)` | `os.remove` or `os.unlink` refusing a read-only file, as on Windows.
+`pixel(pixbuf, x, y)` | One pixel's channels.
+`get_testfile_path(...)` | A file under `test/files/`.
+
+A helper several tests of one file share goes on a base class in that file.
+A helper another file needs goes into `test/__init__.py` and this table.
+Before moving a method out of a class, check no subclass overrides it.
+
 ## Layout
 
 Path | What
