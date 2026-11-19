@@ -177,7 +177,6 @@ class Statusbar(Gtk.Box, widgets.Releasable):
         #: whole; "Copy path" copies it.
         self._path = ''
         self._update_sensitivity()
-        self.set_visible(True)
 
         self._loading = False
 

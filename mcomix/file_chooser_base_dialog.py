@@ -391,7 +391,6 @@ class _BaseFileChooserDialog(Dialog):
         for label in (self._namelabel, self._sizelabel, self._detailslabel):
             label.set_max_width_chars(_PREVIEW_LABEL_WIDTH)
             label.set_width_chars(_PREVIEW_LABEL_WIDTH)
-        preview_box.set_visible(True)
         return preview_box
 
     def _widen_the_places(self, *args: object) -> None:

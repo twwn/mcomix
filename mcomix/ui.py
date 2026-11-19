@@ -642,13 +642,11 @@ class MainUI:
         self.popup.set_parent(window)
         self.toolbar = self._build_toolbar()
 
-        # Only the menu bar, which is a widget in the window like any
-        # other.  The popup is a Gtk.PopoverMenu, and a popover that is
-        # visible is *open*: it takes an input grab, and on Wayland it is
-        # an xdg_popup the compositor has to be asked for, which GTK
-        # waits on while the window maps.  It is shown by popup_at() when
-        # there is a place to point it at.
-        self.menubar.set_visible(True)
+        # The popup is not shown here.  It is a Gtk.PopoverMenu, and a
+        # popover that is visible is *open*: it takes an input grab, and
+        # on Wayland it is an xdg_popup the compositor has to be asked
+        # for, which GTK waits on while the window maps.  It is shown by
+        # popup_at() when there is a place to point it at.
 
     def set_accelerator(self, name: str, accelerator: str) -> None:
         """Show <accelerator> against <name>'s items in the menus.

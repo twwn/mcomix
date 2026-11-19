@@ -114,7 +114,6 @@ class ThumbnailSidebar(Gtk.ScrolledWindow, widgets.Releasable):
 
         self.set_child(self._list)
         self.change_thumbnail_background_color(prefs['thumb bg colour'])
-        self.set_visible(True)
 
         self._window.page_changed += self._on_page_change
         self._window.imagehandler.page_available += self._on_page_available

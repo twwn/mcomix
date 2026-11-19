@@ -142,7 +142,6 @@ class _PropertiesDialog(Dialog):
         page.set_main_info(main_info)
         if path is not None:
             self._update_page_secondary_info(page, path, self._described())
-        page.set_visible(True)
 
     def _described(self) -> list[tuple[str, str]]:
         """The rows the archive's ComicInfo.xml adds to the Archive page.
@@ -183,7 +182,6 @@ class _PropertiesDialog(Dialog):
         )
         page.set_main_info(main_info)
         self._update_page_secondary_info(page, path)
-        page.set_visible(True)
 
     def _update_page_image(self, page: properties_page._Page,
                            page_number: int | None = None) -> None:

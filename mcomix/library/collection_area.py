@@ -257,7 +257,6 @@ class _CollectionArea(Gtk.ScrolledWindow, widgets.Releasable):
         entry = Gtk.Entry()
         entry.set_activates_default(True)
         widgets.pack(box, entry, True, True, 6)
-        box.set_visible(True)
 
         # The entry outlives the dialog, which run_async() takes down
         # before it answers.
@@ -365,7 +364,6 @@ class _CollectionArea(Gtk.ScrolledWindow, widgets.Releasable):
         entry.set_text(old_name)
         entry.set_activates_default(True)
         widgets.pack(box, entry, True, True, 6)
-        box.set_visible(True)
 
         # As in add_collection() above: the entry outlives the dialog.
         rename_dialog.run_async(lambda response: self._rename_answered(
