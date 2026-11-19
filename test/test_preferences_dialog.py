@@ -733,6 +733,32 @@ class PreferenceCallbacksTest(MainWindowOpenTest):
                           'thumbnailsidebar.change_thumbnail_background_color'},
                          called)
 
+    def test_the_typed_fields_store_on_enter_and_when_left(self):
+        """Each field typed into is stored when Enter is pressed in it
+        and when the focus leaves it, as GTK4's focus controller tells."""
+        for factory, typed, key, stored in (
+                ('_create_screen_profile_entry', '/a/screen.icc',
+                 'screen profile', '/a/screen.icc'),
+                ('_create_unpack_folder_entry', '/a/folder',
+                 'unpack folder', '/a/folder'),
+                ('_create_extensions_entry', 'txt, nfo',
+                 'comment extensions', ['txt', 'nfo'])):
+            for way in ('enter', 'leave'):
+                with self.subTest(factory=factory, way=way):
+                    entry = getattr(self.dialog, factory)()
+                    prefs[key] = [] if isinstance(stored, list) else ''
+                    entry.set_text(typed)
+                    if way == 'enter':
+                        entry.emit('activate')
+                    else:
+                        focus, = [
+                            controller for controller
+                            in entry.observe_controllers()
+                            if isinstance(controller,
+                                          Gtk.EventControllerFocus)]
+                        focus.emit('leave')
+                    self.assertEqual(stored, prefs[key])
+
     def test_the_comment_extensions_are_read_out_of_their_entry(self):
         entry = unittest.mock.Mock()
         entry.get_text.return_value = 'txt, nfo ,, xml'

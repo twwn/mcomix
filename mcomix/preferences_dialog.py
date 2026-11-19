@@ -53,6 +53,16 @@ def _sort_row(first: Gtk.Widget, second: Gtk.Widget) -> Gtk.Box:
     return row
 
 
+def _store_when_done(entry: Gtk.Entry,
+                     store: Callable[[object], None]) -> None:
+    """Call <store> when Enter is pressed in <entry> and when the focus
+    leaves it.  GTK4 has no focus-out-event; a focus controller tells."""
+    entry.connect('activate', store)
+    focus = Gtk.EventControllerFocus()
+    focus.connect('leave', store)
+    entry.add_controller(focus)
+
+
 class _PreferencesDialog(Dialog):
 
     """The preferences dialog where most (but not all) settings that are
@@ -958,10 +968,7 @@ class _PreferencesDialog(Dialog):
                 prefs['screen profile'] = value
                 self._window.enhancer.signal_update()
 
-        entry.connect('activate', store)
-        focus = Gtk.EventControllerFocus()
-        focus.connect('leave', store)
-        entry.add_controller(focus)
+        _store_when_done(entry, store)
         return entry
 
     def _create_rendering_intent_combobox(self) -> "widgets.Chooser[int]":
@@ -1042,21 +1049,14 @@ class _PreferencesDialog(Dialog):
         def store(*args: object) -> None:
             prefs['unpack folder'] = entry.get_text().strip()
 
-        entry.connect('activate', store)
-        focus = Gtk.EventControllerFocus()
-        focus.connect('leave', store)
-        entry.add_controller(focus)
+        _store_when_done(entry, store)
         return entry
 
     def _create_extensions_entry(self) -> Gtk.Entry:
         entry = Gtk.Entry()
         entry.set_size_request(200, -1)
         entry.set_text(', '.join(prefs['comment extensions']))
-        entry.connect('activate', self._entry_cb)
-        # There is no focus-out-event in GTK4; a focus controller says so.
-        focus = Gtk.EventControllerFocus()
-        focus.connect('leave', lambda _controller: self._entry_cb(entry))
-        entry.add_controller(focus)
+        _store_when_done(entry, lambda *args: self._entry_cb(entry))
         entry.set_tooltip_text(
             _('Treat all files found within archives, that have one of these file endings, as comments.'))
         return entry
