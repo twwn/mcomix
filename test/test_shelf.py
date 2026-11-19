@@ -352,9 +352,13 @@ class ShelfDrawnAgainTest(_ShelfWindowTest):
         shelf.filter_string = 'b0'
         self.area.load_covers()
         adjustment = self.area.get_vadjustment()
-        self.assertTrue(wait_for(lambda: len(self._entries()) == 8
-                                 and adjustment.get_upper()
-                                 > 2 * adjustment.get_page_size()))
+        # Two waits, so that a failure says which of them timed out
+        # and what it saw (one in a full suite under eight workers).
+        self.assertTrue(wait_for(lambda: len(self._entries()) == 8),
+                        len(self._entries()))
+        self.assertTrue(wait_for(lambda: adjustment.get_upper()
+                                 > 2 * adjustment.get_page_size()),
+                        (adjustment.get_upper(), adjustment.get_page_size()))
         first = self._entries()[0]
         shelf.filter_string = None
         self._again()
