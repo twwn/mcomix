@@ -24,11 +24,11 @@ class _Page(Gtk.ScrolledWindow):
         self.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
         widgets.set_border(self, 12)
 
-        self._vbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 12)
-        self.set_child(self._vbox)
+        vbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 12)
+        self.set_child(vbox)
 
         topbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 12)
-        widgets.pack(self._vbox, topbox, True, True, 0)
+        widgets.pack(vbox, topbox, True, True, 0)
         # A Gtk.Image draws what it is given at an icon size.
         self._thumb = Gtk.Picture()
         # Not enlarged past its own size, as the thumbnail bar's are not.
@@ -38,16 +38,15 @@ class _Page(Gtk.ScrolledWindow):
         borderbox = Gtk.Frame()
         borderbox.set_size_request(-1, 130)
         widgets.pack(topbox, borderbox, True, True, 0)
-        self._insidebox = borderbox
         # The two boxes the page is written into.  They stand for its
         # whole life and reset() empties them; building another pair for
         # every book, and taking the old one off the page again, said
         # the same thing at more cost.
         self._mainbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 5)
         widgets.set_border(self._mainbox, 10)
-        self._insidebox.set_child(self._mainbox)
+        borderbox.set_child(self._mainbox)
         self._extrabox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 10)
-        widgets.pack(self._vbox, self._extrabox, False, False, 0)
+        widgets.pack(vbox, self._extrabox, False, False, 0)
         self.reset()
 
     def reset(self) -> None:

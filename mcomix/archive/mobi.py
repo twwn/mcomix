@@ -89,8 +89,8 @@ class MobiArchive(archive_base.NonUnicodeArchive):
             self.header = self.sect.load_section(0)
             if len(self.header) < 0x70:
                 raise UnpackException('MOBI header cut short')
-            self.crypto_type, = struct.unpack_from('>H', self.header, 0xC)
-            if self.crypto_type != 0:
+            crypto_type, = struct.unpack_from('>H', self.header, 0xC)
+            if crypto_type != 0:
                 raise UnpackException('file is encrypted')
             self.firstimg, = struct.unpack_from('>L', self.header, 0x6C)
         except BaseException:

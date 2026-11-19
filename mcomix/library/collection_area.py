@@ -84,12 +84,12 @@ class _CollectionArea(Gtk.ScrolledWindow, widgets.Releasable):
         # drop target answers for one type.  Preloading is what makes the
         # dragged text readable while it is still only being hovered,
         # which is when the drop has to be accepted or refused.
-        self._drop_target = Gtk.DropTarget.new(
+        drop_target = Gtk.DropTarget.new(
             str, Gdk.DragAction.MOVE | Gdk.DragAction.COPY)
-        self._drop_target.set_preload(True)
-        self._drop_target.connect('motion', self._drag_motion)
-        self._drop_target.connect('drop', self._drag_data_received)
-        self._list.add_controller(self._drop_target)
+        drop_target.set_preload(True)
+        drop_target.connect('motion', self._drag_motion)
+        drop_target.connect('drop', self._drag_data_received)
+        self._list.add_controller(drop_target)
 
         #: The row the drag in the air began on, which need not be the
         #: selected one.

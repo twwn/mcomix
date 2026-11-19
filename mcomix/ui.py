@@ -839,9 +839,9 @@ class MainUI:
                 continue
             if name == 'expander':
                 # Takes up the slack between the two groups of buttons.
-                self.toolbar_expander = Gtk.Box()
-                self.toolbar_expander.set_hexpand(True)
-                toolbar.append(self.toolbar_expander)
+                expander = Gtk.Box()
+                expander.set_hexpand(True)
+                toolbar.append(expander)
                 continue
             detailed, target = self._actions.detailed(name)
             stateful = self._actions.is_stateful(name)

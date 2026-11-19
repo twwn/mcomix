@@ -516,7 +516,7 @@ class ColumnListView(Gtk.ColumnView, widgets.Releasable):
         # through, and it is what makes the headings work at all, since
         # the sorter a Gtk.ColumnView keeps has to be given to a model
         # by whoever built it.
-        self._sorted = Gtk.SortListModel(
+        sorted_model = Gtk.SortListModel(
             model=Gtk.TreeListModel.new(self.store, False, False,
                                         self._children_of)
             if tree else self.store)
@@ -526,7 +526,7 @@ class ColumnListView(Gtk.ColumnView, widgets.Releasable):
         #: rather than the rows themselves, which is what _row_of()
         #: unwraps and what the walks below look for.
         self.model: "Gio.ListModel[Row] | Gio.ListModel[Gtk.TreeListRow]" = \
-            self._sorted
+            sorted_model
         self.selection: "Gtk.MultiSelection | Gtk.SingleSelection"
         if multiple:
             self.selection = Gtk.MultiSelection(model=self.model)
@@ -538,7 +538,7 @@ class ColumnListView(Gtk.ColumnView, widgets.Releasable):
             self.selection.set_autoselect(False)
             self.selection.set_can_unselect(True)
         super().__init__(model=self.selection)
-        self._sorted.set_sorter(self.get_sorter())
+        sorted_model.set_sorter(self.get_sorter())
         self._reorderable = False
         #: Every cell the columns' factories have built, on screen or
         #: kept aside for rows to come; release() needs both.

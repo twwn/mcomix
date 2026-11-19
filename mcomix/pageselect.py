@@ -46,10 +46,10 @@ class Pageselector(Dialog):
                                                    lower=1, upper=self._number_of_pages,
                                                    step_increment=1, page_increment=1)
 
-        self._page_selector = Gtk.Scale.new(Gtk.Orientation.VERTICAL,
-                                            self._selector_adjustment)
-        self._page_selector.set_draw_value(False)
-        self._page_selector.set_digits(0)
+        page_selector = Gtk.Scale.new(Gtk.Orientation.VERTICAL,
+                                      self._selector_adjustment)
+        page_selector.set_draw_value(False)
+        page_selector.set_digits(0)
 
         self._page_spinner = Gtk.SpinButton.new(self._selector_adjustment, 0.0, 0)
         self._page_spinner.connect('changed', self._page_text_changed)
@@ -63,8 +63,8 @@ class Pageselector(Dialog):
         keys.set_propagation_phase(Gtk.PropagationPhase.CAPTURE)
         keys.connect('key-pressed', self._enter_pressed)
         self._page_spinner.add_controller(keys)
-        self._pages_label = Gtk.Label(label=_(' of %s') % self._number_of_pages)
-        self._pages_label.set_xalign(0)
+        pages_label = Gtk.Label(label=_(' of %s') % self._number_of_pages)
+        pages_label.set_xalign(0)
 
         # A Gtk.Image draws whatever it is given at an icon size; a
         # picture draws it at its own.
@@ -84,12 +84,12 @@ class Pageselector(Dialog):
         widgets.set_border(preview_box, 5)
         preview_box.set_spacing(5)
         widgets.pack(preview_box, self._image_preview, True, True, 0)
-        widgets.pack(preview_box, self._page_selector, False, False, 0)
+        widgets.pack(preview_box, page_selector, False, False, 0)
         # Below them, group selection spinner and current page label
         selection_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
         widgets.set_border(selection_box, 5)
         widgets.pack(selection_box, self._page_spinner, True, True, 0)
-        widgets.pack(selection_box, self._pages_label, False, False, 0)
+        widgets.pack(selection_box, pages_label, False, False, 0)
 
         # The chapters the book names, where it names any, to go to by
         # their titles; hidden until then.
