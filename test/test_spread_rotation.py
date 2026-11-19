@@ -14,7 +14,6 @@ import itertools
 from . import MComixTest, get_testfile_path, pump, wait_for
 
 from mcomix import icons
-from mcomix import main
 from mcomix.preferences import prefs
 
 
@@ -25,8 +24,7 @@ class SpreadRotationTest(MComixTest):
         self.make_user_directories()
         icons.load_icons()
         prefs['default double page'] = True
-        self.window = main.MainWindow()
-        main.set_main_window(self.window)
+        self.open_main_window()
         # A portrait page, followed by one that is not wide either, so
         # the two are shown together.
         self.window.filehandler.open_file(

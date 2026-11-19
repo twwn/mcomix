@@ -111,8 +111,7 @@ class MenusBuiltOnceTest(MComixTest):
         patcher = unittest.mock.patch.object(ui.MainUI, '_build', counted)
         patcher.start()
         self.addCleanup(patcher.stop)
-        self.window = main.MainWindow()
-        main.set_main_window(self.window)
+        self.open_main_window()
         self.addCleanup(pump)
         self.addCleanup(main.set_main_window, None)
         self.addCleanup(self.window.destroy)
@@ -155,8 +154,7 @@ class HelpMenuTest(MComixTest):
         super().setUp()
         self.make_user_directories()
         icons.load_icons()
-        self.window = main.MainWindow()
-        main.set_main_window(self.window)
+        self.open_main_window()
         pump()
 
     def tearDown(self):

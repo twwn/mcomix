@@ -19,7 +19,6 @@ from . import (MComixTest, fresh_bookmarks_store, get_testfile_path, pump,
 
 from mcomix import archive_packer
 from mcomix import icons
-from mcomix import main
 from mcomix import message_dialog
 from mcomix import save_progress
 from mcomix.dialog import Response
@@ -43,8 +42,7 @@ class LongSaveTest(MComixTest):
         self.book = os.path.join(self.shelf, 'book.zip')
         shutil.copyfile(get_testfile_path('archives', '01-ZIP-Normal.zip'),
                         self.book)
-        self.window = main.MainWindow(open_path=self.book)
-        main.set_main_window(self.window)
+        self.open_main_window(open_path=self.book)
         images = self.window.imagehandler
         self.assertTrue(wait_for(
             lambda: self.window.filehandler.file_loaded

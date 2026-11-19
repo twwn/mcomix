@@ -28,7 +28,6 @@ from mcomix import file_actions
 from mcomix import i18n
 from mcomix import icons
 from mcomix import last_read_page
-from mcomix import main
 from mcomix import message_dialog
 from mcomix import openwith
 from mcomix import page_marks
@@ -62,9 +61,8 @@ class _LibraryWindowTest(MComixTest):
         super().setUp()
         self.make_user_directories()
         icons.load_icons()
-        self.window = main.MainWindow(
+        self.open_main_window(
             open_path=get_testfile_path('archives', '01-ZIP-Normal.zip'))
-        main.set_main_window(self.window)
         self.assertTrue(wait_for(
             lambda: self.window.imagehandler.get_number_of_pages() > 0,
             seconds=20))

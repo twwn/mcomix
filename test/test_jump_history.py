@@ -17,9 +17,8 @@ class JumpHistoryTest(MComixTest):
         self.make_user_directories()
         prefs['show menubar'] = True
         icons.load_icons()
-        self.window = main.MainWindow(
+        self.open_main_window(
             open_path=get_testfile_path('archives', '01-ZIP-Normal.zip'))
-        main.set_main_window(self.window)
         # Only terminate_program() stops the worker threads and closes
         # the library the window opened.
         self.addCleanup(self.close_main_window)

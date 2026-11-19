@@ -664,6 +664,16 @@ class MComixTest(unittest.TestCase):
                           constants.THUMBNAIL_PATH):
             os.makedirs(directory, exist_ok=True)
 
+    def open_main_window(self, **options):
+        """Build the main window as self.window, with <options> as
+        MainWindow takes them, and name it the one main.main_window()
+        answers with, as run.py does. close_main_window() undoes both.
+        """
+        from mcomix import main
+        self.window = main.MainWindow(**options)
+        main.set_main_window(self.window)
+        return self.window
+
     def close_main_window(self):
         """Close self.window, the main window the test built, as MComix
         does when it quits, and let what that queued run.

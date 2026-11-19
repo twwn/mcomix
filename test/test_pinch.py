@@ -12,7 +12,6 @@ from gi.repository import Gtk
 from . import MComixTest, pump
 
 from mcomix import icons
-from mcomix import main
 from mcomix import zoom
 from mcomix.preferences import prefs
 
@@ -23,8 +22,7 @@ class PinchTest(MComixTest):
         super().setUp()
         self.make_user_directories()
         icons.load_icons()
-        self.window = main.MainWindow()
-        main.set_main_window(self.window)
+        self.open_main_window()
         pump()
 
     def tearDown(self):

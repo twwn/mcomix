@@ -22,7 +22,6 @@ from . import MComixTest, get_testfile_path, pump, wait_for
 from mcomix import comicinfo
 from mcomix import constants
 from mcomix import icons
-from mcomix import main
 from mcomix import reading_directions
 from mcomix.preferences import prefs
 
@@ -131,8 +130,7 @@ class WindowDirectionTest(MComixTest):
         return path
 
     def _open(self, path):
-        self.window = main.MainWindow(open_path=path)
-        main.set_main_window(self.window)
+        self.open_main_window(open_path=path)
         self.addCleanup(self.close_main_window)
         self.assertTrue(wait_for(
             lambda: self.window.imagehandler.get_number_of_pages() > 0,

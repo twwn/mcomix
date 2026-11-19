@@ -58,8 +58,7 @@ class _StripTest(MComixTest):
                 Image.new('RGB', size, (number * 30, 0, 0)).save(
                     name, exif=exif)
                 archive.write(name, '%02d.png' % number)
-        self.window = main.MainWindow(open_path=self.book)
-        main.set_main_window(self.window)
+        self.open_main_window(open_path=self.book)
         view = unittest.mock.patch.object(
             self.window, 'get_visible_area_size', return_value=self.VIEW)
         view.start()

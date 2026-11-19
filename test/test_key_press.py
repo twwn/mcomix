@@ -16,7 +16,6 @@ from mcomix import clipboard
 from mcomix import constants
 from mcomix import icons
 from mcomix import keybindings
-from mcomix import main
 from mcomix.preferences import prefs
 
 
@@ -40,8 +39,7 @@ class _KeyPressWindowTest(MComixTest):
         self.make_user_directories()
         icons.load_icons()
         prefs.update(self.WINDOW_PREFS)
-        self.window = main.MainWindow()
-        main.set_main_window(self.window)
+        self.open_main_window()
         pump()
 
     def tearDown(self):

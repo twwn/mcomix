@@ -16,7 +16,6 @@ from . import test_key_press
 from mcomix import constants
 from mcomix import icons
 from mcomix import image_tools
-from mcomix import main
 from mcomix.lens import MagnifyingLens
 from mcomix.preferences import prefs
 
@@ -135,8 +134,7 @@ class LensCursorTest(MComixTest):
         super().setUp()
         self.make_user_directories()
         icons.load_icons()
-        self.window = main.MainWindow()
-        main.set_main_window(self.window)
+        self.open_main_window()
         pump()
 
     def tearDown(self):
@@ -200,8 +198,7 @@ class LensFollowsThePagesTest(MComixTest):
         # A window of a size the test knows, whatever the screen, as
         # test_key_press's scrolling tests have it (_ScrollablePageTest).
         prefs.update(test_key_press._ScrollablePageTest.WINDOW_PREFS)
-        self.window = main.MainWindow()
-        main.set_main_window(self.window)
+        self.open_main_window()
         pump()
         # A folder of pictures that differ from one another; the pages
         # of the test archives are all one pixel.

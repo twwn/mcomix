@@ -9,7 +9,6 @@ import zipfile
 from . import MComixTest, get_testfile_path, pump, wait_for
 
 from mcomix import icons
-from mcomix import main
 from mcomix.preferences import prefs
 
 
@@ -21,8 +20,7 @@ class SkipBrokenPagesTest(MComixTest):
         prefs['skip broken pages'] = True
         prefs['default double page'] = False
         icons.load_icons()
-        self.window = main.MainWindow()
-        main.set_main_window(self.window)
+        self.open_main_window()
         pump()
 
     def tearDown(self):
@@ -202,8 +200,7 @@ class SkipBrokenPagesInTheSidebarTest(MComixTest):
         prefs['default double page'] = False
         prefs['show thumbnails'] = True
         icons.load_icons()
-        self.window = main.MainWindow()
-        main.set_main_window(self.window)
+        self.open_main_window()
         self.sidebar = self.window.thumbnailsidebar
         pump()
 

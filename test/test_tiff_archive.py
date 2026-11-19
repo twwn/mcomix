@@ -11,7 +11,6 @@ from mcomix import (
     file_chooser_base_dialog,
     file_provider,
     icons,
-    main,
 )
 from mcomix.archive import tiff
 
@@ -256,8 +255,7 @@ class WindowTest(MComixTest):
         super().setUp()
         self.make_user_directories()
         icons.load_icons()
-        self.window = main.MainWindow()
-        main.set_main_window(self.window)
+        self.open_main_window()
         self.handler = self.window.filehandler
         pump()
 

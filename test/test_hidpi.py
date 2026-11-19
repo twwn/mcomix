@@ -30,8 +30,7 @@ class DeviceScaleTest(MComixTest):
         super().setUp()
         self.make_user_directories()
         icons.load_icons()
-        self.window = main.MainWindow()
-        main.set_main_window(self.window)
+        self.open_main_window()
 
     def tearDown(self):
         self.close_main_window()
@@ -107,11 +106,10 @@ class ThumbnailScaleTest(MComixTest):
         self.make_user_directories()
         prefs['show thumbnails'] = True
         icons.load_icons()
-        self.window = main.MainWindow(
+        self.open_main_window(
             open_path=get_testfile_path(
                 'pepper-and-carrot',
                 'Pepper-and-Carrot_E01_The-Potion-of-Flight.cbz'))
-        main.set_main_window(self.window)
         self.sidebar = self.window.thumbnailsidebar
         self.assertTrue(wait_for(
             lambda: self.window.imagehandler.get_number_of_pages() > 0,
@@ -164,8 +162,7 @@ class EditorScaleTest(MComixTest):
         super().setUp()
         self.make_user_directories()
         icons.load_icons()
-        self.window = main.MainWindow()
-        main.set_main_window(self.window)
+        self.open_main_window()
         pump()
 
     def tearDown(self):
@@ -204,10 +201,9 @@ class PreviewScaleTest(MComixTest):
         super().setUp()
         self.make_user_directories()
         icons.load_icons()
-        self.window = main.MainWindow(open_path=get_testfile_path(
+        self.open_main_window(open_path=get_testfile_path(
             'pepper-and-carrot',
             'Pepper-and-Carrot_E01_The-Potion-of-Flight.cbz'))
-        main.set_main_window(self.window)
         self.assertTrue(wait_for(
             lambda: self.window.imagehandler.page_is_available(1),
             seconds=20))

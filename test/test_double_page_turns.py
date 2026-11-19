@@ -15,7 +15,7 @@ import zipfile
 
 from . import MComixTest, get_testfile_path, pump, wait_for
 
-from mcomix import icons, main
+from mcomix import icons
 from mcomix.preferences import prefs
 
 _PAGES = {'N': get_testfile_path('images', 'portrait-no-exif.png'),
@@ -50,8 +50,7 @@ class DoublePageTurnsTest(MComixTest):
                 shutil.copy(_PAGES[kind],
                             os.path.join(folder, '%02d.png' % number))
             path = os.path.join(folder, '01.png')
-        self.window = main.MainWindow(open_path=path)
-        main.set_main_window(self.window)
+        self.open_main_window(open_path=path)
         handler = self.window.imagehandler
         self.assertTrue(wait_for(
             lambda: handler.get_number_of_pages() == len(layout),

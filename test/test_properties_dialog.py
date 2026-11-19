@@ -43,8 +43,7 @@ class PropertiesDialogTest(MComixTest):
         super().tearDown()
 
     def _open(self, path):
-        self.window = main.MainWindow(open_path=path)
-        main.set_main_window(self.window)
+        self.open_main_window(open_path=path)
         self.assertTrue(wait_for(
             lambda: self.window.imagehandler.get_number_of_pages() > 0,
             seconds=20))

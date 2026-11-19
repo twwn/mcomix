@@ -26,9 +26,8 @@ class PageselectTest(MComixTest):
         super().setUp()
         self.make_user_directories()
         icons.load_icons()
-        self.window = main.MainWindow(
+        self.open_main_window(
             open_path=get_testfile_path('archives', '01-ZIP-Normal.zip'))
-        main.set_main_window(self.window)
         self.assertTrue(wait_for(
             lambda: self.window.imagehandler.get_number_of_pages() > 0,
             seconds=20))
@@ -203,8 +202,7 @@ class ChapterTest(MComixTest):
                 book.writestr('ComicInfo.xml', comicinfo_xml)
         self.make_user_directories()
         icons.load_icons()
-        self.window = main.MainWindow(open_path=path)
-        main.set_main_window(self.window)
+        self.open_main_window(open_path=path)
         self.assertTrue(wait_for(
             lambda: self.window.imagehandler.get_number_of_pages() == 4,
             seconds=20))
@@ -295,8 +293,7 @@ class NoBookTest(MComixTest):
         super().setUp()
         self.make_user_directories()
         icons.load_icons()
-        self.window = main.MainWindow()
-        main.set_main_window(self.window)
+        self.open_main_window()
         pump()
 
     def tearDown(self):

@@ -7,7 +7,6 @@ from gi.repository import Gdk, Gio
 from . import MComixTest, get_testfile_path, pump
 
 from mcomix import icons
-from mcomix import main
 
 
 class DropTest(MComixTest):
@@ -16,8 +15,7 @@ class DropTest(MComixTest):
         super().setUp()
         self.make_user_directories()
         icons.load_icons()
-        self.window = main.MainWindow()
-        main.set_main_window(self.window)
+        self.open_main_window()
         pump()
         patcher = unittest.mock.patch.object(self.window.filehandler,
                                              'open_file')

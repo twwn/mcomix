@@ -44,8 +44,7 @@ class DirectoryWalkTest(MComixTest):
         for name in ('a', 'b', 'c'):
             os.makedirs(os.path.join(self.root, name))
         icons.load_icons()
-        self.window = main.MainWindow()
-        main.set_main_window(self.window)
+        self.open_main_window()
         self.handler = self.window.filehandler
         pump()
 
@@ -490,8 +489,7 @@ class _WindowTest(MComixTest):
         super().setUp()
         self.make_user_directories()
         icons.load_icons()
-        self.window = main.MainWindow()
-        main.set_main_window(self.window)
+        self.open_main_window()
         self.handler = self.window.filehandler
         pump()
 
@@ -1110,8 +1108,7 @@ class RememberedResumeAnswerTest(MComixTest):
         shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'),
                     self.archive)
         icons.load_icons()
-        self.window = main.MainWindow()
-        main.set_main_window(self.window)
+        self.open_main_window()
         self.handler = self.window.filehandler
         self.handler.last_read_page.set_enabled(True)
         self.handler.last_read_page.set_page(self.archive, 3)
@@ -1254,8 +1251,7 @@ class ExtractionOrderTest(MComixTest):
         prefs['stored dialog choices']['resume-from-last-read-page'] = \
             int(Response.YES)
         icons.load_icons()
-        self.window = main.MainWindow()
-        main.set_main_window(self.window)
+        self.open_main_window()
         self.handler = self.window.filehandler
         self.handler.last_read_page.set_enabled(True)
         pump()
@@ -1609,8 +1605,7 @@ class ABookWithNoPagesTest(MComixTest):
         with zipfile.ZipFile(self.archive, 'w') as archive:
             archive.writestr('readme.txt', 'Nothing to look at.')
         icons.load_icons()
-        self.window = main.MainWindow()
-        main.set_main_window(self.window)
+        self.open_main_window()
         self.handler = self.window.filehandler
         self.handler.last_read_page.set_enabled(True)
         pump()
@@ -1648,8 +1643,7 @@ class BeforeAPageIsChosenTest(MComixTest):
         super().setUp()
         self.make_user_directories()
         icons.load_icons()
-        self.window = main.MainWindow()
-        main.set_main_window(self.window)
+        self.open_main_window()
         pump()
 
     def tearDown(self):
@@ -2033,8 +2027,7 @@ class CommentExtensionsTest(MComixTest):
         super().setUp()
         self.make_user_directories()
         icons.load_icons()
-        self.window = main.MainWindow()
-        main.set_main_window(self.window)
+        self.open_main_window()
         pump()
 
     def tearDown(self):

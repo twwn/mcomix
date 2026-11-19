@@ -20,7 +20,6 @@ from mcomix import constants
 from mcomix import i18n
 from mcomix import icons
 from mcomix import keybindings
-from mcomix import main
 from mcomix import message_dialog
 from mcomix import preferences_dialog
 from mcomix import theme
@@ -35,8 +34,7 @@ class PreferencesDialogTest(MComixTest):
         super().setUp()
         self.make_user_directories()
         icons.load_icons()
-        self.window = main.MainWindow()
-        main.set_main_window(self.window)
+        self.open_main_window()
         pump()
 
     def tearDown(self):
@@ -552,8 +550,7 @@ class PreferenceCallbacksTest(MComixTest):
         super().setUp()
         self.make_user_directories()
         icons.load_icons()
-        self.window = main.MainWindow()
-        main.set_main_window(self.window)
+        self.open_main_window()
         pump()
         self.dialog = preferences_dialog._PreferencesDialog(self.window)
         pump()

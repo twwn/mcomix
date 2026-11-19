@@ -7,7 +7,6 @@ from gi.repository import GLib
 from . import MComixTest, get_testfile_path, pump, wait_for
 
 from mcomix import icons
-from mcomix import main
 from mcomix.preferences import prefs
 
 
@@ -19,9 +18,8 @@ class SlideshowTest(MComixTest):
         icons.load_icons()
         # A long delay, so that no tick comes of its own accord.
         prefs['slideshow delay'] = 60000
-        self.window = main.MainWindow(
+        self.open_main_window(
             open_path=get_testfile_path('archives', '01-ZIP-Normal.zip'))
-        main.set_main_window(self.window)
         self.assertTrue(wait_for(
             lambda: self.window.imagehandler.get_number_of_pages() > 1,
             seconds=20))

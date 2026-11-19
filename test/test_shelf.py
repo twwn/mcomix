@@ -46,8 +46,7 @@ class _ShelfWindowTest(MComixTest):
         super().tearDown()
 
     def _window(self, open_path=None):
-        self.window = main.MainWindow(open_path=open_path)
-        main.set_main_window(self.window)
+        self.open_main_window(open_path=open_path)
         pump()
         return self.window
 

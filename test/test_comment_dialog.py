@@ -49,8 +49,7 @@ class CommentsDialogTest(MComixTest):
 
     def _open(self, path):
         if self.window is None:
-            self.window = main.MainWindow(open_path=path)
-            main.set_main_window(self.window)
+            self.open_main_window(open_path=path)
         else:
             self.window.filehandler.open_file(path)
         self.assertTrue(wait_for(

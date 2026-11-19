@@ -30,9 +30,8 @@ class ThumbnailSidebarTest(MComixTest):
         self.make_user_directories()
         prefs['show thumbnails'] = True
         icons.load_icons()
-        self.window = main.MainWindow(
+        self.open_main_window(
             open_path=get_testfile_path('archives', '01-ZIP-Normal.zip'))
-        main.set_main_window(self.window)
         self.sidebar = self.window.thumbnailsidebar
         # The archive is listed on a worker thread, so the page count is
         # zero for a while after the window is built. Waiting on the

@@ -18,7 +18,6 @@ from mcomix import constants
 from mcomix import icons
 from mcomix import image_tools
 from mcomix import file_chooser_base_dialog
-from mcomix import main
 from mcomix import widgets
 from mcomix.archive import password as archive_password
 from mcomix.dialog import Response
@@ -31,8 +30,7 @@ class FileChooserTest(MComixTest):
         super().setUp()
         self.make_user_directories()
         icons.load_icons()
-        self.window = main.MainWindow()
-        main.set_main_window(self.window)
+        self.open_main_window()
         pump()
         from mcomix import file_chooser_main_dialog
         self._module = file_chooser_main_dialog
@@ -788,8 +786,7 @@ class LibraryFileChooserTest(MComixTest):
         super().setUp()
         self.make_user_directories()
         icons.load_icons()
-        self.window = main.MainWindow()
-        main.set_main_window(self.window)
+        self.open_main_window()
         self.library = _Library()
         pump()
         from mcomix import file_chooser_library_dialog

@@ -475,8 +475,7 @@ class BookmarkInTheOpenBookTest(MComixTest):
         super().tearDown()
 
     def _open(self, path, pages):
-        self.window = main.MainWindow(open_path=path)
-        main.set_main_window(self.window)
+        self.open_main_window(open_path=path)
         self.assertTrue(wait_for(
             lambda: self.window.imagehandler.get_number_of_pages() == pages,
             seconds=20))
@@ -601,10 +600,9 @@ class BookmarkInTheOpenBookTest(MComixTest):
     def test_a_window_opened_at_the_file_of_a_page_shows_it(self):
         """What the second MComix does with it: the file decides over
         the page number."""
-        self.window = main.MainWindow(
+        self.open_main_window(
             open_path=get_testfile_path('archives', '01-ZIP-Normal.zip'),
             open_page=2, open_member='images/03-PNG-RGB.png')
-        main.set_main_window(self.window)
         self.assertTrue(wait_for(
             lambda: not self.window.filehandler.file_loading
             and self.window.imagehandler.page_is_available(), seconds=20))

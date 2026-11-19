@@ -10,7 +10,6 @@ from . import MComixTest, pump, wait_for
 
 from mcomix import icons
 from mcomix import image_tools
-from mcomix import main
 from mcomix.preferences import prefs
 
 
@@ -39,8 +38,7 @@ class DynamicBackgroundTest(MComixTest):
                     page.putpixel((x, y), RED)
         for name in ('1.png', '2.png'):
             page.save(os.path.join(book, name))
-        self.window = main.MainWindow()
-        main.set_main_window(self.window)
+        self.open_main_window()
         self.window.filehandler.open_file(os.path.join(book, '1.png'))
         self.assertTrue(wait_for(
             lambda: self.window.imagehandler.page_is_available()))
@@ -121,8 +119,7 @@ class DoublePageBackgroundTest(MComixTest):
                     elif x >= 56:
                         page.putpixel((x, y), right)
             page.save(os.path.join(book, name))
-        self.window = main.MainWindow()
-        main.set_main_window(self.window)
+        self.open_main_window()
         self.window.filehandler.open_file(os.path.join(book, '1.png'))
         self.assertTrue(wait_for(
             lambda: self.window.imagehandler.page_is_available(1)

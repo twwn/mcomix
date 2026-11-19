@@ -86,9 +86,8 @@ class MainWindowTest(MComixTest):
         prefs['show toolbar'] = True
         prefs['show menubar'] = True
         icons.load_icons()
-        self.window = main.MainWindow(
+        self.open_main_window(
             open_path=get_testfile_path('archives', '01-ZIP-Normal.zip'))
-        main.set_main_window(self.window)
         self._pump()
 
     def tearDown(self):
@@ -6017,8 +6016,7 @@ class RestartTest(MComixTest):
         for directory in (constants.CONFIG_DIR, constants.DATA_DIR):
             os.makedirs(directory, exist_ok=True)
         icons.load_icons()
-        self.window = main.MainWindow()
-        main.set_main_window(self.window)
+        self.open_main_window()
         # What restart_program() has to get right is the order: the path
         # and the page are read while the file is still open, because
         # terminate_program() closes the file handler. These answer as a
@@ -6072,9 +6070,8 @@ class PageMenuSubmenusTest(MComixTest):
         super().setUp()
         self.make_user_directories()
         icons.load_icons()
-        self.window = main.MainWindow(
+        self.open_main_window(
             open_path=get_testfile_path('archives', '01-ZIP-Normal.zip'))
-        main.set_main_window(self.window)
         self.assertTrue(wait_for(
             lambda: self.window.imagehandler.get_number_of_pages() > 0,
             seconds=20))
@@ -6172,8 +6169,7 @@ class RestartOnABookTest(MComixTest):
         super().tearDown()
 
     def _reading(self, path, pages, page):
-        self.window = main.MainWindow(open_path=path)
-        main.set_main_window(self.window)
+        self.open_main_window(open_path=path)
         handler = self.window.imagehandler
         self.assertTrue(wait_for(
             lambda: self.window.filehandler.file_loaded
@@ -6241,8 +6237,7 @@ class WhatAPageCarriesThroughASaveTest(MComixTest):
         self.book = os.path.join(self.tmp_dir, 'book.zip')
         shutil.copyfile(get_testfile_path('archives', '01-ZIP-Normal.zip'),
                         self.book)
-        self.window = main.MainWindow(open_path=self.book)
-        main.set_main_window(self.window)
+        self.open_main_window(open_path=self.book)
         self.handler = self.window.filehandler
         self._opened(4)
 
@@ -6489,8 +6484,7 @@ class InvertedColoursAtStartUpTest(MComixTest):
         self.make_user_directories()
         icons.load_icons()
         prefs['invert color'] = True
-        self.window = main.MainWindow()
-        main.set_main_window(self.window)
+        self.open_main_window()
         pump()
 
     def tearDown(self):
@@ -6534,8 +6528,7 @@ class ZoomModeAtStartUpTest(MComixTest):
         main.MainWindow.change_zoom_mode = change_zoom_mode
         self.addCleanup(setattr, main.MainWindow, 'change_zoom_mode',
                         original)
-        self.window = main.MainWindow()
-        main.set_main_window(self.window)
+        self.open_main_window()
         pump()
 
     def tearDown(self):
@@ -6564,8 +6557,7 @@ class StartUpOptionsTest(MComixTest):
         icons.load_icons()
 
     def _start(self, **options):
-        self.window = main.MainWindow(**options)
-        main.set_main_window(self.window)
+        self.open_main_window(**options)
         self.addCleanup(self._close)
         pump()
         return self.window
@@ -6691,8 +6683,7 @@ class ResumeAtTheFileOfThePageTest(MComixTest):
             pickle.dump([path, 1], stored)
             pickle.dump('images/03-PNG-RGB.png', stored)
         prefs['previous quit was quit and save'] = True
-        self.window = main.MainWindow()
-        main.set_main_window(self.window)
+        self.open_main_window()
         self.assertTrue(wait_for(
             lambda: not self.window.filehandler.file_loading
             and self.window.imagehandler.page_is_available(), seconds=20))
