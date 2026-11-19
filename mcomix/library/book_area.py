@@ -295,6 +295,8 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
              self.open_selected_book_by_hand),
             ('open-keep-library', _('Open _without closing library'),
              self.open_selected_book_noclose),
+            ('open-new-window', _('Open in a new w_indow'),
+             self.open_selected_book_in_new_window),
             ('mark-read', _('_Mark as read'), self._mark_read),
             ('mark-unread', _('Mark as u_nread'), self._mark_unread),
             ('add', _('_Add...'),
@@ -353,9 +355,9 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
         # popover draws as a title over it.
         model = Gio.Menu()
         entries = self._menu_entries()
-        for heading, group in ((_('Library books'), entries[0:3]),
-                               (None, entries[3:5]), (None, entries[5:6]),
-                               (None, entries[6:11]), (None, entries[11:15])):
+        for heading, group in ((_('Library books'), entries[0:4]),
+                               (None, entries[4:6]), (None, entries[6:7]),
+                               (None, entries[7:12]), (None, entries[12:16])):
             section = Gio.Menu()
             for name, label, _handler in group:
                 item = Gio.MenuItem.new(label, 'books.' + name)
@@ -648,6 +650,17 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
     def open_selected_book_noclose(self, *args: object) -> None:
         """Open the currently selected book, keeping the library open."""
         self._open_books(True)
+
+    def open_selected_book_in_new_window(self, *args: object) -> None:
+        """Open the one book selected in an MComix of its own, as a
+        middle click on its cover does: the entry is where a reader who
+        does not know the middle button finds it."""
+        selected = self._selected_items()
+        if len(selected) != 1:
+            return
+        path = self._library.backend.get_book_path(selected[0].uid)
+        if path is not None:
+            process.launch_mcomix(path)
 
     def _mark_read(self, *args: object) -> None:
         """Store the last page as where the selected books were left,
@@ -1533,6 +1546,7 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
         self._set_sensitive('remove-from-collection',
                             books_selected and not is_collection_all)
         self._set_sensitive('copy-to-clipboard', len(selected) == 1)
+        self._set_sensitive('open-new-window', len(selected) == 1)
         self._set_sensitive('open-containing-folder', len(selected) == 1)
         self._set_sensitive('rename', len(selected) == 1)
         self._move_to.update()

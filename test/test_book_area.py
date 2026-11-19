@@ -1638,6 +1638,36 @@ class MiddleClickTest(MComixTest):
         self._click(*self.FIRST)
         self.assertEqual([3], self.area._covers.get_selected_positions())
 
+    def test_the_menu_entry_opens_the_book_selected_so(self):
+        self.area._covers.select_only(2)
+        with unittest.mock.patch.object(process, 'launch_mcomix') as launch:
+            self.area.open_selected_book_in_new_window()
+        launch.assert_called_once_with('/books/2.cbz')
+
+    def test_the_menu_entry_leaves_a_book_without_a_path_alone(self):
+        self.area._covers.select_only(2)
+        self.library.backend.missing = self.area.get_book_at_path(2)
+        with unittest.mock.patch.object(process, 'launch_mcomix') as launch:
+            self.area.open_selected_book_in_new_window()
+        launch.assert_not_called()
+
+    def test_the_menu_offers_it_for_one_book_only(self):
+        # One MComix per book picked out would start as many programs
+        # as covers were selected, at one click.
+        self.library.collection_area = _CollectionArea()
+        self.library.main_window = _main_window()
+        action = self.area._popup_actions.lookup_action('open-new-window')
+        with unittest.mock.patch.object(book_area.widgets, 'popup_at'):
+            self.area._covers.select_only(1)
+            self.area._popup_book_menu()
+            self.assertTrue(action.get_enabled())
+            self.area._covers.selection.select_all()
+            self.area._popup_book_menu()
+            self.assertFalse(action.get_enabled())
+            self.area._covers.selection.unselect_all()
+            self.area._popup_book_menu()
+            self.assertFalse(action.get_enabled())
+
 
 # vim: expandtab:sw=4:ts=4
 
