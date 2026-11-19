@@ -11,11 +11,10 @@ import PIL.Image
 import PIL.PngImagePlugin
 from gi.repository import Gio
 
-from . import MComixTest, get_testfile_path, wait_for
+from . import MComixTest, get_testfile_path, refuse_passwords, wait_for
 
 from mcomix import constants
 from mcomix import image_tools
-from mcomix.archive import password as archive_password
 from mcomix import thumbnail_tools
 from mcomix.preferences import prefs
 
@@ -703,16 +702,7 @@ class EncryptedArchiveThumbnailTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        self.asked = []
-
-        def ask(archive, on_password):
-            self.asked.append(archive)
-            on_password(None)
-
-        patcher = unittest.mock.patch.object(
-            archive_password, 'ask_for_password', ask)
-        patcher.start()
-        self.addCleanup(patcher.stop)
+        self.asked = refuse_passwords(self)
 
     def _thumbnail(self, name, size=128):
         return thumbnail_tools.Thumbnailer(

@@ -16,7 +16,7 @@ from sqlite3 import dbapi2
 
 import PIL.Image
 
-from . import get_testfile_path, posix_byte_names
+from . import get_testfile_path, posix_byte_names, refuse_passwords
 
 from mcomix import constants
 from mcomix import thumbnail_tools
@@ -26,7 +26,6 @@ from mcomix import last_read_page
 from mcomix.library import backend
 from mcomix.library import backend_types
 from mcomix.library import pixbuf_cache
-from mcomix.archive import password as archive_password
 
 
 #: The one book of the libraries the upgrade tests write, as add_book()
@@ -580,22 +579,13 @@ class UpgradeFromEveryVersionTest(LibraryDatabaseTest):
             self._done(library)
 
 
-class InterruptedUpgradeTest(LibraryDatabaseTest):
+class _InterruptedOpenTest(LibraryDatabaseTest):
 
-    """An upgrade that stops part way through a table rebuild.
-
-    Three of the nine steps rename a table aside, create the new one,
-    copy the rows across and drop the original.  The connection is opened
-    in auto-commit mode, so without a transaction the rename commits on
-    its own - and _library_version() reads a database with no book table
-    as one that is not there at all, answers -1, and has _create_tables()
-    write an empty schema over the top.  The library then opens with no
-    books in it and every one of them left in book_old, which nothing
-    will ever read again.
-    """
+    """Opening a library, made to stop part way as a process that dies
+    would, and what that leaves in the file."""
 
     class Interrupted(Exception):
-        """Stands in for the process dying mid-upgrade."""
+        """Stands in for the process dying part way."""
 
     def _interrupt(self, method):
         """Have <method> of the backend raise instead of running.
@@ -629,6 +619,21 @@ class InterruptedUpgradeTest(LibraryDatabaseTest):
     def _tables(self):
         return set(self._query(
             "select name from sqlite_master where type = 'table'"))
+
+
+class InterruptedUpgradeTest(_InterruptedOpenTest):
+
+    """An upgrade that stops part way through a table rebuild.
+
+    Three of the nine steps rename a table aside, create the new one,
+    copy the rows across and drop the original.  The connection is opened
+    in auto-commit mode, so without a transaction the rename commits on
+    its own - and _library_version() reads a database with no book table
+    as one that is not there at all, answers -1, and has _create_tables()
+    write an empty schema over the top.  The library then opens with no
+    books in it and every one of them left in book_old, which nothing
+    will ever read again.
+    """
 
     def _books(self):
         return self._query('select name from book')
@@ -729,7 +734,7 @@ class InterruptedUpgradeTest(LibraryDatabaseTest):
                          'the rollback left a transaction open')
 
 
-class InterruptedCreationTest(LibraryDatabaseTest):
+class InterruptedCreationTest(_InterruptedOpenTest):
 
     """A brand-new library whose creation stops part way through.
 
@@ -743,34 +748,8 @@ class InterruptedCreationTest(LibraryDatabaseTest):
     and no path back.
     """
 
-    class Interrupted(Exception):
-        """Stands in for the process dying mid-creation."""
-
-    def _interrupt(self, method):
-        """Have <method> of the backend raise instead of running, and
-        return the callable that puts it back."""
-        original = getattr(backend._LibraryBackend, method)
-
-        def raising(_self, *args, **kwargs):
-            raise self.Interrupted(method)
-
-        def restore():
-            setattr(backend._LibraryBackend, method, original)
-
-        setattr(backend._LibraryBackend, method, raising)
-        self.addCleanup(restore)
-        return restore
-
     #: Every table a finished library holds.
     TABLES = ('book', 'collection', 'contain', 'info', 'watchlist', 'recent')
-
-    def _tables(self):
-        connection = dbapi2.connect(self.db, isolation_level=None)
-        try:
-            return {row[0] for row in connection.execute(
-                "select name from sqlite_master where type = 'table'")}
-        finally:
-            connection.close()
 
     def test_a_creation_that_stops_after_the_info_table_leaves_nothing(self):
         """Nothing rather than a database that says it is finished: the
@@ -2599,16 +2578,7 @@ class EncryptedBookTest(LibraryDatabaseTest):
     def setUp(self):
         super().setUp()
         self.library = backend.LibraryBackend()
-        self.asked = []
-
-        def ask(archive, on_password):
-            self.asked.append(archive)
-            on_password(None)
-
-        patcher = unittest.mock.patch.object(
-            archive_password, 'ask_for_password', ask)
-        patcher.start()
-        self.addCleanup(patcher.stop)
+        self.asked = refuse_passwords(self)
 
     def tearDown(self):
         self.library.close()

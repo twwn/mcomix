@@ -14,11 +14,10 @@ import unittest.mock
 
 from gi.repository import GdkPixbuf, Gtk
 
-from . import MComixTest, descendants, get_testfile_path, pump
+from . import MainWindowOpenTest, descendants, get_testfile_path, pump
 
 from mcomix import constants
 from mcomix import i18n
-from mcomix import icons
 from mcomix import keybindings
 from mcomix import message_dialog
 from mcomix import preferences_dialog
@@ -28,19 +27,11 @@ from mcomix.dialog import Response
 from mcomix.preferences import prefs
 
 
-class PreferencesDialogTest(MComixTest):
-
-    def setUp(self):
-        super().setUp()
-        self.make_user_directories()
-        icons.load_icons()
-        self.open_main_window()
-        pump()
+class PreferencesDialogTest(MainWindowOpenTest):
 
     def tearDown(self):
         if self.dialog is not None:
             self.dialog.destroy()
-        self.close_main_window()
         super().tearDown()
 
     dialog = None
@@ -527,7 +518,7 @@ class PreferencesDialogTest(MComixTest):
         recent.remove_all.assert_not_called()
 
 
-class PreferenceCallbacksTest(MComixTest):
+class PreferenceCallbacksTest(MainWindowOpenTest):
 
     """What each control of the dialog stores, and what it has the
     window do beside storing it."""
@@ -548,16 +539,11 @@ class PreferenceCallbacksTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        self.make_user_directories()
-        icons.load_icons()
-        self.open_main_window()
-        pump()
         self.dialog = preferences_dialog._PreferencesDialog(self.window)
         pump()
 
     def tearDown(self):
         self.dialog.destroy()
-        self.close_main_window()
         super().tearDown()
 
     def _called(self, callback):

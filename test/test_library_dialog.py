@@ -865,6 +865,21 @@ class _OneBookTest(_LibraryWindowTest):
         lastread.set_enabled(True)
         lastread.set_page(self.path, page)
 
+    def _item(self):
+        """The book's cover, as the covers list holds it."""
+        return next(iter(self.dialog.book_area._covers.each_item()))
+
+    def _cover_made(self):
+        """Wait for the cover, and for its worker to have done with it: the
+        worker hands the cover over before it takes the order off its list,
+        and until then a new order for this book is dropped as a duplicate."""
+        covers = self.dialog.book_area._covers
+        self.assertTrue(wait_for(
+            lambda: (self._item().thumbnail is not None
+                     and not covers._thread._orders_set),
+            seconds=10))
+        pump()
+
 
 class SortKeysKeptTest(_OneBookTest):
 
@@ -923,17 +938,6 @@ class CoverAtTheNextStartTest(_OneBookTest):
             book.writestr('01.jpg', page.getvalue())
         return path
 
-    def _item(self):
-        return next(iter(self.dialog.book_area._covers.each_item()))
-
-    def _cover_made(self):
-        covers = self.dialog.book_area._covers
-        self.assertTrue(wait_for(
-            lambda: (self._item().thumbnail is not None
-                     and not covers._thread._orders_set),
-            seconds=10))
-        pump()
-
     def _shown_again(self):
         """Have the cover made again with nothing in memory, and answer
         how often the cover stored was read for it."""
@@ -962,20 +966,6 @@ class CoverAtTheNextStartTest(_OneBookTest):
 class CoverInFlightTest(_OneBookTest):
 
     """A cover a worker is making when what it should look like changes."""
-
-    def _item(self):
-        return next(iter(self.dialog.book_area._covers.each_item()))
-
-    def _cover_made(self):
-        """Wait for the cover, and for its worker to have done with it: the
-        worker hands the cover over before it takes the order off its list,
-        and until then a new order for this book is dropped as a duplicate."""
-        covers = self.dialog.book_area._covers
-        self.assertTrue(wait_for(
-            lambda: (self._item().thumbnail is not None
-                     and not covers._thread._orders_set),
-            seconds=10))
-        pump()
 
     def _nothing_kept_as_drawn(self):
         """While this holds, a cover is read from the one stored at its

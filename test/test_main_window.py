@@ -96,10 +96,7 @@ class MainWindowTest(MComixTest):
         # and a GTK4 toplevel that is never destroyed goes on taking part
         # in the display's layout - the next test's window came out with
         # nothing allocated to it.
-        self.window.terminate_program()
-        self.window.destroy()
-        main.set_main_window(None)
-        self._pump()
+        self.close_main_window(2000)
         super().tearDown()
 
     def _pump(self, rounds=2000):
@@ -6670,11 +6667,10 @@ class ResumeAtTheFileOfThePageTest(MComixTest):
         self.window = None
 
     def tearDown(self):
-        if self.window is not None:
-            self.window.terminate_program()
-            self.window.destroy()
-            main.set_main_window(None)
-        pump()
+        if self.window is None:
+            pump()
+        else:
+            self.close_main_window()
         super().tearDown()
 
     def test_the_file_of_the_page_decides_over_its_number(self):

@@ -252,7 +252,27 @@ class _KeepingBackend(_CoverBackend):
         self._covers().keep_sized(path, pixbuf, made_for, thumbnail)
 
 
-class KeptCoverTest(MComixTest):
+class _CoverAreaTest(MComixTest):
+
+    """A book area of its own over a library of one book, whose pages
+    are shown as they are read, closed after the test."""
+
+    def _open_area(self, backend):
+        """Build self.area over <backend>, with no cover in memory."""
+        self.library = _Library()
+        self.library.backend = backend
+        self.library.main_window = types.SimpleNamespace(
+            enhancer=types.SimpleNamespace(enhance=lambda pixbuf: pixbuf))
+        self.area = book_area._BookArea(self.library)
+        self.area._cache.invalidate_all()
+
+    def tearDown(self):
+        self.area.close()
+        self.area._cache.invalidate_all()
+        super().tearDown()
+
+
+class KeptCoverTest(_CoverAreaTest):
 
     """A cover is kept on disk as it was drawn, and read back as that.
 
@@ -275,22 +295,13 @@ class KeptCoverTest(MComixTest):
                 page, exif=picture.info['exif'])
         with zipfile.ZipFile(self.archive, 'w') as book:
             book.write(page, '01.jpg')
-        self.library = _Library()
-        self.backend = self.library.backend = _KeepingBackend(
+        self.backend = _KeepingBackend(
             self.archive, os.path.join(self.tmp_dir, 'covers'))
-        self.library.main_window = types.SimpleNamespace(
-            enhancer=types.SimpleNamespace(enhance=lambda pixbuf: pixbuf))
-        self.area = book_area._BookArea(self.library)
-        self.area._cache.invalidate_all()
+        self._open_area(self.backend)
         prefs['library cover size'] = constants.SIZE_NORMAL
         self.first = self.area._get_pixbuf(1)
         # As after a start of the program: nothing in memory.
         self.area._cache.invalidate_all()
-
-    def tearDown(self):
-        self.area.close()
-        self.area._cache.invalidate_all()
-        super().tearDown()
 
     def _again(self):
         """The cover asked for again, and whether the cover stored at
@@ -397,7 +408,7 @@ class KeptCoverTest(MComixTest):
         self.assertEqual([name], os.listdir(directory))
 
 
-class CoverAtHandTest(MComixTest):
+class CoverAtHandTest(_CoverAreaTest):
 
     """The cover a cell is bound to is handed over at once where the
     memory cache holds it, dressed as a worker dresses it, and only
@@ -411,20 +422,11 @@ class CoverAtHandTest(MComixTest):
         with zipfile.ZipFile(self.archive, 'w') as book:
             book.write(get_testfile_path('images', 'landscape-no-exif.jpg'),
                        '01.jpg')
-        self.library = _Library()
-        self.backend = self.library.backend = _KeepingBackend(
+        self.backend = _KeepingBackend(
             self.archive, os.path.join(self.tmp_dir, 'covers'))
-        self.library.main_window = types.SimpleNamespace(
-            enhancer=types.SimpleNamespace(enhance=lambda pixbuf: pixbuf))
         prefs['library cover size'] = constants.SIZE_NORMAL
-        self.area = book_area._BookArea(self.library)
-        self.area._cache.invalidate_all()
+        self._open_area(self.backend)
         self.item = book_area._BookItem(self.backend.get_book_by_id(1))
-
-    def tearDown(self):
-        self.area.close()
-        self.area._cache.invalidate_all()
-        super().tearDown()
 
     def test_it_is_what_the_view_asks_at_bind(self):
         self.assertEqual(self.area._cover_at_hand,
@@ -457,7 +459,7 @@ class CoverAtHandTest(MComixTest):
             self.assertIsNone(self.area._cover_at_hand(self.item))
 
 
-class TurnedCoverTest(MComixTest):
+class TurnedCoverTest(_CoverAreaTest):
 
     """A cover is drawn turned as the page it is shows when the book is
     read: its Exif orientation, where 'auto rotate from exif' says so."""
@@ -470,18 +472,8 @@ class TurnedCoverTest(MComixTest):
         with zipfile.ZipFile(archive, 'w') as book:
             book.write(get_testfile_path(
                 'images', 'landscape-exif-270-rotation.jpg'), '01.jpg')
-        self.library = _Library()
-        self.library.backend = _CoverBackend(
-            archive, os.path.join(self.tmp_dir, 'covers'))
-        self.library.main_window = types.SimpleNamespace(
-            enhancer=types.SimpleNamespace(enhance=lambda pixbuf: pixbuf))
-        self.area = book_area._BookArea(self.library)
-        self.area._cache.invalidate_all()
-
-    def tearDown(self):
-        self.area.close()
-        self.area._cache.invalidate_all()
-        super().tearDown()
+        self._open_area(_CoverBackend(
+            archive, os.path.join(self.tmp_dir, 'covers')))
 
     def test_the_cover_of_a_turned_page_is_turned(self):
         """The picture is 210 pixels wide and 297 high, and shown the
@@ -492,7 +484,7 @@ class TurnedCoverTest(MComixTest):
         self.assertGreater(pixbuf.get_width(), pixbuf.get_height())
 
 
-class UnreadableCoverTest(MComixTest):
+class UnreadableCoverTest(_CoverAreaTest):
 
     """A book with no page that will load is shown as the missing image.
     That was the theme's 24 pixel icon scaled up to the size of a
@@ -504,18 +496,8 @@ class UnreadableCoverTest(MComixTest):
         archive = os.path.join(self.tmp_dir, 'unreadable.cbz')
         with zipfile.ZipFile(archive, 'w') as book:
             book.writestr('01.jpg', b'not an image')
-        self.library = _Library()
-        self.library.backend = _CoverBackend(
-            archive, os.path.join(self.tmp_dir, 'covers'))
-        self.library.main_window = types.SimpleNamespace(
-            enhancer=types.SimpleNamespace(enhance=lambda pixbuf: pixbuf))
-        self.area = book_area._BookArea(self.library)
-        self.area._cache.invalidate_all()
-
-    def tearDown(self):
-        self.area.close()
-        self.area._cache.invalidate_all()
-        super().tearDown()
+        self._open_area(_CoverBackend(
+            archive, os.path.join(self.tmp_dir, 'covers')))
 
     def test_the_missing_image_is_drawn_at_the_size_of_a_cover(self):
         from mcomix import image_tools

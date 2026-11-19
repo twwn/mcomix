@@ -10,26 +10,15 @@ import os
 
 from PIL import Image, ImageDraw
 
-from . import MComixTest, get_testfile_path, pump, wait_for
+from . import MainWindowOpenTest, get_testfile_path, pump, wait_for
 
 from mcomix import constants
-from mcomix import icons
 from mcomix import image_tools
 from mcomix.preferences import prefs
 from mcomix.transform import Transform
 
 
-class ViewActionsTest(MComixTest):
-
-    def setUp(self):
-        super().setUp()
-        self.make_user_directories()
-        icons.load_icons()
-        self.open_main_window()
-
-    def tearDown(self):
-        self.close_main_window()
-        super().tearDown()
+class ViewActionsTest(MainWindowOpenTest):
 
     def _open(self, name):
         """Open the picture <name> from the test images, on its own page."""

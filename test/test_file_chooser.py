@@ -10,8 +10,8 @@ import unittest.mock
 
 from gi.repository import Gdk, Gio, GLib, Graphene, Gtk
 
-from . import (MComixTest, descendants, get_testfile_path, pump, wait_for,
-               wait_for_deletions)
+from . import (MComixTest, MainWindowOpenTest, descendants, get_testfile_path,
+               pump, refuse_passwords, wait_for, wait_for_deletions)
 
 from mcomix import archive_tools
 from mcomix import constants
@@ -19,19 +19,14 @@ from mcomix import icons
 from mcomix import image_tools
 from mcomix import file_chooser_base_dialog
 from mcomix import widgets
-from mcomix.archive import password as archive_password
 from mcomix.dialog import Response
 from mcomix.preferences import prefs
 
 
-class FileChooserTest(MComixTest):
+class FileChooserTest(MainWindowOpenTest):
 
     def setUp(self):
         super().setUp()
-        self.make_user_directories()
-        icons.load_icons()
-        self.open_main_window()
-        pump()
         from mcomix import file_chooser_main_dialog
         self._module = file_chooser_main_dialog
         file_chooser_main_dialog.open_main_filechooser_dialog(None, self.window)
@@ -40,7 +35,6 @@ class FileChooserTest(MComixTest):
 
     def tearDown(self):
         self._module._close_main_filechooser_dialog()
-        self.close_main_window()
         super().tearDown()
 
     # -- Walking from the search box into what it found -------------------
@@ -913,16 +907,7 @@ class FileDetailsTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        self.asked = []
-
-        def ask(archive, on_password):
-            self.asked.append(archive)
-            on_password(None)
-
-        patcher = unittest.mock.patch.object(
-            archive_password, 'ask_for_password', ask)
-        patcher.start()
-        self.addCleanup(patcher.stop)
+        self.asked = refuse_passwords(self)
 
     def test_a_picture_gives_its_size_in_pixels(self):
         self.assertEqual('100x100 px', file_chooser_base_dialog.file_details(

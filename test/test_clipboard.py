@@ -10,7 +10,7 @@ from types import SimpleNamespace
 
 from gi.repository import GdkPixbuf
 
-from . import MComixTest
+from . import MComixTest, pixel
 
 from mcomix import box
 from mcomix import constants
@@ -39,12 +39,6 @@ def _corners(width, height):
         quadrant = _solid(width // 2, height // 2, colour)
         quadrant.copy_area(0, 0, width // 2, height // 2, pixbuf, x, y)
     return pixbuf
-
-
-def _pixel(pixbuf, x, y):
-    channels = pixbuf.get_n_channels()
-    offset = y * pixbuf.get_rowstride() + x * channels
-    return tuple(pixbuf.get_pixels()[offset:offset + channels])
 
 
 class ClipboardTest(MComixTest):
@@ -103,7 +97,7 @@ class ClipboardTest(MComixTest):
         text, pixbuf = self._copied([page], [Transform.ID])
         self.assertEqual('/books/page.png', text)
         self.assertEqual((8, 6), (pixbuf.get_width(), pixbuf.get_height()))
-        self.assertEqual((255, 0, 0), _pixel(pixbuf, 1, 1))
+        self.assertEqual((255, 0, 0), pixel(pixbuf, 1, 1))
 
     def test_a_turned_page_is_copied_turned(self):
         """The view turns a page for the Exif orientation, for the page's
@@ -115,7 +109,7 @@ class ClipboardTest(MComixTest):
         self.assertEqual((6, 8), (pixbuf.get_width(), pixbuf.get_height()),
                          'a quarter turn did not swap the axes')
         # The top left quadrant is red before the turn and blue after it.
-        self.assertEqual((0, 0, 255), _pixel(pixbuf, 1, 1))
+        self.assertEqual((0, 0, 255), pixel(pixbuf, 1, 1))
 
     def test_a_flipped_page_is_copied_flipped(self):
         page = _corners(8, 6)
@@ -126,7 +120,7 @@ class ClipboardTest(MComixTest):
                     [page], [Transform.from_flips(*flips)])
                 self.assertEqual((8, 6),
                                  (pixbuf.get_width(), pixbuf.get_height()))
-                self.assertEqual(expected, _pixel(pixbuf, 1, 1))
+                self.assertEqual(expected, pixel(pixbuf, 1, 1))
 
     def test_a_page_the_view_has_not_drawn_yet_is_copied_untouched(self):
         """Nothing has been drawn before the first draw, so the window
@@ -134,14 +128,14 @@ class ClipboardTest(MComixTest):
         page = _corners(8, 6)
         _text, pixbuf = self._copied([page])
         self.assertEqual((8, 6), (pixbuf.get_width(), pixbuf.get_height()))
-        self.assertEqual((255, 0, 0), _pixel(pixbuf, 1, 1))
+        self.assertEqual((255, 0, 0), pixel(pixbuf, 1, 1))
 
     def test_a_spread_is_copied_in_the_order_it_is_laid_out(self):
         pages = [_solid(4, 6, self.RED), _solid(4, 6, self.GREEN)]
         _text, pixbuf = self._copied(pages, [Transform.ID] * 2)
         self.assertEqual((8, 6), (pixbuf.get_width(), pixbuf.get_height()))
-        self.assertEqual((255, 0, 0), _pixel(pixbuf, 1, 1))
-        self.assertEqual((0, 255, 0), _pixel(pixbuf, 5, 1))
+        self.assertEqual((255, 0, 0), pixel(pixbuf, 1, 1))
+        self.assertEqual((0, 255, 0), pixel(pixbuf, 5, 1))
 
     def test_a_manga_spread_puts_the_first_page_on_the_right(self):
         """The layout says so: it has already put the second page at the
@@ -151,8 +145,8 @@ class ClipboardTest(MComixTest):
             pages, [Transform.ID] * 2,
             boxes=[box.Box((4, 6), (4, 0)), box.Box((4, 6), (0, 0))],
             is_manga_mode=True)
-        self.assertEqual((0, 255, 0), _pixel(pixbuf, 1, 1))
-        self.assertEqual((255, 0, 0), _pixel(pixbuf, 5, 1))
+        self.assertEqual((0, 255, 0), pixel(pixbuf, 1, 1))
+        self.assertEqual((255, 0, 0), pixel(pixbuf, 5, 1))
 
     def test_a_turned_spread_is_copied_stacked(self):
         """A quarter turn distributes the pages on the height instead, so
@@ -162,8 +156,8 @@ class ClipboardTest(MComixTest):
             pages, [Transform.from_rotation(90)] * 2,
             boxes=[box.Box((6, 8), (0, 0)), box.Box((6, 8), (0, 8))])
         self.assertEqual((6, 16), (pixbuf.get_width(), pixbuf.get_height()))
-        self.assertEqual((0, 0, 255), _pixel(pixbuf, 1, 1))
-        self.assertEqual((0, 0, 255), _pixel(pixbuf, 1, 9))
+        self.assertEqual((0, 0, 255), pixel(pixbuf, 1, 1))
+        self.assertEqual((0, 0, 255), pixel(pixbuf, 1, 9))
 
     def test_a_spread_with_no_layout_yet_falls_back_on_reading_order(self):
         """The window starts on a one-page dummy layout, which says
@@ -174,7 +168,7 @@ class ClipboardTest(MComixTest):
             with self.subTest(is_manga_mode=manga):
                 _text, pixbuf = self._copied(pages, boxes=dummy,
                                              is_manga_mode=manga)
-                self.assertEqual(left, _pixel(pixbuf, 1, 1))
+                self.assertEqual(left, pixel(pixbuf, 1, 1))
 
     def test_two_pages_drawn_at_the_same_place_go_side_by_side(self):
         """A window with no size in it lays both boxes out at the origin,

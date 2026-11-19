@@ -16,7 +16,7 @@ from unittest import mock
 from gi.repository import Gtk
 from PIL import Image
 
-from . import MComixTest, get_testfile_path, pump, wait_for
+from . import MComixTest, MainWindowOpenTest, get_testfile_path, pump, wait_for
 
 from mcomix import archive_extractor
 from mcomix import constants
@@ -481,21 +481,13 @@ class DirectoryWalkTest(MComixTest):
         self.assertFalse(self.handler.file_is_available(image))
 
 
-class _WindowTest(MComixTest):
+class _WindowTest(MainWindowOpenTest):
 
     """A main window with nothing open, and its file handler."""
 
     def setUp(self):
         super().setUp()
-        self.make_user_directories()
-        icons.load_icons()
-        self.open_main_window()
         self.handler = self.window.filehandler
-        pump()
-
-    def tearDown(self):
-        self.close_main_window()
-        super().tearDown()
 
 
 class ResumedLibraryListTest(_WindowTest):
@@ -1630,7 +1622,7 @@ class ABookWithNoPagesTest(MComixTest):
             'a book no page of which was shown went into the library')
 
 
-class BeforeAPageIsChosenTest(MComixTest):
+class BeforeAPageIsChosenTest(MainWindowOpenTest):
 
     """What the handler answers between being given a book and being told
     which page of it is showing.
@@ -1638,17 +1630,6 @@ class BeforeAPageIsChosenTest(MComixTest):
     set_image_files() and set_page() are two separate calls, so there is a
     moment where the image handler knows the files but not the page.
     """
-
-    def setUp(self):
-        super().setUp()
-        self.make_user_directories()
-        icons.load_icons()
-        self.open_main_window()
-        pump()
-
-    def tearDown(self):
-        self.close_main_window()
-        super().tearDown()
 
     def test_there_is_no_base_path_before_a_page_is_chosen(self):
         """Outside an archive the base is the directory the current image
@@ -2013,7 +1994,7 @@ class FileInfoTest(MComixTest):
         self.assertNotIn('preferences', messages[0])
 
 
-class CommentExtensionsTest(MComixTest):
+class CommentExtensionsTest(MainWindowOpenTest):
 
     """The extensions that say which files in an archive are comments.
 
@@ -2022,17 +2003,6 @@ class CommentExtensionsTest(MComixTest):
     re.error inside the file handler's constructor, so MComix would not
     start until the preferences file was edited by hand.
     """
-
-    def setUp(self):
-        super().setUp()
-        self.make_user_directories()
-        icons.load_icons()
-        self.open_main_window()
-        pump()
-
-    def tearDown(self):
-        self.close_main_window()
-        super().tearDown()
 
     def _pattern_for(self, *extensions):
         prefs['comment extensions'] = list(extensions)

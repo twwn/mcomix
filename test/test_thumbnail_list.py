@@ -30,24 +30,21 @@ def _cover():
     return pixbuf
 
 
-class ThumbnailListViewTest(MComixTest):
+class _ViewTest(MComixTest):
 
-    #: More rows than any window in a test can show at once.
-    ROWS = 200
+    """A thumbnail view in a scrolled window of its own, which the test
+    presents when it is ready; stopped and closed after the test."""
 
-    def setUp(self):
-        super().setUp()
-        self.asked = []
-        self.view = thumbnail_list.ThumbnailListView()
-        self.view.generate_thumbnail = self._generate
+    def _build(self, view, width):
+        """Make <view> self.view, at thumbnails of 64 pixels, in a window
+        <width> wide and 400 high."""
+        self.view = view
         self.view.set_thumbnail_size(64)
         self.scroller = Gtk.ScrolledWindow()
         self.scroller.set_child(self.view)
         self.window = Gtk.Window()
-        self.window.set_default_size(300, 400)
+        self.window.set_default_size(width, 400)
         self.window.set_child(self.scroller)
-        self.window.present()
-        pump()
 
     def tearDown(self):
         self.view.stop_update()
@@ -56,6 +53,21 @@ class ThumbnailListViewTest(MComixTest):
         self.window.destroy()
         pump()
         super().tearDown()
+
+
+class ThumbnailListViewTest(_ViewTest):
+
+    #: More rows than any window in a test can show at once.
+    ROWS = 200
+
+    def setUp(self):
+        super().setUp()
+        self.asked = []
+        view = thumbnail_list.ThumbnailListView()
+        view.generate_thumbnail = self._generate
+        self._build(view, 300)
+        self.window.present()
+        pump()
 
     def _generate(self, uid):
         self.asked.append(uid)
@@ -264,7 +276,7 @@ class ThumbnailListViewTest(MComixTest):
         self.assertEqual(self.view.store.get_n_items(), 0)
 
 
-class ThumbnailsOnScreenFirstTest(MComixTest):
+class ThumbnailsOnScreenFirstTest(_ViewTest):
 
     """A grid binds some thirty rows for the few it shows, and after a
     jump it binds the ones it shows last."""
@@ -275,16 +287,11 @@ class ThumbnailsOnScreenFirstTest(MComixTest):
     def setUp(self):
         super().setUp()
         self.asked = []
-        self.view = thumbnail_list.ThumbnailGridView()
-        self.view.generate_thumbnail = self._generate
+        view = thumbnail_list.ThumbnailGridView()
+        view.generate_thumbnail = self._generate
         # One worker makes the thumbnails in the order they wait in.
-        self.view._thread._max_threads = 1
-        self.view.set_thumbnail_size(64)
-        self.scroller = Gtk.ScrolledWindow()
-        self.scroller.set_child(self.view)
-        self.window = Gtk.Window()
-        self.window.set_default_size(600, 400)
-        self.window.set_child(self.scroller)
+        view._thread._max_threads = 1
+        self._build(view, 600)
         self.window.present()
         #: Set, a thumbnail being made waits for go_on.
         self.parking = False
@@ -297,10 +304,8 @@ class ThumbnailsOnScreenFirstTest(MComixTest):
         self.assertTrue(self._drawn())
 
     def tearDown(self):
+        # Before the view's workers are stopped, which waits for them.
         self.go_on.set()
-        self.view.stop_update()
-        self.window.destroy()
-        pump()
         super().tearDown()
 
     def _generate(self, uid):
@@ -442,7 +447,7 @@ class ThumbnailsOnScreenFirstTest(MComixTest):
                                  seconds=10))
 
 
-class ThumbnailsAtHandTest(MComixTest):
+class ThumbnailsAtHandTest(_ViewTest):
 
     """An owner that holds some thumbnails already hands them over as
     their cells are bound, rather than through a worker.
@@ -458,25 +463,14 @@ class ThumbnailsAtHandTest(MComixTest):
         self.asked = []
         #: The uids thumbnail_at_hand() was asked about.
         self.looked_up = []
-        self.view = thumbnail_list.ThumbnailGridView()
-        self.view.generate_thumbnail = self._generate
-        self.view.thumbnail_at_hand = self._at_hand
-        self.view.set_thumbnail_size(64)
-        self.scroller = Gtk.ScrolledWindow()
-        self.scroller.set_child(self.view)
-        self.window = Gtk.Window()
-        self.window.set_default_size(600, 400)
-        self.window.set_child(self.scroller)
+        view = thumbnail_list.ThumbnailGridView()
+        view.generate_thumbnail = self._generate
+        view.thumbnail_at_hand = self._at_hand
+        self._build(view, 600)
         self.window.present()
         self._settle()
         self.items = [thumbnail_list.ThumbnailItem(uid)
                       for uid in range(self.ITEMS)]
-
-    def tearDown(self):
-        self.view.stop_update()
-        self.window.destroy()
-        pump()
-        super().tearDown()
 
     def _generate(self, uid):
         self.asked.append(uid)
@@ -546,7 +540,7 @@ class ThumbnailsAtHandTest(MComixTest):
         self.assertEqual([], self.looked_up)
 
 
-class ThumbnailGridViewTest(MComixTest):
+class ThumbnailGridViewTest(_ViewTest):
 
     #: More entries than any window in a test can show at once, and
     #: more than GTK's thirty rows of the most columns a grid allows.
@@ -554,20 +548,9 @@ class ThumbnailGridViewTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        self.view = thumbnail_list.ThumbnailGridView()
-        self.view.generate_thumbnail = lambda uid: None
-        self.view.set_thumbnail_size(64)
-        self.scroller = Gtk.ScrolledWindow()
-        self.scroller.set_child(self.view)
-        self.window = Gtk.Window()
-        self.window.set_default_size(600, 400)
-        self.window.set_child(self.scroller)
-
-    def tearDown(self):
-        self.view.stop_update()
-        self.window.destroy()
-        pump()
-        super().tearDown()
+        view = thumbnail_list.ThumbnailGridView()
+        view.generate_thumbnail = lambda uid: None
+        self._build(view, 600)
 
     def _settle(self, width=600):
         """Lay the grid out <width> wide until what it lays out holds

@@ -58,7 +58,10 @@ class _KeyPressWindowTest(MComixTest):
             _Controller(), typed, key.keycode, state)
 
 
-class KeyPressTest(_KeyPressWindowTest):
+class _BindingsRecordedTest(_KeyPressWindowTest):
+
+    """A main window whose key bindings are not carried out but listed,
+    in self.executed, as the key and modifiers they were looked up by."""
 
     def setUp(self):
         super().setUp()
@@ -68,6 +71,9 @@ class KeyPressTest(_KeyPressWindowTest):
             manager, 'execute', side_effect=self.executed.append)
         patcher.start()
         self.addCleanup(patcher.stop)
+
+
+class KeyPressTest(_BindingsRecordedTest):
 
     def test_a_plain_letter(self):
         self._press(Gdk.KEY_n)
@@ -174,21 +180,12 @@ class KeyPressTest(_KeyPressWindowTest):
         self.assertEqual(Gdk.EVENT_PROPAGATE, self._press(Gdk.KEY_n))
 
 
-class EscapeTest(_KeyPressWindowTest):
+class EscapeTest(_BindingsRecordedTest):
 
     """Escape puts the pages picked out back before it does what it is
     bound to; "Escape key closes program" made that true of quitting
     too, and now that quitting is a binding of Escape like any other,
     it is true whatever the key is bound to."""
-
-    def setUp(self):
-        super().setUp()
-        self.executed = []
-        manager = keybindings.keybinding_manager(self.window)
-        patcher = unittest.mock.patch.object(
-            manager, 'execute', side_effect=self.executed.append)
-        patcher.start()
-        self.addCleanup(patcher.stop)
 
     def test_pages_picked_out_are_put_back_first(self):
         self.window.selected_pages = {1, 3}

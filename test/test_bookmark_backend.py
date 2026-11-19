@@ -17,15 +17,19 @@ from mcomix import bookmark_menu_item
 from mcomix import constants
 
 
-class MergeTest(MComixTest):
+class _StoreTest(MComixTest):
+
+    """A test of the bookmarks store, which MComixTest.setUp() has
+    already read afresh from a directory of the test's own; that
+    directory is made here, for the store to write its file in."""
 
     def setUp(self):
         super().setUp()
         os.makedirs(constants.DATA_DIR, exist_ok=True)
         self.store = bookmark_backend.BookmarksStore
-        self.store._initialized = False
-        self.store._bookmarks = []
-        self.store._bookmarks_mtime = 0
+
+
+class MergeTest(_StoreTest):
 
     def _bookmark(self, page):
         """A bookmark on <page> of a book of its own."""
@@ -241,19 +245,11 @@ class MergeTest(MComixTest):
                          [1, 2, 3, 4, 5, 6, 7])
 
 
-class MemberRecordTest(MComixTest):
+class MemberRecordTest(_StoreTest):
 
     """The name within its archive of each bookmark's page is stored in
     a record after the bookmarks, which an older MComix reading the file
     stops short of."""
-
-    def setUp(self):
-        super().setUp()
-        os.makedirs(constants.DATA_DIR, exist_ok=True)
-        self.store = bookmark_backend.BookmarksStore
-        self.store._initialized = False
-        self.store._bookmarks = []
-        self.store._bookmarks_mtime = 0
 
     _bookmark = MergeTest._bookmark
     _write_pickle = MergeTest._write_pickle
@@ -289,19 +285,11 @@ class MemberRecordTest(MComixTest):
         bookmark_menu_item._Bookmark(None, None, *packs[0])
 
 
-class NoteRecordTest(MComixTest):
+class NoteRecordTest(_StoreTest):
 
     """The reader's note on each bookmark is stored in a record after
     the names, which an older MComix reading the file stops short of
     (upstream feature request 138)."""
-
-    def setUp(self):
-        super().setUp()
-        os.makedirs(constants.DATA_DIR, exist_ok=True)
-        self.store = bookmark_backend.BookmarksStore
-        self.store._initialized = False
-        self.store._bookmarks = []
-        self.store._bookmarks_mtime = 0
 
     _bookmark = MergeTest._bookmark
     _write_pickle = MergeTest._write_pickle
@@ -400,18 +388,10 @@ class NoteRecordTest(MComixTest):
         self.assertEqual('book, (2 / 20)', self._noted(2, '').get_label())
 
 
-class MovedBookTest(MComixTest):
+class MovedBookTest(_StoreTest):
 
     """A bookmark holds the path of the file it marks, so a book moved
     out from under it was bookmarked where it no longer is."""
-
-    def setUp(self):
-        super().setUp()
-        os.makedirs(constants.DATA_DIR, exist_ok=True)
-        self.store = bookmark_backend.BookmarksStore
-        self.store._initialized = False
-        self.store._bookmarks = []
-        self.store._bookmarks_mtime = 0
 
     def _bookmark(self, path, page=3):
         return bookmark_menu_item._Bookmark(

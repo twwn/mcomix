@@ -9,7 +9,7 @@ import unittest.mock
 
 from gi.repository import GLib, Gtk
 
-from . import MComixTest, pump
+from . import MComixTest, MainWindowOpenTest, pump
 
 from mcomix import constants
 from mcomix import keybindings
@@ -148,18 +148,10 @@ class MenusBuiltOnceTest(MComixTest):
                           'right-click menu'], self.built)
 
 
-class HelpMenuTest(MComixTest):
-
-    def setUp(self):
-        super().setUp()
-        self.make_user_directories()
-        icons.load_icons()
-        self.open_main_window()
-        pump()
+class HelpMenuTest(MainWindowOpenTest):
 
     def tearDown(self):
         preferences_dialog._close_dialog()
-        self.close_main_window()
         super().tearDown()
 
     def test_the_manual_is_handed_to_the_desktop_s_browser(self):

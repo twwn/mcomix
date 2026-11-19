@@ -18,7 +18,6 @@ from . import MComixTest, get_testfile_path, pump, wait_for
 
 from mcomix import constants
 from mcomix import icons
-from mcomix import main
 from mcomix import thumbbar
 from mcomix.preferences import prefs
 
@@ -45,10 +44,7 @@ class ThumbnailSidebarTest(MComixTest):
         # Only terminate_program() stops the worker threads, and a GTK4
         # toplevel that is never destroyed goes on taking part in the
         # display's layout.
-        self.window.terminate_program()
-        self.window.destroy()
-        main.set_main_window(None)
-        pump(2000)
+        self.close_main_window(2000)
         super().tearDown()
 
     def _pages(self):

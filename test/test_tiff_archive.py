@@ -10,11 +10,10 @@ from mcomix import (
     constants,
     file_chooser_base_dialog,
     file_provider,
-    icons,
 )
 from mcomix.archive import tiff
 
-from . import MComixTest, pump, wait_for
+from . import MComixTest, MainWindowOpenTest, wait_for
 
 
 def _pages():
@@ -249,19 +248,11 @@ class HandlerTest(MComixTest):
         os.remove(path)
 
 
-class WindowTest(MComixTest):
+class WindowTest(MainWindowOpenTest):
 
     def setUp(self):
         super().setUp()
-        self.make_user_directories()
-        icons.load_icons()
-        self.open_main_window()
         self.handler = self.window.filehandler
-        pump()
-
-    def tearDown(self):
-        self.close_main_window()
-        super().tearDown()
 
     def _open(self, path):
         self.handler.open_file(path)

@@ -15,7 +15,6 @@ from mcomix import constants
 from mcomix import bookmark_dialog
 from mcomix import bookmark_menu
 from mcomix import icons
-from mcomix import main
 from mcomix import message_dialog
 from mcomix import process
 from mcomix import widgets
@@ -467,11 +466,10 @@ class BookmarkInTheOpenBookTest(MComixTest):
         self.window = None
 
     def tearDown(self):
-        if self.window is not None:
-            self.window.terminate_program()
-            self.window.destroy()
-            main.set_main_window(None)
-        pump()
+        if self.window is None:
+            pump()
+        else:
+            self.close_main_window()
         super().tearDown()
 
     def _open(self, path, pages):

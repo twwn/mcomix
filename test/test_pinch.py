@@ -9,25 +9,13 @@ import unittest.mock
 
 from gi.repository import Gtk
 
-from . import MComixTest, pump
+from . import MainWindowOpenTest
 
-from mcomix import icons
 from mcomix import zoom
 from mcomix.preferences import prefs
 
 
-class PinchTest(MComixTest):
-
-    def setUp(self):
-        super().setUp()
-        self.make_user_directories()
-        icons.load_icons()
-        self.open_main_window()
-        pump()
-
-    def tearDown(self):
-        self.close_main_window()
-        super().tearDown()
+class PinchTest(MainWindowOpenTest):
 
     def _pinch(self, *scales):
         self.window.pinch_started()

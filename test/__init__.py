@@ -465,6 +465,25 @@ def wait_for_deletions():
             thread.join(10)
 
 
+def refuse_passwords(test):
+    """Answer every password MComix asks for, for the rest of <test>, as
+    Cancel does, and return the list the archives asked about are added
+    to, in order.  No dialog is shown."""
+    from unittest import mock
+    from mcomix.archive import password as archive_password
+    asked = []
+
+    def ask(archive, on_password):
+        asked.append(archive)
+        on_password(None)
+
+    patcher = mock.patch.object(
+        archive_password, 'ask_for_password', ask)
+    patcher.start()
+    test.addCleanup(patcher.stop)
+    return asked
+
+
 def children(widget):
     """Every direct child of <widget>, in order: GTK 4 has no
     Gtk.Container to list them, and each widget walks its own."""
@@ -480,6 +499,13 @@ def descendants(widget):
     for child in children(widget):
         yield child
         yield from descendants(child)
+
+
+def pixel(pixbuf, x, y):
+    """The pixel at <x>, <y> of <pixbuf>, one value per channel."""
+    channels = pixbuf.get_n_channels()
+    offset = y * pixbuf.get_rowstride() + x * channels
+    return tuple(pixbuf.get_pixels()[offset:offset + channels])
 
 
 def fresh_bookmarks_store():
@@ -674,9 +700,10 @@ class MComixTest(unittest.TestCase):
         main.set_main_window(self.window)
         return self.window
 
-    def close_main_window(self):
+    def close_main_window(self, rounds=4000):
         """Close self.window, the main window the test built, as MComix
-        does when it quits, and let what that queued run.
+        does when it quits, and let what that queued run, for up to
+        <rounds> rounds of the main loop.
 
         terminate_program() comes before destroy(): it stops the worker
         threads, which are not daemons, and which destroying the window
@@ -686,7 +713,7 @@ class MComixTest(unittest.TestCase):
         self.window.terminate_program()
         self.window.destroy()
         main.set_main_window(None)
-        pump()
+        pump(rounds)
 
     def _no_window_left_on_screen(self):
         """Fail the test that leaves a window up, rather than a later one.
@@ -779,6 +806,25 @@ class MComixTest(unittest.TestCase):
         problems = list(getattr(result, 'failures', ())) + \
             list(getattr(result, 'errors', ()))
         return any(test.id() == self.id() for test, _traceback in problems)
+
+
+class MainWindowOpenTest(MComixTest):
+
+    """A test with the main window open, over the user's directories
+    made and the icons loaded, as it is when MComix has started with no
+    book; closed after the test."""
+
+    def setUp(self):
+        super().setUp()
+        from mcomix import icons
+        self.make_user_directories()
+        icons.load_icons()
+        self.open_main_window()
+        pump()
+
+    def tearDown(self):
+        self.close_main_window()
+        super().tearDown()
 
 
 def session_tmp_dir():

@@ -20,7 +20,22 @@ from mcomix.dialog import Response
 from mcomix.preferences import prefs
 
 
-class PageselectTest(MComixTest):
+class _WindowTest(MComixTest):
+
+    """Closes what a test left open, the main window last."""
+
+    def tearDown(self):
+        # Not the main window, which is stopped before it is destroyed:
+        # destroyed first, its menus let go of their actions, and closing
+        # the book then reached for them ("There is no action named").
+        for window in Gtk.Window.list_toplevels():
+            if window.get_visible() and window is not self.window:
+                window.destroy()
+        self.close_main_window()
+        super().tearDown()
+
+
+class PageselectTest(_WindowTest):
 
     def setUp(self):
         super().setUp()
@@ -36,13 +51,6 @@ class PageselectTest(MComixTest):
 
     def tearDown(self):
         self.dialog._stop_thumbnailing()
-        # Not the main window, which is stopped before it is destroyed:
-        # destroyed first, its menus let go of their actions, and closing
-        # the book then reached for them ("There is no action named").
-        for window in Gtk.Window.list_toplevels():
-            if window.get_visible() and window is not self.window:
-                window.destroy()
-        self.close_main_window()
         super().tearDown()
 
     def test_the_selector_covers_every_page(self):
@@ -179,7 +187,7 @@ class PageselectTest(MComixTest):
 # vim: expandtab:sw=4:ts=4
 
 
-class ChapterTest(MComixTest):
+class ChapterTest(_WindowTest):
 
     """A book whose ComicInfo.xml names chapters is gone through by them
     in Go to page."""
@@ -215,10 +223,6 @@ class ChapterTest(MComixTest):
 
     def tearDown(self):
         self.dialog._stop_thumbnailing()
-        for window in Gtk.Window.list_toplevels():
-            if window.get_visible() and window is not self.window:
-                window.destroy()
-        self.close_main_window()
         super().tearDown()
 
     def _titles(self):
@@ -284,7 +288,7 @@ class ChapterTest(MComixTest):
         self.assertTrue(self.dialog._chapter_selector.get_visible())
 
 
-class NoBookTest(MComixTest):
+class NoBookTest(_WindowTest):
 
     """The menu entry and the tool bar button are greyed with no book
     open; the key is bound to the method itself."""
@@ -295,13 +299,6 @@ class NoBookTest(MComixTest):
         icons.load_icons()
         self.open_main_window()
         pump()
-
-    def tearDown(self):
-        for window in Gtk.Window.list_toplevels():
-            if window.get_visible() and window is not self.window:
-                window.destroy()
-        self.close_main_window()
-        super().tearDown()
 
     def test_nothing_opens_without_a_book(self):
         self.window.page_select()

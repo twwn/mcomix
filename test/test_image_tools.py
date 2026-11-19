@@ -14,7 +14,7 @@ from PIL import Image, ImageChops, ImageDraw
 from io import BytesIO
 from difflib import unified_diff
 
-from . import MComixTest, get_testfile_path
+from . import MComixTest, get_testfile_path, pixel
 
 from mcomix import constants
 from mcomix import image_tools
@@ -1500,11 +1500,6 @@ class CombinePixbufsTest(MComixTest):
         pixbuf.fill(colour)
         return pixbuf
 
-    def _pixel(self, pixbuf, x, y):
-        channels = pixbuf.get_n_channels()
-        offset = y * pixbuf.get_rowstride() + x * channels
-        return tuple(pixbuf.get_pixels()[offset:offset + channels])
-
     #: Opaque red and opaque green, as Pixbuf.fill() takes them.
     RED = 0xFF0000FF
     GREEN = 0x00FF00FF
@@ -1514,8 +1509,8 @@ class CombinePixbufsTest(MComixTest):
             self._solid(4, 6, self.RED), self._solid(4, 6, self.GREEN))
         self.assertEqual((8, 6),
                          (combined.get_width(), combined.get_height()))
-        self.assertEqual((255, 0, 0), self._pixel(combined, 1, 1))
-        self.assertEqual((0, 255, 0), self._pixel(combined, 5, 1))
+        self.assertEqual((255, 0, 0), pixel(combined, 1, 1))
+        self.assertEqual((0, 255, 0), pixel(combined, 5, 1))
 
     def test_the_first_page_goes_on_top_along_the_height(self):
         """A view turned by a quarter turn stacks the two pages, and asks
@@ -1525,8 +1520,8 @@ class CombinePixbufsTest(MComixTest):
             constants.PageAxis.HEIGHT)
         self.assertEqual((6, 8),
                          (combined.get_width(), combined.get_height()))
-        self.assertEqual((255, 0, 0), self._pixel(combined, 1, 1))
-        self.assertEqual((0, 255, 0), self._pixel(combined, 1, 5))
+        self.assertEqual((255, 0, 0), pixel(combined, 1, 1))
+        self.assertEqual((0, 255, 0), pixel(combined, 1, 5))
 
     def test_what_neither_page_covers_is_filled(self):
         """The result is as tall as the taller page, so the shorter one's
@@ -1538,9 +1533,9 @@ class CombinePixbufsTest(MComixTest):
             self._solid(4, 3, self.RED), self._solid(4, 6, self.GREEN))
         self.assertEqual((8, 6),
                          (combined.get_width(), combined.get_height()))
-        self.assertEqual((255, 0, 0), self._pixel(combined, 1, 1),
+        self.assertEqual((255, 0, 0), pixel(combined, 1, 1),
                          'the short page is not where it should be')
-        self.assertEqual((255, 255, 255), self._pixel(combined, 1, 5),
+        self.assertEqual((255, 255, 255), pixel(combined, 1, 5),
                          'the gap below the short page was left undefined')
 
     def test_what_neither_page_covers_is_filled_when_stacked(self):
@@ -1550,9 +1545,9 @@ class CombinePixbufsTest(MComixTest):
             constants.PageAxis.HEIGHT)
         self.assertEqual((6, 8),
                          (combined.get_width(), combined.get_height()))
-        self.assertEqual((255, 0, 0), self._pixel(combined, 1, 1),
+        self.assertEqual((255, 0, 0), pixel(combined, 1, 1),
                          'the narrow page is not where it should be')
-        self.assertEqual((255, 255, 255), self._pixel(combined, 5, 1),
+        self.assertEqual((255, 255, 255), pixel(combined, 5, 1),
                          'the gap beside the narrow page was left undefined')
 
     def test_the_gap_is_transparent_where_there_is_an_alpha_channel(self):
@@ -1563,7 +1558,7 @@ class CombinePixbufsTest(MComixTest):
             self._solid(4, 3, self.RED, has_alpha=True),
             self._solid(4, 6, self.GREEN, has_alpha=True))
         self.assertTrue(combined.get_has_alpha())
-        self.assertEqual((255, 255, 255, 0), self._pixel(combined, 1, 5))
+        self.assertEqual((255, 255, 255, 0), pixel(combined, 1, 5))
 
     def test_one_page_with_an_alpha_channel_is_enough_to_keep_it(self):
         combined = image_tools.combine_pixbufs(

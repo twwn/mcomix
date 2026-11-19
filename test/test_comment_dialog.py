@@ -15,7 +15,6 @@ from . import MComixTest, get_testfile_path, pump, wait_for
 
 from mcomix import comment_dialog
 from mcomix import icons
-from mcomix import main
 
 
 class CommentsDialogTest(MComixTest):
@@ -30,11 +29,10 @@ class CommentsDialogTest(MComixTest):
     def tearDown(self):
         if self.dialog is not None:
             self.dialog.destroy()
-        if self.window is not None:
-            self.window.terminate_program()
-            self.window.destroy()
-            main.set_main_window(None)
-        pump()
+        if self.window is None:
+            pump()
+        else:
+            self.close_main_window()
         super().tearDown()
 
     def _archive_with_comments(self, name, *comments):

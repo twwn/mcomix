@@ -4,27 +4,17 @@ import unittest.mock
 
 from gi.repository import Gdk, Gio
 
-from . import MComixTest, get_testfile_path, pump
-
-from mcomix import icons
+from . import MainWindowOpenTest, get_testfile_path
 
 
-class DropTest(MComixTest):
+class DropTest(MainWindowOpenTest):
 
     def setUp(self):
         super().setUp()
-        self.make_user_directories()
-        icons.load_icons()
-        self.open_main_window()
-        pump()
         patcher = unittest.mock.patch.object(self.window.filehandler,
                                              'open_file')
         self.opened = patcher.start()
         self.addCleanup(patcher.stop)
-
-    def tearDown(self):
-        self.close_main_window()
-        super().tearDown()
 
     def _drop(self, files, from_inside=False):
         """Drop <files> (Gio.File) as a drag from outside MComix would,

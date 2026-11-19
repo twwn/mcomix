@@ -10,7 +10,7 @@ import unittest.mock
 
 from gi.repository import GdkPixbuf, GLib
 
-from . import MComixTest, get_testfile_path, pump, wait_for
+from . import MComixTest, MainWindowOpenTest, get_testfile_path, pump, wait_for
 from . import test_key_press
 
 from mcomix import constants
@@ -121,7 +121,7 @@ class LensDrawingTest(MComixTest):
                          digest.hexdigest())
 
 
-class LensCursorTest(MComixTest):
+class LensCursorTest(MainWindowOpenTest):
 
     """Whether the pointer is hidden while the lens is on.
 
@@ -129,17 +129,6 @@ class LensCursorTest(MComixTest):
     open it draws nothing, and hiding the pointer over an empty window
     leaves it invisible with nothing to show for it.
     """
-
-    def setUp(self):
-        super().setUp()
-        self.make_user_directories()
-        icons.load_icons()
-        self.open_main_window()
-        pump()
-
-    def tearDown(self):
-        self.close_main_window()
-        super().tearDown()
 
     def _open_a_file(self):
         self.window.filehandler.open_file(

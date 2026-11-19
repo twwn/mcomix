@@ -11,7 +11,7 @@ import unittest.mock
 
 from gi.repository import Gdk, GdkPixbuf, Gtk
 
-from . import MComixTest, get_testfile_path, pump, wait_for
+from . import MComixTest, MainWindowOpenTest, get_testfile_path, pump, wait_for
 
 from mcomix import edit_image_area
 from mcomix import icons
@@ -24,17 +24,7 @@ from mcomix import thumbnail_list
 from mcomix.preferences import prefs
 
 
-class DeviceScaleTest(MComixTest):
-
-    def setUp(self):
-        super().setUp()
-        self.make_user_directories()
-        icons.load_icons()
-        self.open_main_window()
-
-    def tearDown(self):
-        self.close_main_window()
-        super().tearDown()
+class DeviceScaleTest(MainWindowOpenTest):
 
     def _draw_at(self, scale):
         with unittest.mock.patch.object(main.MainWindow, 'device_scale',
@@ -116,10 +106,7 @@ class ThumbnailScaleTest(MComixTest):
             seconds=20))
 
     def tearDown(self):
-        self.window.terminate_program()
-        self.window.destroy()
-        main.set_main_window(None)
-        pump(2000)
+        self.close_main_window(2000)
         super().tearDown()
 
     def _first_at(self, scale):
@@ -153,22 +140,14 @@ class ThumbnailScaleTest(MComixTest):
 
 
 
-class EditorScaleTest(MComixTest):
+class EditorScaleTest(MainWindowOpenTest):
 
     """The archive editor's page thumbnails, made with the screen's
     pixels where there are more of them than the window's."""
 
-    def setUp(self):
-        super().setUp()
-        self.make_user_directories()
-        icons.load_icons()
-        self.open_main_window()
-        pump()
-
     def tearDown(self):
         self.area.cleanup()
         self.area.release()
-        self.close_main_window()
         super().tearDown()
 
     def _area_at(self, scale):
