@@ -10,7 +10,8 @@ import warnings
 
 from gi.repository import Gdk, GdkPixbuf, Gio, GLib, Gtk
 
-from . import MComixTest, hold_open, pump, take_activation_from, wait_for
+from . import (MComixTest, children, hold_open, pump, take_activation_from,
+               wait_for)
 from .test_theme import background_of
 
 from mcomix import bookmark_backend
@@ -23,14 +24,6 @@ from mcomix.dialog import Response
 from mcomix.library import backend_types
 from mcomix.library import book_area
 from mcomix.preferences import prefs
-
-
-def _children(widget):
-    """Every direct child of <widget>, in order."""
-    child = widget.get_first_child()
-    while child is not None:
-        yield child
-        child = child.get_next_sibling()
 
 
 class _Event:
@@ -862,7 +855,7 @@ class CoverSizeDialogTest(MComixTest):
 
         dialogs = self._opened_dialogs()
         self.assertEqual(1, len(dialogs))
-        self.assertEqual(1, sum(1 for child in _children(dialogs[0].get_content_area())
+        self.assertEqual(1, sum(1 for child in children(dialogs[0].get_content_area())
                                 if isinstance(child, Gtk.Scale)))
 
 
@@ -872,7 +865,7 @@ class CoverSizeDialogTest(MComixTest):
         action = self._Action()
         self.area._book_size_changed(action, GLib.Variant('i', 0))
         dialog = self._opened_dialogs()[0]
-        scale = next(child for child in _children(dialog.get_content_area())
+        scale = next(child for child in children(dialog.get_content_area())
                      if isinstance(child, Gtk.Scale))
         scale.set_value(value)
         dialog.response(response)

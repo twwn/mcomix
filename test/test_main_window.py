@@ -20,8 +20,8 @@ import warnings
 
 from gi.repository import Gdk, GdkPixbuf, Gio, GLib, Gtk
 
-from . import (MComixTest, fresh_bookmarks_store, get_testfile_path,
-               hold_open, pump, wait_for)
+from . import (MComixTest, children, descendants, fresh_bookmarks_store,
+               get_testfile_path, hold_open, pump, wait_for)
 
 from mcomix import archive_packer
 from mcomix import bookmark_backend
@@ -86,10 +86,6 @@ class MainWindowTest(MComixTest):
         prefs['show toolbar'] = True
         prefs['show menubar'] = True
         icons.load_icons()
-        # The keybinding manager is one for the process and tells the
-        # menus of the window it was built with; without this, that is
-        # the window of whichever test built one first on this worker.
-        keybindings._manager = None
         self.window = main.MainWindow(
             open_path=get_testfile_path('archives', '01-ZIP-Normal.zip'))
         main.set_main_window(self.window)
@@ -178,12 +174,7 @@ class MainWindowTest(MComixTest):
 
     @staticmethod
     def _children(widget):
-        children = []
-        child = widget.get_first_child()
-        while child is not None:
-            children.append(child)
-            child = child.get_next_sibling()
-        return children
+        return list(children(widget))
 
     def test_the_bookmark_key_is_the_keybinding_managers(self):
         """CTRL+D was a Gtk.Shortcut of the bookmarks menu's own, which the
@@ -562,17 +553,10 @@ class MainWindowTest(MComixTest):
             self._Click(3), 1, 10, 10)
         self._pump()
         try:
-            labels = []
-            stack = [self.window.popup]
-            while stack:
-                widget = stack.pop()
-                if isinstance(widget, Gtk.Label) and widget.is_drawable():
-                    labels.append(widget.get_text())
-                child = widget.get_first_child()
-                while child is not None:
-                    stack.append(child)
-                    child = child.get_next_sibling()
-            return labels
+            popup = self.window.popup
+            return [widget.get_text()
+                    for widget in (popup, *descendants(popup))
+                    if isinstance(widget, Gtk.Label) and widget.is_drawable()]
         finally:
             self.window.popup.popdown()
             self._pump()
@@ -6088,7 +6072,6 @@ class PageMenuSubmenusTest(MComixTest):
         super().setUp()
         self.make_user_directories()
         icons.load_icons()
-        keybindings._manager = None
         self.window = main.MainWindow(
             open_path=get_testfile_path('archives', '01-ZIP-Normal.zip'))
         main.set_main_window(self.window)
@@ -6106,18 +6089,9 @@ class PageMenuSubmenusTest(MComixTest):
 
     def _labels(self):
         """The text of every label the open menu shows."""
-        found = []
-
-        def walk(widget):
-            if isinstance(widget, Gtk.Label) and widget.get_mapped():
-                found.append(widget.get_text())
-            child = widget.get_first_child()
-            while child is not None:
-                walk(child)
-                child = child.get_next_sibling()
-
-        walk(self.window.popup)
-        return found
+        popup = self.window.popup
+        return [widget.get_text() for widget in (popup, *descendants(popup))
+                if isinstance(widget, Gtk.Label) and widget.get_mapped()]
 
     def _shown(self):
         hold_open(self.window.popup)
@@ -6162,19 +6136,11 @@ class PageMenuSubmenusTest(MComixTest):
         submenu, and the book stays open."""
         before = self._shown()
         wanted = self._names()[0]
-        button = None
-
-        def find(widget):
-            nonlocal button
-            if isinstance(widget, Gtk.Label) and widget.get_mapped() \
-                    and widget.get_text() == wanted:
-                button = widget
-            child = widget.get_first_child()
-            while child is not None:
-                find(child)
-                child = child.get_next_sibling()
-
-        find(self.window.popup)
+        popup = self.window.popup
+        called = [widget for widget in (popup, *descendants(popup))
+                  if isinstance(widget, Gtk.Label) and widget.get_mapped()
+                  and widget.get_text() == wanted]
+        button = called[-1] if called else None
         while button is not None \
                 and button.__gtype__.name != 'GtkModelButton':
             button = button.get_parent()
@@ -6195,7 +6161,6 @@ class RestartOnABookTest(MComixTest):
         super().setUp()
         self.make_user_directories()
         icons.load_icons()
-        keybindings._manager = None
         self.window = None
 
     def tearDown(self):
@@ -6272,7 +6237,6 @@ class WhatAPageCarriesThroughASaveTest(MComixTest):
         super().setUp()
         self.make_user_directories()
         icons.load_icons()
-        keybindings._manager = None
         fresh_bookmarks_store()
         self.book = os.path.join(self.tmp_dir, 'book.zip')
         shutil.copyfile(get_testfile_path('archives', '01-ZIP-Normal.zip'),
@@ -6598,7 +6562,6 @@ class StartUpOptionsTest(MComixTest):
         super().setUp()
         self.make_user_directories()
         icons.load_icons()
-        keybindings._manager = None
 
     def _start(self, **options):
         self.window = main.MainWindow(**options)

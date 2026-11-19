@@ -10,7 +10,7 @@ from unittest import mock
 
 from gi.repository import Gdk, Gtk
 
-from . import MComixTest, pump, wait_for, wait_frames
+from . import MComixTest, descendants, pump, wait_for, wait_frames
 
 from mcomix import callback
 from mcomix import column_list
@@ -307,19 +307,9 @@ class OpenWithEditorTest(MComixTest):
     def _typing_into_a_command(self, text):
         """Start editing the first command's cell and type <text> into
         it, without Enter: what a reader does before reaching for Save."""
-        cells = []
-
-        def walk(widget):
-            child = widget.get_first_child()
-            while child is not None:
-                if isinstance(child, column_list._EditableCell) and \
-                        child.get_text() == 'gedit %F':
-                    cells.append(child)
-                walk(child)
-                child = child.get_next_sibling()
-
-        walk(self.editor)
-        cell, = cells
+        cell, = [widget for widget in descendants(self.editor)
+                 if isinstance(widget, column_list._EditableCell)
+                 and widget.get_text() == 'gedit %F']
         cell.start_editing()
         cell.set_text(text)
         pump()

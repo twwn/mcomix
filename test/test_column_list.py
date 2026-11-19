@@ -11,7 +11,7 @@ import unittest.mock
 
 from gi.repository import Gdk, Graphene, Gtk, Pango
 
-from . import MComixTest, keep_focus_within, pump
+from . import MComixTest, children, descendants, keep_focus_within, pump
 
 from mcomix import column_list
 
@@ -75,33 +75,13 @@ class ColumnListViewTest(MComixTest):
     @staticmethod
     def _drawn_cells(view):
         """Every text cell <view> has on screen."""
-        found = []
-
-        def walk(widget):
-            child = widget.get_first_child()
-            while child is not None:
-                if isinstance(child, column_list._TextCell):
-                    found.append(child)
-                walk(child)
-                child = child.get_next_sibling()
-
-        walk(view)
-        return found
+        return [widget for widget in descendants(view)
+                if isinstance(widget, column_list._TextCell)]
 
     def _cells(self):
         """The text of every cell that is on screen, whatever column."""
-        found = []
-
-        def walk(widget):
-            child = widget.get_first_child()
-            while child is not None:
-                if isinstance(child, Gtk.Label):
-                    found.append(child.get_text())
-                walk(child)
-                child = child.get_next_sibling()
-
-        walk(self.view)
-        return found
+        return [widget.get_text() for widget in descendants(self.view)
+                if isinstance(widget, Gtk.Label)]
 
     # -- What is in it ----------------------------------------------------
 
@@ -291,17 +271,8 @@ class ColumnListViewTest(MComixTest):
 
     def test_a_drop_carrying_something_else_is_refused(self):
         self.view.set_reorderable(True)
-        cells = []
-
-        def walk(widget):
-            child = widget.get_first_child()
-            while child is not None:
-                if isinstance(child, column_list._TextCell):
-                    cells.append(child)
-                walk(child)
-                child = child.get_next_sibling()
-
-        walk(self.view)
+        cells = [widget for widget in descendants(self.view)
+                 if isinstance(widget, column_list._TextCell)]
         self.assertTrue(cells, 'no cell was drawn to drop onto')
         cell = cells[0]
         self.assertFalse(
@@ -448,17 +419,8 @@ class ColumnListViewTest(MComixTest):
             for _ in range(20):
                 pump()
                 view.allocate(400, 300, -1, None)
-            cells = []
-
-            def walk(widget):
-                child = widget.get_first_child()
-                while child is not None:
-                    if isinstance(child, column_list._AccelCell):
-                        cells.append(child)
-                    walk(child)
-                    child = child.get_next_sibling()
-
-            walk(view)
+            cells = [widget for widget in descendants(view)
+                     if isinstance(widget, column_list._AccelCell)]
             self.assertTrue(cells, 'the column drew no cell')
             cell = cells[0]
             self.assertEqual(cell.label.props.accelerator, '<Control>a')
@@ -550,17 +512,8 @@ class ColumnListViewTest(MComixTest):
             for _ in range(20):
                 pump()
                 view.allocate(400, 300, -1, None)
-            cells = []
-
-            def walk(widget):
-                child = widget.get_first_child()
-                while child is not None:
-                    if isinstance(child, column_list._AccelCell):
-                        cells.append(child)
-                    walk(child)
-                    child = child.get_next_sibling()
-
-            walk(view)
+            cells = [widget for widget in descendants(view)
+                     if isinstance(widget, column_list._AccelCell)]
             self.assertEqual(2, len(cells))
             first, second = sorted(cells, key=lambda cell: cell.accelerator)
             first.grab_focus()
@@ -602,20 +555,11 @@ class ColumnListViewTest(MComixTest):
             for _ in range(20):
                 pump()
                 view.allocate(400, 300, -1, None)
-            cells = []
-
-            def walk(widget):
-                child = widget.get_first_child()
-                while child is not None:
-                    if isinstance(child, (column_list._EditableCell,
-                                          column_list._ToggleCell)) \
-                            and child.row is not None \
-                            and child.row.name == 'two':
-                        cells.append(child)
-                    walk(child)
-                    child = child.get_next_sibling()
-
-            walk(view)
+            cells = [widget for widget in descendants(view)
+                     if isinstance(widget, (column_list._EditableCell,
+                                            column_list._ToggleCell))
+                     and widget.row is not None
+                     and widget.row.name == 'two']
             self.assertEqual(2, len(cells))
             for cell in cells:
                 with self.subTest(cell=type(cell).__name__):
@@ -655,17 +599,8 @@ class ColumnListViewTest(MComixTest):
             for _ in range(20):
                 pump()
                 view.allocate(400, 300, -1, None)
-            cells = []
-
-            def walk(widget):
-                child = widget.get_first_child()
-                while child is not None:
-                    if isinstance(child, column_list._AccelCell):
-                        cells.append(child)
-                    walk(child)
-                    child = child.get_next_sibling()
-
-            walk(view)
+            cells = [widget for widget in descendants(view)
+                     if isinstance(widget, column_list._AccelCell)]
             self.assertEqual(len(cells), 2, 'the column drew the wrong cells')
             self.assertTrue(cells[0].get_visible())
             self.assertFalse(cells[0].get_sensitive())
@@ -713,26 +648,17 @@ class ColumnListViewTest(MComixTest):
     @staticmethod
     def _cap_widths(label):
         """How wide each key cap of a shortcut label wants to be."""
-        wanted = []
-        child = label.get_first_child()
-        while child is not None:
-            if isinstance(child, Gtk.Label) \
-                    and 'keycap' in child.get_css_classes():
-                wanted.append(child.measure(Gtk.Orientation.HORIZONTAL, -1)[1])
-            child = child.get_next_sibling()
-        return wanted
+        return [child.measure(Gtk.Orientation.HORIZONTAL, -1)[1]
+                for child in children(label)
+                if isinstance(child, Gtk.Label)
+                and 'keycap' in child.get_css_classes()]
 
     @staticmethod
     def _caps(label):
         """What each key cap of a shortcut label says."""
-        said = []
-        child = label.get_first_child()
-        while child is not None:
-            if isinstance(child, Gtk.Label) \
-                    and 'keycap' in child.get_css_classes():
-                said.append(child.get_text())
-            child = child.get_next_sibling()
-        return said
+        return [child.get_text() for child in children(label)
+                if isinstance(child, Gtk.Label)
+                and 'keycap' in child.get_css_classes()]
 
     def test_a_key_with_a_sign_on_it_is_drawn_as_that_sign(self):
         """A Gtk.ShortcutLabel spells out Page Up, Backspace and Tab,
@@ -754,13 +680,9 @@ class ColumnListViewTest(MComixTest):
         cell = column_list._AccelCell()
         cell.accelerator = '<Control><Shift>Page_Up'
         cell._show()
-        joined = []
-        child = cell.label.get_first_child()
-        while child is not None:
-            if isinstance(child, Gtk.Label) \
-                    and 'dim-label' in child.get_css_classes():
-                joined.append(child.get_visible())
-            child = child.get_next_sibling()
+        joined = [child.get_visible() for child in children(cell.label)
+                  if isinstance(child, Gtk.Label)
+                  and 'dim-label' in child.get_css_classes()]
         self.assertTrue(joined, 'the label drew no joiners to drop')
         self.assertFalse(any(joined))
 
@@ -884,13 +806,10 @@ class ColumnListViewTest(MComixTest):
                           -1, None)
             pump()
             self.assertLessEqual(cell.label.get_width(), room)
-            child = cell.label.get_first_child()
-            ellipsized = []
-            while child is not None:
-                if isinstance(child, Gtk.Label) \
-                        and 'keycap' in child.get_css_classes():
-                    ellipsized.append(child.get_ellipsize())
-                child = child.get_next_sibling()
+            ellipsized = [child.get_ellipsize()
+                          for child in children(cell.label)
+                          if isinstance(child, Gtk.Label)
+                          and 'keycap' in child.get_css_classes()]
             self.assertTrue(ellipsized, 'the label drew no caps')
             self.assertTrue(all(mode == Pango.EllipsizeMode.END
                                 for mode in ellipsized))
@@ -906,17 +825,8 @@ class ColumnListViewTest(MComixTest):
         view.set_rows(column_list.Row(name=name, fixed=name == 'two')
                       for name in self.NAMES)
         self._present(view)
-        cells = []
-
-        def walk(widget):
-            child = widget.get_first_child()
-            while child is not None:
-                if isinstance(child, column_list._EditableCell):
-                    cells.append(child)
-                walk(child)
-                child = child.get_next_sibling()
-
-        walk(view)
+        cells = [widget for widget in descendants(view)
+                 if isinstance(widget, column_list._EditableCell)]
         return {cell.row.name: cell for cell in cells}
 
     def test_a_cell_rewritten_hands_its_row_the_new_text(self):
@@ -951,17 +861,8 @@ class ColumnListViewTest(MComixTest):
             for _ in range(20):
                 pump()
                 view.allocate(400, 300, -1, None)
-            boxes = []
-
-            def walk(widget):
-                child = widget.get_first_child()
-                while child is not None:
-                    if isinstance(child, Gtk.CheckButton):
-                        boxes.append(child)
-                    walk(child)
-                    child = child.get_next_sibling()
-
-            walk(view)
+            boxes = [widget for widget in descendants(view)
+                     if isinstance(widget, Gtk.CheckButton)]
             self.assertTrue(boxes, 'the column drew no checkbox')
             boxes[0].set_active(True)
             self.assertEqual(toggled, [(row, True)])

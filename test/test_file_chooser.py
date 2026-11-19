@@ -10,7 +10,8 @@ import unittest.mock
 
 from gi.repository import Gdk, Gio, GLib, Graphene, Gtk
 
-from . import MComixTest, get_testfile_path, pump, wait_for, wait_for_deletions
+from . import (MComixTest, descendants, get_testfile_path, pump, wait_for,
+               wait_for_deletions)
 
 from mcomix import archive_tools
 from mcomix import constants
@@ -443,13 +444,6 @@ class FileChooserTest(MComixTest):
         self.assertEqual(os.path.realpath(constants.HOME_DIR),
                          os.path.realpath(self._reopened_in()))
 
-    def _widgets_in(self, widget):
-        child = widget.get_first_child()
-        while child is not None:
-            yield child
-            yield from self._widgets_in(child)
-            child = child.get_next_sibling()
-
     def _point_on(self, widget, near_its_end=False):
         """A point of <widget>, in the chooser's coordinates, as the
         gesture that hears a double click is given it."""
@@ -462,7 +456,7 @@ class FileChooserTest(MComixTest):
     def _row_of(self, name):
         """The row of the list that shows the file called <name>."""
         def row():
-            for widget in self._widgets_in(self.dialog._listing):
+            for widget in descendants(self.dialog._listing):
                 if isinstance(widget, Gtk.Inscription) and widget.get_text() == name:
                     while widget.get_css_name() != 'row':
                         widget = widget.get_parent()
@@ -496,10 +490,10 @@ class FileChooserTest(MComixTest):
         self.dialog.files_chosen = chosen.extend
         self._book_selected()
         row = self._row_of('book.zip')
-        widgets_in = list(self._widgets_in(self.dialog.filechooser))
+        widgets_in = list(descendants(self.dialog.filechooser))
         place = next(widget for widget in widgets_in
                      if isinstance(widget, Gtk.ListBoxRow) and widget.get_mapped())
-        heading = next(widget for widget in self._widgets_in(self.dialog._listing)
+        heading = next(widget for widget in descendants(self.dialog._listing)
                        if widget.get_css_name() == 'button')
         for name, widget, near_its_end in (('a place', place, False),
                                            ('a heading', heading, False),

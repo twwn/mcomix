@@ -19,7 +19,6 @@ from . import (MComixTest, fresh_bookmarks_store, get_testfile_path, pump,
 
 from mcomix import archive_packer
 from mcomix import icons
-from mcomix import keybindings
 from mcomix import main
 from mcomix import message_dialog
 from mcomix import save_progress
@@ -38,7 +37,6 @@ class LongSaveTest(MComixTest):
         super().setUp()
         self.make_user_directories()
         icons.load_icons()
-        keybindings._manager = None
         fresh_bookmarks_store()
         self.shelf = os.path.join(self.tmp_dir, 'shelf')
         os.makedirs(self.shelf)

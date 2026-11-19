@@ -9,7 +9,7 @@ import zipfile
 
 from gi.repository import Gdk, Gtk
 
-from . import MComixTest, get_testfile_path, pump, wait_for
+from . import MComixTest, descendants, get_testfile_path, pump, wait_for
 from .test_book_area import _MarkingLibrary
 
 from mcomix import image_tools
@@ -20,14 +20,8 @@ from mcomix.library import book_properties
 
 def _texts(widget):
     """Every label's text under <widget>, depth first."""
-    texts = []
-    child = widget.get_first_child()
-    while child is not None:
-        if isinstance(child, Gtk.Label):
-            texts.append(child.get_text())
-        texts.extend(_texts(child))
-        child = child.get_next_sibling()
-    return texts
+    return [child.get_text() for child in descendants(widget)
+            if isinstance(child, Gtk.Label)]
 
 
 class BookPropertiesTest(MComixTest):
@@ -81,15 +75,9 @@ class BookPropertiesTest(MComixTest):
         pump()
         selected = []
         widget = dialog.page
-        stack = [widget]
-        while stack:
-            widget = stack.pop()
+        for widget in (widget, *descendants(widget)):
             if isinstance(widget, Gtk.Label) and widget.get_selection_bounds()[0]:
                 selected.append(widget.get_text())
-            child = widget.get_first_child()
-            while child is not None:
-                stack.append(child)
-                child = child.get_next_sibling()
         self.assertEqual([], selected)
 
     def test_one_book_is_described_by_its_file_and_the_library(self):

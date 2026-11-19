@@ -48,7 +48,6 @@ class _StripTest(MComixTest):
         prefs['default double page'] = False
         prefs['default manga mode'] = False
         icons.load_icons()
-        keybindings._manager = None
         self.book = os.path.join(self.tmp_dir, 'strip.zip')
         with zipfile.ZipFile(self.book, 'w') as archive:
             for number, size in enumerate(self.PAGES, 1):

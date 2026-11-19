@@ -7,7 +7,8 @@ import unittest.mock
 
 from gi.repository import GLib, Gtk
 
-from . import MComixTest, get_testfile_path, pump as _pump, wait_for
+from . import (MComixTest, descendants, get_testfile_path, pump as _pump,
+               wait_for)
 
 from mcomix import archive_extractor
 from mcomix import message_dialog
@@ -57,15 +58,8 @@ class PasswordDialogTest(MComixTest):
     def _entry_in(self, widget):
         """Find the password entry. GTK4 has no Gtk.Container to ask for
         a list of children; every widget walks its own."""
-        if isinstance(widget, Gtk.Entry):
-            return widget
-        child = widget.get_first_child()
-        while child is not None:
-            found = self._entry_in(child)
-            if found is not None:
-                return found
-            child = child.get_next_sibling()
-        return None
+        return next((entry for entry in (widget, *descendants(widget))
+                     if isinstance(entry, Gtk.Entry)), None)
 
     def test_asking_does_not_wait_for_the_answer(self):
         # Gtk.Dialog.run() did wait, in a nested main loop that kept the

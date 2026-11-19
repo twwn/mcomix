@@ -11,7 +11,7 @@ from unittest import mock
 
 from gi.repository import Gdk, Gtk
 
-from . import MComixTest, get_testfile_path, pump, wait_for
+from . import MComixTest, children, get_testfile_path, pump, wait_for
 
 from mcomix import icons
 from mcomix import main
@@ -164,11 +164,8 @@ class PageselectTest(MComixTest):
         self.assertGreaterEqual(self.dialog.get_height(), 420)
 
     def test_cancel_comes_before_go(self):
-        labels = []
-        child = self.dialog._button_row.get_first_child()
-        while child is not None:
-            labels.append(child.get_label())
-            child = child.get_next_sibling()
+        labels = [child.get_label()
+                  for child in children(self.dialog._button_row)]
         self.assertEqual(['_Cancel', '_Go'], labels)
 
     def test_the_size_it_is_given_is_remembered(self):

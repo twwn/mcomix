@@ -18,7 +18,7 @@ import unittest.mock
 
 from gi.repository import Gdk, GdkPixbuf, Gio, GLib, Gtk, Pango
 
-from . import MComixTest, get_testfile_path, pump, wait_for
+from . import MComixTest, descendants, get_testfile_path, pump, wait_for
 
 from mcomix import bookmark_backend
 from mcomix import bookmark_menu_item
@@ -2215,15 +2215,9 @@ class AddCollectionTest(_LibraryWindowTest):
 
     @staticmethod
     def _entry_in(widget):
-        pending = [widget]
-        while pending:
-            widget = pending.pop()
-            if isinstance(widget, Gtk.Entry):
-                return widget
-            child = widget.get_first_child()
-            while child is not None:
-                pending.append(child)
-                child = child.get_next_sibling()
+        for entry in (widget, *descendants(widget)):
+            if isinstance(entry, Gtk.Entry):
+                return entry
         raise AssertionError('the dialog has no entry')
 
     def _names(self, dialog):

@@ -15,7 +15,6 @@ from . import MComixTest, get_testfile_path, pump, wait_for
 from mcomix import constants
 from mcomix import icons
 from mcomix import image_tools
-from mcomix import keybindings
 from mcomix import main
 from mcomix.preferences import prefs
 from mcomix.transform import Transform
@@ -27,7 +26,6 @@ class ViewActionsTest(MComixTest):
         super().setUp()
         self.make_user_directories()
         icons.load_icons()
-        keybindings._manager = None
         self.window = main.MainWindow()
         main.set_main_window(self.window)
 

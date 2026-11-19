@@ -12,7 +12,7 @@ import zipfile
 
 from gi.repository import Gdk, Gtk
 
-from . import (MComixTest, get_testfile_path, hold_open, pump,
+from . import (MComixTest, children, descendants, get_testfile_path, hold_open, pump,
                take_activation_from, wait_for)
 
 from mcomix import archive_packer
@@ -27,16 +27,6 @@ from mcomix import widgets
 from mcomix import message_dialog
 from mcomix.dialog import Response
 from mcomix.preferences import prefs
-
-
-def _children(widget):
-    """Every direct child of <widget>, in order."""
-    children = []
-    child = widget.get_first_child()
-    while child is not None:
-        children.append(child)
-        child = child.get_next_sibling()
-    return children
 
 
 class EditArchiveDialogTest(MComixTest):
@@ -73,11 +63,8 @@ class EditArchiveDialogTest(MComixTest):
 
     def test_the_buttons_end_with_the_one_that_applies(self):
         """Import, which closes nothing, came last, after Apply."""
-        labels = []
-        child = self.dialog._button_row.get_first_child()
-        while child is not None:
-            labels.append(child.get_label())
-            child = child.get_next_sibling()
+        labels = [child.get_label()
+                  for child in children(self.dialog._button_row)]
         self.assertEqual(['_Import', '_Cancel', 'Save _As', 'A_pply'], labels)
         self.assertTrue(self.dialog.get_widget_for_response(
             Response.APPLY).has_css_class('suggested-action'))
@@ -640,7 +627,7 @@ class EditArchiveDialogTest(MComixTest):
         dialogs = [window for window in Gtk.Window.list_toplevels()
                    if isinstance(window, message_dialog.MessageDialog)]
         self.assertEqual(len(dialogs), 1, 'nothing asked for a name')
-        entries = [child for child in _children(dialogs[0].get_content_area())
+        entries = [child for child in children(dialogs[0].get_content_area())
                    if isinstance(child, Gtk.Entry)]
         self.assertEqual(len(entries), 1)
         entries[0].set_text('Cover.png')
@@ -722,15 +709,9 @@ class EditArchiveDialogTest(MComixTest):
             cell = cell.get_parent()
         if cell is None:
             return None
-        stack = [cell]
-        while stack:
-            widget = stack.pop()
+        for widget in (cell, *descendants(cell)):
             if isinstance(widget, thumbnail_list._ThumbnailCell):
                 return widget.position
-            child = widget.get_first_child()
-            while child is not None:
-                stack.append(child)
-                child = child.get_next_sibling()
         return None
 
     def test_a_right_click_on_a_page_already_picked_keeps_the_others(self):

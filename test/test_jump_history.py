@@ -6,7 +6,6 @@ import unittest.mock
 from . import MComixTest, get_testfile_path, pump, wait_for
 
 from mcomix import icons
-from mcomix import keybindings
 from mcomix import main
 from mcomix.preferences import prefs
 
@@ -18,7 +17,6 @@ class JumpHistoryTest(MComixTest):
         self.make_user_directories()
         prefs['show menubar'] = True
         icons.load_icons()
-        keybindings._manager = None
         self.window = main.MainWindow(
             open_path=get_testfile_path('archives', '01-ZIP-Normal.zip'))
         main.set_main_window(self.window)

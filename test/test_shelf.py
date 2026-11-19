@@ -28,7 +28,6 @@ class _ShelfWindowTest(MComixTest):
         super().setUp()
         self.make_user_directories()
         icons.load_icons()
-        keybindings._manager = None
         self.window = None
         #: Two books of the reader's own, away from the test files.
         self.books = []

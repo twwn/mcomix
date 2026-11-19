@@ -16,7 +16,6 @@ from . import MComixTest, get_testfile_path, pump, wait_for
 from mcomix import edit_image_area
 from mcomix import icons
 from mcomix import image_tools
-from mcomix import keybindings
 from mcomix import main
 from mcomix import pageselect
 from mcomix import properties_page
@@ -31,7 +30,6 @@ class DeviceScaleTest(MComixTest):
         super().setUp()
         self.make_user_directories()
         icons.load_icons()
-        keybindings._manager = None
         self.window = main.MainWindow()
         main.set_main_window(self.window)
 
@@ -109,7 +107,6 @@ class ThumbnailScaleTest(MComixTest):
         self.make_user_directories()
         prefs['show thumbnails'] = True
         icons.load_icons()
-        keybindings._manager = None
         self.window = main.MainWindow(
             open_path=get_testfile_path(
                 'pepper-and-carrot',

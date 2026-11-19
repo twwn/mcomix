@@ -2,7 +2,7 @@
 
 from unittest import mock
 
-from . import MComixTest, get_testfile_path, pump, wait_for
+from . import MComixTest, children, get_testfile_path, pump, wait_for
 
 from mcomix import enhance_dialog
 from mcomix import histogram
@@ -169,7 +169,7 @@ class EnhanceDialogTest(MComixTest):
         dialog.response(Response.APPLY)
         dialog._invert_color_button.set_active(True)
         pump()
-        reset, = [button for button in widgets_in(dialog._button_row)
+        reset, = [button for button in children(dialog._button_row)
                   if button.get_label() == 'R_eset']
         reset.emit('clicked')
         pump()
@@ -219,13 +219,6 @@ class EnhanceDialogTest(MComixTest):
         self.assertTrue(prefs['histogram logarithmic'])
         self.assertEqual(1, drawn.call_count)
         self.assertTrue(drawn.call_args.kwargs['logarithmic'])
-
-def widgets_in(box):
-    """The children of <box>, in order."""
-    child = box.get_first_child()
-    while child is not None:
-        yield child
-        child = child.get_next_sibling()
 
 class LogarithmicHistogramTest(MComixTest):
 

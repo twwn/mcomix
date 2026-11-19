@@ -18,7 +18,6 @@ from . import MComixTest, get_testfile_path, pump, wait_for
 from .test_dialog_freed import _holders
 
 from mcomix import icons
-from mcomix import keybindings
 from mcomix import main
 
 
@@ -28,7 +27,6 @@ class MainWindowFreedTest(MComixTest):
         super().setUp()
         self.make_user_directories()
         icons.load_icons()
-        keybindings._manager = None
 
     def assertFreedOnClose(self, open_path=None):
         """Build a main window on <open_path>, close it as the tests and

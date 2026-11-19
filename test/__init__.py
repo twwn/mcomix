@@ -465,6 +465,23 @@ def wait_for_deletions():
             thread.join(10)
 
 
+def children(widget):
+    """Every direct child of <widget>, in order: GTK 4 has no
+    Gtk.Container to list them, and each widget walks its own."""
+    child = widget.get_first_child()
+    while child is not None:
+        yield child
+        child = child.get_next_sibling()
+
+
+def descendants(widget):
+    """Every widget under <widget>, depth first in the order GTK keeps
+    them, <widget> itself left out."""
+    for child in children(widget):
+        yield child
+        yield from descendants(child)
+
+
 def fresh_bookmarks_store():
     """Have the bookmarks store read its file again, which for a test
     that has just been given its own directories is no file at all.
@@ -607,6 +624,13 @@ class MComixTest(unittest.TestCase):
         constants.LIBRARY_LIST_PATH = os.path.join(constants.DATA_DIR, 'library_list.json')
         constants.PREFERENCE_PICKLE_PATH = os.path.join(constants.CONFIG_DIR, 'preferences.pickle')
         fresh_bookmarks_store()
+        # The keybinding manager is one for the process too, and holds
+        # the window it was built with: left as it was, a test's window
+        # would take the one of the test that built a window first on
+        # this worker, and its menus would tell that window's keys.
+        keybindings = sys.modules.get('mcomix.keybindings')
+        if keybindings is not None:
+            keybindings._manager = None
         # Reset preferences to default, and with them the baseline a
         # write is measured against: a test starts as an instance that
         # has just read a file holding exactly the defaults.

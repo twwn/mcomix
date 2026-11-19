@@ -8,7 +8,7 @@ coordinates - which is not the widget the pointer was over.
 
 from gi.repository import Gdk, Gio, Gtk
 
-from . import MComixTest, pump
+from . import MComixTest, children, pump
 
 from mcomix import widgets
 
@@ -85,11 +85,7 @@ class EmptyTest(MComixTest):
     """empty(), which is what a box is cleared with in GTK4."""
 
     def _children(self, box):
-        children, child = [], box.get_first_child()
-        while child is not None:
-            children.append(child)
-            child = child.get_next_sibling()
-        return children
+        return list(children(box))
 
     def test_every_child_comes_out(self):
         box = Gtk.Box.new(Gtk.Orientation.VERTICAL, 0)

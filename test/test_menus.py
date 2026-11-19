@@ -99,7 +99,6 @@ class MenusBuiltOnceTest(MComixTest):
         super().setUp()
         self.make_user_directories()
         icons.load_icons()
-        keybindings._manager = None
         self.built = []
         build = ui.MainUI._build
 

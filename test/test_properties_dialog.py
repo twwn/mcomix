@@ -15,7 +15,8 @@ from unittest import mock
 
 from gi.repository import Gtk
 
-from . import MComixTest, get_testfile_path, pump, wait_for, wait_frames
+from . import (MComixTest, children, descendants, get_testfile_path, pump,
+               wait_for, wait_frames)
 
 from mcomix import icons
 from mcomix import main
@@ -81,14 +82,9 @@ class PropertiesDialogTest(MComixTest):
 
     def _rows(self, page):
         """What a page says about the file, top box first."""
-        rows = []
-        for box in (page._mainbox, page._extrabox):
-            child = box.get_first_child()
-            while child is not None:
-                if isinstance(child, Gtk.Label):
-                    rows.append(child.get_text())
-                child = child.get_next_sibling()
-        return rows
+        return [child.get_text()
+                for box in (page._mainbox, page._extrabox)
+                for child in children(box) if isinstance(child, Gtk.Label)]
 
     def test_an_archive_is_described_on_a_page_of_its_own(self):
         dialog = self._open(get_testfile_path('archives', '01-ZIP-Normal.zip'))
@@ -174,14 +170,8 @@ class PropertiesDialogTest(MComixTest):
     @staticmethod
     def _texts(widget):
         """Every label's text under <widget>, depth first."""
-        texts = []
-        child = widget.get_first_child()
-        while child is not None:
-            if isinstance(child, Gtk.Label):
-                texts.append(child.get_text())
-            texts.extend(PropertiesDialogTest._texts(child))
-            child = child.get_next_sibling()
-        return texts
+        return [child.get_text() for child in descendants(widget)
+                if isinstance(child, Gtk.Label)]
 
     def test_the_archive_page_says_what_its_comicinfo_says(self):
         dialog = self._open(self._book(
@@ -348,11 +338,7 @@ class LongTextTest(PropertiesDialogTest):
                              adjustment.get_page_size())
 
 def _labels(widget):
-    child = widget.get_first_child()
-    while child is not None:
-        if isinstance(child, Gtk.Label):
-            yield child
-        yield from _labels(child)
-        child = child.get_next_sibling()
+    return (child for child in descendants(widget)
+            if isinstance(child, Gtk.Label))
 
 # vim: expandtab:sw=4:ts=4

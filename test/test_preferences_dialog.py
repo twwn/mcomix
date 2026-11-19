@@ -14,7 +14,7 @@ import unittest.mock
 
 from gi.repository import GdkPixbuf, Gtk
 
-from . import MComixTest, get_testfile_path, pump
+from . import MComixTest, descendants, get_testfile_path, pump
 
 from mcomix import constants
 from mcomix import i18n
@@ -133,17 +133,9 @@ class PreferencesDialogTest(MComixTest):
     def _background_buttons(self):
         """The two buttons of the Background section, in the order they
         are shown: the fixed colour, then the one off the page."""
-        found = []
-
-        def walk(widget):
-            child = widget.get_first_child()
-            while child is not None:
-                if isinstance(child, Gtk.CheckButton):
-                    found.append(child)
-                walk(child)
-                child = child.get_next_sibling()
-
-        walk(self.dialog.notebook.get_nth_page(0))
+        found = [widget for widget
+                 in descendants(self.dialog.notebook.get_nth_page(0))
+                 if isinstance(widget, Gtk.CheckButton)]
         fixed = [button for button in found
                  if button.get_label() == 'Use this colour as background:']
         dynamic = [button for button in found
@@ -257,17 +249,9 @@ class PreferencesDialogTest(MComixTest):
     def _colour_buttons(self):
         """The colour buttons of the Background section, in the order
         they are shown: the page background, then the thumbnails'."""
-        found = []
-
-        def walk(widget):
-            child = widget.get_first_child()
-            while child is not None:
-                if isinstance(child, Gtk.ColorDialogButton):
-                    found.append(child)
-                walk(child)
-                child = child.get_next_sibling()
-
-        walk(self.dialog.notebook.get_nth_page(0))
+        found = [widget for widget
+                 in descendants(self.dialog.notebook.get_nth_page(0))
+                 if isinstance(widget, Gtk.ColorDialogButton)]
         self.assertTrue(found, 'no colour button was built')
         return found
 
@@ -293,17 +277,9 @@ class PreferencesDialogTest(MComixTest):
     def test_the_thumbnail_pair_is_the_same_arrangement(self):
         prefs['smart thumb bg'] = False
         self._open()
-        found = []
-
-        def walk(widget):
-            child = widget.get_first_child()
-            while child is not None:
-                if isinstance(child, Gtk.CheckButton):
-                    found.append(child)
-                walk(child)
-                child = child.get_next_sibling()
-
-        walk(self.dialog.notebook.get_nth_page(0))
+        found = [widget for widget
+                 in descendants(self.dialog.notebook.get_nth_page(0))
+                 if isinstance(widget, Gtk.CheckButton)]
         fixed = [button for button in found
                  if button.get_label()
                  == 'Use this colour as the thumbnail background:']
