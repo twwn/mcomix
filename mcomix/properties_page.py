@@ -82,7 +82,7 @@ class _Page(Gtk.ScrolledWindow):
             _wrapping(label)
             label.set_xalign(0)
             label.set_selectable(True)
-            widgets.pack(self._mainbox, label, False, False, 0, end=True)
+            widgets.pack(self._mainbox, label, False, False, 0)
 
     def set_secondary_info(self, info: Sequence[tuple[str, str]]) -> None:
         """Set the information below the main info box to the values in the

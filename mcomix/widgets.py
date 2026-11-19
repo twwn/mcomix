@@ -106,13 +106,15 @@ def at_scale(texture: Gdk.Texture, scale: float) -> Gdk.Paintable:
 
 
 def pack(box: Gtk.Box, child: Gtk.Widget, expand: bool = False,
-         fill: bool = True, padding: int = 0, end: bool = False) -> None:
-    """Add <child> to <box>, the way Gtk.Box.pack_start/pack_end did.
+         fill: bool = True, padding: int = 0) -> None:
+    """Add <child> after what <box> holds, the way Gtk.Box.pack_start did.
 
     GTK4 boxes only append and prepend.  What the old arguments said is
     now said by the child: whether it takes the slack is hexpand or
     vexpand depending on which way the box runs, not filling its share is
     an alignment, and padding is a margin on the two ends that matter.
+    Children come in the order they are packed: one meant to sit at the
+    far end is packed last, after a sibling that takes the slack.
     """
     if expand:
         if box.get_orientation() == Gtk.Orientation.HORIZONTAL:

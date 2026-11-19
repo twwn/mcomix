@@ -284,7 +284,7 @@ class _BaseFileChooserDialog(Dialog):
         self._walk_from_search_into_the_list()
 
         widgets.pack(chooser_row, self._build_preview_column(),
-                     False, False, 0, end=True)
+                     False, False, 0)
 
         # And no update-preview signal to hear either, so ask it what is
         # selected every so often.  It is one property read; the timer
@@ -525,7 +525,7 @@ class _BaseFileChooserDialog(Dialog):
             self._note = Gtk.Label()
             self._note.set_xalign(0)
             widgets.pack(self.get_content_area(), self._note,
-                         False, False, 6, end=True)
+                         False, False, 6)
         self._note.set_text(text)
 
     def _walk_from_search_into_the_list(self) -> None:

@@ -84,12 +84,12 @@ class Pageselector(Dialog):
         widgets.set_border(preview_box, 5)
         preview_box.set_spacing(5)
         widgets.pack(preview_box, self._image_preview, True, True, 0)
-        widgets.pack(preview_box, self._page_selector, False, False, 0, end=True)
+        widgets.pack(preview_box, self._page_selector, False, False, 0)
         # Below them, group selection spinner and current page label
         selection_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
         widgets.set_border(selection_box, 5)
         widgets.pack(selection_box, self._page_spinner, True, True, 0)
-        widgets.pack(selection_box, self._pages_label, False, False, 0, end=True)
+        widgets.pack(selection_box, self._pages_label, False, False, 0)
 
         # The chapters the book names, where it names any, to go to by
         # their titles; hidden until then.
@@ -107,7 +107,7 @@ class Pageselector(Dialog):
         widgets.pack(self.get_content_area(), preview_box, True, True, 0)
         widgets.pack(self.get_content_area(), self._chapter_selector,
                      False, False, 0)
-        widgets.pack(self.get_content_area(), selection_box, False, False, 0, end=True)
+        widgets.pack(self.get_content_area(), selection_box, False, False, 0)
         self.set_visible(True)
 
         self.connect_while_open(self._selector_adjustment, 'value-changed',

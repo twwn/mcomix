@@ -115,7 +115,7 @@ def ask_for_password(archive: str,
     password_box = Gtk.Entry()
     password_box.set_visibility(False)
     password_box.set_activates_default(True)
-    widgets.pack(dialog.get_content_area(), password_box, True, True, 0, end=True)
+    widgets.pack(dialog.get_content_area(), password_box, True, True, 0)
     dialog.set_focus(password_box)
 
     def responded(response: int) -> None:

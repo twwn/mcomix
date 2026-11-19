@@ -78,7 +78,7 @@ class WatchListDialog(Dialog):
         scroll_window = Gtk.ScrolledWindow()
         scroll_window.set_child(self._list)
         widgets.pack(main_box, scroll_window, True, True, 2)
-        widgets.pack(main_box, button_box, False, False, 0, end=True)
+        widgets.pack(main_box, button_box, False, False, 0)
         widgets.pack(self.get_content_area(), main_box, True, True, 0)
 
         auto_checkbox = Gtk.CheckButton(
@@ -86,7 +86,7 @@ class WatchListDialog(Dialog):
             use_underline=True)
         auto_checkbox.set_active(prefs['scan for new books on library startup'])
         auto_checkbox.connect('toggled', self._auto_scan_toggled_cb)
-        widgets.pack(self.get_content_area(), auto_checkbox, False, False, 5, end=True)
+        widgets.pack(self.get_content_area(), auto_checkbox, False, False, 5)
 
         # After the Remove button, which the selection turns on and off
         # as soon as there are rows to select, and after the Scan now

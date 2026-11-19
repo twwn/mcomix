@@ -868,7 +868,7 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
                          constants.SIZE_TINY):
                 cover_size_scale.add_mark(mark, Gtk.PositionType.TOP, None)
 
-            widgets.pack(dialog.get_content_area(), cover_size_scale, True, True, 0, end=True)
+            widgets.pack(dialog.get_content_area(), cover_size_scale, True, True, 0)
 
             def size_chosen(response: int) -> None:
                 # The adjustment is not the scale: it is a plain object

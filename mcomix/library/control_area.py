@@ -101,7 +101,7 @@ class _ControlArea(Gtk.Box):
 
         # Last line of controls, containing buttons like 'Open'
         hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 10)
-        widgets.pack(vbox, hbox, True, True, 0, end=True)
+        widgets.pack(vbox, hbox, True, True, 0)
 
         watchlist_button = Gtk.Button(label=_("_Watch list"), use_underline=True)
         watchlist_button.connect('clicked',
@@ -115,7 +115,7 @@ class _ControlArea(Gtk.Box):
                                   self._library.book_area.open_selected_book)
         self._open_button.set_tooltip_text(_('Open the selected book.'))
         self._open_button.set_sensitive(False)
-        widgets.pack(hbox, self._open_button, True, True, 0, end=True)
+        widgets.pack(hbox, self._open_button, True, True, 0)
 
     @property
     def _library(self) -> "main_dialog._LibraryDialog":
