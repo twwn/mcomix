@@ -7,14 +7,14 @@ import unittest.mock
 
 from gi.repository import Gdk, GLib, Gtk
 
-from . import MComixTest, get_testfile_path, pump, wait_for
+from . import (MComixTest, MainWindowLaterTest, get_testfile_path, pump,
+               wait_for)
 
 from mcomix import bookmark_backend
 from mcomix import bookmark_menu_item
 from mcomix import constants
 from mcomix import bookmark_dialog
 from mcomix import bookmark_menu
-from mcomix import icons
 from mcomix import message_dialog
 from mcomix import process
 from mcomix import widgets
@@ -450,7 +450,7 @@ class BookmarksMenuTest(MComixTest):
         self.assertEqual([], self.store.get_bookmarks())
 
 
-class BookmarkInTheOpenBookTest(MComixTest):
+class BookmarkInTheOpenBookTest(MainWindowLaterTest):
 
     """Loading a bookmark into a window that has its book open already.
 
@@ -458,19 +458,6 @@ class BookmarkInTheOpenBookTest(MComixTest):
     the pages picked out of it and the changes that could be undone, so
     a bookmark into the open book only turns the page.
     """
-
-    def setUp(self):
-        super().setUp()
-        self.make_user_directories()
-        icons.load_icons()
-        self.window = None
-
-    def tearDown(self):
-        if self.window is None:
-            pump()
-        else:
-            self.close_main_window()
-        super().tearDown()
 
     def _open(self, path, pages):
         self.open_main_window(open_path=path)

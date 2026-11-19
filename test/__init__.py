@@ -808,23 +808,36 @@ class MComixTest(unittest.TestCase):
         return any(test.id() == self.id() for test, _traceback in problems)
 
 
-class MainWindowOpenTest(MComixTest):
+class MainWindowLaterTest(MComixTest):
 
-    """A test with the main window open, over the user's directories
-    made and the icons loaded, as it is when MComix has started with no
-    book; closed after the test."""
+    """A test that opens the main window itself, if at all, over the
+    user's directories made and the icons loaded; the window is closed
+    after the test."""
 
     def setUp(self):
         super().setUp()
         from mcomix import icons
         self.make_user_directories()
         icons.load_icons()
-        self.open_main_window()
-        pump()
+        self.window = None
 
     def tearDown(self):
-        self.close_main_window()
+        if self.window is None:
+            pump()
+        else:
+            self.close_main_window()
         super().tearDown()
+
+
+class MainWindowOpenTest(MainWindowLaterTest):
+
+    """A test with the main window open, as it is when MComix has
+    started with no book."""
+
+    def setUp(self):
+        super().setUp()
+        self.open_main_window()
+        pump()
 
 
 def session_tmp_dir():

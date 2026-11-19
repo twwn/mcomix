@@ -20,8 +20,9 @@ import warnings
 
 from gi.repository import Gdk, GdkPixbuf, Gio, GLib, Gtk
 
-from . import (MComixTest, children, descendants, fresh_bookmarks_store,
-               get_testfile_path, hold_open, pump, wait_for)
+from . import (MComixTest, MainWindowLaterTest, children, descendants,
+               fresh_bookmarks_store, get_testfile_path, hold_open, pump,
+               wait_for)
 
 from mcomix import archive_packer
 from mcomix import bookmark_backend
@@ -6655,23 +6656,10 @@ class StartUpOptionsTest(MComixTest):
                           prefs['vertical flip']))
 
 
-class ResumeAtTheFileOfThePageTest(MComixTest):
+class ResumeAtTheFileOfThePageTest(MainWindowLaterTest):
 
     """A "quit and save" is resumed at the file of its page, where it
     was kept, rather than at the page number."""
-
-    def setUp(self):
-        super().setUp()
-        self.make_user_directories()
-        icons.load_icons()
-        self.window = None
-
-    def tearDown(self):
-        if self.window is None:
-            pump()
-        else:
-            self.close_main_window()
-        super().tearDown()
 
     def test_the_file_of_the_page_decides_over_its_number(self):
         path = get_testfile_path('archives', '01-ZIP-Normal.zip')

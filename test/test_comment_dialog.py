@@ -11,28 +11,20 @@ from unittest import mock
 
 from gi.repository import Gtk
 
-from . import MComixTest, get_testfile_path, pump, wait_for
+from . import MainWindowLaterTest, get_testfile_path, pump, wait_for
 
 from mcomix import comment_dialog
-from mcomix import icons
 
 
-class CommentsDialogTest(MComixTest):
+class CommentsDialogTest(MainWindowLaterTest):
 
     def setUp(self):
         super().setUp()
-        self.make_user_directories()
-        icons.load_icons()
-        self.window = None
         self.dialog = None
 
     def tearDown(self):
         if self.dialog is not None:
             self.dialog.destroy()
-        if self.window is None:
-            pump()
-        else:
-            self.close_main_window()
         super().tearDown()
 
     def _archive_with_comments(self, name, *comments):
