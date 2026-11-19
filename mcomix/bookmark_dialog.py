@@ -47,7 +47,6 @@ class _BookmarksDialog(Dialog):
 
         scrolled = Gtk.ScrolledWindow()
         widgets.set_border(scrolled, 0)
-        scrolled.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
         widgets.pack(self.get_content_area(), scrolled, True, True, 0)
 
         self._list = column_list.ColumnListView()

@@ -76,7 +76,6 @@ class WatchListDialog(Dialog):
 
         main_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
         scroll_window = Gtk.ScrolledWindow()
-        scroll_window.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
         scroll_window.set_child(self._list)
         widgets.pack(main_box, scroll_window, True, True, 2)
         widgets.pack(main_box, button_box, False, False, 0, end=True)

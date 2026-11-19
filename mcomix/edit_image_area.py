@@ -30,7 +30,6 @@ class _ImageArea(Gtk.ScrolledWindow, widgets.Releasable):
 
         self._window = window
         self._editor = weakref.ref(edit_dialog)
-        self.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
 
         # As every other preview in MComix, as large as this screen
         # wants it.

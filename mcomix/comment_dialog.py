@@ -125,7 +125,6 @@ class _CommentsDialog(Dialog):
         widgets.set_border(page, 8)
 
         scrolled = Gtk.ScrolledWindow()
-        scrolled.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
         widgets.pack(page, scrolled, True, True, 0)
 
         text = self._window.filehandler.get_comment_text(num)

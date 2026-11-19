@@ -617,7 +617,6 @@ class OpenWithEditor(Dialog):
         widgets.pack(hbox, content, True, True, 4)
 
         scroll_window = Gtk.ScrolledWindow()
-        scroll_window.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
         scroll_window.set_child(self._command_list)
         widgets.pack(content, scroll_window, True, True, 0)
 

@@ -173,8 +173,6 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable):
         self._library.backend.book_cover_changed += self._cover_changed
         self._library.backend.book_moved += self._book_path_changed
 
-        self.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
-
         # A cover's uid is the book id, which is what _get_pixbuf()
         # takes; the rest of what the sorters compare rides along on the
         # item.
