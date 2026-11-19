@@ -42,6 +42,7 @@ Class or helper | For
 `MainWindowLaterTest` | A test that opens the main window itself, if at all; it is closed afterwards.
 `open_main_window()`, `close_main_window()` | The main window as MComix opens and quits it.
 `open_main_window_on_a_book()` | The main window opened on a four-page ZIP, once its pages are listed.
+`self.wait_for_pages()` | Wait for the book opened in `self.window` to have its pages listed.
 `pump()`, `wait_for()`, `wait_frames()` | Let the main loop run; wait for a condition rather than a time.
 `children()`, `descendants()` | The widgets inside a widget.
 `visible_prompts()`, `prompts_over(window)` | The message dialogs on screen, or standing over a window.

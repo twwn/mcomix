@@ -63,8 +63,6 @@ class BookmarksDialogTest(MComixTest):
         os.makedirs(constants.DATA_DIR, exist_ok=True)
         self.window = _StubWindow()
         self.store = bookmark_backend.BookmarksStore
-        self.store._initialized = False
-        self.store._bookmarks = []
         for number, name in enumerate(('alpha', 'beta', 'gamma')):
             self.store.add_bookmark(self._bookmark(name, number + 1))
         self.dialog = bookmark_dialog._BookmarksDialog(self.window, self.store)

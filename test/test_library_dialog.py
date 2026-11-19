@@ -75,6 +75,12 @@ class _LibraryWindowTest(MComixTest):
         pump()
         return main_dialog._dialog
 
+    def _open_all(self):
+        """Open the library on "All books", whatever collection it
+        showed when it last closed."""
+        prefs['last library collection'] = constants.COLLECTION_ALL
+        return self._open()
+
 
 class LibraryDialogTest(_LibraryWindowTest):
 
@@ -365,8 +371,7 @@ class LibraryDialogTest(_LibraryWindowTest):
         the window, and put a cover in its grid for every book filed
         after the library had closed - once for each time it had been
         opened."""
-        prefs['last library collection'] = constants.COLLECTION_ALL
-        dialog = self._open()
+        dialog = self._open_all()
         self.assertEqual(constants.COLLECTION_ALL,
                          dialog.collection_area.get_current_collection())
         backend = dialog.backend
@@ -839,8 +844,7 @@ class _OneBookTest(_LibraryWindowTest):
 
     def setUp(self):
         super().setUp()
-        prefs['last library collection'] = constants.COLLECTION_ALL
-        self.dialog = self._open()
+        self.dialog = self._open_all()
         self.path = self._book()
         self.dialog.backend.add_book(self.path)
         self.dialog.book_area.display_covers(constants.COLLECTION_ALL)
@@ -1501,8 +1505,7 @@ class MissingBooksTest(_LibraryWindowTest):
     them."""
 
     def test_clean_up_in_the_covers_menu_takes_out_the_books_gone(self):
-        prefs['last library collection'] = constants.COLLECTION_ALL
-        dialog = self._open()
+        dialog = self._open_all()
         path = os.path.join(self.tmp_dir, 'gone.cbz')
         shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'), path)
         dialog.backend.add_book(path)
@@ -1729,8 +1732,7 @@ class OpenFromLibraryTest(_LibraryWindowTest):
         guard against a hang at exit that closing the library now sees
         to - so every cover still to be drawn stayed blank for good once
         the library was shown again."""
-        prefs['last library collection'] = constants.COLLECTION_ALL
-        dialog = self._open()
+        dialog = self._open_all()
         path = get_testfile_path('archives', '01-ZIP-Normal.zip')
         dialog.backend.add_book(path)
         covers = dialog.book_area._covers
@@ -2098,16 +2100,14 @@ class AddBooksTest(_LibraryWindowTest):
         self.assertEqual([], self._filed(dialog))
 
     def test_files_dropped_on_a_collection_are_filed_in_it(self):
-        prefs['last library collection'] = constants.COLLECTION_ALL
-        comics = self._open().backend.add_collection('Comics')
+        comics = self._open_all().backend.add_collection('Comics')
         dialog = self._showing(comics)
         self._drop(dialog)
         book = dialog.backend.get_book_by_path(self.path)
         self.assertEqual([(comics, book.id)], self._filed(dialog))
 
     def test_a_watched_directory_with_no_collection_files_in_none(self):
-        prefs['last library collection'] = constants.COLLECTION_ALL
-        comics = self._open().backend.add_collection('Comics')
+        comics = self._open_all().backend.add_collection('Comics')
         dialog = self._showing(comics)
         entry = types.SimpleNamespace(
             collection=backend_types.DefaultCollection, directory='/comics')
@@ -2119,8 +2119,7 @@ class AddBooksTest(_LibraryWindowTest):
         # add_books() made the collection the books went into the "last
         # library collection" while another stayed on show, and picking
         # that collection then did nothing: it was already the last one.
-        prefs['last library collection'] = constants.COLLECTION_ALL
-        backend = self._open().backend
+        backend = self._open_all().backend
         comics = backend.add_collection('Comics')
         manga = backend.add_collection('Manga')
         dialog = self._showing(comics)
@@ -2240,8 +2239,7 @@ class CollectionMenuTest(_LibraryWindowTest):
         return dialog.backend.get_collection_by_name(name).id
 
     def test_clean_up_of_all_books_takes_out_the_books_gone(self):
-        prefs['last library collection'] = constants.COLLECTION_ALL
-        dialog = self._open()
+        dialog = self._open_all()
         path = os.path.join(self.tmp_dir, 'gone.cbz')
         shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'), path)
         dialog.backend.add_book(path)
@@ -2311,8 +2309,7 @@ class RelocateBooksTest(_LibraryWindowTest):
 
     def setUp(self):
         super().setUp()
-        prefs['last library collection'] = constants.COLLECTION_ALL
-        self.dialog = self._open()
+        self.dialog = self._open_all()
         # The covers are drawn here, on this thread: a worker still
         # drawing one would be reading a file the test is moving.
         self.dialog.book_area.stop_update()

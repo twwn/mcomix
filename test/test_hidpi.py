@@ -11,7 +11,8 @@ import unittest.mock
 
 from gi.repository import Gdk, GdkPixbuf, Gtk
 
-from . import MComixTest, MainWindowOpenTest, get_testfile_path, pump, wait_for
+from . import (MComixTest, MainWindowLaterTest, MainWindowOpenTest,
+               get_testfile_path, pump, wait_for)
 
 from mcomix import edit_image_area
 from mcomix import icons
@@ -31,8 +32,7 @@ class DeviceScaleTest(MainWindowOpenTest):
                                         return_value=scale):
             self.window.filehandler.open_file(
                 get_testfile_path('images', 'landscape-no-exif.jpg'))
-            self.assertTrue(wait_for(
-                lambda: self.window.imagehandler.get_number_of_pages() > 0))
+            self.wait_for_pages()
             pump()
             self.window.draw_image()
             pump()
@@ -101,9 +101,7 @@ class ThumbnailScaleTest(MComixTest):
                 'pepper-and-carrot',
                 'Pepper-and-Carrot_E01_The-Potion-of-Flight.cbz'))
         self.sidebar = self.window.thumbnailsidebar
-        self.assertTrue(wait_for(
-            lambda: self.window.imagehandler.get_number_of_pages() > 0,
-            seconds=20))
+        self.wait_for_pages()
 
     def tearDown(self):
         self.close_main_window(2000)
@@ -171,15 +169,13 @@ class EditorScaleTest(MainWindowOpenTest):
 
 
 
-class PreviewScaleTest(MComixTest):
+class PreviewScaleTest(MainWindowLaterTest):
 
     """The previews in the page selector and the properties dialog, made
     with the screen's pixels and drawn at the window's size."""
 
     def setUp(self):
         super().setUp()
-        self.make_user_directories()
-        icons.load_icons()
         self.open_main_window(open_path=get_testfile_path(
             'pepper-and-carrot',
             'Pepper-and-Carrot_E01_The-Potion-of-Flight.cbz'))
@@ -193,7 +189,6 @@ class PreviewScaleTest(MComixTest):
             if hasattr(self.dialog, '_stop_thumbnailing'):
                 self.dialog._stop_thumbnailing()
             self.dialog.destroy()
-        self.close_main_window()
         super().tearDown()
 
     def test_the_page_selector_asks_for_the_screen_s_pixels(self):

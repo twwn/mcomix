@@ -9,12 +9,10 @@ import unittest.mock
 
 from gi.repository import GLib, Gtk
 
-from . import MComixTest, MainWindowOpenTest, pump
+from . import MComixTest, MainWindowLaterTest, MainWindowOpenTest, pump
 
 from mcomix import constants
 from mcomix import keybindings
-from mcomix import icons
-from mcomix import main
 from mcomix import preferences_dialog
 from mcomix import ui
 
@@ -87,7 +85,7 @@ def _accelerators(model):
             yield from _accelerators(links.get_value())
 
 
-class MenusBuiltOnceTest(MComixTest):
+class MenusBuiltOnceTest(MainWindowLaterTest):
 
     """A new window built both menus, then built them again from an
     idle once it had registered its keybindings, each of which changes
@@ -97,8 +95,6 @@ class MenusBuiltOnceTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        self.make_user_directories()
-        icons.load_icons()
         self.built = []
         build = ui.MainUI._build
 
@@ -112,10 +108,6 @@ class MenusBuiltOnceTest(MComixTest):
         patcher.start()
         self.addCleanup(patcher.stop)
         self.open_main_window()
-        self.addCleanup(pump)
-        self.addCleanup(main.set_main_window, None)
-        self.addCleanup(self.window.destroy)
-        self.addCleanup(self.window.terminate_program)
         pump()
 
     def _keys(self, menu):

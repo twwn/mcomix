@@ -17,6 +17,13 @@ from mcomix import keybindings
 import mcomix.event
 
 
+def _event_tree():
+    """mcomix/event.py, parsed, for what its source says."""
+    source = os.path.join(os.path.dirname(mcomix.event.__file__), 'event.py')
+    with open(source, encoding='utf-8') as fp:
+        return ast.parse(fp.read())
+
+
 class _StubUIManager:
 
     """Standing in for ui.MainUI, which is only told the shortcut to
@@ -334,10 +341,7 @@ class DefaultKeybindingsTest(MComixTest):
         them come back as None, so that a call this cannot read shows up
         rather than being silently left out.
         """
-        source = os.path.join(os.path.dirname(mcomix.event.__file__),
-                              'event.py')
-        with open(source, encoding='utf-8') as fp:
-            tree = ast.parse(fp.read())
+        tree = _event_tree()
 
         def literal(node):
             if isinstance(node, ast.Constant):
@@ -429,10 +433,7 @@ class DocumentedMouseBindingsTest(MComixTest):
 
     def _handled_buttons(self):
         """Every button the click handlers in event.py branch on."""
-        source = os.path.join(os.path.dirname(mcomix.event.__file__),
-                              'event.py')
-        with open(source, encoding='utf-8') as fp:
-            tree = ast.parse(fp.read())
+        tree = _event_tree()
         handled = set()
         for function in ast.walk(tree):
             if not (isinstance(function, ast.FunctionDef)
@@ -617,10 +618,7 @@ class DocumentedKeyBindingsTest(MComixTest):
 
     def _registered(self):
         """Return {action: {binding, ...}} from event.py's defaults."""
-        source = os.path.join(os.path.dirname(mcomix.event.__file__),
-                              'event.py')
-        with open(source, encoding='utf-8') as fp:
-            tree = ast.parse(fp.read())
+        tree = _event_tree()
         return {
             call.args[0].value: {keybindings.parse_accelerator(element.value)
                                  for element in call.args[1].elts}

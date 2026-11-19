@@ -6,9 +6,8 @@ import unittest.mock
 
 from PIL import Image
 
-from . import MComixTest, pump, wait_for
+from . import MainWindowLaterTest, pump, wait_for
 
-from mcomix import icons
 from mcomix import image_tools
 from mcomix.preferences import prefs
 
@@ -17,16 +16,14 @@ RED = (200, 0, 0)
 BLUE = (0, 0, 200)
 
 
-class DynamicBackgroundTest(MComixTest):
+class DynamicBackgroundTest(MainWindowLaterTest):
 
     """A page with red sides and a blue top and bottom, read with the
     dynamic background colour on."""
 
     def setUp(self):
         super().setUp()
-        self.make_user_directories()
         prefs['smart bg'] = True
-        icons.load_icons()
         book = os.path.join(self.tmp_dir, 'book')
         os.makedirs(book)
         page = Image.new('RGB', (60, 90), (255, 255, 255))
@@ -43,10 +40,6 @@ class DynamicBackgroundTest(MComixTest):
         self.assertTrue(wait_for(
             lambda: self.window.imagehandler.page_is_available()))
         pump()
-
-    def tearDown(self):
-        self.close_main_window()
-        super().tearDown()
 
     def _colour(self):
         self.window.draw_image()
@@ -89,7 +82,7 @@ class DynamicBackgroundTest(MComixTest):
         self.assertEqual(1, len(calls))
 
 
-class DoublePageBackgroundTest(MComixTest):
+class DoublePageBackgroundTest(MainWindowLaterTest):
 
     """Two pages side by side: the colour is read down the outer sides,
     the left of the left page and the right of the right one, which
@@ -100,11 +93,9 @@ class DoublePageBackgroundTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        self.make_user_directories()
         prefs['smart bg'] = True
         prefs['default double page'] = True
         prefs['default manga mode'] = self.MANGA
-        icons.load_icons()
         book = os.path.join(self.tmp_dir, 'book')
         os.makedirs(book)
         # The first page green on its left and red on its right, the
@@ -125,10 +116,6 @@ class DoublePageBackgroundTest(MComixTest):
             lambda: self.window.imagehandler.page_is_available(1)
             and self.window.imagehandler.page_is_available(2)))
         pump()
-
-    def tearDown(self):
-        self.close_main_window()
-        super().tearDown()
 
     def test_the_colour_is_that_of_the_outer_sides(self):
         self.window.draw_image()

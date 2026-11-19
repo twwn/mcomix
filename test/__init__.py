@@ -796,6 +796,13 @@ class MComixTest(unittest.TestCase):
         main.set_main_window(self.window)
         return self.window
 
+    def wait_for_pages(self):
+        """Wait for the book open in self.window to have its pages
+        listed, which a worker thread does after the book is opened."""
+        self.assertTrue(wait_for(
+            lambda: self.window.imagehandler.get_number_of_pages() > 0,
+            seconds=20))
+
     def open_main_window_on_a_book(self):
         """Open the main window on test/files' 01-ZIP-Normal.zip, as
         MComix started with it, over the user's directories made and the
@@ -806,9 +813,7 @@ class MComixTest(unittest.TestCase):
         icons.load_icons()
         self.open_main_window(
             open_path=get_testfile_path('archives', '01-ZIP-Normal.zip'))
-        self.assertTrue(wait_for(
-            lambda: self.window.imagehandler.get_number_of_pages() > 0,
-            seconds=20))
+        self.wait_for_pages()
 
     def close_main_window(self, rounds=4000):
         """Close self.window, the main window the test built, as MComix

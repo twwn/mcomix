@@ -84,8 +84,6 @@ class MoveToMenuTest(MComixTest):
         self.window = _StubWindow()
         self.recent = _StubRecent()
         self.store = bookmark_backend.BookmarksStore
-        self.store._initialized = False
-        self.store._bookmarks = []
         self.window.imagehandler.path = self._file('here', 'book.cbz')
 
     def tearDown(self):

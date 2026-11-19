@@ -16,8 +16,8 @@ from unittest import mock
 from gi.repository import Gtk
 from PIL import Image
 
-from . import (MComixTest, MainWindowOpenTest, get_testfile_path, prompts_over,
-               pump, wait_for)
+from . import (MComixTest, MainWindowLaterTest, MainWindowOpenTest,
+               get_testfile_path, prompts_over, pump, wait_for)
 
 from mcomix import archive_extractor
 from mcomix import constants
@@ -33,28 +33,19 @@ from mcomix.preferences import prefs
 from .test_main_window import _descriptors_on
 
 
-class DirectoryWalkTest(MComixTest):
+class DirectoryWalkTest(MainWindowLaterTest):
 
     """ The next/previous directory commands, over directories that hold
     an archive, images, or nothing worth opening. """
 
     def setUp(self):
         super().setUp()
-        self.make_user_directories()
         self.root = os.path.join(self.tmp_dir, 'books')
         for name in ('a', 'b', 'c'):
             os.makedirs(os.path.join(self.root, name))
-        icons.load_icons()
         self.open_main_window()
         self.handler = self.window.filehandler
         pump()
-
-    def tearDown(self):
-        # Only terminate_program() stops the worker threads, and a GTK4
-        # toplevel that is never destroyed goes on taking part in the
-        # display's layout.
-        self.close_main_window()
-        super().tearDown()
 
     def _put_archive(self, directory):
         """ Copies the test archive into <directory>, and returns its path. """
@@ -876,8 +867,7 @@ class UnpackFolderTest(_WindowTest):
         prefs['unpack folder'] = folder
         self.assertTrue(self.handler.open_file(
             get_testfile_path('archives', '01-ZIP-Normal.zip')))
-        self.assertTrue(wait_for(
-            lambda: self.window.imagehandler.get_number_of_pages() > 0))
+        self.wait_for_pages()
         self.assertEqual(folder, os.path.dirname(
             self.handler._tmp_dir.rstrip(os.sep)))
         self.assertTrue(os.listdir(folder))
@@ -890,8 +880,7 @@ class UnpackFolderTest(_WindowTest):
         warned.assert_called_once()
         self.assertTrue(self.handler.open_file(
             get_testfile_path('archives', '01-ZIP-Normal.zip')))
-        self.assertTrue(wait_for(
-            lambda: self.window.imagehandler.get_number_of_pages() > 0))
+        self.wait_for_pages()
 
 
 class AnExtensionlessPictureTest(_WindowTest):
@@ -927,8 +916,7 @@ class AnArchiveThatWillNotOpenTest(_WindowTest):
             self.assertFalse(self.handler.open_file(path))
         self.handler.close_file()
         self.assertTrue(self.handler.open_file(path))
-        self.assertTrue(wait_for(
-            lambda: self.window.imagehandler.get_number_of_pages() > 0))
+        self.wait_for_pages()
 
 
 class AnArchiveThatCannotBeListedTest(_WindowTest):
@@ -962,8 +950,7 @@ class AnArchiveThatCannotBeListedTest(_WindowTest):
         # And the next book opens as ever.
         self.handler.close_file()
         self.assertTrue(self.handler.open_file(path))
-        self.assertTrue(wait_for(
-            lambda: self.window.imagehandler.get_number_of_pages() > 0))
+        self.wait_for_pages()
 
 
 class AnArchiveCutShortTest(_WindowTest):
@@ -1040,8 +1027,7 @@ class APathThatCannotBeOpenedTest(_WindowTest):
     def _over_a_book(self, path):
         self.assertTrue(self.handler.open_file(
             get_testfile_path('archives', '01-ZIP-Normal.zip')))
-        self.assertTrue(wait_for(
-            lambda: self.window.imagehandler.get_number_of_pages() > 0))
+        self.wait_for_pages()
         pump()
         with mock.patch.object(self.window.osd, 'show') as shown:
             self.assertFalse(self.handler.open_file(path))
@@ -1083,7 +1069,7 @@ class APathThatCannotBeOpenedTest(_WindowTest):
         self._closed()
 
 
-class RememberedResumeAnswerTest(MComixTest):
+class RememberedResumeAnswerTest(MainWindowLaterTest):
 
     """Opening a book the reader has stopped in before.
 
@@ -1096,20 +1082,14 @@ class RememberedResumeAnswerTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        self.make_user_directories()
         self.archive = os.path.join(self.tmp_dir, '01-ZIP-Normal.zip')
         shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'),
                     self.archive)
-        icons.load_icons()
         self.open_main_window()
         self.handler = self.window.filehandler
         self.handler.last_read_page.set_enabled(True)
         self.handler.last_read_page.set_page(self.archive, 3)
         pump()
-
-    def tearDown(self):
-        self.close_main_window()
-        super().tearDown()
 
     def _open_and_settle(self):
         self.handler.open_file(self.archive)
@@ -1211,7 +1191,7 @@ class RememberedResumeAnswerTest(MComixTest):
         self.assertEqual([], prompts_over(self.window))
 
 
-class ExtractionOrderTest(MComixTest):
+class ExtractionOrderTest(MainWindowLaterTest):
 
     """The order an archive's pages are unpacked in, opened at a page
     other than the first.
@@ -1226,7 +1206,6 @@ class ExtractionOrderTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        self.make_user_directories()
         self.archive = os.path.join(self.tmp_dir, 'book.zip')
         with open(get_testfile_path('images', 'red.png'), 'rb') as image:
             data = image.read()
@@ -1238,7 +1217,6 @@ class ExtractionOrderTest(MComixTest):
         prefs['default double page'] = False
         prefs['stored dialog choices']['resume-from-last-read-page'] = \
             int(Response.YES)
-        icons.load_icons()
         self.open_main_window()
         self.handler = self.window.filehandler
         self.handler.last_read_page.set_enabled(True)
@@ -1255,10 +1233,6 @@ class ExtractionOrderTest(MComixTest):
                                     '_extract_file', recording)
         patcher.start()
         self.addCleanup(patcher.stop)
-
-    def tearDown(self):
-        self.close_main_window()
-        super().tearDown()
 
     def _unpacked(self):
         self.assertTrue(wait_for(lambda: len(self.unpacked) == self.PAGES))
@@ -1577,7 +1551,7 @@ class ABookOpenedAtItsEndInDoublePageTest(_WindowTest):
         self.assertEqual(2, self.window.displayed_page_count())
 
 
-class ABookWithNoPagesTest(MComixTest):
+class ABookWithNoPagesTest(MainWindowLaterTest):
 
     """Closing an archive that has no pictures in it.
 
@@ -1588,19 +1562,13 @@ class ABookWithNoPagesTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        self.make_user_directories()
         self.archive = os.path.join(self.tmp_dir, 'no-pictures.zip')
         with zipfile.ZipFile(self.archive, 'w') as archive:
             archive.writestr('readme.txt', 'Nothing to look at.')
-        icons.load_icons()
         self.open_main_window()
         self.handler = self.window.filehandler
         self.handler.last_read_page.set_enabled(True)
         pump()
-
-    def tearDown(self):
-        self.close_main_window()
-        super().tearDown()
 
     def test_closing_it_does_not_file_it_as_read(self):
         self.assertTrue(self.handler.open_file(self.archive))

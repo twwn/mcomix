@@ -8,42 +8,29 @@ import weakref
 
 from gi.repository import Gdk, Gio, Graphene, Gtk
 
-from . import MComixTest, get_testfile_path, pump, wait_for, wait_frames
+from . import (MainWindowLaterTest, get_testfile_path, pump, wait_for,
+               wait_frames)
 from .test_key_press import _Controller
 
 from mcomix import constants
-from mcomix import icons
 from mcomix import keybindings
-from mcomix import main
 from mcomix.library import backend
 from mcomix.library import shelf
 from mcomix.preferences import prefs
 
 
-class _ShelfWindowTest(MComixTest):
+class _ShelfWindowTest(MainWindowLaterTest):
 
     """A main window of its own, with two books to show."""
 
     def setUp(self):
         super().setUp()
-        self.make_user_directories()
-        icons.load_icons()
-        self.window = None
         #: Two books of the reader's own, away from the test files.
         self.books = []
         for name in ('01-ZIP-Normal.zip', '02-TAR-Normal.tar'):
             path = os.path.join(self.tmp_dir, name)
             shutil.copy(get_testfile_path('archives', name), path)
             self.books.append(path)
-
-    def tearDown(self):
-        if self.window is not None:
-            self.window.terminate_program()
-            self.window.destroy()
-            main.set_main_window(None)
-            self.window = None
-            pump()
-        super().tearDown()
 
     def _window(self, open_path=None):
         self.open_main_window(open_path=open_path)
@@ -239,18 +226,12 @@ class ShelfTest(_ShelfWindowTest):
         self.assertIsNotNone(self._shown())
         held = weakref.ref(window)
         del window
-        self.tearDown_window_only()
+        self.close_main_window()
+        self.window = None
         gc.collect()
         pump()
         gc.collect()
         self.assertIsNone(held())
-
-    def tearDown_window_only(self):
-        self.window.terminate_program()
-        self.window.destroy()
-        main.set_main_window(None)
-        self.window = None
-        pump()
 
 
 class ShelfKeysTest(_ShelfWindowTest):

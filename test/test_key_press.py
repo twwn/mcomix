@@ -10,11 +10,10 @@ import unittest.mock
 
 from gi.repository import Gdk, Gtk
 
-from . import MComixTest, get_testfile_path, pump, wait_for
+from . import MainWindowLaterTest, get_testfile_path, pump, wait_for
 
 from mcomix import clipboard
 from mcomix import constants
-from mcomix import icons
 from mcomix import keybindings
 from mcomix.preferences import prefs
 
@@ -27,7 +26,7 @@ class _Controller:
         return 0
 
 
-class _KeyPressWindowTest(MComixTest):
+class _KeyPressWindowTest(MainWindowLaterTest):
 
     """A main window, and a way to press a key in it."""
 
@@ -36,15 +35,9 @@ class _KeyPressWindowTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        self.make_user_directories()
-        icons.load_icons()
         prefs.update(self.WINDOW_PREFS)
         self.open_main_window()
         pump()
-
-    def tearDown(self):
-        self.close_main_window()
-        super().tearDown()
 
     def _press(self, keyval, state=Gdk.ModifierType(0)):
         """Press the key that types <keyval> unshifted, with <state> held."""

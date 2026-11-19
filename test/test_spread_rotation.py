@@ -11,18 +11,15 @@ same transform, is the step they are laid out along.
 
 import itertools
 
-from . import MComixTest, get_testfile_path, pump, wait_for
+from . import MainWindowLaterTest, get_testfile_path, pump, wait_for
 
-from mcomix import icons
 from mcomix.preferences import prefs
 
 
-class SpreadRotationTest(MComixTest):
+class SpreadRotationTest(MainWindowLaterTest):
 
     def setUp(self):
         super().setUp()
-        self.make_user_directories()
-        icons.load_icons()
         prefs['default double page'] = True
         self.open_main_window()
         # A portrait page, followed by one that is not wide either, so
@@ -34,10 +31,6 @@ class SpreadRotationTest(MComixTest):
         self.window.actiongroup.get_action('double_page').set_active(True)
         pump()
         self.assertEqual(2, self.window.displayed_page_count())
-
-    def tearDown(self):
-        self.close_main_window()
-        super().tearDown()
 
     @staticmethod
     def _sign(value):

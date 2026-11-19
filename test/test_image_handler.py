@@ -41,18 +41,28 @@ class _StubWindow:
         return bool(prefs['default double page'])
 
 
-class VirtualDoublePageTest(MComixTest):
+class _HandlerTest(MComixTest):
+
+    """An ImageHandler of a stand-in window as self.handler, cleaned up
+    after the test.  It reads no preference when it is built, so a
+    set-up may change them afterwards."""
+
+    def setUp(self):
+        super().setUp()
+        self.handler = image_handler.ImageHandler(_StubWindow())
+
+    def tearDown(self):
+        self.handler.cleanup()
+        super().tearDown()
+
+
+class VirtualDoublePageTest(_HandlerTest):
 
     def setUp(self):
         super().setUp()
         prefs['max pages to cache'] = 4
         prefs['default double page'] = True
         prefs['virtual double page for fitting images'] = constants.SHOW_DOUBLE_AS_ONE_WIDE
-        self.handler = image_handler.ImageHandler(_StubWindow())
-
-    def tearDown(self):
-        self.handler.cleanup()
-        super().tearDown()
 
     def _make_book(self, *names):
         """Make a book out of the named test images, with none of them
@@ -72,6 +82,13 @@ class VirtualDoublePageTest(MComixTest):
             self.handler.page_available(page)
         self.handler.set_page(1)
         return paths
+
+    def _open_a_broken_page(self):
+        """Open a book of one page, and make that page's file anything
+        but an image."""
+        self._open('portrait-no-exif.png')
+        with open(self.handler.get_path_to_page(1), 'wb') as damaged:
+            damaged.write(b'not an image')
 
     def test_a_wide_page_is_shown_on_its_own(self):
         self._open('portrait-no-exif.png', 'landscape-no-exif.png',
@@ -116,10 +133,7 @@ class VirtualDoublePageTest(MComixTest):
         """A book holds whatever files it was pointed at, and one of them
         may be truncated, or not an image at all.  Nothing above this
         expects an exception, so the page shows the missing-image icon."""
-        self._open('portrait-no-exif.png')
-        broken = self.handler.get_path_to_page(1)
-        with open(broken, 'wb') as damaged:
-            damaged.write(b'not an image')
+        self._open_a_broken_page()
         self.handler._raw_pixbufs.clear()
         self.assertIs(self.handler._get_pixbuf(0),
                       image_tools.missing_page())
@@ -127,10 +141,7 @@ class VirtualDoublePageTest(MComixTest):
     def test_a_page_that_would_not_load_is_not_read_again(self):
         """Its answer is cached like any other, so a page turn back and
         forth over a broken page does not retry the decode each time."""
-        self._open('portrait-no-exif.png')
-        broken = self.handler.get_path_to_page(1)
-        with open(broken, 'wb') as damaged:
-            damaged.write(b'not an image')
+        self._open_a_broken_page()
         self.handler._raw_pixbufs.clear()
         self.handler._get_pixbuf(0)
         self.assertEqual(list(self.handler._raw_pixbufs), [0])
@@ -170,10 +181,7 @@ class VirtualDoublePageTest(MComixTest):
         """The thumbnail bar and the page selector draw what this
         answers, and both take None for a page not extracted yet, to be
         asked for again once it has been."""
-        self._open('portrait-no-exif.png')
-        broken = self.handler.get_path_to_page(1)
-        with open(broken, 'wb') as damaged:
-            damaged.write(b'not an image')
+        self._open_a_broken_page()
         self.assertIs(self.handler.get_thumbnail(1, 64, 64),
                       image_tools.missing_image_icon(64, 64))
 
@@ -368,7 +376,7 @@ class VirtualDoublePageTest(MComixTest):
         self.assertEqual(self.handler.get_displayed_size(2), uncached)
 
 
-class PageNameAndSizeTest(MComixTest):
+class PageNameAndSizeTest(_HandlerTest):
 
     """What the status bar is told of the pages on screen: a name and a
     size for one page, or for each of two."""
@@ -377,11 +385,6 @@ class PageNameAndSizeTest(MComixTest):
         super().setUp()
         prefs['max pages to cache'] = 4
         prefs['default double page'] = True
-        self.handler = image_handler.ImageHandler(_StubWindow())
-
-    def tearDown(self):
-        self.handler.cleanup()
-        super().tearDown()
 
     _make_book = VirtualDoublePageTest._make_book
     _open = VirtualDoublePageTest._open
@@ -412,7 +415,7 @@ class PageNameAndSizeTest(MComixTest):
         self.assertEqual(('', ''), self.handler.get_page_filesize(double=True))
 
 
-class CacheWindowTest(MComixTest):
+class CacheWindowTest(_HandlerTest):
 
     """The set of pages _ask_for_pages() picks must always contain the page
     that is on screen: it doubles as the list of pixbufs worth keeping, so a
@@ -421,14 +424,9 @@ class CacheWindowTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        self.handler = image_handler.ImageHandler(_StubWindow())
         self.handler.set_image_files(['%02d.png' % n for n in range(1, 11)])
         for page in range(1, 11):
             self.handler.page_available(page)
-
-    def tearDown(self):
-        self.handler.cleanup()
-        super().tearDown()
 
     def _wanted(self, cache_pages, double_page, page):
         prefs['default double page'] = double_page
@@ -471,24 +469,19 @@ class CacheWindowTest(MComixTest):
         self.assertEqual(self._wanted(7, False, 10), [9, 8])
 
 
-class CacheEverythingTest(MComixTest):
+class CacheEverythingTest(_HandlerTest):
 
     """"Maximum number of pages to store in the cache" at -1, which the
     preferences dialog offers as caching the whole book."""
 
     def setUp(self):
         super().setUp()
-        self.handler = image_handler.ImageHandler(_StubWindow())
         self.handler.set_image_files(['%02d.png' % n for n in range(1, 4)])
         self.ordered = []
         patcher = unittest.mock.patch.object(
             self.handler._thread, 'append_order', self.ordered.append)
         patcher.start()
         self.addCleanup(patcher.stop)
-
-    def tearDown(self):
-        self.handler.cleanup()
-        super().tearDown()
 
     def test_every_page_that_lands_is_cached_after_the_wanted_ones(self):
         """At a priority below every wanted page, which is numbered by
@@ -537,7 +530,7 @@ class CacheEverythingTest(MComixTest):
         self.assertEqual([], self.ordered)
 
 
-class NoPageYetTest(MComixTest):
+class NoPageYetTest(_HandlerTest):
 
     """What the handler answers before a page has been set.
 
@@ -545,20 +538,12 @@ class NoPageYetTest(MComixTest):
     is about the answers being answers rather than exceptions.
     """
 
-    def setUp(self):
-        super().setUp()
-        self.handler = image_handler.ImageHandler(_StubWindow())
-
-    def tearDown(self):
-        self.handler.cleanup()
-        super().tearDown()
-
     def test_there_are_no_pages_to_show(self):
         self.assertEqual(self.handler.get_pixbufs(1), [])
         self.assertEqual(self.handler.get_pixbufs(2), [])
 
 
-class BeforeAPageIsChosenTest(MComixTest):
+class BeforeAPageIsChosenTest(_HandlerTest):
 
     """What the handler answers between being given a book and being
     told which page of it is showing.
@@ -569,7 +554,6 @@ class BeforeAPageIsChosenTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        self.handler = image_handler.ImageHandler(_StubWindow())
         self.handler.set_image_files(['/nowhere/one.jpg', '/nowhere/two.jpg'])
 
     def test_there_is_no_path_to_a_page_that_was_never_chosen(self):

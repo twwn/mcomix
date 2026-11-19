@@ -3,25 +3,19 @@
 import random
 import unittest.mock
 
-from . import MComixTest, get_testfile_path, pump, wait_for
+from . import MainWindowLaterTest, get_testfile_path, pump, wait_for
 
-from mcomix import icons
 from mcomix import main
 from mcomix.preferences import prefs
 
 
-class JumpHistoryTest(MComixTest):
+class JumpHistoryTest(MainWindowLaterTest):
 
     def setUp(self):
         super().setUp()
-        self.make_user_directories()
         prefs['show menubar'] = True
-        icons.load_icons()
         self.open_main_window(
             open_path=get_testfile_path('archives', '01-ZIP-Normal.zip'))
-        # Only terminate_program() stops the worker threads and closes
-        # the library the window opened.
-        self.addCleanup(self.close_main_window)
         self.assertTrue(wait_for(
             lambda: self.window.filehandler.file_loaded
             and self.window.imagehandler.get_number_of_pages() == 4,

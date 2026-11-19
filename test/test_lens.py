@@ -10,11 +10,11 @@ import unittest.mock
 
 from gi.repository import GdkPixbuf, GLib
 
-from . import MComixTest, MainWindowOpenTest, get_testfile_path, pump, wait_for
+from . import (MComixTest, MainWindowLaterTest, MainWindowOpenTest,
+               get_testfile_path, pump, wait_for)
 from . import test_key_press
 
 from mcomix import constants
-from mcomix import icons
 from mcomix import image_tools
 from mcomix.lens import MagnifyingLens
 from mcomix.preferences import prefs
@@ -133,9 +133,7 @@ class LensCursorTest(MainWindowOpenTest):
     def _open_a_file(self):
         self.window.filehandler.open_file(
             get_testfile_path('archives', '01-ZIP-Normal.zip'))
-        self.assertTrue(wait_for(
-            lambda: self.window.imagehandler.get_number_of_pages() > 0,
-            seconds=20))
+        self.wait_for_pages()
         pump()
 
     @property
@@ -170,7 +168,7 @@ class LensCursorTest(MainWindowOpenTest):
         self.assertEqual(constants.NORMAL_CURSOR, self._cursor)
 
 
-class LensFollowsThePagesTest(MComixTest):
+class LensFollowsThePagesTest(MainWindowLaterTest):
 
     """The lens over pages that change under a pointer that stays put.
 
@@ -182,8 +180,6 @@ class LensFollowsThePagesTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        self.make_user_directories()
-        icons.load_icons()
         # A window of a size the test knows, whatever the screen, as
         # test_key_press's scrolling tests have it (_ScrollablePageTest).
         prefs.update(test_key_press._ScrollablePageTest.WINDOW_PREFS)
@@ -216,10 +212,6 @@ class LensFollowsThePagesTest(MComixTest):
         self.lens.enabled = True
         width, height = self.window.get_visible_area_size()
         self.lens._motion_event(None, width / 2, height / 2)
-
-    def tearDown(self):
-        self.close_main_window()
-        super().tearDown()
 
     def _wait_for_the_page(self):
         imagehandler = self.window.imagehandler

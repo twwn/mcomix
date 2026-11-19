@@ -1161,11 +1161,7 @@ class DeleteFromDiskTest(MComixTest):
         # MComixTest redirects DATA_DIR without creating it, and the
         # store writes its file as soon as a bookmark is added.
         os.makedirs(constants.DATA_DIR, exist_ok=True)
-        store = bookmark_backend.BookmarksStore
-        store._initialized = False
-        store._bookmarks = []
-        self.addCleanup(setattr, store, '_bookmarks', [])
-        return store
+        return bookmark_backend.BookmarksStore
 
     def _bookmark(self, path):
         return bookmark_menu_item._Bookmark(

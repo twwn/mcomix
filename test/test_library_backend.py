@@ -206,6 +206,30 @@ class LibraryDatabaseTest(unittest.TestCase):
         shutil.rmtree(self.tmp_dir, ignore_errors=True)
 
 
+class OpenLibraryTest(LibraryDatabaseTest):
+
+    """A LibraryBackend opened over the test's own library as
+    self.library, and closed after the test."""
+
+    def setUp(self):
+        super().setUp()
+        self.library = backend.LibraryBackend()
+
+    def tearDown(self):
+        self.library.close()
+        super().tearDown()
+
+    def _counted(self, call):
+        """Run <call> and return what it answered with the statements it
+        ran to get there."""
+        statements = []
+        self.library._con.set_trace_callback(statements.append)
+        try:
+            return call(), statements
+        finally:
+            self.library._con.set_trace_callback(None)
+
+
 class RedirectedPathsTest(LibraryDatabaseTest):
 
     """What keeps the tests in this file off the reader's own library."""
@@ -295,15 +319,10 @@ class RarSetTest(LibraryDatabaseTest):
             self.volumes[0]).pages)
 
 
-class NothingThereTest(LibraryDatabaseTest):
+class NothingThereTest(OpenLibraryTest):
 
     """What the library answers about books and collections it does not
     hold, which is None or False rather than an error."""
-
-    def setUp(self):
-        super().setUp()
-        self.library = backend.LibraryBackend()
-        self.addCleanup(self.library.close)
 
     def test_a_book_it_does_not_hold_has_no_cover(self):
         self.assertIsNone(self.library.get_book_cover(9999))
@@ -819,7 +838,7 @@ class InterruptedCreationTest(_InterruptedOpenTest):
             library.close()
 
 
-class CleanCollectionTransactionTest(LibraryDatabaseTest):
+class CleanCollectionTransactionTest(OpenLibraryTest):
 
     """clean_collection() sweeps in one transaction, not thousands.
 
@@ -831,7 +850,6 @@ class CleanCollectionTransactionTest(LibraryDatabaseTest):
 
     def setUp(self):
         super().setUp()
-        self.library = backend.LibraryBackend()
         self.library.begin_transaction()
         for index in range(8):
             cursor = self.library._con.execute(
@@ -842,10 +860,6 @@ class CleanCollectionTransactionTest(LibraryDatabaseTest):
                 'insert or ignore into contain (collection, book) values (?, ?)',
                 (1, cursor.lastrowid))
         self.library.end_transaction()
-
-    def tearDown(self):
-        self.library.close()
-        super().tearDown()
 
     def test_a_book_in_a_collection_and_one_under_it_is_named_once(self):
         """The books were collected one collection at a time and the
@@ -900,7 +914,7 @@ class CleanCollectionTransactionTest(LibraryDatabaseTest):
         self.library.end_transaction()
 
 
-class RemoveCollectionTest(LibraryDatabaseTest):
+class RemoveCollectionTest(OpenLibraryTest):
 
     """Removing a shelf touches four tables, and must do so atomically.
 
@@ -913,7 +927,6 @@ class RemoveCollectionTest(LibraryDatabaseTest):
 
     def setUp(self):
         super().setUp()
-        self.library = backend.LibraryBackend()
         with self.library.transaction():
             self.parent = self.library.add_collection('Parent')
             self.child = self.library.add_collection('Child')
@@ -929,10 +942,6 @@ class RemoveCollectionTest(LibraryDatabaseTest):
             self.library._con.execute(
                 '''insert into watchlist (path, collection, recursive)
                 values ('/watched', ?, 0)''', (self.parent,))
-
-    def tearDown(self):
-        self.library.close()
-        super().tearDown()
 
     def _traced(self, collection):
         """Return every statement remove_collection() issues, the
@@ -1019,7 +1028,7 @@ class RemoveCollectionTest(LibraryDatabaseTest):
             'the collection under it was not moved to the root')
 
 
-class BooksOutsideRecentTest(LibraryDatabaseTest):
+class BooksOutsideRecentTest(OpenLibraryTest):
 
     """Which books the watch list scan counts as already in the library.
 
@@ -1032,12 +1041,7 @@ class BooksOutsideRecentTest(LibraryDatabaseTest):
 
     def setUp(self):
         super().setUp()
-        self.library = backend.LibraryBackend()
         self.shelf = self.library.add_collection('Shelf')
-
-    def tearDown(self):
-        self.library.close()
-        super().tearDown()
 
     def _add_book(self, name, collections):
         cursor = self.library._con.execute(
@@ -1066,13 +1070,12 @@ class BooksOutsideRecentTest(LibraryDatabaseTest):
             'book that is filed somewhere else does not')
 
 
-class BookPathsInCollectionTest(LibraryDatabaseTest):
+class BookPathsInCollectionTest(OpenLibraryTest):
 
     """The ids and paths of a collection's books in one statement."""
 
     def setUp(self):
         super().setUp()
-        self.library = backend.LibraryBackend()
         self.shelf = self.library.add_collection('Shelf')
         self.other = self.library.add_collection('Other')
         for name, collection in (('one.cbz', self.shelf),
@@ -1086,10 +1089,6 @@ class BookPathsInCollectionTest(LibraryDatabaseTest):
                 'insert into contain (collection, book) values (?, ?)',
                 (collection, cursor.lastrowid))
             cursor.close()
-
-    def tearDown(self):
-        self.library.close()
-        super().tearDown()
 
     def test_it_names_the_same_books_as_the_id_query(self):
         for collection in (None, self.shelf, self.other):
@@ -1106,17 +1105,9 @@ class BookPathsInCollectionTest(LibraryDatabaseTest):
              self.library.get_book_paths_in_collection(self.shelf)])
 
 
-class TransactionTest(LibraryDatabaseTest):
+class TransactionTest(OpenLibraryTest):
 
     """The context manager that makes a loop of writes one transaction."""
-
-    def setUp(self):
-        super().setUp()
-        self.library = backend.LibraryBackend()
-
-    def tearDown(self):
-        self.library.close()
-        super().tearDown()
 
     def test_the_block_runs_in_a_transaction(self):
         self.assertIsNone(self.library._con.isolation_level)
@@ -1145,7 +1136,7 @@ class TransactionTest(LibraryDatabaseTest):
         self.assertIsNotNone(self.library.get_collection_by_name('Shelf'))
 
 
-class TableExistsTest(LibraryDatabaseTest):
+class TableExistsTest(OpenLibraryTest):
 
     """_table_exists() decides whether the file has a schema at all.
 
@@ -1153,14 +1144,6 @@ class TableExistsTest(LibraryDatabaseTest):
     argument is part of the statement, so a name that is not a bare
     identifier was a syntax error out of a question that has a "no".
     """
-
-    def setUp(self):
-        super().setUp()
-        self.library = backend.LibraryBackend()
-
-    def tearDown(self):
-        self.library.close()
-        super().tearDown()
 
     def test_a_table_that_is_there(self):
         for table in ('book', 'collection', 'contain', 'info',
@@ -1176,26 +1159,21 @@ class TableExistsTest(LibraryDatabaseTest):
                         'the book table did not survive the question')
 
 
-class ClearAllTest(LibraryDatabaseTest):
+class ClearAllTest(OpenLibraryTest):
 
     """What LastReadPage.clear_all() may and may not remove."""
 
     def setUp(self):
         super().setUp()
-        self.backend = backend.LibraryBackend()
-        self.lastread = last_read_page.LastReadPage(self.backend)
+        self.lastread = last_read_page.LastReadPage(self.library)
         self.lastread.set_enabled(True)
-
-    def tearDown(self):
-        self.backend.close()
-        super().tearDown()
 
     @staticmethod
     def _archive(name):
         return get_testfile_path('archives', name)
 
     def _in_library(self, path):
-        return self.backend.get_book_by_path(path) is not None
+        return self.library.get_book_by_path(path) is not None
 
     def test_removes_book_whose_recent_entry_was_already_cleared(self):
         # Closing an archive on page 1 clears its "recent" entry but
@@ -1215,10 +1193,10 @@ class ClearAllTest(LibraryDatabaseTest):
     def test_keeps_book_that_is_in_another_collection(self):
         path = self._archive('02-TAR-Normal.tar')
         self.lastread.set_page(path, 5)
-        self.backend.add_collection('Favourites')
-        self.backend.add_book_to_collection(
-            self.backend.get_book_by_path(path).id,
-            self.backend.get_collection_by_name('Favourites').id)
+        self.library.add_collection('Favourites')
+        self.library.add_book_to_collection(
+            self.library.get_book_by_path(path).id,
+            self.library.get_collection_by_name('Favourites').id)
 
         self.lastread.clear_all()
 
@@ -1231,7 +1209,7 @@ class ClearAllTest(LibraryDatabaseTest):
         # filing it, so "in no collection" is a legitimate state and not
         # something to be tidied away.
         path = self._archive('03-RAR-Normal.rar')
-        self.backend.add_book(path, None)
+        self.library.add_book(path, None)
 
         self.lastread.clear_all()
 
@@ -1240,19 +1218,14 @@ class ClearAllTest(LibraryDatabaseTest):
                             'was added to the library without a collection')
 
 
-class AddBookToCollectionTest(LibraryDatabaseTest):
+class AddBookToCollectionTest(OpenLibraryTest):
 
     """What the listeners are told when a book is filed."""
 
     def setUp(self):
         super().setUp()
-        self.backend = backend.LibraryBackend()
         self.seen = []
-        self.backend.book_added_to_collection += self._book_filed
-
-    def tearDown(self):
-        self.backend.close()
-        super().tearDown()
+        self.library.book_added_to_collection += self._book_filed
 
     def _book_filed(self, book, collection):
         # Record the book itself rather than reading it: a listener that
@@ -1262,12 +1235,12 @@ class AddBookToCollectionTest(LibraryDatabaseTest):
 
     def test_a_book_that_exists_is_reported(self):
         path = get_testfile_path('archives', '01-ZIP-Normal.zip')
-        collection = self.backend.add_collection('files')
-        self.assertTrue(self.backend.add_book(path))
-        book = self.backend.get_book_by_path(path)
+        collection = self.library.add_collection('files')
+        self.assertTrue(self.library.add_book(path))
+        book = self.library.get_book_by_path(path)
         self.seen.clear()
 
-        self.backend.add_book_to_collection(book.id, collection)
+        self.library.add_book_to_collection(book.id, collection)
 
         self.assertEqual([(book.id, collection)],
                          [(seen.id, where) for seen, where in self.seen])
@@ -1276,14 +1249,14 @@ class AddBookToCollectionTest(LibraryDatabaseTest):
         # Contain carries no foreign key on book, so an id that names no
         # row is inserted happily and the lookup that follows finds
         # nothing.  The listeners used to be handed that nothing.
-        collection = self.backend.add_collection('files')
+        collection = self.library.add_collection('files')
 
-        self.backend.add_book_to_collection(4711, collection)
+        self.library.add_book_to_collection(4711, collection)
 
         self.assertEqual([], self.seen)
 
 
-class MovedBookTest(LibraryDatabaseTest):
+class MovedBookTest(OpenLibraryTest):
 
     """A book that MComix has moved keeps its row, and its row keeps up.
 
@@ -1296,30 +1269,25 @@ class MovedBookTest(LibraryDatabaseTest):
 
     def setUp(self):
         super().setUp()
-        self.backend = backend.LibraryBackend()
         self.path = get_testfile_path('archives', '01-ZIP-Normal.zip')
-        self.assertTrue(self.backend.add_book(self.path))
-        self.book = self.backend.get_book_by_path(self.path)
-
-    def tearDown(self):
-        self.backend.close()
-        super().tearDown()
+        self.assertTrue(self.library.add_book(self.path))
+        self.book = self.library.get_book_by_path(self.path)
 
     def test_the_row_follows_the_file(self):
         moved = os.path.join(os.path.dirname(self.path), 'elsewhere.zip')
 
-        self.assertTrue(self.backend.update_book_path(self.path, moved))
+        self.assertTrue(self.library.update_book_path(self.path, moved))
 
-        self.assertIsNone(self.backend.get_book_by_path(self.path))
-        self.assertEqual(self.backend.get_book_by_path(moved).id,
+        self.assertIsNone(self.library.get_book_by_path(self.path))
+        self.assertEqual(self.library.get_book_by_path(moved).id,
                          self.book.id)
 
     def test_the_book_is_renamed_with_its_file(self):
         moved = os.path.join(os.path.dirname(self.path), 'elsewhere.zip')
 
-        self.backend.update_book_path(self.path, moved)
+        self.library.update_book_path(self.path, moved)
 
-        self.assertEqual(self.backend.get_book_by_path(moved).name,
+        self.assertEqual(self.library.get_book_by_path(moved).name,
                          'elsewhere.zip')
 
     def test_the_cover_follows_the_file(self):
@@ -1329,26 +1297,26 @@ class MovedBookTest(LibraryDatabaseTest):
         book = os.path.join(self.tmp_dir, 'book.zip')
         moved = os.path.join(self.tmp_dir, 'moved.zip')
         shutil.copy2(self.path, book)
-        self.assertTrue(self.backend.add_book(book))
-        self.assertIsNotNone(self.backend.get_book_thumbnail(book))
+        self.assertTrue(self.library.add_book(book))
+        self.assertIsNotNone(self.library.get_book_thumbnail(book))
         covers = os.listdir(constants.LIBRARY_COVERS_PATH)
         self.assertEqual(1, len(covers))
         shutil.move(book, moved)
 
-        self.assertTrue(self.backend.update_book_path(book, moved))
+        self.assertTrue(self.library.update_book_path(book, moved))
 
         with unittest.mock.patch.object(
                 thumbnail_tools.Thumbnailer, '_create_thumbnail') as drawn:
-            self.assertIsNotNone(self.backend.get_book_thumbnail(moved))
+            self.assertIsNotNone(self.library.get_book_thumbnail(moved))
         drawn.assert_not_called()
         kept = os.listdir(constants.LIBRARY_COVERS_PATH)
         self.assertEqual(1, len(kept))
         self.assertNotEqual(covers, kept)
 
     def test_a_book_that_is_not_in_the_library_moves_nothing(self):
-        self.assertFalse(self.backend.update_book_path('/nowhere/book.zip',
+        self.assertFalse(self.library.update_book_path('/nowhere/book.zip',
                                                        '/elsewhere/book.zip'))
-        self.assertIsNotNone(self.backend.get_book_by_path(self.path))
+        self.assertIsNotNone(self.library.get_book_by_path(self.path))
 
     def test_a_path_another_row_holds_is_not_taken_from_it(self):
         """The path column is unique.
@@ -1358,16 +1326,16 @@ class MovedBookTest(LibraryDatabaseTest):
         not this book's to throw away, so the update is refused instead.
         """
         other = get_testfile_path('archives', '02-TAR-Normal.tar')
-        self.assertTrue(self.backend.add_book(other))
+        self.assertTrue(self.library.add_book(other))
 
-        self.assertFalse(self.backend.update_book_path(self.path, other))
+        self.assertFalse(self.library.update_book_path(self.path, other))
 
-        self.assertIsNotNone(self.backend.get_book_by_path(self.path))
-        self.assertNotEqual(self.backend.get_book_by_path(other).id,
+        self.assertIsNotNone(self.library.get_book_by_path(self.path))
+        self.assertNotEqual(self.library.get_book_by_path(other).id,
                             self.book.id)
 
 
-class ChosenCoverTest(LibraryDatabaseTest):
+class ChosenCoverTest(OpenLibraryTest):
 
     """The cover of a book was the picture its file names pointed to and
     no other: a book whose first picture is not its cover could only be
@@ -1378,22 +1346,17 @@ class ChosenCoverTest(LibraryDatabaseTest):
 
     def setUp(self):
         super().setUp()
-        self.backend = backend.LibraryBackend()
         self.path = os.path.join(self.tmp_dir, 'book.zip')
         with zipfile.ZipFile(self.path, 'w') as book:
             for name, colour in self.COLOURS.items():
                 page = io.BytesIO()
                 PIL.Image.new('RGB', (60, 80), colour).save(page, 'PNG')
                 book.writestr(name, page.getvalue())
-        self.assertTrue(self.backend.add_book(self.path))
-
-    def tearDown(self):
-        self.backend.close()
-        super().tearDown()
+        self.assertTrue(self.library.add_book(self.path))
 
     def _cover(self):
         """The name of the page whose colour the book's cover has."""
-        return self._page_coloured(self.backend.get_book_thumbnail(self.path))
+        return self._page_coloured(self.library.get_book_thumbnail(self.path))
 
     def _page_coloured(self, cover):
         """The name of the page whose colour <cover> has, near enough:
@@ -1404,21 +1367,21 @@ class ChosenCoverTest(LibraryDatabaseTest):
 
     def test_the_cover_is_the_picture_chosen(self):
         self.assertEqual('a.png', self._cover())
-        self.assertIsNone(self.backend.get_chosen_cover(self.path))
+        self.assertIsNone(self.library.get_chosen_cover(self.path))
 
-        self.assertTrue(self.backend.set_chosen_cover(self.path, 'b.png'))
+        self.assertTrue(self.library.set_chosen_cover(self.path, 'b.png'))
 
-        self.assertEqual('b.png', self.backend.get_chosen_cover(self.path))
+        self.assertEqual('b.png', self.library.get_chosen_cover(self.path))
         self.assertEqual('b.png', self._cover())
         self.assertEqual(1, len(os.listdir(constants.LIBRARY_COVERS_PATH)))
 
     def _kept_as_drawn(self):
         """Keep the book's cover as drawn 30 by 40, and answer the page
         whose colour the cover kept has, or None where none is kept."""
-        kept = self.backend.get_sized_book_cover(self.path, (30, 40))
+        kept = self.library.get_sized_book_cover(self.path, (30, 40))
         if kept is None:
-            cover = self.backend.get_book_thumbnail(self.path)
-            self.backend.keep_sized_book_cover(
+            cover = self.library.get_book_thumbnail(self.path)
+            self.library.keep_sized_book_cover(
                 self.path, cover.scale_simple(30, 40, 0), (30, 40), cover)
             return None
         pixel = tuple(kept.get_pixels()[:3])
@@ -1435,7 +1398,7 @@ class ChosenCoverTest(LibraryDatabaseTest):
     def test_the_cover_kept_as_drawn_goes_when_another_is_chosen(self):
         """It was drawn from the picture chosen before."""
         self.assertIsNone(self._kept_as_drawn())
-        self.assertTrue(self.backend.set_chosen_cover(self.path, 'b.png'))
+        self.assertTrue(self.library.set_chosen_cover(self.path, 'b.png'))
         self.assertEqual([], os.listdir(
             constants.LIBRARY_COVERS_SIZED_PATH))
         self.assertIsNone(self._kept_as_drawn())
@@ -1464,15 +1427,15 @@ class ChosenCoverTest(LibraryDatabaseTest):
 
         with unittest.mock.patch.object(thumbnail_tools, 'Thumbnailer',
                                         side_effect=recording):
-            self.assertIsNotNone(self.backend.get_book_thumbnail(self.path))
-            self.backend.get_sized_book_cover(self.path, (30, 40))
+            self.assertIsNotNone(self.library.get_book_thumbnail(self.path))
+            self.library.get_sized_book_cover(self.path, (30, 40))
         self.assertEqual(2, len(made))
         self.assertEqual(made[0], made[1])
         self.assertEqual(constants.LIBRARY_COVERS_SIZED_PATH, made[0][1])
 
     def test_the_cover_kept_as_drawn_goes_with_the_book(self):
         self.assertIsNone(self._kept_as_drawn())
-        self.backend.remove_book(self.backend.get_book_by_path(self.path).id)
+        self.library.remove_book(self.library.get_book_by_path(self.path).id)
         self.assertEqual([], os.listdir(
             constants.LIBRARY_COVERS_SIZED_PATH))
         self.assertEqual([], os.listdir(constants.LIBRARY_COVERS_PATH))
@@ -1481,7 +1444,7 @@ class ChosenCoverTest(LibraryDatabaseTest):
         self.assertIsNone(self._kept_as_drawn())
         moved = os.path.join(self.tmp_dir, 'moved.zip')
         shutil.move(self.path, moved)
-        self.assertTrue(self.backend.update_book_path(self.path, moved))
+        self.assertTrue(self.library.update_book_path(self.path, moved))
         self.path = moved
         with unittest.mock.patch.object(
                 thumbnail_tools.Image, 'open',
@@ -1495,7 +1458,7 @@ class ChosenCoverTest(LibraryDatabaseTest):
         deleted what was stored, and every later read found it there."""
         chosen = []
         answer = self._while_the_cover_is_read(lambda: chosen.append(
-            self.backend.set_chosen_cover(self.path, 'b.png')))
+            self.library.set_chosen_cover(self.path, 'b.png')))
         self.assertEqual([True], chosen)
 
         # What is kept, and what the reader was given, which goes on screen.
@@ -1518,7 +1481,7 @@ class ChosenCoverTest(LibraryDatabaseTest):
 
         answers = []
         thread = threading.Thread(target=lambda: answers.append(
-            self.backend.get_book_thumbnail(self.path)))
+            self.library.get_book_thumbnail(self.path)))
         with unittest.mock.patch.object(thumbnail_tools.Thumbnailer,
                                         '_create_thumbnail_pixbuf', parked):
             thread.start()
@@ -1532,9 +1495,9 @@ class ChosenCoverTest(LibraryDatabaseTest):
     def test_a_cover_being_made_as_its_book_is_removed_is_not_kept(self):
         """The read stored the cover after remove_book() had deleted it,
         a file in the covers folder that no book names."""
-        book = self.backend.get_book_by_path(self.path)
+        book = self.library.get_book_by_path(self.path)
         self._while_the_cover_is_read(
-            lambda: self.backend.remove_book(book.id))
+            lambda: self.library.remove_book(book.id))
         self.assertEqual([], os.listdir(constants.LIBRARY_COVERS_PATH))
 
     def test_a_cover_being_made_as_its_book_moves_is_not_kept(self):
@@ -1542,28 +1505,28 @@ class ChosenCoverTest(LibraryDatabaseTest):
 
         def move():
             os.rename(self.path, moved)
-            self.assertTrue(self.backend.update_book_path(self.path, moved))
+            self.assertTrue(self.library.update_book_path(self.path, moved))
 
         self._while_the_cover_is_read(move)
         self.assertEqual([], os.listdir(constants.LIBRARY_COVERS_PATH))
-        self.backend.get_book_thumbnail(moved)
+        self.library.get_book_thumbnail(moved)
         self.assertEqual(1, len(os.listdir(constants.LIBRARY_COVERS_PATH)))
 
     def test_choosing_none_goes_back_to_the_one_guessed(self):
-        self.backend.set_chosen_cover(self.path, 'b.png')
+        self.library.set_chosen_cover(self.path, 'b.png')
         self.assertEqual('b.png', self._cover())
-        self.assertTrue(self.backend.set_chosen_cover(self.path, None))
+        self.assertTrue(self.library.set_chosen_cover(self.path, None))
         self.assertEqual('a.png', self._cover())
 
     def test_a_picture_the_book_no_longer_holds_is_not_its_cover(self):
-        self.backend.set_chosen_cover(self.path, 'gone.png')
+        self.library.set_chosen_cover(self.path, 'gone.png')
         self.assertEqual('a.png', self._cover())
 
     def test_the_cover_the_library_last_drew_is_dropped(self):
         cache = pixbuf_cache.get_pixbuf_cache()
-        cache.add(self.path, self.backend.get_book_thumbnail(self.path))
+        cache.add(self.path, self.library.get_book_thumbnail(self.path))
         self.addCleanup(cache.invalidate, self.path)
-        self.backend.set_chosen_cover(self.path, 'b.png')
+        self.library.set_chosen_cover(self.path, 'b.png')
         self.assertIsNone(cache.get(self.path))
 
     def test_whatever_shows_the_cover_is_told(self):
@@ -1572,33 +1535,33 @@ class ChosenCoverTest(LibraryDatabaseTest):
         def listener(path):
             told.append(path)
 
-        self.backend.book_cover_changed += listener
-        self.backend.set_chosen_cover(self.path, 'b.png')
-        self.backend.book_cover_changed -= listener
+        self.library.book_cover_changed += listener
+        self.library.set_chosen_cover(self.path, 'b.png')
+        self.library.book_cover_changed -= listener
         self.assertEqual([self.path], told)
 
     def test_a_book_the_library_does_not_hold_has_no_cover_to_choose(self):
         other = os.path.join(self.tmp_dir, 'other.zip')
-        self.assertFalse(self.backend.set_chosen_cover(other, 'b.png'))
-        self.assertIsNone(self.backend.get_chosen_cover(other))
+        self.assertFalse(self.library.set_chosen_cover(other, 'b.png'))
+        self.assertIsNone(self.library.get_chosen_cover(other))
 
     def test_the_cover_follows_a_book_that_is_moved(self):
         moved = os.path.join(self.tmp_dir, 'moved.zip')
-        self.backend.set_chosen_cover(self.path, 'b.png')
+        self.library.set_chosen_cover(self.path, 'b.png')
         shutil.move(self.path, moved)
-        self.backend.update_book_path(self.path, moved)
-        self.assertEqual('b.png', self.backend.get_chosen_cover(moved))
+        self.library.update_book_path(self.path, moved)
+        self.assertEqual('b.png', self.library.get_chosen_cover(moved))
 
     def test_the_cover_is_found_by_the_index_on_the_path(self):
         for statement in ('select cover from Book where path = ?',
                           'update Book set cover = ? where path = ?'):
-            plan = self._plan(self.backend._con, statement,
+            plan = self._plan(self.library._con, statement,
                               (self.path,) * statement.count('?'))
             self.assertIn('SEARCH', plan)
             self.assertNotIn('SCAN', plan)
 
 
-class CoverSizeTest(LibraryDatabaseTest):
+class CoverSizeTest(OpenLibraryTest):
 
     """A cover is stored as large as the largest the screen draws: 500
     pixels high was the largest cover size on a screen of scale one,
@@ -1606,17 +1569,12 @@ class CoverSizeTest(LibraryDatabaseTest):
 
     def setUp(self):
         super().setUp()
-        self.backend = backend.LibraryBackend()
         self.path = os.path.join(self.tmp_dir, 'book.zip')
         with zipfile.ZipFile(self.path, 'w') as book:
             page = io.BytesIO()
             PIL.Image.new('RGB', (1000, 1500), (0, 90, 0)).save(page, 'PNG')
             book.writestr('01.png', page.getvalue())
-        self.assertTrue(self.backend.add_book(self.path))
-
-    def tearDown(self):
-        self.backend.close()
-        super().tearDown()
+        self.assertTrue(self.library.add_book(self.path))
 
     def _height(self, *size):
         """The height of the cover answered for <size>, and whether the
@@ -1625,7 +1583,7 @@ class CoverSizeTest(LibraryDatabaseTest):
                 thumbnail_tools.Thumbnailer, '_create_thumbnail_pixbuf',
                 wraps=thumbnail_tools.Thumbnailer._create_thumbnail_pixbuf,
                 autospec=True) as made:
-            cover = self.backend.get_book_thumbnail(self.path, *size)
+            cover = self.library.get_book_thumbnail(self.path, *size)
         return cover.get_height(), made.called
 
     def test_by_default_it_is_the_largest_cover_size(self):
@@ -1650,7 +1608,7 @@ class CoverSizeTest(LibraryDatabaseTest):
         self.assertEqual(1, len(os.listdir(constants.LIBRARY_COVERS_PATH)))
 
 
-class CollectionOrderTest(LibraryDatabaseTest):
+class CollectionOrderTest(OpenLibraryTest):
 
     """A collection's books are kept in an order set by hand: a reading
     list (upstream feature request 19).
@@ -1661,15 +1619,10 @@ class CollectionOrderTest(LibraryDatabaseTest):
 
     def setUp(self):
         super().setUp()
-        self.library = backend.LibraryBackend()
         self.shelf = self.library.add_collection('Shelf')
         self.two, self.ten, self.one = (
             self._book_in(name, self.shelf)
             for name in ('Volume 2', 'Volume 10', 'Volume 1'))
-
-    def tearDown(self):
-        self.library.close()
-        super().tearDown()
 
     def _book_in(self, name, collection):
         """File a book called <name> in <collection>, and answer its id."""
@@ -1773,7 +1726,7 @@ class CollectionOrderTest(LibraryDatabaseTest):
             self.assertNotIn('SCAN', plan, msg=plan)
 
 
-class RelocatedShelfTest(LibraryDatabaseTest):
+class RelocatedShelfTest(OpenLibraryTest):
 
     """A folder of books moved or renamed outside MComix left every one
     of them in the library under a path with no file at it (upstream
@@ -1781,7 +1734,6 @@ class RelocatedShelfTest(LibraryDatabaseTest):
 
     def setUp(self):
         super().setUp()
-        self.backend = backend.LibraryBackend()
         self.old = os.path.join(self.tmp_dir, 'shelf')
         self.new = os.path.join(self.tmp_dir, 'elsewhere', 'comics')
         self.ids = {}
@@ -1790,22 +1742,18 @@ class RelocatedShelfTest(LibraryDatabaseTest):
                 ('shelf-old', 'c.cbz'), ('100%_x', 'd.cbz'),
                 ('100abcx', 'e.cbz')), start=1):
             path = os.path.join(self.tmp_dir, *parts)
-            self.backend._con.execute(
+            self.library._con.execute(
                 'insert into book (id, name, path, pages, format, size)'
                 ' values (?, ?, ?, 20, 1, 1)', (number, parts[-1], path))
             self.ids[parts[-1]] = number
 
-    def tearDown(self):
-        self.backend.close()
-        super().tearDown()
-
     def _paths(self):
         return {name: os.path.relpath(path, self.tmp_dir).split(os.sep)
-                for name, path in self.backend._con.execute(
+                for name, path in self.library._con.execute(
                     'select name, path from book').fetchall()}
 
     def test_every_book_under_the_folder_follows_it(self):
-        self.assertEqual(2, self.backend.relocate(self.old, self.new))
+        self.assertEqual(2, self.library.relocate(self.old, self.new))
         self.assertEqual(
             {'a.cbz': ['elsewhere', 'comics', 'a.cbz'],
              'b.cbz': ['elsewhere', 'comics', 'sub', 'b.cbz'],
@@ -1815,61 +1763,61 @@ class RelocatedShelfTest(LibraryDatabaseTest):
             self._paths())
 
     def test_what_hangs_off_a_book_comes_with_it(self):
-        self.backend._con.execute(
+        self.library._con.execute(
             "insert into collection (id, name) values (7, 'Shelf')")
-        self.backend._con.execute(
+        self.library._con.execute(
             'insert into contain (collection, book) values (7, 1)')
-        self.backend._con.execute(
+        self.library._con.execute(
             'insert into recent (book, page, time_set) values'
             " (1, 12, '2026-01-01 00:00:00')")
-        self.backend.relocate(self.old, self.new)
-        moved = self.backend.get_book_by_path(
+        self.library.relocate(self.old, self.new)
+        moved = self.library.get_book_by_path(
             os.path.join(self.new, 'a.cbz'))
         self.assertEqual(1, moved.id)
-        self.assertEqual([7], self.backend._con.execute(
+        self.assertEqual([7], self.library._con.execute(
             'select collection from contain where book = 1').fetchall())
-        self.assertEqual([12], self.backend._con.execute(
+        self.assertEqual([12], self.library._con.execute(
             'select page from recent where book = 1').fetchall())
 
     def test_a_folder_name_is_not_read_as_a_pattern(self):
         """% and _ are what LIKE matches anything with."""
-        self.assertEqual(1, self.backend.relocate(
+        self.assertEqual(1, self.library.relocate(
             os.path.join(self.tmp_dir, '100%_x'), self.new))
         self.assertEqual(['100abcx', 'e.cbz'], self._paths()['e.cbz'])
         self.assertEqual(['elsewhere', 'comics', 'd.cbz'],
                          self._paths()['d.cbz'])
 
     def test_a_book_the_library_holds_there_already_keeps_its_row(self):
-        self.backend._con.execute(
+        self.library._con.execute(
             'insert into book (id, name, path, pages, format, size)'
             " values (9, 'a.cbz', ?, 20, 1, 1)",
             (os.path.join(self.new, 'a.cbz'),))
-        self.assertEqual(1, self.backend.relocate(self.old, self.new))
+        self.assertEqual(1, self.library.relocate(self.old, self.new))
         self.assertEqual(
             [(1, os.path.join(self.old, 'a.cbz')),
              (9, os.path.join(self.new, 'a.cbz'))],
-            self.backend._con.execute(
+            self.library._con.execute(
                 "select id, path from book where name = 'a.cbz'"
                 ' order by id').fetchall())
 
     def test_the_watched_folders_follow_too(self):
         for path in (self.old, os.path.join(self.old, 'sub'),
                      os.path.join(self.tmp_dir, 'shelf-old')):
-            self.backend._con.execute(
+            self.library._con.execute(
                 'insert into watchlist (path, collection, recursive)'
                 ' values (?, null, 1)', (path,))
-        self.backend.relocate(self.old, self.new)
+        self.library.relocate(self.old, self.new)
         self.assertEqual(
             sorted([self.new, os.path.join(self.new, 'sub'),
                     os.path.join(self.tmp_dir, 'shelf-old')]),
-            sorted(path for path in self.backend._con.execute(
+            sorted(path for path in self.library._con.execute(
                 'select path from watchlist').fetchall()))
 
     def _draw_covers(self):
         """Something stored as the cover of every book, saying whose."""
-        covers = self.backend._covers()
+        covers = self.library._covers()
         os.makedirs(constants.LIBRARY_COVERS_PATH, exist_ok=True)
-        for book, path in self.backend._con.execute(
+        for book, path in self.library._con.execute(
                 'select id, path from book').fetchall():
             with open(covers._path_to_thumbpath(path), 'w') as cover:
                 cover.write(str(book))
@@ -1878,7 +1826,7 @@ class RelocatedShelfTest(LibraryDatabaseTest):
     def _covers_by_book(self, covers):
         """What is stored as the cover of each book where it is now."""
         found = {}
-        for book, path in self.backend._con.execute(
+        for book, path in self.library._con.execute(
                 'select id, path from book').fetchall():
             with open(covers._path_to_thumbpath(path)) as cover:
                 found[book] = cover.read()
@@ -1888,7 +1836,7 @@ class RelocatedShelfTest(LibraryDatabaseTest):
         """They are stored under names made of the paths, so every one
         was left behind and drawn again from its archive."""
         covers = self._draw_covers()
-        self.assertEqual(2, self.backend.relocate(self.old, self.new))
+        self.assertEqual(2, self.library.relocate(self.old, self.new))
         self.assertEqual({book: str(book) for book in range(1, 6)},
                          self._covers_by_book(covers))
         self.assertEqual(5, len(os.listdir(constants.LIBRARY_COVERS_PATH)))
@@ -1903,33 +1851,33 @@ class RelocatedShelfTest(LibraryDatabaseTest):
                 (self.old, sub, {6: self.old, 7: sub}, {6: sub, 7: deeper}),
                 (sub, self.old, {6: deeper, 7: sub}, {6: sub, 7: self.old})):
             with self.subTest(old=old, new=new):
-                self.backend._con.execute('delete from book')
+                self.library._con.execute('delete from book')
                 for number, folder in before.items():
-                    self.backend._con.execute(
+                    self.library._con.execute(
                         'insert into book (id, name, path, pages, format,'
                         " size) values (?, 'x.cbz', ?, 20, 1, 1)",
                         (number, os.path.join(folder, 'x.cbz')))
                 covers = self._draw_covers()
-                self.assertEqual(2, self.backend.relocate(old, new))
+                self.assertEqual(2, self.library.relocate(old, new))
                 self.assertEqual(
                     {number: os.path.join(folder, 'x.cbz')
                      for number, folder in after.items()},
-                    dict(self.backend._con.execute(
+                    dict(self.library._con.execute(
                         'select id, path from book').fetchall()))
                 # And its cover is not put over one that has yet to go.
                 self.assertEqual({6: '6', 7: '7'},
                                  self._covers_by_book(covers))
 
     def test_nothing_to_follow_follows_nothing(self):
-        self.assertEqual(0, self.backend.relocate(self.old, self.old))
-        self.assertEqual(0, self.backend.relocate(
+        self.assertEqual(0, self.library.relocate(self.old, self.old))
+        self.assertEqual(0, self.library.relocate(
             os.path.join(self.tmp_dir, 'nowhere'), self.new))
         self.assertEqual(['shelf', 'a.cbz'], self._paths()['a.cbz'])
 
     def test_the_books_are_found_by_the_index_on_their_paths(self):
         old = tools.folder_prefix(self.old)
         plan = self._plan(
-            self.backend._con,
+            self.library._con,
             'select id, path from Book where path >= ? and path < ?',
             (old, old[:-1] + chr(ord(old[-1]) + 1)))
         self.assertIn('SEARCH', plan)
@@ -1953,7 +1901,7 @@ class RelocatedPathTest(unittest.TestCase):
                 elsewhere)
 
 
-class RemovedBookTest(LibraryDatabaseTest):
+class RemovedBookTest(OpenLibraryTest):
 
     """remove_book() left the page the book was read to behind.
 
@@ -1962,14 +1910,6 @@ class RemovedBookTest(LibraryDatabaseTest):
     row left over from a removed book therefore belonged to whichever
     book was added next.
     """
-
-    def setUp(self):
-        super().setUp()
-        self.library = backend.LibraryBackend()
-
-    def tearDown(self):
-        self.library.close()
-        super().tearDown()
 
     def _add_book(self, name):
         """A row in book, without an archive to read it out of."""
@@ -2098,7 +2038,7 @@ class HalfWrittenDatabaseTest(LibraryDatabaseTest):
             library.close()
 
 
-class MissingBookTest(LibraryDatabaseTest):
+class MissingBookTest(OpenLibraryTest):
 
     """What the accessors answer for a book id that names no row.
 
@@ -2108,14 +2048,6 @@ class MissingBookTest(LibraryDatabaseTest):
     had been handed, and raised TypeError out of a drag handler that was
     written to expect None.
     """
-
-    def setUp(self):
-        super().setUp()
-        self.library = backend.LibraryBackend()
-
-    def tearDown(self):
-        self.library.close()
-        super().tearDown()
 
     def test_the_path_of_a_book_that_is_not_there_is_none(self):
         self.assertIsNone(self.library.get_book_path(4711))
@@ -2132,7 +2064,7 @@ class MissingBookTest(LibraryDatabaseTest):
         self.assertIsNone(self.library.get_book_cover(4711))
 
 
-class AddCollectionTest(LibraryDatabaseTest):
+class AddCollectionTest(OpenLibraryTest):
 
     """What add_collection() answers with.
 
@@ -2142,14 +2074,6 @@ class AddCollectionTest(LibraryDatabaseTest):
     own callers all wanted the id and looked it up again by name
     afterwards.
     """
-
-    def setUp(self):
-        super().setUp()
-        self.library = backend.LibraryBackend()
-
-    def tearDown(self):
-        self.library.close()
-        super().tearDown()
 
     def test_the_id_of_the_collection_added_is_returned(self):
         collection = self.library.add_collection('Shelf')
@@ -2173,7 +2097,7 @@ class AddCollectionTest(LibraryDatabaseTest):
         self.assertIsNone(self.library.add_collection('Shelf'))
 
 
-class DuplicateCollectionTest(LibraryDatabaseTest):
+class DuplicateCollectionTest(OpenLibraryTest):
 
     """What happens when the copy cannot be created.
 
@@ -2190,7 +2114,6 @@ class DuplicateCollectionTest(LibraryDatabaseTest):
 
     def setUp(self):
         super().setUp()
-        self.library = backend.LibraryBackend()
         self.collection = self.library.add_collection('Shelf')
         self.library._con.execute(
             '''insert into book (name, path, pages, format, size)
@@ -2201,10 +2124,6 @@ class DuplicateCollectionTest(LibraryDatabaseTest):
         self.library.add_book_to_collection(
             self.library.get_book_by_path('/does/not/exist/a.cbz').id,
             self.collection)
-
-    def tearDown(self):
-        self.library.close()
-        super().tearDown()
 
     def test_the_copy_holds_the_same_books(self):
         self.assertTrue(self.library.duplicate_collection(self.collection))
@@ -2265,7 +2184,7 @@ class DuplicateCollectionTest(LibraryDatabaseTest):
                          'reported success')
 
 
-class CollectionTreeTest(LibraryDatabaseTest):
+class CollectionTreeTest(OpenLibraryTest):
 
     """Both walks over the collection tree ask the database once.
 
@@ -2277,7 +2196,6 @@ class CollectionTreeTest(LibraryDatabaseTest):
 
     def setUp(self):
         super().setUp()
-        self.library = backend.LibraryBackend()
         # Three levels branching two, so that a walk of the subtree
         # reaches 14 collections over depths a single query cannot be
         # mistaken for.
@@ -2294,20 +2212,6 @@ class CollectionTreeTest(LibraryDatabaseTest):
                     children.append(child)
             self.below += children
             level = children
-
-    def tearDown(self):
-        self.library.close()
-        super().tearDown()
-
-    def _counted(self, call):
-        """Run <call> and return what it answered with the statements it
-        ran to get there."""
-        statements = []
-        self.library._con.set_trace_callback(statements.append)
-        try:
-            return call(), statements
-        finally:
-            self.library._con.set_trace_callback(None)
 
     def test_the_backend_walks_the_subtree_in_one_statement(self):
         below, statements = self._counted(
@@ -2337,7 +2241,7 @@ class CollectionTreeTest(LibraryDatabaseTest):
         self.assertEqual(1, len(statements), statements)
 
 
-class AddBookStatementTest(LibraryDatabaseTest):
+class AddBookStatementTest(OpenLibraryTest):
 
     """add_book() describes to the listeners the book it just built.
 
@@ -2348,16 +2252,11 @@ class AddBookStatementTest(LibraryDatabaseTest):
 
     def setUp(self):
         super().setUp()
-        self.backend = backend.LibraryBackend()
-        self.collection = self.backend.add_collection('files')
+        self.collection = self.library.add_collection('files')
         self.path = get_testfile_path('archives', '01-ZIP-Normal.zip')
         self.seen = []
         self.reported = []
-        self.backend.book_added_to_collection += self._book_filed
-
-    def tearDown(self):
-        self.backend.close()
-        super().tearDown()
+        self.library.book_added_to_collection += self._book_filed
 
     def _book_filed(self, book, collection):
         self.seen.append((book, collection))
@@ -2365,27 +2264,19 @@ class AddBookStatementTest(LibraryDatabaseTest):
     def _book_added(self, book):
         self.reported.append(book)
 
-    def _counted(self, call):
-        statements = []
-        self.backend._con.set_trace_callback(statements.append)
-        try:
-            return call(), statements
-        finally:
-            self.backend._con.set_trace_callback(None)
-
     def test_a_new_book_is_filed_in_three_statements(self):
         # The lookup by path, the insert into Book, and the insert into
         # Contain.  Reading the book back was a fourth.
         added, statements = self._counted(
-            lambda: self.backend.add_book(self.path, self.collection))
+            lambda: self.library.add_book(self.path, self.collection))
 
         self.assertTrue(added)
         self.assertEqual(3, len(statements), statements)
 
     def test_the_listeners_are_told_what_the_row_says(self):
-        self.backend.add_book(self.path, self.collection)
+        self.library.add_book(self.path, self.collection)
 
-        book = self.backend.get_book_by_path(self.path)
+        book = self.library.get_book_by_path(self.path)
         self.assertEqual(
             [(book.id, book.name, book.path, book.pages, book.format,
               book.size, book.added, self.collection)],
@@ -2396,12 +2287,12 @@ class AddBookStatementTest(LibraryDatabaseTest):
         # The update branch has no date of its own to report: the row
         # holds the one the book arrived with, and only the lookup by
         # path can say what it is.
-        self.backend.add_book(self.path, self.collection)
-        first = self.backend.get_book_by_path(self.path)
-        elsewhere = self.backend.add_collection('elsewhere')
+        self.library.add_book(self.path, self.collection)
+        first = self.library.get_book_by_path(self.path)
+        elsewhere = self.library.add_collection('elsewhere')
         self.seen.clear()
 
-        self.backend.add_book(self.path, elsewhere)
+        self.library.add_book(self.path, elsewhere)
 
         self.assertEqual([(first.id, first.added, elsewhere)],
                          [(seen.id, seen.added, where)
@@ -2411,30 +2302,25 @@ class AddBookStatementTest(LibraryDatabaseTest):
         # The column defaults to sqlite's current_timestamp, which is
         # UTC to the second; datetime.now().isoformat(), which this used
         # to report, is local time to the microsecond.
-        self.backend.book_added += self._book_added
+        self.library.book_added += self._book_added
 
-        self.backend.add_book(self.path, self.collection)
+        self.library.add_book(self.path, self.collection)
 
-        book = self.backend.get_book_by_path(self.path)
+        book = self.library.get_book_by_path(self.path)
         self.assertEqual([book.added],
                          [added.added for added in self.reported])
 
 
-class CollectionTreeQueryTest(LibraryDatabaseTest):
+class CollectionTreeQueryTest(OpenLibraryTest):
 
     """get_collection_tree() answers with the whole hierarchy at once."""
 
     def setUp(self):
         super().setUp()
-        self.library = backend.LibraryBackend()
         self.comics = self.library.add_collection('Comics')
         self.manga = self.library.add_collection('Manga')
         self.inner = self.library.add_collection('Inner')
         self.library.add_collection_to_collection(self.inner, self.comics)
-
-    def tearDown(self):
-        self.library.close()
-        super().tearDown()
 
     def test_the_collections_are_grouped_by_the_one_above_them(self):
         self.assertEqual(
@@ -2547,7 +2433,7 @@ class LastReadPageRewriteTest(LibraryDatabaseTest):
         self.assertIsNone(book.get_last_read_date())
 
 
-class EncryptedBookTest(LibraryDatabaseTest):
+class EncryptedBookTest(OpenLibraryTest):
 
     """Adding an encrypted archive to the library asks for no password,
     and the book is added all the same.
@@ -2558,12 +2444,7 @@ class EncryptedBookTest(LibraryDatabaseTest):
 
     def setUp(self):
         super().setUp()
-        self.library = backend.LibraryBackend()
         self.asked = refuse_passwords(self)
-
-    def tearDown(self):
-        self.library.close()
-        super().tearDown()
 
     def test_encrypted_books_are_added_without_a_prompt(self):
         for name in ('Encrypted.zip', 'Encrypted.rar', 'Encrypted.7z',

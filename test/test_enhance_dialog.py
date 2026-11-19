@@ -27,6 +27,12 @@ class EnhanceDialogTest(MComixTest):
         self.close_main_window()
         super().tearDown()
 
+    def _opened(self):
+        """Open the dialog over the window, and return it once shown."""
+        enhance_dialog.open_dialog(None, self.window)
+        pump()
+        return enhance_dialog._dialog
+
     def _histograms_drawn_turning_a_page(self):
         with mock.patch.object(histogram, 'draw_histogram',
                                wraps=histogram.draw_histogram) as drawn:
@@ -37,14 +43,12 @@ class EnhanceDialogTest(MComixTest):
         return drawn.call_count
 
     def test_an_open_dialog_draws_the_page_turned_to(self):
-        enhance_dialog.open_dialog(None, self.window)
-        pump()
+        self._opened()
         self.assertEqual(1, self._histograms_drawn_turning_a_page())
 
     def test_the_histogram_is_not_enlarged_with_the_dialog(self):
         from gi.repository import Gtk
-        enhance_dialog.open_dialog(None, self.window)
-        pump()
+        self._opened()
         self.assertEqual(Gtk.ContentFit.SCALE_DOWN,
                          enhance_dialog._dialog._hist_image.get_content_fit())
 
@@ -53,23 +57,19 @@ class EnhanceDialogTest(MComixTest):
         drew a histogram for every page turned for the rest of the
         session: one more for each time it had been opened."""
         for _time in range(2):
-            enhance_dialog.open_dialog(None, self.window)
-            pump()
+            self._opened()
             enhance_dialog._dialog.response(Response.OK)
             pump()
         self.assertEqual(0, self._histograms_drawn_turning_a_page())
 
-        enhance_dialog.open_dialog(None, self.window)
-        pump()
+        self._opened()
         self.assertEqual(1, self._histograms_drawn_turning_a_page())
 
     def test_ctrl_i_with_the_dialog_open_is_not_undone_by_a_slider(self):
         """Ctrl+I inverts the colours through an action of its own; the
         dialog's checkbox did not follow it, and the next move of any
         slider set the colours back from the checkbox."""
-        enhance_dialog.open_dialog(None, self.window)
-        pump()
-        dialog = enhance_dialog._dialog
+        dialog = self._opened()
         self.window.actiongroup.get_action('invert_color').activate()
         pump()
         self.assertTrue(self.window.enhancer.invert_color)
@@ -79,9 +79,7 @@ class EnhanceDialogTest(MComixTest):
         self.assertTrue(self.window.enhancer.invert_color)
 
     def test_the_dialog_follows_the_enhancer_only_while_it_is_open(self):
-        enhance_dialog.open_dialog(None, self.window)
-        pump()
-        dialog = enhance_dialog._dialog
+        dialog = self._opened()
         dialog.response(Response.OK)
         pump()
         self.window.actiongroup.get_action('invert_color').activate()
@@ -93,8 +91,7 @@ class EnhanceDialogTest(MComixTest):
         """The checkbox inverted the colours and left Ctrl+I's action
         off, so the next Ctrl+I turned it on over colours that were
         inverted already, and nothing changed on screen."""
-        enhance_dialog.open_dialog(None, self.window)
-        pump()
+        self._opened()
         enhance_dialog._dialog._invert_color_button.set_active(True)
         pump()
         self.assertTrue(self.window.enhancer.invert_color)
@@ -103,9 +100,7 @@ class EnhanceDialogTest(MComixTest):
         self.assertFalse(self.window.enhancer.invert_color)
 
     def test_save_keeps_the_values_for_the_next_start(self):
-        enhance_dialog.open_dialog(None, self.window)
-        pump()
-        dialog = enhance_dialog._dialog
+        dialog = self._opened()
         dialog._brightness_scale.set_value(0.5)
         dialog._invert_color_button.set_active(True)
         pump()
@@ -120,9 +115,7 @@ class EnhanceDialogTest(MComixTest):
     def test_the_gamma_slider_sets_a_ratio_either_side_of_one(self):
         """The slider runs -1 to 1, as the others do; gamma is 2 to that
         power, so that halving and doubling lie as far from 1."""
-        enhance_dialog.open_dialog(None, self.window)
-        pump()
-        dialog = enhance_dialog._dialog
+        dialog = self._opened()
         for position, gamma in ((1.0, 2.0), (-1.0, 0.5), (0.0, 1.0)):
             dialog._gamma_scale.set_value(position)
             pump()
@@ -133,9 +126,7 @@ class EnhanceDialogTest(MComixTest):
         self.assertEqual(2.0, prefs['gamma'])
 
     def test_revert_goes_back_to_the_values_last_saved(self):
-        enhance_dialog.open_dialog(None, self.window)
-        pump()
-        dialog = enhance_dialog._dialog
+        dialog = self._opened()
         dialog._brightness_scale.set_value(0.5)
         dialog.response(Response.APPLY)
         dialog._brightness_scale.set_value(-0.5)
@@ -154,9 +145,7 @@ class EnhanceDialogTest(MComixTest):
         """"Revert" said it reset to the defaults, and went back to the
         saved values: once a set had been saved, nothing in the dialog
         showed the pages as they are (upstream bug 70)."""
-        enhance_dialog.open_dialog(None, self.window)
-        pump()
-        dialog = enhance_dialog._dialog
+        dialog = self._opened()
         dialog._brightness_scale.set_value(0.5)
         dialog._autocontrast_button.set_active(True)
         dialog._gamma_scale.set_value(-1.0)
@@ -183,8 +172,7 @@ class EnhanceDialogTest(MComixTest):
 
 
     def _drawn(self, change):
-        enhance_dialog.open_dialog(None, self.window)
-        pump()
+        self._opened()
         with mock.patch.object(histogram, 'draw_histogram',
                                wraps=histogram.draw_histogram) as drawn:
             change(enhance_dialog._dialog)

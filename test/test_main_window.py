@@ -180,12 +180,7 @@ class MainWindowTest(MComixTest):
         self.assertTrue(wait_for(
             lambda: self.window.filehandler.file_loaded,
             seconds=10))
-        # The store is one for the process and keeps the first window it
-        # was given, which on a shared worker is another test's.
         store = bookmark_backend.BookmarksStore
-        store._initialized = False
-        store._bookmarks = []
-        store.initialize(self.window)
         manager = keybindings.keybinding_manager(self.window)
         manager.execute(keybindings.parse_accelerator('<Control>d'))
         self.assertEqual(1, len(store.get_bookmarks()))
@@ -873,6 +868,67 @@ class MainWindowTest(MComixTest):
         """Delete a page without the prompt that offers to save."""
         return unittest.mock.patch.object(self.window.file_actions,
                                           'offer_to_save')
+
+    def _swap_the_first_two(self):
+        """Swap pages 1 and 2, with no prompt to save."""
+        with self._quietly():
+            self.assertTrue(self.window.file_actions.swap_pages(1, 2))
+
+    def _destination(self):
+        """A folder of the test's own to move a book into."""
+        destination = os.path.join(self.tmp_dir, 'destination')
+        os.makedirs(destination)
+        return destination
+
+    def _first_page_out(self):
+        """Wait, once the book is ready, for page 1 to be out of the
+        archive, and return its path.  The listing says the page is
+        there before the extractor has written the file: a save without
+        the wait failed about one run in eight."""
+        self._ready()
+        self.assertTrue(
+            wait_for(lambda: self.window.imagehandler.page_is_available(1),
+                     seconds=20),
+            'page 1 never came out of the archive')
+        return self.window.imagehandler.get_path_to_page(1)
+
+    def _deleted_movable_book(self):
+        """Delete a book of the test's own as a confirmed Delete does,
+        and return the path it had."""
+        source = self._movable_book()
+        self.window.file_actions._delete_answered(Response.OK, source)
+        self._pump()
+        self.assertFalse(os.path.exists(source))
+        return source
+
+    def _double_click_watching_fullscreen(self):
+        """Double-click the ready book's page, and return the stand-in
+        for the fullscreen action's activate(), which saw it."""
+        self._ready()
+        fullscreen = self.window.actiongroup.get_action('fullscreen')
+        with unittest.mock.patch.object(fullscreen, 'activate') as activate:
+            self._double_click()
+        return activate
+
+    def _dragged_to(self, state, x, y):
+        """Move the pointer to (x, y) with <state> held, and return each
+        (dx, dy) the view was scrolled by."""
+        scrolled = []
+        with unittest.mock.patch.object(
+                self.window, 'scroll',
+                side_effect=lambda dx, dy: scrolled.append((dx, dy))):
+            self.window.event_handler.mouse_move_event(
+                self._Motion(state), x, y)
+        return scrolled
+
+    def _prompts_closed_afterwards(self):
+        """The message dialogs over the window, each destroyed once the
+        test is done."""
+        dialogs = prompts_over(self.window)
+        self.addCleanup(self._pump)
+        for dialog in dialogs:
+            self.addCleanup(dialog.destroy)
+        return dialogs
 
     def _ready(self):
         """Wait until the book has been listed, and say what it holds."""
@@ -2038,10 +2094,7 @@ class MainWindowTest(MComixTest):
 
     def test_a_double_click_on_the_middle_third_toggles_once(self):
         prefs['click zones'] = constants.CLICK_THIRDS
-        self._ready()
-        fullscreen = self.window.actiongroup.get_action('fullscreen')
-        with unittest.mock.patch.object(fullscreen, 'activate') as activate:
-            self._double_click()
+        activate = self._double_click_watching_fullscreen()
         activate.assert_called_once_with()
         self.assertEqual(1, self._page())
 
@@ -2075,18 +2128,12 @@ class MainWindowTest(MComixTest):
         """As in an image viewer (upstream feature request 86); upstream
         turned it down because the first click turns the page."""
         prefs['flip with click'] = False
-        self._ready()
-        fullscreen = self.window.actiongroup.get_action('fullscreen')
-        with unittest.mock.patch.object(fullscreen, 'activate') as activate:
-            self._double_click()
+        activate = self._double_click_watching_fullscreen()
         activate.assert_called_once_with()
         self.assertEqual(1, self._page())
 
     def test_a_double_click_turns_two_pages_where_a_click_turns_one(self):
-        self._ready()
-        fullscreen = self.window.actiongroup.get_action('fullscreen')
-        with unittest.mock.patch.object(fullscreen, 'activate') as activate:
-            self._double_click()
+        activate = self._double_click_watching_fullscreen()
         activate.assert_not_called()
         self.assertEqual(3, self._page())
 
@@ -2117,12 +2164,8 @@ class MainWindowTest(MComixTest):
         handler = self.window.event_handler
         handler.mouse_press_event(self._Click(1), 1, x + 30, y + 20)
         self._pump()
-        scrolled = []
-        with unittest.mock.patch.object(
-                self.window, 'scroll',
-                side_effect=lambda dx, dy: scrolled.append((dx, dy))):
-            handler.mouse_move_event(
-                self._Motion(Gdk.ModifierType.BUTTON1_MASK), x + 40, y + 20)
+        scrolled = self._dragged_to(Gdk.ModifierType.BUTTON1_MASK,
+                                    x + 40, y + 20)
         self.assertEqual(scrolled, [(-10, 0)])
 
     def test_control_and_a_click_picks_the_page_out_instead(self):
@@ -2232,13 +2275,8 @@ class MainWindowTest(MComixTest):
                          'it asked about the file as well')
 
     def _bookmark_store(self):
-        """The process-wide store, emptied for this test."""
-        store = bookmark_backend.BookmarksStore
-        store._initialized = False
-        store._bookmarks = []
-        store.initialize(self.window)
-        self.addCleanup(setattr, store, '_bookmarks', [])
-        return store
+        """The process-wide store, which MComixTest.setUp empties."""
+        return bookmark_backend.BookmarksStore
 
     def test_deleting_a_bookmarked_file_asks_about_its_bookmarks(self):
         """A bookmark is a page the reader marked, not a record of a
@@ -2262,10 +2300,7 @@ class MainWindowTest(MComixTest):
     def test_a_deleted_file_goes_to_the_trash(self):
         """It was unlinked: a confirmation clicked through by mistake
         cost the book for good (upstream feature request 107)."""
-        source = self._movable_book()
-        self.window.file_actions._delete_answered(Response.OK, source)
-        self._pump()
-        self.assertFalse(os.path.exists(source))
+        self._deleted_movable_book()
         self.assertEqual(['Movable.cbz'],
                          [name.split('-', 1)[1]
                           for name in os.listdir(self.trash_dir)])
@@ -2281,10 +2316,7 @@ class MainWindowTest(MComixTest):
         with unittest.mock.patch.object(tools, 'move_to_trash', refuse):
             self.window.file_actions._delete_answered(Response.OK, source)
             self._pump()
-        dialogs = prompts_over(self.window)
-        self.addCleanup(self._pump)
-        for dialog in dialogs:
-            self.addCleanup(dialog.destroy)
+        dialogs = self._prompts_closed_afterwards()
         self.assertEqual(len(dialogs), 1, 'nothing was said')
         return dialogs[0]
 
@@ -2349,27 +2381,18 @@ class MainWindowTest(MComixTest):
     def test_deleting_an_archive_opens_the_next_in_its_folder(self):
         later = os.path.join(self.tmp_dir, 'Next.cbz')
         shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'), later)
-        source = self._movable_book()
-        self.window.file_actions._delete_answered(Response.OK, source)
-        self._pump()
-        self.assertFalse(os.path.exists(source))
+        self._deleted_movable_book()
         self.assertEqual(self.window.filehandler.get_path_to_base(), later)
 
     def test_deleting_the_last_archive_opens_the_one_before(self):
         earlier = os.path.join(self.tmp_dir, 'Earlier.cbz')
         shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'),
                     earlier)
-        source = self._movable_book()
-        self.window.file_actions._delete_answered(Response.OK, source)
-        self._pump()
-        self.assertFalse(os.path.exists(source))
+        self._deleted_movable_book()
         self.assertEqual(self.window.filehandler.get_path_to_base(), earlier)
 
     def test_deleting_the_only_archive_closes_it(self):
-        source = self._movable_book()
-        self.window.file_actions._delete_answered(Response.OK, source)
-        self._pump()
-        self.assertFalse(os.path.exists(source))
+        self._deleted_movable_book()
         self.assertFalse(self.window.filehandler.file_loaded)
 
     def test_taking_the_offer_deletes_the_file_and_forgets_it(self):
@@ -2441,10 +2464,7 @@ class MainWindowTest(MComixTest):
         """Press Shift+Delete on <source> and return the question."""
         self.window.file_actions.delete_permanently()
         self._pump()
-        dialogs = prompts_over(self.window)
-        self.addCleanup(self._pump)
-        for dialog in dialogs:
-            self.addCleanup(dialog.destroy)
+        dialogs = self._prompts_closed_afterwards()
         self.assertEqual(len(dialogs), 1, 'nothing was asked')
         return dialogs[0]
 
@@ -2517,8 +2537,7 @@ class MainWindowTest(MComixTest):
 
     def test_moving_a_rar_set_moves_every_volume(self):
         folder, _volumes = self._volume_set()
-        destination = os.path.join(self.tmp_dir, 'destination')
-        os.makedirs(destination)
+        destination = self._destination()
         self.window.file_actions.move_current_file(destination)
         self._pump()
         self.assertEqual([], os.listdir(folder))
@@ -2583,10 +2602,7 @@ class MainWindowTest(MComixTest):
                                         return_value=True):
             self.window.file_actions.delete()
             self._pump()
-        dialogs = prompts_over(self.window)
-        self.addCleanup(self._pump)
-        for dialog in dialogs:
-            self.addCleanup(dialog.destroy)
+        dialogs = self._prompts_closed_afterwards()
         self.assertEqual(len(dialogs), 1, 'nothing was asked')
         return dialogs[0]
 
@@ -3260,16 +3276,14 @@ class MainWindowTest(MComixTest):
     def test_a_change_that_has_not_been_written_is_one_to_save(self):
         self._ready()
         self.assertFalse(self.window.file_actions.has_unsaved_changes())
-        with self._quietly():
-            self.assertTrue(self.window.file_actions.swap_pages(1, 2))
+        self._swap_the_first_two()
         self.assertTrue(self.window.file_actions.has_unsaved_changes())
 
     def test_a_change_taken_back_is_nothing_to_save(self):
         """The first listing the undo stack kept is the book as it was
         opened, and an undo that empties the stack is back at it."""
         self._ready()
-        with self._quietly():
-            self.assertTrue(self.window.file_actions.swap_pages(1, 2))
+        self._swap_the_first_two()
         self.assertTrue(self.window.file_actions.undo())
         self.assertFalse(self.window.file_actions.has_unsaved_changes())
 
@@ -3290,8 +3304,7 @@ class MainWindowTest(MComixTest):
         """The offer made at the change itself is not the last word:
         closing is what throws the change away."""
         self._ready()
-        with self._quietly():
-            self.assertTrue(self.window.file_actions.swap_pages(1, 2))
+        self._swap_the_first_two()
         self.window.filehandler.close_file()
         self._pump()
         try:
@@ -3304,8 +3317,7 @@ class MainWindowTest(MComixTest):
 
     def test_saying_yes_on_the_way_out_writes_the_archive(self):
         self._ready()
-        with self._quietly():
-            self.assertTrue(self.window.file_actions.swap_pages(1, 2))
+        self._swap_the_first_two()
         self._remember_answer(Response.YES)
         with unittest.mock.patch.object(self.window.file_actions,
                                         'save_archive') as written:
@@ -3317,8 +3329,7 @@ class MainWindowTest(MComixTest):
 
     def test_saying_no_on_the_way_out_closes_the_book_as_it_is(self):
         self._ready()
-        with self._quietly():
-            self.assertTrue(self.window.file_actions.swap_pages(1, 2))
+        self._swap_the_first_two()
         self._remember_answer(Response.NO)
         with unittest.mock.patch.object(self.window.file_actions,
                                         'save_archive') as written:
@@ -3330,8 +3341,7 @@ class MainWindowTest(MComixTest):
 
     def test_opening_another_book_over_it_offers_to_write_it_first(self):
         self._ready()
-        with self._quietly():
-            self.assertTrue(self.window.file_actions.swap_pages(1, 2))
+        self._swap_the_first_two()
         self.window.filehandler.open_file(
             get_testfile_path('archives', 'double-pages-test.cbz'))
         self._pump()
@@ -3348,8 +3358,7 @@ class MainWindowTest(MComixTest):
         so they were thrown away without a word."""
         self._ready()
         prefs['auto open next archive'] = True
-        with self._quietly():
-            self.assertTrue(self.window.file_actions.swap_pages(1, 2))
+        self._swap_the_first_two()
         opened = self.window.filehandler.get_path_to_base()
         self.window.next_book()
         self._pump()
@@ -3373,8 +3382,7 @@ class MainWindowTest(MComixTest):
         self.window.filehandler.open_file(
             get_testfile_path('archives', 'double-pages-test.cbz'))
         self._ready()
-        with self._quietly():
-            self.assertTrue(self.window.file_actions.swap_pages(1, 2))
+        self._swap_the_first_two()
         self.window.previous_book()
         self._pump()
         try:
@@ -3435,8 +3443,7 @@ class MainWindowTest(MComixTest):
         prefs['auto open next directory'] = True
         self.window.filehandler.open_file(book)
         self._ready()
-        with self._quietly():
-            self.assertTrue(self.window.file_actions.swap_pages(1, 2))
+        self._swap_the_first_two()
         self.window.next_book()
         self._pump()
         try:
@@ -3456,8 +3463,7 @@ class MainWindowTest(MComixTest):
         """And the window stays until the question has been answered:
         it is the window the question stands against."""
         self._ready()
-        with self._quietly():
-            self.assertTrue(self.window.file_actions.swap_pages(1, 2))
+        self._swap_the_first_two()
         with unittest.mock.patch.object(self.window,
                                         'terminate_program') as quit_now:
             self.assertTrue(self.window.close_program(),
@@ -3478,8 +3484,7 @@ class MainWindowTest(MComixTest):
         file handler it closes asks again - and one answer stands for
         the whole of it."""
         self._ready()
-        with self._quietly():
-            self.assertTrue(self.window.file_actions.swap_pages(1, 2))
+        self._swap_the_first_two()
         closed = []
         self.window.file_actions.before_closing(
             lambda: (closed.append('first'),
@@ -3503,8 +3508,7 @@ class MainWindowTest(MComixTest):
         closed the book under the question.  The newest close is the
         one that runs."""
         self._ready()
-        with self._quietly():
-            self.assertTrue(self.window.file_actions.swap_pages(1, 2))
+        self._swap_the_first_two()
         closed = []
         self.window.file_actions.before_closing(lambda: closed.append('first'))
         self.window.file_actions.before_closing(lambda: closed.append('second'))
@@ -3522,8 +3526,7 @@ class MainWindowTest(MComixTest):
 
     def test_a_change_made_afterwards_is_asked_about_again(self):
         self._ready()
-        with self._quietly():
-            self.assertTrue(self.window.file_actions.swap_pages(1, 2))
+        self._swap_the_first_two()
         self._remember_answer(Response.NO)
         self.window.file_actions.before_closing(lambda: None)
         self._pump()
@@ -4165,8 +4168,7 @@ class MainWindowTest(MComixTest):
         """The page being read comes back, which is what makes this
         different from moving the file and opening it again by hand."""
         source = self._movable_book()
-        destination = os.path.join(self.tmp_dir, 'destination')
-        os.makedirs(destination)
+        destination = self._destination()
         self.window.set_page(3)
         self._pump()
 
@@ -4190,8 +4192,7 @@ class MainWindowTest(MComixTest):
         archive open for as long as the book was: moving it failed there
         with "being used by another process"."""
         source = self._movable_book()
-        destination = os.path.join(self.tmp_dir, 'destination')
-        os.makedirs(destination)
+        destination = self._destination()
         move = shutil.move
         held = []
 
@@ -4260,8 +4261,7 @@ class MainWindowTest(MComixTest):
 
     def test_a_name_taken_in_the_destination_is_said_to_be(self):
         self._movable_book()
-        destination = os.path.join(self.tmp_dir, 'destination')
-        os.makedirs(destination)
+        destination = self._destination()
         with open(os.path.join(destination, 'Movable.cbz'), 'wb'):
             pass
         self.assertEqual('A file of that name is there already.',
@@ -4269,8 +4269,7 @@ class MainWindowTest(MComixTest):
 
     def test_a_destination_without_room_says_how_large_the_file_is(self):
         source = self._movable_book()
-        destination = os.path.join(self.tmp_dir, 'destination')
-        os.makedirs(destination)
+        destination = self._destination()
         full = OSError(errno.ENOSPC, os.strerror(errno.ENOSPC))
         with unittest.mock.patch.object(file_mover, 'move_file',
                                         side_effect=full):
@@ -4281,8 +4280,7 @@ class MainWindowTest(MComixTest):
 
     def test_any_other_refusal_gives_the_system_s_own_reason(self):
         self._movable_book()
-        destination = os.path.join(self.tmp_dir, 'destination')
-        os.makedirs(destination)
+        destination = self._destination()
         denied = OSError(errno.EACCES, os.strerror(errno.EACCES))
         with unittest.mock.patch.object(file_mover, 'move_file',
                                         side_effect=denied):
@@ -4290,8 +4288,7 @@ class MainWindowTest(MComixTest):
 
     def test_a_destination_moved_to_is_offered_next_time(self):
         self._movable_book()
-        destination = os.path.join(self.tmp_dir, 'destination')
-        os.makedirs(destination)
+        destination = self._destination()
 
         self.window.file_actions.move_current_file(destination)
         self._pump()
@@ -4303,15 +4300,8 @@ class MainWindowTest(MComixTest):
         moved out from under it: opening the bookmark afterwards said
         the file was not there."""
         source = self._movable_book()
-        destination = os.path.join(self.tmp_dir, 'destination')
-        os.makedirs(destination)
-        # The store is one for the process and keeps whatever another
-        # test left in it.
+        destination = self._destination()
         store = bookmark_backend.BookmarksStore
-        store._initialized = False
-        store._bookmarks = []
-        store.initialize(self.window)
-        self.addCleanup(setattr, store, '_bookmarks', [])
         store.add_bookmark_by_values('Movable', source, 2, 4, None,
                                      datetime.datetime(2026, 1, 1))
 
@@ -4327,8 +4317,7 @@ class MainWindowTest(MComixTest):
         the path of its book, and the book moved out from under it: the
         page came back on its side, and was read again."""
         source = self._movable_book()
-        destination = os.path.join(self.tmp_dir, 'destination')
-        os.makedirs(destination)
+        destination = self._destination()
         identity = self.window.filehandler.page_identity(2)
         self.assertEqual(os.path.abspath(source), identity[0])
         page_rotations.remember(*identity, 90)
@@ -4352,8 +4341,7 @@ class MainWindowTest(MComixTest):
         """The book is opened again where it landed, which records that.
         The entry for where it was would open nothing."""
         source = self._movable_book()
-        destination = os.path.join(self.tmp_dir, 'destination')
-        os.makedirs(destination)
+        destination = self._destination()
         recent_menu = self.window.uimanager.recent
 
         with unittest.mock.patch.object(recent_menu,
@@ -4365,8 +4353,7 @@ class MainWindowTest(MComixTest):
 
     def test_the_library_follows_a_book_that_is_moved(self):
         source = self._movable_book()
-        destination = os.path.join(self.tmp_dir, 'destination')
-        os.makedirs(destination)
+        destination = self._destination()
         library = backend.LibraryBackend()
         self.assertTrue(library.add_book(source))
 
@@ -4379,8 +4366,7 @@ class MainWindowTest(MComixTest):
 
     def test_a_name_that_is_taken_stops_the_move_and_says_so(self):
         source = self._movable_book()
-        destination = os.path.join(self.tmp_dir, 'destination')
-        os.makedirs(destination)
+        destination = self._destination()
         with open(os.path.join(destination, 'Movable.cbz'), 'wb') as handle:
             handle.write(b'not the book')
 
@@ -4402,8 +4388,7 @@ class MainWindowTest(MComixTest):
         source = self._movable_book()
         with zipfile.ZipFile(source) as archive:
             before = archive.namelist()
-        with self._quietly():
-            self.assertTrue(self.window.file_actions.swap_pages(1, 2))
+        self._swap_the_first_two()
         return source, before
 
     def test_a_change_not_written_is_saved_before_the_book_moves(self):
@@ -4412,8 +4397,7 @@ class MainWindowTest(MComixTest):
         archive stood where the old one was, and the one that moved
         held the pages as they were."""
         source, before = self._movable_changed_book()
-        destination = os.path.join(self.tmp_dir, 'destination')
-        os.makedirs(destination)
+        destination = self._destination()
         self._remember_answer(Response.YES)
 
         self.window.file_actions.move_current_file(destination)
@@ -4434,8 +4418,7 @@ class MainWindowTest(MComixTest):
         """Stopping the save says to keep the archive as it was, as it
         does for a close."""
         source, before = self._movable_changed_book()
-        destination = os.path.join(self.tmp_dir, 'destination')
-        os.makedirs(destination)
+        destination = self._destination()
         self._remember_answer(Response.YES)
         with unittest.mock.patch.object(
                 self.window.file_actions, 'save_archive_asking',
@@ -4571,8 +4554,7 @@ class MainWindowTest(MComixTest):
         self.window.set_page(3)
         self._pump()
         library = backend.LibraryBackend()
-        destination = os.path.join(self.tmp_dir, 'destination')
-        os.makedirs(destination)
+        destination = self._destination()
         others = []
         for name in ('Other.cbz', 'Taken.cbz'):
             other = os.path.join(self.tmp_dir, name)
@@ -4680,8 +4662,7 @@ class MainWindowTest(MComixTest):
         """The answer on the way out was for a book that was leaving;
         one that stays asks again when it is closed."""
         source, before = self._movable_changed_book()
-        destination = os.path.join(self.tmp_dir, 'destination')
-        os.makedirs(destination)
+        destination = self._destination()
         with open(os.path.join(destination, 'Movable.cbz'), 'wb') as handle:
             handle.write(b'not the book')
         self._remember_answer(Response.NO)
@@ -4763,25 +4744,15 @@ class MainWindowTest(MComixTest):
         swap must not have taken it."""
         self._ready()
         self._pump()
-        scrolled = []
-        with unittest.mock.patch.object(
-                self.window, 'scroll',
-                side_effect=lambda dx, dy: scrolled.append((dx, dy))):
-            self.window.event_handler.mouse_move_event(
-                self._Motion(Gdk.ModifierType.BUTTON1_MASK), 10, 10)
+        scrolled = self._dragged_to(Gdk.ModifierType.BUTTON1_MASK, 10, 10)
         self.assertTrue(scrolled, 'the view did not move')
 
     def test_a_drag_that_swaps_does_not_move_the_view(self):
         self._ready()
         self._pump()
-        scrolled = []
-        with unittest.mock.patch.object(
-                self.window, 'scroll',
-                side_effect=lambda dx, dy: scrolled.append((dx, dy))):
-            self.window.event_handler.mouse_move_event(
-                self._Motion(Gdk.ModifierType.BUTTON1_MASK
-                             | Gdk.ModifierType.CONTROL_MASK
-                             | Gdk.ModifierType.SHIFT_MASK), 10, 10)
+        scrolled = self._dragged_to(Gdk.ModifierType.BUTTON1_MASK
+                                    | Gdk.ModifierType.CONTROL_MASK
+                                    | Gdk.ModifierType.SHIFT_MASK, 10, 10)
         self.assertEqual(scrolled, [], 'the pages moved under the drag')
 
     # -- Renaming a page --------------------------------------------------
@@ -5474,11 +5445,7 @@ class MainWindowTest(MComixTest):
         """Windows refuses to replace a file something has open, and a
         virus scanner reads the copy just written: the save failed at
         the first refusal, where every other rename tries again."""
-        self._ready()
-        self.assertTrue(
-            wait_for(lambda: self.window.imagehandler.page_is_available(1),
-                     seconds=10))
-        page = self.window.imagehandler.get_path_to_page(1)
+        page = self._first_page_out()
         target = os.path.join(self.tmp_dir, 'page.png')
         with open(target, 'wb') as old:
             old.write(b'old')
@@ -5499,12 +5466,7 @@ class MainWindowTest(MComixTest):
         self.assertEqual(os.path.getsize(page), os.path.getsize(target))
 
     def test_a_page_saved_where_there_is_no_room_says_how_large_it_is(self):
-        self._ready()
-        self.assertTrue(
-            wait_for(lambda: self.window.imagehandler.page_is_available(1),
-                     seconds=20),
-            'page 1 never came out of the archive')
-        page = self.window.imagehandler.get_path_to_page(1)
+        page = self._first_page_out()
         full = OSError(errno.ENOSPC, os.strerror(errno.ENOSPC))
         with unittest.mock.patch.object(file_actions.shutil, 'copy2',
                                         side_effect=full):
@@ -5523,12 +5485,7 @@ class MainWindowTest(MComixTest):
         """The copy went straight onto the name asked for: a disk that
         filled part way left half a picture there, and the file the
         reader had agreed to replace was gone as well."""
-        self._ready()
-        self.assertTrue(
-            wait_for(lambda: self.window.imagehandler.page_is_available(1),
-                     seconds=20),
-            'page 1 never came out of the archive')
-        page = self.window.imagehandler.get_path_to_page(1)
+        page = self._first_page_out()
         folder = os.path.join(self.tmp_dir, 'target')
         os.mkdir(folder)
         target = os.path.join(folder, 'saved.png')
@@ -5553,15 +5510,7 @@ class MainWindowTest(MComixTest):
             self.assertEqual(kept.read(), b'what was there')
 
     def test_a_page_that_was_saved_says_nothing(self):
-        self._ready()
-        # The listing says the page is there; the extractor says the
-        # file is. Without the wait this test saved a page that was not
-        # out of the archive yet, and failed about one run in eight.
-        self.assertTrue(
-            wait_for(lambda: self.window.imagehandler.page_is_available(1),
-                     seconds=20),
-            'page 1 never came out of the archive')
-        page = self.window.imagehandler.get_path_to_page(1)
+        page = self._first_page_out()
         target = os.path.join(self.tmp_dir, 'saved.png')
 
         self.window.file_actions._save_page_to(page, target)
@@ -6076,9 +6025,7 @@ class PageMenuSubmenusTest(MComixTest):
         pump()
         self.window.filehandler.open_file(
             get_testfile_path('archives', '01-ZIP-Normal.zip'))
-        self.assertTrue(wait_for(
-            lambda: self.window.imagehandler.get_number_of_pages() > 0,
-            seconds=20))
+        self.wait_for_pages()
         shown = self._shown()
         for name in self._names():
             self.assertIn(name, shown)
@@ -6425,7 +6372,7 @@ class ResumeAfterSaveAndQuitTest(MComixTest):
         self.assertFalse(again.filehandler.file_loaded)
 
 
-class InvertedColoursAtStartUpTest(MComixTest):
+class InvertedColoursAtStartUpTest(MainWindowLaterTest):
 
     """The action Ctrl+I inverts the colours with, on a window that
     starts with the preference already set.
@@ -6437,15 +6384,9 @@ class InvertedColoursAtStartUpTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        self.make_user_directories()
-        icons.load_icons()
         prefs['invert color'] = True
         self.open_main_window()
         pump()
-
-    def tearDown(self):
-        self.close_main_window()
-        super().tearDown()
 
     def test_the_action_starts_as_inverted_as_the_pages(self):
         """The enhancer reads the preference, so an action that started
@@ -6456,7 +6397,7 @@ class InvertedColoursAtStartUpTest(MComixTest):
             'invert_color').get_active())
 
 
-class ZoomModeAtStartUpTest(MComixTest):
+class ZoomModeAtStartUpTest(MainWindowLaterTest):
 
     """Which zoom modes a window passes through as it starts.
 
@@ -6471,8 +6412,6 @@ class ZoomModeAtStartUpTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        self.make_user_directories()
-        icons.load_icons()
         prefs['zoom mode'] = constants.ZoomMode.MANUAL
         self.seen = []
         original = main.MainWindow.change_zoom_mode
@@ -6486,10 +6425,6 @@ class ZoomModeAtStartUpTest(MComixTest):
                         original)
         self.open_main_window()
         pump()
-
-    def tearDown(self):
-        self.close_main_window()
-        super().tearDown()
 
     def test_manual_mode_is_reached_without_passing_through_another(self):
         self.assertEqual([constants.ZoomMode.MANUAL], self.seen,

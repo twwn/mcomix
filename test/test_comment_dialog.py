@@ -43,9 +43,7 @@ class CommentsDialogTest(MainWindowLaterTest):
             self.open_main_window(open_path=path)
         else:
             self.window.filehandler.open_file(path)
-        self.assertTrue(wait_for(
-            lambda: self.window.imagehandler.get_number_of_pages() > 0,
-            seconds=20))
+        self.wait_for_pages()
         # The comments are known from the same listing as the pages.
 
     def test_every_comment_gets_a_tab_of_its_own(self):

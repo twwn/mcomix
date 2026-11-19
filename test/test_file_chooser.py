@@ -10,12 +10,12 @@ import unittest.mock
 
 from gi.repository import Gdk, Gio, GLib, Graphene, Gtk
 
-from . import (MComixTest, MainWindowOpenTest, descendants, get_testfile_path,
-               pump, refuse_passwords, wait_for, wait_for_deletions)
+from . import (MComixTest, MainWindowLaterTest, MainWindowOpenTest,
+               descendants, get_testfile_path, pump, refuse_passwords,
+               wait_for, wait_for_deletions)
 
 from mcomix import archive_tools
 from mcomix import constants
-from mcomix import icons
 from mcomix import image_tools
 from mcomix import file_chooser_base_dialog
 from mcomix import widgets
@@ -229,8 +229,7 @@ class FileChooserTest(MainWindowOpenTest):
         chosen = [get_testfile_path('images', name)
                   for name in ('portrait-no-exif.png', 'red.png')]
         self.dialog.files_chosen(chosen)
-        self.assertTrue(wait_for(
-            lambda: self.window.imagehandler.get_number_of_pages() > 0))
+        self.wait_for_pages()
         pump()
         self.assertEqual(2, self.window.imagehandler.get_number_of_pages())
 
@@ -774,12 +773,10 @@ class _Library(Gtk.Window):
         self.added.append((paths, collection))
 
 
-class LibraryFileChooserTest(MComixTest):
+class LibraryFileChooserTest(MainWindowLaterTest):
 
     def setUp(self):
         super().setUp()
-        self.make_user_directories()
-        icons.load_icons()
         self.open_main_window()
         self.library = _Library()
         pump()
@@ -789,7 +786,6 @@ class LibraryFileChooserTest(MComixTest):
     def tearDown(self):
         self._module.close_library_filechooser_dialog()
         self.library.destroy()
-        self.close_main_window()
         super().tearDown()
 
     def _open(self):

@@ -7,10 +7,9 @@ import zipfile
 
 from PIL import Image
 
-from . import MComixTest, pump, wait_for
+from . import MainWindowLaterTest, pump, wait_for
 
 from mcomix import constants
-from mcomix import icons
 from mcomix import image_tools
 from mcomix import keybindings
 from mcomix import main
@@ -22,7 +21,7 @@ from mcomix import ui
 from mcomix.preferences import prefs
 
 
-class _StripTest(MComixTest):
+class _StripTest(MainWindowLaterTest):
 
     """A window on a book of long pages, in a view of a known size."""
 
@@ -40,14 +39,12 @@ class _StripTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        self.make_user_directories()
         prefs['continuous mode'] = self.CONTINUOUS
         prefs['continuous for long strips'] = self.DETECT
         # As wide as the view, which keeps the sums in the tests short.
         prefs['continuous width'] = 100
         prefs['default double page'] = False
         prefs['default manga mode'] = False
-        icons.load_icons()
         self.book = os.path.join(self.tmp_dir, 'strip.zip')
         with zipfile.ZipFile(self.book, 'w') as archive:
             for number, size in enumerate(self.PAGES, 1):
@@ -85,12 +82,12 @@ class _StripTest(MComixTest):
             seconds=20))
         self._redraw()
 
-    def tearDown(self):
-        self.close_main_window()
-        super().tearDown()
-
     def _redraw(self):
         self.window.draw_image()
+        self._drawn()
+
+    def _drawn(self):
+        """Wait for the strip asked for to be drawn."""
         self.assertTrue(wait_for(
             lambda: not self.window._waiting_for_redraw))
         pump()
@@ -323,9 +320,7 @@ class ToggleTest(_StripTest):
     def _toggle(self):
         self.window.actiongroup.get_action('continuous_mode').activate()
         self.assertTrue(self.window._waiting_for_redraw)
-        self.assertTrue(wait_for(
-            lambda: not self.window._waiting_for_redraw))
-        pump()
+        self._drawn()
 
     def test_it_stacks_the_pages_and_unstacks_them(self):
         self.window.set_page(3)
@@ -539,11 +534,6 @@ class ScrollTest(_StripTest):
 
     def _down(self):
         return self.window.page_area.get_position()[1]
-
-    def _drawn(self):
-        self.assertTrue(wait_for(
-            lambda: not self.window._waiting_for_redraw))
-        pump()
 
     def _on_screen(self, page):
         """How far below the top of the view <page> begins."""
@@ -797,9 +787,7 @@ class TurnedStripTest(_StripTest):
 
     def test_scrolling_along_moves_the_strip_on(self):
         self.window.scroll(700, 0)
-        self.assertTrue(wait_for(
-            lambda: not self.window._waiting_for_redraw))
-        pump()
+        self._drawn()
         self.assertEqual(2, self.window.imagehandler.get_current_page())
 
 
@@ -815,9 +803,7 @@ class ScaledOnceTest(_StripTest):
                 'mcomix.image_tools.fit_pixbuf_to_rectangle',
                 wraps=image_tools.fit_pixbuf_to_rectangle) as fit:
             draw()
-            self.assertTrue(wait_for(
-                lambda: not self.window._waiting_for_redraw))
-            pump()
+            self._drawn()
         return [call.args[1][1] for call in fit.call_args_list]
 
     def test_a_move_of_the_strip_scales_the_page_that_came_into_it(self):
@@ -873,9 +859,7 @@ class ExifTest(_StripTest):
     def test_scrolling_down_moves_the_strip_on(self):
         # Past the first page and the second, which ends at 607.
         self.window.scroll(0, 700)
-        self.assertTrue(wait_for(
-            lambda: not self.window._waiting_for_redraw))
-        pump()
+        self._drawn()
         self.assertEqual(3, self.window.imagehandler.get_current_page())
 
 
@@ -1013,11 +997,6 @@ class SkippedPageTest(_StripTest):
     def _page(self):
         return self.window.imagehandler.get_current_page()
 
-    def _drawn(self):
-        self.assertTrue(wait_for(
-            lambda: not self.window._waiting_for_redraw))
-        pump()
-
     def test_it_takes_no_room_and_is_not_shown(self):
         """Below the first page two screens are 800: the third page's
         300 and the fourth's 600, the second counting for nothing."""
@@ -1087,9 +1066,7 @@ class DetectTest(_StripTest):
 
     def _toggle(self):
         self.window.actiongroup.get_action('continuous_mode').activate()
-        self.assertTrue(wait_for(
-            lambda: not self.window._waiting_for_redraw))
-        pump()
+        self._drawn()
 
     def _open(self, path, pages):
         self.window.filehandler.open_file(path)

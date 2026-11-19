@@ -105,8 +105,6 @@ class BookmarksMenuTest(MComixTest):
         self.window = _StubWindow()
         self.ui = _StubUI()
         self.store = bookmark_backend.BookmarksStore
-        self.store._initialized = False
-        self.store._bookmarks = []
         self.menu = bookmark_menu.BookmarksMenu(self.ui, self.window)
         # A press left over from another test would be handed to the
         # first activation here that asks.
@@ -510,9 +508,6 @@ class BookmarkInTheOpenBookTest(MainWindowLaterTest):
         self.window.set_page(2)
         pump()
         store = bookmark_backend.BookmarksStore
-        store._initialized = False
-        store._bookmarks = []
-        store.initialize(self.window)
         store.add_current_to_bookmarks()
         pump()
         bookmark = store.get_bookmarks()[-1]
@@ -537,9 +532,6 @@ class BookmarkInTheOpenBookTest(MainWindowLaterTest):
         self.window.set_page(2)
         pump()
         store = bookmark_backend.BookmarksStore
-        store._initialized = False
-        store._bookmarks = []
-        store.initialize(self.window)
         store.add_current_to_bookmarks()
         pump()
         bookmark = store.get_bookmarks()[-1]

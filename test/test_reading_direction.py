@@ -17,11 +17,11 @@ import os
 import shutil
 import zipfile
 
-from . import MComixTest, get_testfile_path, pump, wait_for
+from . import (MComixTest, MainWindowLaterTest, get_testfile_path, pump,
+               wait_for)
 
 from mcomix import comicinfo
 from mcomix import constants
-from mcomix import icons
 from mcomix import reading_directions
 from mcomix.preferences import prefs
 
@@ -112,12 +112,10 @@ class StoreTest(MComixTest):
             os.path.join(shelf, 'Book.cbz')))
 
 
-class WindowDirectionTest(MComixTest):
+class WindowDirectionTest(MainWindowLaterTest):
 
     def setUp(self):
         super().setUp()
-        self.make_user_directories()
-        icons.load_icons()
         prefs['default manga mode'] = False
 
     def _book(self, name, manga=None):
@@ -131,10 +129,7 @@ class WindowDirectionTest(MComixTest):
 
     def _open(self, path):
         self.open_main_window(open_path=path)
-        self.addCleanup(self.close_main_window)
-        self.assertTrue(wait_for(
-            lambda: self.window.imagehandler.get_number_of_pages() > 0,
-            seconds=20))
+        self.wait_for_pages()
         return self.window
 
     def _manga_action(self):

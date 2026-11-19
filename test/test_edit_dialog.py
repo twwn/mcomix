@@ -12,15 +12,14 @@ import zipfile
 
 from gi.repository import Gdk, Gtk
 
-from . import (MComixTest, children, descendants, get_testfile_path, hold_open,
-               prompts_over, pump, simple_file_chooser, take_activation_from,
-               wait_for)
+from . import (MComixTest, MainWindowLaterTest, children, descendants,
+               get_testfile_path, hold_open, prompts_over, pump,
+               simple_file_chooser, take_activation_from, wait_for)
 
 from mcomix import archive_packer
 from mcomix import constants
 from mcomix import edit_dialog
 from mcomix import file_chooser_simple_dialog
-from mcomix import icons
 from mcomix import page_marks
 from mcomix import thumbnail_list
 from mcomix import widgets
@@ -60,8 +59,7 @@ class EditArchiveDialogTest(MComixTest):
         and GTK finalizes that widget with the menu still on it:
         "Finalizing MComixColumnListView, but it still has children
         left: GtkPopoverMenu"."""
-        self.dialog._load_original_files()
-        pump()
+        self._load()
         menus = [self.dialog._image_area._popup_menu,
                  self.dialog._comment_area._popup_menu]
         widgets.popup_at(menus[0], self.dialog._image_area._grid, 0, 0)
@@ -133,8 +131,7 @@ class EditArchiveDialogTest(MComixTest):
 
     def _edited(self):
         """Take a page out in the editor, which nothing else knows of."""
-        self.dialog._load_original_files()
-        pump()
+        self._load()
         self.assertGreater(self.dialog._image_area._grid.model.get_n_items(), 1,
                            'the fixture has too few pages')
         self.dialog._image_area._grid.select_only(0)
@@ -192,8 +189,7 @@ class EditArchiveDialogTest(MComixTest):
             pump()
 
     def test_an_editor_holding_nothing_new_is_not_asked_about(self):
-        self.dialog._load_original_files()
-        pump()
+        self._load()
         edit_dialog._dialog = self.dialog
         try:
             self.assertFalse(self.dialog.changes_not_applied())
@@ -224,8 +220,7 @@ class EditArchiveDialogTest(MComixTest):
     def test_a_comment_renamed_and_not_saved_is_held(self):
         """Apply hands the window the pages alone, so a name given to a
         comment file lives in the editor until the book is written."""
-        self.dialog._load_original_files()
-        pump()
+        self._load()
         rows = list(self.dialog._comment_area._list.each_row())
         self.assertTrue(rows, 'the fixture holds no comment file')
         self.dialog._comment_area._give_name(rows[0], 'Notes.txt')
@@ -321,8 +316,7 @@ class EditArchiveDialogTest(MComixTest):
         self.assertTrue(self.dialog._import_button.get_sensitive())
 
     def test_a_load_that_finishes_leaves_no_cursor_behind_either(self):
-        self.dialog._load_original_files()
-        pump()
+        self._load()
         self.assertIsNone(self.window.page_area.get_cursor())
         self.assertTrue(self.dialog._save_button.get_sensitive())
 
@@ -357,8 +351,7 @@ class EditArchiveDialogTest(MComixTest):
 
     def test_a_save_that_fits_is_not_refused(self):
         target = os.path.join(self.tmp_dir, 'saved.cbz')
-        self.dialog._load_original_files()
-        pump()
+        self._load()
         self.dialog._pack_archive(target)
         pump()
         self.assertTrue(os.path.exists(target), 'the archive was not written')
@@ -400,8 +393,7 @@ class EditArchiveDialogTest(MComixTest):
         """The pixbufs the handler is holding stand against the page
         numbers of the listing that was there before, so a book whose
         pages have been reordered must not be drawn from them."""
-        self.dialog._load_original_files()
-        pump()
+        self._load()
         listing = list(self.dialog._image_area.get_file_listing())
         self.assertGreater(len(listing), 1, 'the fixture has too few pages')
         handler = self.window.imagehandler
@@ -427,10 +419,7 @@ class EditArchiveDialogTest(MComixTest):
         often as not - so nothing was drawn or counted again and the
         window went on describing the book that had just been replaced.
         """
-        self.dialog._load_original_files()
-        pump()
-        listing = list(self.dialog._image_area.get_file_listing())
-        self.assertGreater(len(listing), 2, 'the fixture has too few pages')
+        listing = self._three_pages_or_more()
         handler = self.window.imagehandler
         self.assertEqual(handler.get_current_page(), 1,
                          'the book does not start where this test needs it')
@@ -449,8 +438,7 @@ class EditArchiveDialogTest(MComixTest):
     def test_applying_a_book_with_no_pages_left_leaves_the_window_alone(self):
         """There is no page to move to, and applying an edit was not
         asked to close the file."""
-        self.dialog._load_original_files()
-        pump()
+        self._load()
         self.dialog._image_area.get_file_listing = list
         self.dialog._response(self.dialog, Response.APPLY)
         pump()
@@ -480,9 +468,30 @@ class EditArchiveDialogTest(MComixTest):
     def _pages(self):
         return list(self.dialog._image_area.get_file_listing())
 
-    def test_control_z_takes_a_removal_back(self):
+    def _load(self):
+        """Load the book's pages into the editor, as opening it does."""
         self.dialog._load_original_files()
         pump()
+
+    def _first_page_removed(self):
+        """Load the pages and remove the first; return them as they were
+        before."""
+        self._load()
+        before = self._pages()
+        self.dialog._image_area._grid.select_only(0)
+        self.dialog._image_area._remove_pages()
+        return before
+
+    def _three_pages_or_more(self):
+        """Load the pages and return them, once sure there are enough to
+        pick some out and leave some."""
+        self._load()
+        listing = self._pages()
+        self.assertGreater(len(listing), 2, 'the fixture has too few pages')
+        return listing
+
+    def test_control_z_takes_a_removal_back(self):
+        self._load()
         before = self._pages()
         self.assertGreater(len(before), 1, 'the fixture has too few pages')
         grid = self.dialog._image_area._grid
@@ -494,22 +503,14 @@ class EditArchiveDialogTest(MComixTest):
         self.assertEqual(self._pages(), before)
 
     def test_control_y_makes_an_undone_removal_again(self):
-        self.dialog._load_original_files()
-        pump()
-        before = self._pages()
-        self.dialog._image_area._grid.select_only(0)
-        self.dialog._image_area._remove_pages()
+        before = self._first_page_removed()
         self._press('<Control>z')
 
         self._press('<Control>y')
         self.assertEqual(self._pages(), before[1:])
 
     def test_control_shift_z_redoes_as_control_y_does(self):
-        self.dialog._load_original_files()
-        pump()
-        before = self._pages()
-        self.dialog._image_area._grid.select_only(0)
-        self.dialog._image_area._remove_pages()
+        before = self._first_page_removed()
         self._press('<Control>z')
 
         self._press('<Control><Shift>z')
@@ -590,8 +591,7 @@ class EditArchiveDialogTest(MComixTest):
     def test_renaming_from_the_editor_names_the_page_the_window_holds(self):
         """The editor and the window are the same book: a name given
         here is the name the page is written under either way."""
-        self.dialog._load_original_files()
-        pump()
+        self._load()
         grid = self.dialog._image_area._grid
         self.assertTrue(grid.model.get_n_items() > 1,
                         'the fixture has too few pages')
@@ -623,8 +623,7 @@ class EditArchiveDialogTest(MComixTest):
     def test_f2_asks_for_a_name_for_the_page_selected(self):
         """The key a file manager renames with, on the list that shows
         the pages: the menu's rename was the only way to reach it."""
-        self.dialog._load_original_files()
-        pump()
+        self._load()
         area = self.dialog._image_area
         area._grid.select_only(0)
         with unittest.mock.patch.object(area, '_rename_page') as asked:
@@ -634,8 +633,7 @@ class EditArchiveDialogTest(MComixTest):
         asked.assert_called_once_with()
 
     def test_a_right_click_on_a_page_picks_it_and_opens_the_menu(self):
-        self.dialog._load_original_files()
-        pump()
+        self._load()
         area = self.dialog._image_area
         area._grid.select_only(0)
         hold_open(area._popup_menu)
@@ -695,8 +693,7 @@ class EditArchiveDialogTest(MComixTest):
         return None
 
     def test_a_right_click_on_a_page_already_picked_keeps_the_others(self):
-        self.dialog._load_original_files()
-        pump()
+        self._load()
         area = self.dialog._image_area
         area._grid.select_all()
         hold_open(area._popup_menu)
@@ -712,8 +709,7 @@ class EditArchiveDialogTest(MComixTest):
             pump()
 
     def test_a_right_click_between_pages_does_nothing(self):
-        self.dialog._load_original_files()
-        pump()
+        self._load()
         area = self.dialog._image_area
         area._grid.select_only(0)
         with unittest.mock.patch.object(area._grid, 'position_at',
@@ -724,8 +720,7 @@ class EditArchiveDialogTest(MComixTest):
         self.assertFalse(area._popup_menu.get_visible())
 
     def test_the_delete_key_takes_the_selected_pages_out(self):
-        self.dialog._load_original_files()
-        pump()
+        self._load()
         before = self._pages()
         area = self.dialog._image_area
         area._grid.select_only(0)
@@ -734,8 +729,7 @@ class EditArchiveDialogTest(MComixTest):
         self.assertEqual(before[1:], self._pages())
 
     def test_the_keypad_delete_removes_the_page_too(self):
-        self.dialog._load_original_files()
-        pump()
+        self._load()
         before = self._pages()
         area = self.dialog._image_area
         area._grid.select_only(0)
@@ -745,8 +739,7 @@ class EditArchiveDialogTest(MComixTest):
 
     def test_with_nothing_or_two_selected_there_is_nothing_to_act_on(self):
         """Removing needs a page picked out, and renaming exactly one."""
-        self.dialog._load_original_files()
-        pump()
+        self._load()
         before = self._pages()
         area = self.dialog._image_area
         # A removal of nothing is no change: the redo of what was undone
@@ -767,8 +760,7 @@ class EditArchiveDialogTest(MComixTest):
         asked.assert_not_called()
 
     def test_the_page_menu_selects_every_page(self):
-        self.dialog._load_original_files()
-        pump()
+        self._load()
         grid = self.dialog._image_area._grid
         self.assertGreater(grid.model.get_n_items(), 1,
                            'the fixture has too few pages')
@@ -781,11 +773,7 @@ class EditArchiveDialogTest(MComixTest):
                          list(range(grid.model.get_n_items())))
 
     def test_the_page_menu_takes_a_removal_back(self):
-        self.dialog._load_original_files()
-        pump()
-        before = self._pages()
-        self.dialog._image_area._grid.select_only(0)
-        self.dialog._image_area._remove_pages()
+        before = self._first_page_removed()
         self.assertEqual(self._pages(), before[1:])
 
         self.dialog._image_area._undo()
@@ -793,11 +781,7 @@ class EditArchiveDialogTest(MComixTest):
         self.assertEqual(self._pages(), before)
 
     def test_the_page_menu_makes_an_undone_removal_again(self):
-        self.dialog._load_original_files()
-        pump()
-        before = self._pages()
-        self.dialog._image_area._grid.select_only(0)
-        self.dialog._image_area._remove_pages()
+        before = self._first_page_removed()
         self.dialog._image_area._undo()
 
         self.dialog._image_area._redo()
@@ -805,8 +789,7 @@ class EditArchiveDialogTest(MComixTest):
         self.assertEqual(self._pages(), before[1:])
 
     def test_undoing_what_was_never_changed_is_not_an_error(self):
-        self.dialog._load_original_files()
-        pump()
+        self._load()
         before = self._pages()
         self.assertFalse(self.dialog.undo())
         self.assertFalse(self.dialog.redo())
@@ -815,8 +798,7 @@ class EditArchiveDialogTest(MComixTest):
     def test_a_change_after_an_undo_leaves_nothing_to_redo(self):
         """The undone change is not one the editor can arrive at any
         more: the listing went somewhere else instead."""
-        self.dialog._load_original_files()
-        pump()
+        self._load()
         area = self.dialog._image_area
         area._grid.select_only(0)
         area._remove_pages()
@@ -831,8 +813,7 @@ class EditArchiveDialogTest(MComixTest):
         the widgets of a destroyed window, and the handlers they hold
         keep the dialog alive - so it has to drop its pages' entries,
         each with a thumbnail, and the undo snapshots that hold them."""
-        self.dialog._load_original_files()
-        pump()
+        self._load()
         grid = self.dialog._image_area._grid
         self.assertGreater(grid.store.get_n_items(), 0)
         grid.select_only(0)
@@ -845,8 +826,7 @@ class EditArchiveDialogTest(MComixTest):
 
     def test_an_undone_page_keeps_the_thumbnail_that_was_made_for_it(self):
         """A snapshot is the entries themselves, not their paths."""
-        self.dialog._load_original_files()
-        pump()
+        self._load()
         grid = self.dialog._image_area._grid
         first = grid.get_item(0)
         grid.select_only(0)
@@ -855,8 +835,7 @@ class EditArchiveDialogTest(MComixTest):
         self.assertIs(grid.get_item(0), first)
 
     def test_a_reordering_drag_can_be_undone(self):
-        self.dialog._load_original_files()
-        pump()
+        self._load()
         before = self._pages()
         self.assertGreater(len(before), 2, 'the fixture has too few pages')
         self.assertTrue(self.dialog._image_area._grid.move_item(0, 2))
@@ -866,8 +845,7 @@ class EditArchiveDialogTest(MComixTest):
         self.assertEqual(self._pages(), before)
 
     def test_an_import_is_one_change_however_many_files_it_added(self):
-        self.dialog._load_original_files()
-        pump()
+        self._load()
         pages = self._pages()
         added = []
         for name in ('imported-1.png', 'imported-2.png'):
@@ -883,8 +861,7 @@ class EditArchiveDialogTest(MComixTest):
         self.assertEqual(self._pages(), pages)
 
     def test_importing_nothing_is_not_a_change_to_undo(self):
-        self.dialog._load_original_files()
-        pump()
+        self._load()
         self.dialog._import_files([os.path.join(self.tmp_dir, 'not there')])
         self.assertFalse(self.dialog.undo())
 
@@ -906,17 +883,13 @@ class EditArchiveDialogTest(MComixTest):
         """The pages the reader picked out are the ones the editor was
         opened to do something about."""
         self.window.select_page(2)
-        self.dialog._load_original_files()
-        pump()
+        self._load()
         listing = self.dialog._image_area.get_file_listing()
         self.assertEqual(self.dialog._image_area.selected_paths(),
                          [listing[1]])
 
     def test_closing_the_editor_picks_its_pages_out_in_the_window(self):
-        self.dialog._load_original_files()
-        pump()
-        listing = list(self.dialog._image_area.get_file_listing())
-        self.assertGreater(len(listing), 2, 'the fixture has too few pages')
+        self._three_pages_or_more()
         self.dialog._image_area._grid.select_positions([0, 2])
         self.dialog.destroy()
         pump()
@@ -926,10 +899,7 @@ class EditArchiveDialogTest(MComixTest):
         """The listing is a new one, so the numbers are new too: what
         was picked out is carried over by its file rather than by where
         it stood."""
-        self.dialog._load_original_files()
-        pump()
-        listing = list(self.dialog._image_area.get_file_listing())
-        self.assertGreater(len(listing), 2, 'the fixture has too few pages')
+        listing = self._three_pages_or_more()
         self.dialog._image_area._grid.select_positions([2])
         reordered = list(reversed(listing))
         self.dialog._image_area.get_file_listing = lambda: reordered
@@ -1055,7 +1025,7 @@ class EditArchiveDialogTest(MComixTest):
         self.assertIsNone(chooser._note)
 
 
-class SavedArchiveContentsTest(MComixTest):
+class SavedArchiveContentsTest(MainWindowLaterTest):
 
     """What a saved archive holds besides its pages.
 
@@ -1068,8 +1038,6 @@ class SavedArchiveContentsTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        self.make_user_directories()
-        icons.load_icons()
         self.source = os.path.join(self.tmp_dir, 'Book.cbz')
         page = get_testfile_path('images', '03-PNG-RGB.png')
         with zipfile.ZipFile(self.source, 'w', zipfile.ZIP_DEFLATED) as book:
@@ -1085,9 +1053,7 @@ class SavedArchiveContentsTest(MComixTest):
             book.writestr('pages/._01.png', 'junk')
             book.writestr('._info.txt', 'junk')
         self.open_main_window(open_path=self.source)
-        self.assertTrue(wait_for(
-            lambda: self.window.imagehandler.get_number_of_pages() > 0,
-            seconds=20))
+        self.wait_for_pages()
         self.dialog = edit_dialog._EditArchiveDialog(self.window)
         pump()
 
@@ -1126,7 +1092,6 @@ class SavedArchiveContentsTest(MComixTest):
     def tearDown(self):
         self.dialog.destroy()
         edit_dialog.close_dialog()
-        self.close_main_window()
         super().tearDown()
 
     def _saved(self):

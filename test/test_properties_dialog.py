@@ -44,9 +44,7 @@ class PropertiesDialogTest(MComixTest):
 
     def _open(self, path):
         self.open_main_window(open_path=path)
-        self.assertTrue(wait_for(
-            lambda: self.window.imagehandler.get_number_of_pages() > 0,
-            seconds=20))
+        self.wait_for_pages()
         self.addCleanup(self.close_main_window)
         self.dialog = properties_dialog._PropertiesDialog(self.window)
         pump()

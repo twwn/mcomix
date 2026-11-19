@@ -13,28 +13,19 @@ import shutil
 import unittest.mock
 import zipfile
 
-from . import MComixTest, get_testfile_path, pump, wait_for
+from . import MainWindowLaterTest, get_testfile_path, pump, wait_for
 
-from mcomix import icons
 from mcomix.preferences import prefs
 
 _PAGES = {'N': get_testfile_path('images', 'portrait-no-exif.png'),
           'W': get_testfile_path('images', 'landscape-no-exif.png')}
 
 
-class DoublePageTurnsTest(MComixTest):
+class DoublePageTurnsTest(MainWindowLaterTest):
 
     def setUp(self):
         super().setUp()
-        self.make_user_directories()
-        icons.load_icons()
         prefs['default double page'] = True
-        self.window = None
-
-    def tearDown(self):
-        if self.window is not None:
-            self.close_main_window()
-        super().tearDown()
 
     def _open(self, layout, archive=False):
         """Open a book of narrow (N) and wide (W) pages, all extracted."""
