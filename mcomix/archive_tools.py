@@ -355,8 +355,11 @@ def is_later_volume(path: str) -> bool:
     book, which the part with its pages stands for
     (kfx.is_later_part()).  A file that cannot be read is not a later
     volume.
+
+    Only a file named as one can be one (_may_be_later_volume()): the
+    rest are not read at all, which is every book of most folders.
     """
-    if not is_archive_file(path):
+    if not is_archive_file(path) or not _may_be_later_volume(path):
         return False
     try:
         stat = os.stat(path)
@@ -385,6 +388,25 @@ def is_later_volume(path: str) -> bool:
         # it, which its own size and time do not tell.
         return kfx.is_later_part(path)
     return later
+
+
+def _may_be_later_volume(path: str) -> bool:
+    """Whether the name of <path> is one a later volume or a later KFX
+    part is found under, which is_later_volume() then reads to tell.
+
+    A RAR set is named name.part1.rar, name.part2.rar and on, and its
+    header says it is named so: RAR 3 and 4 flag that naming, and RAR 5
+    names a set otherwise only as name.rar, name.r00 and on, which are
+    not listed as books.  A later volume renamed to another name could
+    not be read from its first anyway (first_volume() and volume_set()
+    go by the name).  A KFX part is a .kfx file, or an .azw3, a type
+    shared-mime-info gives KFX books too.  Reading the start of every
+    other book cost a read from the disk for each book in the folder of
+    the one opened, about 300 ms for 17,000 books on a tmpfs the first
+    time, far more on a disk.
+    """
+    return (_VOLUME_NAME.match(os.path.basename(path)) is not None
+            or path.lower().endswith(('.kfx', '.azw3')))
 
 
 #: What is_later_volume() read of a file, by its path, with the file's

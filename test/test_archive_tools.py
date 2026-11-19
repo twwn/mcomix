@@ -218,6 +218,27 @@ class ArchiveToolsTest(MComixTest):
         self.assertEqual(0, self._reads(path))
         self.assertTrue(archive_tools.is_later_volume(path))
 
+    def test_a_book_not_named_as_a_later_volume_is_not_read(self):
+        """The book's number among its folder's asks about every archive
+        in the folder: read, the first open of a book among 17,000 took
+        seconds on a disk.  A RAR set's later volumes are named
+        name.partN.rar, and a KFX book's parts .kfx."""
+        for name in ('Book 07.cbz', 'Book 07.cbr', 'Book 07.rar',
+                     'Book 07.cb7', 'Book 07.pdf', 'Book 07.epub'):
+            with self.subTest(name=name):
+                path = self._later_rar_4_volume(name)
+                self.assertEqual(0, self._reads(path))
+                self.assertFalse(archive_tools.is_later_volume(path))
+        for name in ('Book.part2.rar', 'Book.part02.cbr', 'Book.PART2.RAR'):
+            with self.subTest(name=name):
+                path = self._later_rar_4_volume(name)
+                self.assertEqual(1, self._reads(path))
+                self.assertTrue(archive_tools.is_later_volume(path))
+        for name in ('Book.kfx', 'Book.azw3'):
+            with self.subTest(name=name):
+                path = self._later_rar_4_volume(name, later=False)
+                self.assertEqual(1, self._reads(path))
+
     def test_a_file_written_again_is_read_again(self):
         path = self._later_rar_4_volume('changed.part2.rar')
         self.assertTrue(archive_tools.is_later_volume(path))
