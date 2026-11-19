@@ -67,12 +67,15 @@ class EventHandler:
         self._wheel_turned_at: int | None = None
 
     def register_controllers(self, window: 'main.MainWindow',
-                             page_area: Gtk.Widget) -> None:
+                             page_area: Gtk.Widget,
+                             drop_area: Gtk.Widget) -> None:
         """Add the controllers input arrives through in GTK4.
 
         A widget gets what the controllers added to it deliver.  The
         keys are taken in the capture phase, ahead of the thumbnail list,
-        which would otherwise make its own use of Up and Space.
+        which would otherwise make its own use of Up and Space.  Files
+        are taken on <drop_area>, which holds the page area and what is
+        laid over it, the library's covers among them.
         """
         keys = Gtk.EventControllerKey()
         keys.set_propagation_phase(Gtk.PropagationPhase.CAPTURE)
@@ -109,9 +112,13 @@ class EventHandler:
         pinch.connect('end', lambda *args: window.pinch_ended())
         page_area.add_controller(pinch)
 
+        # A drop goes to a target on the widget under the pointer or on
+        # one of the widgets holding it.  The covers shown while no book
+        # is open lie over the page area rather than inside it, so a
+        # target on the page area never heard of files dropped on them.
         drop = Gtk.DropTarget.new(Gdk.FileList, Gdk.DragAction.COPY)
         drop.connect('drop', self.drag_n_drop_event)
-        page_area.add_controller(drop)
+        drop_area.add_controller(drop)
 
     def pinch_begin_event(self, gesture: Gtk.GestureZoom,
                           _sequence: "Gdk.EventSequence | None") -> None:
@@ -1011,7 +1018,7 @@ class EventHandler:
     def drag_n_drop_event(self, target: Gtk.DropTarget,
                           value: Gdk.FileList, x: float,
                           y: float) -> bool:
-        """Handle a drop of files on the main layout area."""
+        """Handle a drop of files on the page area or the covers over it."""
         # The drag source is inside MComix itself, so we ignore.
         drop = target.get_current_drop()
         if drop is not None and drop.get_drag() is not None:

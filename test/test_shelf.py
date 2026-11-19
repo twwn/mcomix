@@ -6,7 +6,7 @@ import shutil
 import unittest.mock
 import weakref
 
-from gi.repository import Gdk, Graphene, Gtk
+from gi.repository import Gdk, Gio, Graphene, Gtk
 
 from . import MComixTest, get_testfile_path, pump, wait_for, wait_frames
 from .test_key_press import _Controller
@@ -209,6 +209,29 @@ class ShelfTest(_ShelfWindowTest):
         self.assertFalse(
             actions.lookup_action('open-keep-library').get_enabled())
         self.assertTrue(actions.lookup_action('open').get_enabled())
+
+    def test_files_dropped_on_the_covers_are_opened(self):
+        # GTK hands a drop to a target on the widget under the pointer
+        # or on one holding it; the covers lie over the page area, not
+        # inside it, so the window's target has to hold them too.
+        backend.LibraryBackend().add_book(self.books[0])
+        self._window()
+        covers = self._shown().book_area._covers
+        targets = []
+        widget = covers
+        while widget is not None:
+            targets += [
+                controller for controller in widget.observe_controllers()
+                if isinstance(controller, Gtk.DropTarget)
+                and Gdk.FileList.__gtype__ in controller.get_gtypes()]
+            widget = widget.get_parent()
+        self.assertEqual(1, len(targets))
+        dropped = Gdk.FileList.new_from_array(
+            [Gio.File.new_for_path(self.books[1])])
+        with unittest.mock.patch.object(
+                self.window.filehandler, 'open_file') as opened:
+            self.assertTrue(targets[0].emit('drop', dropped, 0, 0))
+        opened.assert_called_once_with(self.books[1])
 
     def test_the_window_is_freed_with_its_covers(self):
         backend.LibraryBackend().add_book(self.books[0])

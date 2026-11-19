@@ -341,7 +341,8 @@ class MainWindow(Gtk.Window):
         # window's key controller runs in the capture phase, so it hears
         # a key before the thumbnail list can make its own use of Up,
         # Down and Space.
-        self.event_handler.register_controllers(self, self.page_area)
+        self.event_handler.register_controllers(
+            self, self.page_area, self._page_overlay)
 
         self.connect('notify::is-active', self.event_handler.focus_changed)
         self.connect('close-request', self.close_program)
