@@ -89,16 +89,20 @@ def make_archive(outfile, contents, format='zip', solid=False, password=None, he
                     cmd.append('-mhe=on')
             else:
                 assert not header_encryption
-            cmd.extend(('--', outpath))
-            # To avoid @ being treated as a special character...
+            # The names go in a list file, as 7z takes a name that
+            # starts with "@" for one.  The file is named by -i before
+            # "--", with its whole path since 7z runs in tmp_dir: after
+            # "--" 7z takes "@<list>" for a file of that name, warns it
+            # is missing, and writes an empty archive.
             tmp_file = tempfile.NamedTemporaryFile(dir='test/tmp',
                                                    prefix='make_archive.',
                                                    delete=False)
             cleanup.append(lambda: os.unlink(tmp_file.name))
             for entry in entry_list:
-                tmp_file.write(entry.encode(locale.getpreferredencoding()) + '\n')
+                tmp_file.write((entry + '\n').encode(locale.getpreferredencoding()))
             tmp_file.close()
-            entry_list = ['@' + tmp_file.name]
+            cmd.extend(('-i@' + os.path.abspath(tmp_file.name), '--', outpath))
+            entry_list = []
         elif 'lha' == format:
             assert password is None
             assert not header_encryption
@@ -165,6 +169,28 @@ def md5(path):
     hash = hashlib.md5()
     hash.update(open(path, 'rb').read())
     return hash.hexdigest()
+
+
+class MakeArchiveTest(MComixTest):
+    """make_archive() builds an archive ArchiveFormatTest reads where
+    test/files/archives lacks it, as for a variant added to the table
+    below."""
+
+    @unittest.skipIf(sys.platform == 'win32',
+                     'setUpClass makes no archive on Windows')
+    @unittest.skipUnless(sevenzip_external.SevenZipArchive.is_available(),
+                         '7z is not installed')
+    def test_a_7z_archive_holds_names_7z_reads_specially(self):
+        """The names reach 7z through a list file, so that "@eh.png" is
+        not taken for one."""
+        names = ['-rg.jpeg', '@eh.png', '2-רדןקמא.png']
+        path = os.path.join(self.tmp_dir, 'made.7z')
+        make_archive(path, [
+            (name, get_testfile_path('images', '03-PNG-RGB.png'))
+            for name in names], format='7z')
+        archive = sevenzip_external.SevenZipArchive(path)
+        self.addCleanup(archive.close)
+        self.assertCountEqual(names, archive.list_contents())
 
 
 class ArchiveFormatTest:

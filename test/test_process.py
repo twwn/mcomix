@@ -1,4 +1,5 @@
 
+import contextlib
 import importlib.machinery
 import os
 import stat
@@ -46,116 +47,95 @@ class ProcessTest(MComixTest):
         self.assertIn(os.path.dirname(found), os.defpath.split(os.pathsep))
 
     def test_find_executable(self):
-        cleanup = []
-        try:
-            root_dir = tempfile.mkdtemp(prefix='path.')
+        root_dir = os.path.abspath(tempfile.mkdtemp(dir=self.tmp_dir))
 
-            if 'win32' == sys.platform:
-                orig_exe_dir = process._exe_dir
-                cleanup.append(lambda: setattr(process, '_exe_dir', orig_exe_dir))
-                process._exe_dir = 'dir4'
-                tree = (
-                    ('bin1.exe', 'rx'),
-                    ('bin3.exe', 'rx'),
-                    ('dir1/bin1.exe', 'rx'),
-                    ('dir1/bin2', 'rx'),
-                    ('dir2/bin1.exe', 'rx'),
-                    ('dir3/bin2.exe', 'rx'),
-                    ('dir3/bin4.exe', 'rx'),
-                    ('dir3/dir/bin2.exe', 'rx'),
-                    ('dir4/bin4.exe', 'rx'),
-                    ('dir4/bin5.exe', 'rx'),
-                )
-                tests = (
-                    # Absolute path, unchanged.
-                    ([sys.executable], None, sys.executable),
-                    # Same without .exe extension.
-                    ([sys.executable[:-4]], None, sys.executable),
-                    # Must still be valid, though...
-                    (['C:/invalid/invalid'], None, None),
-                    # bin1 in workdir should be picked up.
-                    (['bin1.exe'], None, 'bin1.exe'),
-                    (['bad', 'bin1.exe'], None, 'bin1.exe'),
-                    # Same without .exe extension.
-                    (['bin1'], None, 'bin1.exe'),
-                    # bin2 in dir1 or bin2 @ind dir3 should not be picked up.
-                    (['bin2'], None, 'dir3/bin2.exe'),
-                    # Candidate with a directory component.
-                    (['./bin3'], None, 'bin3.exe'),
-                    # And a custom working directory.
-                    (['dir/bin2'], 'dir3', 'dir3/dir/bin2.exe'),
-                    # Check main executable directory is searched too.
-                    # (with higher priority than PATH)
-                    (['bin4'], None, 'dir4/bin4.exe'),
-                    # And work directory.
-                    (['bin4'], 'dir3', 'dir4/bin4.exe'),
-                )
-            else:
-                tree = (
-                    ('bin1', 'rx'),
-                    ('bin3', 'rx'),
-                    ('dir1/bin1', 'rx'),
-                    ('dir1/bin2', 'r '),
-                    ('dir2/bin1', 'rx'),
-                    ('dir2/bin2', '  '),
-                    ('dir3/bin1', 'rx'),
-                    ('dir3/bin2', 'rx'),
-                    ('dir3/bin3', 'r '),
-                    ('dir3/bin4', 'rx'),
-                    ('dir3/dir/bin2', 'rx'),
-                    ('dir3/dir/bin3', 'rw '),
-                )
-                tests = (
-                    # Absolute path, unchanged.
-                    (['/bin/true'], None, '/bin/true'),
-                    # Must still be valid, though...
-                    (['/invalid/invalid'], None, None),
-                    # bin1 in workdir should not be picked up.
-                    (['bin1'], None, 'dir1/bin1'),
-                    # Check all candidates.
-                    (['bad', 'bin1'], None, 'dir1/bin1'),
-                    # bin2 in dir1 should not be picked up (not executable).
-                    (['bin2'], None, 'dir3/bin2'),
-                    # Same with bin3.
-                    (['bin3'], None, None),
-                    # Candidate with a directory component.
-                    (['./bin3'], None, 'bin3'),
-                    # And a custom working directory.
-                    (['dir/bin2'], 'dir3', 'dir3/dir/bin2'),
-                    # But must still be valid...
-                    (['dir/bin3'], 'dir3', None),
-                )
+        if 'win32' == sys.platform:
+            self.enterContext(
+                unittest.mock.patch.object(process, '_exe_dir', 'dir4'))
+            tree = (
+                ('bin1.exe', 'rx'),
+                ('bin3.exe', 'rx'),
+                ('dir1/bin1.exe', 'rx'),
+                ('dir1/bin2', 'rx'),
+                ('dir2/bin1.exe', 'rx'),
+                ('dir3/bin2.exe', 'rx'),
+                ('dir3/bin4.exe', 'rx'),
+                ('dir3/dir/bin2.exe', 'rx'),
+                ('dir4/bin4.exe', 'rx'),
+                ('dir4/bin5.exe', 'rx'),
+            )
+            tests = (
+                # Absolute path, unchanged.
+                ([sys.executable], None, sys.executable),
+                # Same without .exe extension.
+                ([sys.executable[:-4]], None, sys.executable),
+                # Must still be valid, though...
+                (['C:/invalid/invalid'], None, None),
+                # bin1 in workdir should be picked up.
+                (['bin1.exe'], None, 'bin1.exe'),
+                (['bad', 'bin1.exe'], None, 'bin1.exe'),
+                # Same without .exe extension.
+                (['bin1'], None, 'bin1.exe'),
+                # bin2 in dir1 or bin2 @ind dir3 should not be picked up.
+                (['bin2'], None, 'dir3/bin2.exe'),
+                # Candidate with a directory component.
+                (['./bin3'], None, 'bin3.exe'),
+                # And a custom working directory.
+                (['dir/bin2'], 'dir3', 'dir3/dir/bin2.exe'),
+                # Check main executable directory is searched too.
+                # (with higher priority than PATH)
+                (['bin4'], None, 'dir4/bin4.exe'),
+                # And work directory.
+                (['bin4'], 'dir3', 'dir4/bin4.exe'),
+            )
+        else:
+            tree = (
+                ('bin1', 'rx'),
+                ('bin3', 'rx'),
+                ('dir1/bin1', 'rx'),
+                ('dir1/bin2', 'r '),
+                ('dir2/bin1', 'rx'),
+                ('dir2/bin2', '  '),
+                ('dir3/bin1', 'rx'),
+                ('dir3/bin2', 'rx'),
+                ('dir3/bin3', 'r '),
+                ('dir3/bin4', 'rx'),
+                ('dir3/dir/bin2', 'rx'),
+                ('dir3/dir/bin3', 'rw '),
+            )
+            tests = (
+                # Absolute path, unchanged.
+                (['/bin/true'], None, '/bin/true'),
+                # Must still be valid, though...
+                (['/invalid/invalid'], None, None),
+                # bin1 in workdir should not be picked up.
+                (['bin1'], None, 'dir1/bin1'),
+                # Check all candidates.
+                (['bad', 'bin1'], None, 'dir1/bin1'),
+                # bin2 in dir1 should not be picked up (not executable).
+                (['bin2'], None, 'dir3/bin2'),
+                # Same with bin3.
+                (['bin3'], None, None),
+                # Candidate with a directory component.
+                (['./bin3'], None, 'bin3'),
+                # And a custom working directory.
+                (['dir/bin2'], 'dir3', 'dir3/dir/bin2'),
+                # But must still be valid...
+                (['dir/bin3'], 'dir3', None),
+            )
 
-            _create_tree(root_dir, tree)
+        _create_tree(root_dir, tree)
+        self.enterContext(unittest.mock.patch.dict(
+            os.environ, PATH=os.pathsep.join(('dir1', 'dir2', 'dir3'))))
+        self.enterContext(contextlib.chdir(root_dir))
 
-            root_dir = os.path.abspath(root_dir)
-
-            orig_path = os.environ['PATH']
-            cleanup.append(lambda: os.environ.__setitem__('PATH', orig_path))
-            os.environ['PATH'] = os.pathsep.join('dir1 dir2 dir3'.split())
-
-            orig_cwd = os.getcwd()
-            cleanup.append(lambda: os.chdir(orig_cwd))
-            os.chdir(root_dir)
-
-            for candidates, workdir, expected in tests:
-                if expected is not None:
-                    if not os.path.isabs(expected):
-                        expected = os.path.join(root_dir, expected)
-                    expected = os.path.normpath(expected)
-                result = process.find_executable(candidates, workdir=workdir)
-                msg = (
-                    'find_executable(%s, workdir=%s) failed; '
-                    'returned %s instead of %s' % (
-                        candidates, workdir,
-                        result, expected,
-                    )
-                )
-                self.assertEqual(result, expected, msg=msg)
-
-        finally:
-            for fn in reversed(cleanup):
-                fn()
+        for candidates, workdir, expected in tests:
+            if expected is not None:
+                expected = os.path.normpath(os.path.join(root_dir, expected))
+            with self.subTest(candidates=candidates, workdir=workdir):
+                self.assertEqual(
+                    expected,
+                    process.find_executable(candidates, workdir=workdir))
 
     @unittest.skipIf(sys.platform == 'win32', 'file names are UTF-16 there, '
                      'with no bytes to escape')

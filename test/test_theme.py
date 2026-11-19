@@ -23,19 +23,15 @@ from mcomix import theme
 from mcomix.preferences import prefs
 
 
-def background_of(window, covering=None):
-    """The colour <window> is actually painted in.
-
-    The widest colour painted; with <covering>, a widget in <window>,
-    the last colour painted at least as wide as that widget, which is
-    the widget's own background unless something is drawn over it.  The
-    window's background is as wide as a widget that fills it, and on
-    Windows its decorations are wider still.
+def _painted(window, kind, done):
+    """The render nodes of <kind> painted when <window> is drawn, in the
+    order they are painted.  The window is snapshotted again, up to
+    twenty times 0.05 s apart, until <done>(root node, nodes found)
+    holds: a window drawn for the first time may snapshot to nothing.
 
     Waiting on the window's own size rather than for a fixed interval:
     the frame clock may not have run within one under load, and a window
-    that has not been allocated snapshots to nothing at all, which read
-    as the palette not having been applied.
+    that has not been allocated snapshots to nothing at all.
     """
     if gi.version_info < (3, 48):
         # A render node is a fundamental type, and PyGObject hands those
@@ -49,18 +45,14 @@ def background_of(window, covering=None):
                     and window.get_height() > 0, seconds=5):
         raise AssertionError('the window was never allocated')
     paintable = Gtk.WidgetPaintable.new(window)
-    widest = []
+    found = []
 
     def walk(node):
         if node is None:
             return
-        kind = node.get_node_type()
-        if kind == Gsk.RenderNodeType.COLOR_NODE:
-            size = node.get_bounds().size
-            widest.append((size.width * size.height,
-                           node.get_color().to_string()))
-            painted.append(widest[-1])
-        if kind == Gsk.RenderNodeType.CONTAINER_NODE:
+        if node.get_node_type() == kind:
+            found.append(node)
+        if node.get_node_type() == Gsk.RenderNodeType.CONTAINER_NODE:
             for index in range(node.get_n_children()):
                 walk(node.get_child(index))
         elif hasattr(node, 'get_child'):
@@ -69,21 +61,40 @@ def background_of(window, covering=None):
             except TypeError:
                 pass
 
-    painted = []
     for _ in range(20):
-        widest.clear()
-        painted.clear()
+        found.clear()
         snapshot = Gtk.Snapshot()
         paintable.snapshot(snapshot, window.get_width(), window.get_height())
-        walk(snapshot.to_node())
-        if widest:
+        node = snapshot.to_node()
+        walk(node)
+        if done(node, found):
             break
         wait_for(lambda: False, seconds=0.05)
+    return found
+
+
+def background_of(window, covering=None):
+    """The colour <window> is actually painted in.
+
+    The widest colour painted; with <covering>, a widget in <window>,
+    the last colour painted at least as wide as that widget, which is
+    the widget's own background unless something is drawn over it.  The
+    window's background is as wide as a widget that fills it, and on
+    Windows its decorations are wider still.  A window that snapshots to
+    no colour at all reads as the palette not having been applied, so
+    _painted() is asked to wait for one.
+    """
+    painted = []
+    for node in _painted(window, Gsk.RenderNodeType.COLOR_NODE,
+                         lambda node, found: found):
+        size = node.get_bounds().size
+        painted.append((size.width * size.height,
+                        node.get_color().to_string()))
     if covering is not None:
         area = covering.get_width() * covering.get_height()
         wide = [colour for size, colour in painted if size >= area]
         return wide[-1] if wide else None
-    return max(widest)[1] if widest else None
+    return max(painted)[1] if painted else None
 
 
 class PaletteTest(MComixTest):
@@ -443,42 +454,10 @@ def _border_nodes(window, colours=False):
     """Every border node painted when <window> is drawn, as the widths of
     its four sides - how an outline comes out of the renderer - or, with
     <colours>, as those widths paired with the colours of the sides."""
-    if gi.version_info < (3, 48):
-        raise unittest.SkipTest('PyGObject %s cannot read render nodes'
-                                % gi.__version__)
-    if not wait_for(lambda: window.get_width() > 0
-                    and window.get_height() > 0, seconds=5):
-        raise AssertionError('the window was never allocated')
-    paintable = Gtk.WidgetPaintable.new(window)
-    found = []
-
-    def walk(node):
-        if node is None:
-            return
-        kind = node.get_node_type()
-        if kind == Gsk.RenderNodeType.BORDER_NODE:
-            widths = tuple(node.get_widths())
-            found.append((widths, tuple(node.get_colors())) if colours
-                         else widths)
-        if kind == Gsk.RenderNodeType.CONTAINER_NODE:
-            for index in range(node.get_n_children()):
-                walk(node.get_child(index))
-        elif hasattr(node, 'get_child'):
-            try:
-                walk(node.get_child())
-            except TypeError:
-                pass
-
-    for _ in range(20):
-        found.clear()
-        snapshot = Gtk.Snapshot()
-        paintable.snapshot(snapshot, window.get_width(), window.get_height())
-        node = snapshot.to_node()
-        walk(node)
-        if node is not None:
-            break
-        wait_for(lambda: False, seconds=0.05)
-    return found
+    nodes = _painted(window, Gsk.RenderNodeType.BORDER_NODE,
+                     lambda node, found: node is not None)
+    return [(tuple(node.get_widths()), tuple(node.get_colors())) if colours
+            else tuple(node.get_widths()) for node in nodes]
 
 
 class PageMarkTest(MComixTest):

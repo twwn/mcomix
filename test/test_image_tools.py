@@ -155,17 +155,10 @@ _CMYK_PROFILE = '/usr/share/ghostscript/iccprofiles/default_cmyk.icc'
 
 class ImageToolsTest(MComixTest):
 
-    def assertImagesEqual(self, im1, im2, msg=None, max_diff=20,
-                          compare_content=True):
+    def assertImagesEqual(self, im1, im2, max_diff=20, compare_content=True):
         def fail(diff_type, diff_fmt, *args):
-            if msg is None:
-                fmt = 'Images are not equal, result %(diff_type)s differs: %(diff)s'
-            else:
-                fmt = msg
-            self.fail(fmt % {
-                'diff_type': diff_type,
-                'diff': diff_fmt % args,
-            })
+            self.fail('Images are not equal, result %s differs: %s'
+                      % (diff_type, diff_fmt % args))
 
         def info(im):
             if isinstance(im, GdkPixbuf.Pixbuf):
@@ -234,13 +227,9 @@ class ImageToolsTest(MComixTest):
             expected_mode = 'RGBA' if image.has_alpha else 'RGB'
             im = Image.open(image_path).convert(expected_mode)
             pixbuf = image_tools.load_pixbuf(image_path)
-            msg = (
-                'load_pixbuf("%s") failed; '
-                'result %%(diff_type)s differs: %%(diff)s'
-                % (image.name,)
-            )
-            self.assertImagesEqual(pixbuf, im, msg=msg,
-                                   compare_content=image.format != 'JPEG')
+            with self.subTest(image=image.name):
+                self.assertImagesEqual(pixbuf, im,
+                                       compare_content=image.format != 'JPEG')
 
     def test_load_pixbuf_falls_back_to_pil(self):
         # load_pixbuf() no longer asks which loader to prefer, so a format
@@ -263,12 +252,8 @@ class ImageToolsTest(MComixTest):
             input_im.save(tmp_file.name)
             pixbuf = image_tools.load_pixbuf(tmp_file.name)
             expected_im = input_im.convert(expected_pixbuf_mode)
-            msg = (
-                'load_pixbuf("%s") failed; '
-                'result %%(diff_type)s differs: %%(diff)s'
-                % (mode,)
-            )
-            self.assertImagesEqual(pixbuf, expected_im, msg=msg)
+            with self.subTest(mode=mode):
+                self.assertImagesEqual(pixbuf, expected_im)
 
     def test_load_pixbuf_invalid(self):
         self.assertRaises(IOError, image_tools.load_pixbuf, os.devnull)
@@ -295,13 +280,9 @@ class ImageToolsTest(MComixTest):
             result = image_tools.load_pixbuf_size(image_path,
                                                   image.size[0],
                                                   image.size[1])
-            msg = (
-                'load_pixbuf("%s") failed; '
-                'result %%(diff_type)s differs: %%(diff)s'
-                % (image.name,)
-            )
-            self.assertImagesEqual(result, expected, msg=msg,
-                                   compare_content=image.format != 'JPEG')
+            with self.subTest(image=image.name):
+                self.assertImagesEqual(result, expected,
+                                       compare_content=image.format != 'JPEG')
 
     def test_load_pixbuf_size_dimensions(self):
         # Use both:
@@ -317,24 +298,16 @@ class ImageToolsTest(MComixTest):
             target_size = 2 * image.size[0], 2 * image.size[1]
             expected = image_tools.load_pixbuf_size(image_path, *image.size)
             result = image_tools.load_pixbuf_size(image_path, *target_size)
-            msg = (
-                'load_pixbuf_size("%s", %dx%d) failed; '
-                'result %%(diff_type)s differs: %%(diff)s'
-                % ((name,) + target_size)
-            )
-            self.assertImagesEqual(result, expected, msg=msg)
+            with self.subTest(name=name, target_size=target_size):
+                self.assertImagesEqual(result, expected)
             # Check image is scaled down if bigger than target dimensions,
             # and that aspect ratio is kept.
             target_size = image.size[0], image.size[1] // 2
             result = image_tools.load_pixbuf_size(image_path,
                                                   *target_size)
-            msg = (
-                'load_pixbuf_size("%s", %dx%d) failed; '
-                'result %%(diff_type)s differs: %%(diff)s'
-                % ((name,) + target_size)
-            )
-            self.assertEqual((result.get_width(), result.get_height()),
-                             (image.size[0] // 2, image.size[1] // 2))
+            with self.subTest(name=name, target_size=target_size):
+                self.assertEqual((result.get_width(), result.get_height()),
+                                 (image.size[0] // 2, image.size[1] // 2))
 
     def test_load_pixbuf_size_of_nothing(self):
         # A widget that has not been given its size yet asks for a box
@@ -493,12 +466,8 @@ class ImageToolsTest(MComixTest):
         ):
             pixbuf = image_tools.load_pixbuf(get_image_path(image))
             im = image_tools.pixbuf_to_pil(pixbuf)
-            msg = (
-                'pixbuf_to_pil("%s") failed; '
-                'result %%(diff_type)s differs: %%(diff)s'
-                % (image,)
-            )
-            self.assertImagesEqual(im, pixbuf, msg=msg)
+            with self.subTest(image=image):
+                self.assertImagesEqual(im, pixbuf)
 
     def test_a_page_cut_out_of_a_wider_one_converts(self):
         """A page with its borders cut off shares the whole page's
@@ -524,12 +493,8 @@ class ImageToolsTest(MComixTest):
             input_im = base_im.convert(mode)
             pixbuf = image_tools.pil_to_pixbuf(input_im)
             expected_im = input_im.convert(expected_pixbuf_mode)
-            msg = (
-                'pil_to_pixbuf("%s") failed; '
-                'result %%(diff_type)s differs: %%(diff)s'
-                % (mode,)
-            )
-            self.assertImagesEqual(pixbuf, expected_im, msg=msg)
+            with self.subTest(mode=mode):
+                self.assertImagesEqual(pixbuf, expected_im)
         # TODO: test keep_orientation
 
     def _check_image_info(self, path, expected, description):
@@ -718,16 +683,12 @@ class ImageToolsTest(MComixTest):
                                                       target_size[1],
                                                       scale_up=scale_up,
                                                       keep_ratio=keep_ratio)
-                result_size = result.get_width(), result.get_height()
-                msg = (
-                    'fit_in_rectangle(%dx%d => %dx%d, scale up=%s, keep ratio=%s) failed; '
-                    'result size differs: %dx%d instead of %dx%d' % (
-                        input_size + target_size +
-                        (scale_up, keep_ratio) +
-                        result_size + expected_size
-                    )
-                )
-                self.assertEqual(result_size, expected_size, msg=msg)
+                with self.subTest(input_size=input_size,
+                                  target_size=target_size,
+                                  scale_up=scale_up, keep_ratio=keep_ratio):
+                    self.assertEqual(
+                        expected_size,
+                        (result.get_width(), result.get_height()))
 
     def test_fit_in_rectangle_rotation(self):
         image_size = 128
@@ -754,15 +715,9 @@ class ImageToolsTest(MComixTest):
                                                       target_size[1],
                                                       rotation=rotation)
                 # First check size.
-                input_size = (image_size, image_size)
-                result_size = result.get_width(), result.get_height()
-                msg = (
-                    'fit_in_rectangle(%dx%d => %dx%d, rotation=%d) failed; '
-                    'result size: %dx%d' % (
-                        input_size + target_size + (rotation,) + result_size
-                    )
-                )
-                self.assertEqual(result_size, target_size, msg=msg)
+                with self.subTest(rotation=rotation, target_size=target_size):
+                    self.assertEqual(
+                        target_size, (result.get_width(), result.get_height()))
                 # And then check corners.
                 expected_corners_colors = list(corners_colors)
                 for _ in range(1, 1 + (rotation % 360) // 90):
@@ -784,22 +739,9 @@ class ImageToolsTest(MComixTest):
                 # Swap bottom corners for spatial display.
                 result_corners_colors.append(result_corners_colors.pop(-2))
                 expected_corners_colors.append(expected_corners_colors.pop(-2))
-                msg = (
-                    'fit_in_rectangle(%dx%d => %dx%d, rotation=%d) failed; '
-                    'result corners differs:\n'
-                    '%s\t%s\n'
-                    '%s\t%s\n'
-                    'instead of:\n'
-                    '%s\t%s\n'
-                    '%s\t%s\n' % (
-                        input_size + target_size + (rotation, ) +
-                        tuple(result_corners_colors) +
-                        tuple(expected_corners_colors)
-                    )
-                )
-                self.assertEqual(result_corners_colors,
-                                 expected_corners_colors,
-                                 msg=msg)
+                with self.subTest(rotation=rotation, target_size=target_size):
+                    self.assertEqual(expected_corners_colors,
+                                     result_corners_colors)
 
     def test_fit_in_rectangle_opaque_no_resize(self):
         # Check opaque image is unchanged when not resizing.
@@ -813,12 +755,8 @@ class ImageToolsTest(MComixTest):
                 prefs['scaling quality'] = scaling_quality
                 result = image_tools.fit_in_rectangle(input, width, height,
                                                       scaling_quality=scaling_quality)
-                msg = (
-                    'fit_in_rectangle("%s", scaling quality=%d) failed; '
-                    'result %%(diff_type)s differs: %%(diff)s'
-                    % (image, scaling_quality)
-                )
-                self.assertImagesEqual(result, input, msg=msg)
+                with self.subTest(image=image, scaling_quality=scaling_quality):
+                    self.assertImagesEqual(result, input)
 
     def test_fit_in_rectangle_transparent_no_resize(self):
         # And with a transparent test image, check alpha blending.
@@ -845,12 +783,9 @@ class ImageToolsTest(MComixTest):
                 result = image_tools.fit_in_rectangle(image_tools.pil_to_pixbuf(control),
                                                       width, height,
                                                       scaling_quality=scaling_quality)
-                msg = (
-                    'fit_in_rectangle("%s", scaling quality=%d, background=%s) failed; '
-                    'result %%(diff_type)s differs: %%(diff)s'
-                    % (image, scaling_quality, 'checker' if checker_bg else 'white')
-                )
-                self.assertImagesEqual(result, expected, msg=msg)
+                with self.subTest(checker=use_checker_bg,
+                                  scaling_quality=scaling_quality):
+                    self.assertImagesEqual(result, expected)
 
 
 class PillowScalingTest(MComixTest):

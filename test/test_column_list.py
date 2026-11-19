@@ -412,85 +412,76 @@ class ColumnListViewTest(MComixTest):
                               lambda row, accel: rebound.append((row, accel)))
         row = column_list.Row(key='<Control>a')
         view.set_rows([row])
-        window = Gtk.Window()
-        window.set_child(view)
-        window.present()
-        try:
-            for _ in range(20):
-                pump()
-                view.allocate(400, 300, -1, None)
-            cells = [widget for widget in descendants(view)
-                     if isinstance(widget, column_list._AccelCell)]
-            self.assertTrue(cells, 'the column drew no cell')
-            cell = cells[0]
-            self.assertEqual(cell.label.props.accelerator, '<Control>a')
-            # An action nothing is bound to shows nothing, not the hint
-            # a cell puts up while it waits for a combination.
-            self.assertEqual(cell.label.props.disabled_text, '')
-            # Nothing is taken until the cell has been clicked.
-            self.assertFalse(
-                cell._pressed(None, Gdk.KEY_b, 0, Gdk.ModifierType.CONTROL_MASK))
+        self._present(view)
+        cells = [widget for widget in descendants(view)
+                 if isinstance(widget, column_list._AccelCell)]
+        self.assertTrue(cells, 'the column drew no cell')
+        cell = cells[0]
+        self.assertEqual(cell.label.props.accelerator, '<Control>a')
+        # An action nothing is bound to shows nothing, not the hint
+        # a cell puts up while it waits for a combination.
+        self.assertEqual(cell.label.props.disabled_text, '')
+        # Nothing is taken until the cell has been clicked.
+        self.assertFalse(
+            cell._pressed(None, Gdk.KEY_b, 0, Gdk.ModifierType.CONTROL_MASK))
+        cell.emit('clicked')
+        self.assertEqual(cell.label.props.disabled_text,
+                         column_list._ASK_FOR_ONE_HINT)
+        # A modifier pressed on its own, on the way to a combination,
+        # is no shortcut: it is swallowed and the cell goes on
+        # waiting.
+        self.assertTrue(cell._pressed(None, Gdk.KEY_Control_L, 0,
+                                      Gdk.ModifierType.CONTROL_MASK))
+        self.assertEqual(rebound, [])
+        self.assertTrue(cell.capturing)
+        self.assertTrue(
+            cell._pressed(None, Gdk.KEY_b, 0, Gdk.ModifierType.CONTROL_MASK))
+        self.assertEqual(rebound, [(row, '<Control>b')])
+        # The arrows and Tab are what MComix' own defaults use,
+        # though GTK keeps them for moving the focus: the editor
+        # took no key of the two, so a default cleared could not be
+        # given back by hand (upstream support request 27).
+        for keyval, state, name in (
+                (Gdk.KEY_Left, 0, 'Left'),
+                (Gdk.KEY_KP_Down, 0, 'KP_Down'),
+                (Gdk.KEY_Tab, 0, 'Tab'),
+                (Gdk.KEY_ISO_Left_Tab, Gdk.ModifierType.SHIFT_MASK,
+                 '<Shift>ISO_Left_Tab')):
             cell.emit('clicked')
-            self.assertEqual(cell.label.props.disabled_text,
-                             column_list._ASK_FOR_ONE_HINT)
-            # A modifier pressed on its own, on the way to a combination,
-            # is no shortcut: it is swallowed and the cell goes on
-            # waiting.
-            self.assertTrue(cell._pressed(None, Gdk.KEY_Control_L, 0,
-                                          Gdk.ModifierType.CONTROL_MASK))
-            self.assertEqual(rebound, [])
-            self.assertTrue(cell.capturing)
-            self.assertTrue(
-                cell._pressed(None, Gdk.KEY_b, 0, Gdk.ModifierType.CONTROL_MASK))
-            self.assertEqual(rebound, [(row, '<Control>b')])
-            # The arrows and Tab are what MComix' own defaults use,
-            # though GTK keeps them for moving the focus: the editor
-            # took no key of the two, so a default cleared could not be
-            # given back by hand (upstream support request 27).
-            for keyval, state, name in (
-                    (Gdk.KEY_Left, 0, 'Left'),
-                    (Gdk.KEY_KP_Down, 0, 'KP_Down'),
-                    (Gdk.KEY_Tab, 0, 'Tab'),
-                    (Gdk.KEY_ISO_Left_Tab, Gdk.ModifierType.SHIFT_MASK,
-                     '<Shift>ISO_Left_Tab')):
-                cell.emit('clicked')
-                self.assertTrue(cell._pressed(None, keyval, 0,
-                                              Gdk.ModifierType(state)))
-                self.assertEqual(rebound[-1], (row, name))
-            del rebound[1:]
-            # Backspace clears it, escape leaves it alone.
+            self.assertTrue(cell._pressed(None, keyval, 0,
+                                          Gdk.ModifierType(state)))
+            self.assertEqual(rebound[-1], (row, name))
+        del rebound[1:]
+        # Backspace clears it, escape leaves it alone.
+        cell.emit('clicked')
+        self.assertTrue(cell._pressed(None, Gdk.KEY_BackSpace, 0,
+                                      Gdk.ModifierType(0)))
+        self.assertEqual(rebound[-1], (row, None))
+        # As does the keypad's Delete, which is not a key to bind.
+        del rebound[1:]
+        cell.emit('clicked')
+        self.assertTrue(cell._pressed(None, Gdk.KEY_KP_Delete, 0,
+                                      Gdk.ModifierType(0)))
+        self.assertEqual(rebound[-1], (row, None))
+        cell.emit('clicked')
+        self.assertTrue(cell._pressed(None, Gdk.KEY_Escape, 0,
+                                      Gdk.ModifierType(0)))
+        self.assertEqual(len(rebound), 2)
+        # With a modifier they are combinations like any other:
+        # MComix' own defaults include Shift+Delete, Ctrl+BackSpace
+        # and Alt+Return, which only cancelled or cleared the cell.
+        for keyval, state, name in (
+                (Gdk.KEY_Delete, Gdk.ModifierType.SHIFT_MASK,
+                 '<Shift>Delete'),
+                (Gdk.KEY_BackSpace, Gdk.ModifierType.CONTROL_MASK,
+                 '<Control>BackSpace'),
+                (Gdk.KEY_Return, Gdk.ModifierType.ALT_MASK,
+                 '<Alt>Return'),
+                (Gdk.KEY_Escape, Gdk.ModifierType.CONTROL_MASK,
+                 '<Control>Escape')):
             cell.emit('clicked')
-            self.assertTrue(cell._pressed(None, Gdk.KEY_BackSpace, 0,
-                                          Gdk.ModifierType(0)))
-            self.assertEqual(rebound[-1], (row, None))
-            # As does the keypad's Delete, which is not a key to bind.
-            del rebound[1:]
-            cell.emit('clicked')
-            self.assertTrue(cell._pressed(None, Gdk.KEY_KP_Delete, 0,
-                                          Gdk.ModifierType(0)))
-            self.assertEqual(rebound[-1], (row, None))
-            cell.emit('clicked')
-            self.assertTrue(cell._pressed(None, Gdk.KEY_Escape, 0,
-                                          Gdk.ModifierType(0)))
-            self.assertEqual(len(rebound), 2)
-            # With a modifier they are combinations like any other:
-            # MComix' own defaults include Shift+Delete, Ctrl+BackSpace
-            # and Alt+Return, which only cancelled or cleared the cell.
-            for keyval, state, name in (
-                    (Gdk.KEY_Delete, Gdk.ModifierType.SHIFT_MASK,
-                     '<Shift>Delete'),
-                    (Gdk.KEY_BackSpace, Gdk.ModifierType.CONTROL_MASK,
-                     '<Control>BackSpace'),
-                    (Gdk.KEY_Return, Gdk.ModifierType.ALT_MASK,
-                     '<Alt>Return'),
-                    (Gdk.KEY_Escape, Gdk.ModifierType.CONTROL_MASK,
-                     '<Control>Escape')):
-                cell.emit('clicked')
-                self.assertTrue(cell._pressed(None, keyval, 0, state))
-                self.assertEqual(rebound[-1], (row, name))
-        finally:
-            window.destroy()
-            pump()
+            self.assertTrue(cell._pressed(None, keyval, 0, state))
+            self.assertEqual(rebound[-1], (row, name))
 
     def test_a_cell_left_waiting_for_a_shortcut_stops_waiting(self):
         """A cell clicked and then left - for another cell, or anywhere
@@ -505,31 +496,22 @@ class ColumnListViewTest(MComixTest):
         rows = [column_list.Row(key='<Control>a'),
                 column_list.Row(key='<Control>b')]
         view.set_rows(rows)
-        window = Gtk.Window()
-        window.set_child(view)
-        window.present()
-        try:
-            for _ in range(20):
-                pump()
-                view.allocate(400, 300, -1, None)
-            cells = [widget for widget in descendants(view)
-                     if isinstance(widget, column_list._AccelCell)]
-            self.assertEqual(2, len(cells))
-            first, second = sorted(cells, key=lambda cell: cell.accelerator)
-            first.grab_focus()
-            first.emit('clicked')
-            self.assertTrue(first.capturing)
-            second.grab_focus()
-            pump()
-            self.assertFalse(first.capturing)
-            self.assertEqual('', first.label.props.disabled_text)
-            self.assertEqual('<Control>a', first.label.props.accelerator)
-            self.assertFalse(first._pressed(
-                None, Gdk.KEY_x, 0, Gdk.ModifierType.CONTROL_MASK))
-            self.assertEqual([], rebound)
-        finally:
-            window.destroy()
-            pump()
+        self._present(view)
+        cells = [widget for widget in descendants(view)
+                 if isinstance(widget, column_list._AccelCell)]
+        self.assertEqual(2, len(cells))
+        first, second = sorted(cells, key=lambda cell: cell.accelerator)
+        first.grab_focus()
+        first.emit('clicked')
+        self.assertTrue(first.capturing)
+        second.grab_focus()
+        pump()
+        self.assertFalse(first.capturing)
+        self.assertEqual('', first.label.props.disabled_text)
+        self.assertEqual('<Control>a', first.label.props.accelerator)
+        self.assertFalse(first._pressed(
+            None, Gdk.KEY_x, 0, Gdk.ModifierType.CONTROL_MASK))
+        self.assertEqual([], rebound)
 
     def test_a_press_on_a_cell_that_takes_clicks_selects_its_row(self):
         """Text rewritten in place and a check box each take the click
@@ -540,9 +522,6 @@ class ColumnListViewTest(MComixTest):
         view.add_toggle_column('On', 'on', lambda row, value: None)
         view.set_rows([column_list.Row(name='one', on=False),
                        column_list.Row(name='two', on=False)])
-        window = Gtk.Window()
-        window.set_child(view)
-        window.present()
 
         class Press:
             def __init__(self, state=0):
@@ -551,32 +530,26 @@ class ColumnListViewTest(MComixTest):
             def get_current_event_state(self):
                 return self.state
 
-        try:
-            for _ in range(20):
-                pump()
-                view.allocate(400, 300, -1, None)
-            cells = [widget for widget in descendants(view)
-                     if isinstance(widget, (column_list._EditableCell,
-                                            column_list._ToggleCell))
-                     and widget.row is not None
-                     and widget.row.name == 'two']
-            self.assertEqual(2, len(cells))
-            for cell in cells:
-                with self.subTest(cell=type(cell).__name__):
-                    view.unselect_all()
-                    ok, point = cell.compute_point(
-                        view, Graphene.Point().init(2, 2))
-                    self.assertTrue(ok)
-                    view._pressed_on_cell(Press(), 1, point.x, point.y)
-                    self.assertEqual([1], view.get_selected_positions())
-            # Ctrl or Shift held: adding to a selection is the row's.
-            view.unselect_all()
-            view._pressed_on_cell(Press(Gdk.ModifierType.CONTROL_MASK), 1,
-                                  point.x, point.y)
-            self.assertEqual([], view.get_selected_positions())
-        finally:
-            window.destroy()
-            pump()
+        self._present(view)
+        cells = [widget for widget in descendants(view)
+                 if isinstance(widget, (column_list._EditableCell,
+                                        column_list._ToggleCell))
+                 and widget.row is not None
+                 and widget.row.name == 'two']
+        self.assertEqual(2, len(cells))
+        for cell in cells:
+            with self.subTest(cell=type(cell).__name__):
+                view.unselect_all()
+                ok, point = cell.compute_point(
+                    view, Graphene.Point().init(2, 2))
+                self.assertTrue(ok)
+                view._pressed_on_cell(Press(), 1, point.x, point.y)
+                self.assertEqual([1], view.get_selected_positions())
+        # Ctrl or Shift held: adding to a selection is the row's.
+        view.unselect_all()
+        view._pressed_on_cell(Press(Gdk.ModifierType.CONTROL_MASK), 1,
+                              point.x, point.y)
+        self.assertEqual([], view.get_selected_positions())
 
     def test_a_row_that_takes_no_shortcut_holds_the_column_open_anyway(self):
         """A group heading stands over the actions under it and has no
@@ -592,23 +565,14 @@ class ColumnListViewTest(MComixTest):
                               bindable=lambda row: row.key is not None)
         view.set_rows([column_list.Row(key=None),
                        column_list.Row(key='<Control>a')])
-        window = Gtk.Window()
-        window.set_child(view)
-        window.present()
-        try:
-            for _ in range(20):
-                pump()
-                view.allocate(400, 300, -1, None)
-            cells = [widget for widget in descendants(view)
-                     if isinstance(widget, column_list._AccelCell)]
-            self.assertEqual(len(cells), 2, 'the column drew the wrong cells')
-            self.assertTrue(cells[0].get_visible())
-            self.assertFalse(cells[0].get_sensitive())
-            self.assertEqual(cells[0].label.props.accelerator, '')
-            self.assertTrue(cells[1].get_sensitive())
-        finally:
-            window.destroy()
-            pump()
+        self._present(view)
+        cells = [widget for widget in descendants(view)
+                 if isinstance(widget, column_list._AccelCell)]
+        self.assertEqual(len(cells), 2, 'the column drew the wrong cells')
+        self.assertTrue(cells[0].get_visible())
+        self.assertFalse(cells[0].get_sensitive())
+        self.assertEqual(cells[0].label.props.accelerator, '')
+        self.assertTrue(cells[1].get_sensitive())
 
     def test_an_accelerator_cell_is_the_same_width_whatever_it_shows(self):
         """A Gtk.ColumnView asks the cells that are on screen how wide
@@ -854,21 +818,12 @@ class ColumnListViewTest(MComixTest):
                                lambda row, state: toggled.append((row, state)))
         row = column_list.Row(on=False)
         view.set_rows([row])
-        window = Gtk.Window()
-        window.set_child(view)
-        window.present()
-        try:
-            for _ in range(20):
-                pump()
-                view.allocate(400, 300, -1, None)
-            boxes = [widget for widget in descendants(view)
-                     if isinstance(widget, Gtk.CheckButton)]
-            self.assertTrue(boxes, 'the column drew no checkbox')
-            boxes[0].set_active(True)
-            self.assertEqual(toggled, [(row, True)])
-        finally:
-            window.destroy()
-            pump()
+        self._present(view)
+        boxes = [widget for widget in descendants(view)
+                 if isinstance(widget, Gtk.CheckButton)]
+        self.assertTrue(boxes, 'the column drew no checkbox')
+        boxes[0].set_active(True)
+        self.assertEqual(toggled, [(row, True)])
 
     def test_a_choice_column_reports_the_pick_with_the_row_it_was_in(self):
         """The watch list's collection column: a pick in the drop-down
@@ -881,23 +836,14 @@ class ColumnListViewTest(MComixTest):
                                lambda row, name: chosen.append((row, name)))
         row = column_list.Row(shelf='middle')
         view.set_rows([row])
-        window = Gtk.Window()
-        window.set_child(view)
-        window.present()
-        try:
-            for _ in range(20):
-                pump()
-                view.allocate(400, 300, -1, None)
-            cells = [cell for cell in view._each_cell()
-                     if isinstance(cell, Gtk.DropDown)]
-            self.assertEqual(1, len(cells), 'the column drew no drop-down')
-            self.assertEqual(1, cells[0].get_selected())
-            self.assertEqual([], chosen)
-            cells[0].set_selected(2)
-            self.assertEqual(chosen, [(row, 'bottom')])
-        finally:
-            window.destroy()
-            pump()
+        self._present(view)
+        cells = [cell for cell in view._each_cell()
+                 if isinstance(cell, Gtk.DropDown)]
+        self.assertEqual(1, len(cells), 'the column drew no drop-down')
+        self.assertEqual(1, cells[0].get_selected())
+        self.assertEqual([], chosen)
+        cells[0].set_selected(2)
+        self.assertEqual(chosen, [(row, 'bottom')])
 
     def test_a_choice_no_longer_offered_shows_the_first(self):
         """A drop-down cannot be left with nothing chosen, so a value
@@ -909,20 +855,11 @@ class ColumnListViewTest(MComixTest):
                                lambda: ['top', 'middle', 'bottom'],
                                lambda row, name: chosen.append((row, name)))
         view.set_rows([column_list.Row(shelf='gone')])
-        window = Gtk.Window()
-        window.set_child(view)
-        window.present()
-        try:
-            for _ in range(20):
-                pump()
-                view.allocate(400, 300, -1, None)
-            cells = [cell for cell in view._each_cell()
-                     if isinstance(cell, Gtk.DropDown)]
-            self.assertEqual(1, len(cells), 'the column drew no drop-down')
-            self.assertEqual(0, cells[0].get_selected())
-            self.assertEqual([], chosen)
-        finally:
-            window.destroy()
-            pump()
+        self._present(view)
+        cells = [cell for cell in view._each_cell()
+                 if isinstance(cell, Gtk.DropDown)]
+        self.assertEqual(1, len(cells), 'the column drew no drop-down')
+        self.assertEqual(0, cells[0].get_selected())
+        self.assertEqual([], chosen)
 
 # vim: expandtab:sw=4:ts=4
