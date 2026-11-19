@@ -141,12 +141,7 @@ class _Cell:
         would otherwise drop onto whichever row had moved into the place
         the cell was bound at.
         """
-        if self.list_item is None:
-            return -1
-        position = self.list_item.get_position()
-        if position == Gtk.INVALID_LIST_POSITION:
-            return -1
-        return position
+        return widgets.list_item_position(self.list_item)
 
 
 class _TextCell(Gtk.Label, _Cell):

@@ -261,6 +261,17 @@ def focus_where_scrolled(view: Gtk.Widget) -> None:
         view.grab_focus()
 
 
+def list_item_position(list_item: Gtk.ListItem | None) -> int:
+    """Where <list_item> sits in its list now, or -1 while it sits
+    nowhere: not yet bound, or unbound."""
+    if list_item is None:
+        return -1
+    position = list_item.get_position()
+    if position == Gtk.INVALID_LIST_POSITION:
+        return -1
+    return position
+
+
 def menu_key(keyval: int, state: Gdk.ModifierType) -> bool:
     """Whether a key press is the one that asks for a context menu.
 

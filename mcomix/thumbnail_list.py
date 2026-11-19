@@ -148,12 +148,7 @@ class _ThumbnailCell(Gtk.Box):
         moved into that place: a right click landed on the entry that
         many places along, and so did a reordering drag.
         """
-        if self.list_item is None:
-            return -1
-        position = self.list_item.get_position()
-        if position == Gtk.INVALID_LIST_POSITION:
-            return -1
-        return position
+        return widgets.list_item_position(self.list_item)
 
 
 class _ThumbnailViewBase(widgets.Releasable):
