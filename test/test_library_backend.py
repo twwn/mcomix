@@ -543,6 +543,10 @@ class UpgradeFromEveryVersionTest(LibraryDatabaseTest):
                     continue
                 self.assertIsNotNone(book, 'the read book was not carried')
                 self.assertEqual(book.get_last_read_page(), 7)
+                # The legacy file is read without converters, so its
+                # time comes over as the text the sqlite3 adapter wrote.
+                self.assertEqual(book.get_last_read_date(),
+                                 datetime.datetime(2020, 1, 1))
                 self.assertIn(book.id, library.get_books_in_collection(
                     constants.COLLECTION_RECENT))
                 self._done(library)

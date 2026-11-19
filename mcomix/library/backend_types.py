@@ -249,12 +249,14 @@ class _Book(_BackendObject):
         return member if isinstance(member, str) else None
 
     def set_last_read_page(self, page: int | None,
-                           time: datetime.datetime | None = None,
+                           time: datetime.datetime | str | None = None,
                            member: str | None = None) -> None:
         """Remember <page> as where this book was left, at <time>.
 
         A <page> of None removes what was remembered instead, and a
-        <time> of None is now.  Pages count from 1, and anything below
+        <time> of None is now.  A <time> given as text is stored as it
+        stands: it is what moving the legacy lastreadpage.db hands
+        over, the time as that file kept it.  Pages count from 1, and anything below
         that is not a page: it raises ValueError.  <member> is the name
         within the archive of the page's file, which finds the page
         again wherever sorting the archive another way puts it.
