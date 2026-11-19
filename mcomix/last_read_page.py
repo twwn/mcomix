@@ -215,46 +215,45 @@ class LastReadPage:
 
         database = self._init_database(constants.LASTPAGE_DATABASE_PATH)
 
-        if database:
-            cursor = database.execute('''SELECT path, page, time_set
-                                         FROM lastread''')
-            rows = cursor.fetchall()
-            cursor.close()
-            database.close()
+        cursor = database.execute('''SELECT path, page, time_set
+                                     FROM lastread''')
+        rows = cursor.fetchall()
+        cursor.close()
+        database.close()
 
-            for path, page, time_set in rows:
+        for path, page, time_set in rows:
+            book = self.backend.get_book_by_path(path)
+
+            if not book:
+                # The path doesn't exist in the library yet
+                if not os.path.exists(path):
+                    # File might no longer be available
+                    continue
+
+                self.backend.add_book(path, recent_collection)
                 book = self.backend.get_book_by_path(path)
 
                 if not book:
-                    # The path doesn't exist in the library yet
-                    if not os.path.exists(path):
-                        # File might no longer be available
-                        continue
+                    # The book could not be added
+                    continue
+            else:
+                # The book exists, move into recent collection
+                self.backend.add_book_to_collection(book.id, recent_collection)
 
-                    self.backend.add_book(path, recent_collection)
-                    book = self.backend.get_book_by_path(path)
+            # Set recent info on retrieved book.  The library
+            # is still opening - this runs from the upgrade step in
+            # _LibraryBackend.__init__() - so the book is given the
+            # backend rather than left to ask LibraryBackend() for
+            # one, which would start building a second.
+            book.set_backend(self.backend)
+            book.set_last_read_page(page, time_set)
 
-                    if not book:
-                        # The book could not be added
-                        continue
-                else:
-                    # The book exists, move into recent collection
-                    self.backend.add_book_to_collection(book.id, recent_collection)
-
-                # Set recent info on retrieved book.  The library
-                # is still opening - this runs from the upgrade step in
-                # _LibraryBackend.__init__() - so the book is given the
-                # backend rather than left to ask LibraryBackend() for
-                # one, which would start building a second.
-                book.set_backend(self.backend)
-                book.set_last_read_page(page, time_set)
-
-            try:
-                os.unlink(constants.LASTPAGE_DATABASE_PATH)
-            except OSError as error:
-                log.error(_('! Could not remove file "%s"'),
-                          constants.LASTPAGE_DATABASE_PATH)
-                log.info('Error was: %s', error)
+        try:
+            os.unlink(constants.LASTPAGE_DATABASE_PATH)
+        except OSError as error:
+            log.error(_('! Could not remove file "%s"'),
+                      constants.LASTPAGE_DATABASE_PATH)
+            log.info('Error was: %s', error)
 
     def _init_database(self, dbfile: str) -> dbapi2.Connection:
         """ Opens the legacy database at <dbfile>, creating the file and

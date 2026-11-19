@@ -148,8 +148,7 @@ class BookPropertiesDialog(Dialog):
         pages = sum(book.pages for book in books)
         # In the words the library's own summary of the books on show
         # uses, under the covers.
-        stats = library.reading_statistics(
-            book.id for book in books if book.id is not None)
+        stats = library.reading_statistics(book.id for book in books)
         read = [_('Pages read: %d') % stats.pages_read]
         if stats.last_read is not None:
             read.append(_('last read on %(date)s, %(time)s') % {

@@ -227,10 +227,9 @@ class WatchListDialog(Dialog):
             return
         entry = self.library.backend.watchlist.get_watchlist_entry(
             row.directory)
-        if entry:
-            entry.remove()
-            self._list.remove_row(row)
-            self._update_scan_button()
+        entry.remove()
+        self._list.remove_row(row)
+        self._update_scan_button()
 
     def _key_pressed(self, controller: Gtk.EventControllerKey,
                      keyval: int, keycode: int,
