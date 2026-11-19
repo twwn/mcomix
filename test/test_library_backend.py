@@ -378,12 +378,6 @@ class ContainIndexTest(LibraryDatabaseTest):
     the library.
     """
 
-    def setUp(self):
-        super().setUp()
-
-    def tearDown(self):
-        super().tearDown()
-
     def test_removal_by_book_does_not_scan(self):
         library = backend.LibraryBackend()
         try:
@@ -2012,9 +2006,6 @@ class HalfWrittenDatabaseTest(LibraryDatabaseTest):
             collection integer not null, book integer not null,
             primary key (collection, book))""")
         connection.close()
-
-    def tearDown(self):
-        super().tearDown()
 
     def test_the_library_opens_over_it(self):
         """The version row is already there, so writing the current one

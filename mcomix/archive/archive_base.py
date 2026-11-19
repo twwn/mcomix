@@ -679,9 +679,6 @@ class ExternalExecutableArchive(NonUnicodeArchive):
 class DisabledArchive(BaseArchive):
     """Returned to indicate that a requested archiver is unavailable."""
 
-    def __init__(self, archive: str) -> None:
-        super().__init__(archive)
-
     @staticmethod
     def is_available() -> bool:
         """Status of this archiver (always false)."""
