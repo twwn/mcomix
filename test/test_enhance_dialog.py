@@ -2,11 +2,10 @@
 
 from unittest import mock
 
-from . import MComixTest, children, get_testfile_path, pump, wait_for
+from . import MComixTest, children, pump, wait_for
 
 from mcomix import enhance_dialog
 from mcomix import histogram
-from mcomix import icons
 from mcomix.dialog import Response
 from mcomix.preferences import prefs
 
@@ -15,10 +14,7 @@ class EnhanceDialogTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        self.make_user_directories()
-        icons.load_icons()
-        self.open_main_window(
-            open_path=get_testfile_path('archives', '01-ZIP-Normal.zip'))
+        self.open_main_window_on_a_book()
         # The page itself, not only the list of pages: the dialog draws
         # no histogram for a page still being extracted, and a slow
         # runner reaches the tests before the extraction has finished.

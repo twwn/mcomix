@@ -7,6 +7,7 @@ the suite is never asked, and the name they meet under is one no MComix
 uses.
 """
 
+import contextlib
 import json
 import os
 import shutil
@@ -65,6 +66,21 @@ def _keep_the_environment(test):
     patcher = unittest.mock.patch.dict(os.environ)
     patcher.start()
     test.addCleanup(patcher.stop)
+
+
+@contextlib.contextmanager
+def _run_kept_from_the_process(argv):
+    """Let run.run() start with <argv> and keep it from this process: no
+    preferences read, no language installed, nothing written to stdout,
+    and the log's level and exception hook left as they are."""
+    with unittest.mock.patch.object(sys, 'argv', argv), \
+            unittest.mock.patch.object(
+                run.preferences, 'read_preferences_file'), \
+            unittest.mock.patch.object(i18n, 'install_gettext'), \
+            unittest.mock.patch.object(sys, 'stdout'), \
+            unittest.mock.patch.object(run.log, 'setLevel'), \
+            unittest.mock.patch.object(run.log, 'log_uncaught_exceptions'):
+        yield
 
 
 @unittest.skipIf(sys.platform == 'win32' or not shutil.which('dbus-daemon'),
@@ -295,14 +311,7 @@ class StartTest(MComixTest):
         prefs['single instance'] = True
         instance = unittest.mock.Mock()
         instance.hand_over.return_value = True
-        with unittest.mock.patch.object(sys, 'argv',
-                                        ['mcomix', '--page', '4', 'a.cbz']), \
-                unittest.mock.patch.object(
-                    run.preferences, 'read_preferences_file'), \
-                unittest.mock.patch.object(i18n, 'install_gettext'), \
-                unittest.mock.patch.object(sys, 'stdout'), \
-                unittest.mock.patch.object(run.log, 'setLevel'), \
-                unittest.mock.patch.object(run.log, 'log_uncaught_exceptions'), \
+        with _run_kept_from_the_process(['mcomix', '--page', '4', 'a.cbz']), \
                 unittest.mock.patch.object(run, 'single_instance_for',
                                            return_value=instance), \
                 unittest.mock.patch.object(
@@ -321,13 +330,7 @@ class StartTest(MComixTest):
         prefs['single instance'] = True
         instance = unittest.mock.Mock()
         instance.hand_over.return_value = False
-        with unittest.mock.patch.object(sys, 'argv', ['mcomix', 'a.cbz']), \
-                unittest.mock.patch.object(
-                    run.preferences, 'read_preferences_file'), \
-                unittest.mock.patch.object(i18n, 'install_gettext'), \
-                unittest.mock.patch.object(sys, 'stdout'), \
-                unittest.mock.patch.object(run.log, 'setLevel'), \
-                unittest.mock.patch.object(run.log, 'log_uncaught_exceptions'), \
+        with _run_kept_from_the_process(['mcomix', 'a.cbz']), \
                 unittest.mock.patch.object(run.log, 'debug') as debug, \
                 unittest.mock.patch.object(
                     run.portability, 'seconds_since_process_start',
@@ -349,13 +352,7 @@ class StartTest(MComixTest):
         class Stop(Exception):
             pass
 
-        with unittest.mock.patch.object(sys, 'argv', ['mcomix']), \
-                unittest.mock.patch.object(
-                    run.preferences, 'read_preferences_file'), \
-                unittest.mock.patch.object(i18n, 'install_gettext'), \
-                unittest.mock.patch.object(sys, 'stdout'), \
-                unittest.mock.patch.object(run.log, 'setLevel'), \
-                unittest.mock.patch.object(run.log, 'log_uncaught_exceptions'), \
+        with _run_kept_from_the_process(['mcomix']), \
                 unittest.mock.patch.object(run.log, 'debug') as debug, \
                 unittest.mock.patch.object(
                     run.portability, 'seconds_since_process_start',

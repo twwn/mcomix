@@ -984,6 +984,8 @@ class DeleteFromDiskTest(MComixTest):
                          'what goes to the trash is drawn as lost for good')
 
     def _deletable(self):
+        """A file that is no book, deletable.cbz in the test's folder,
+        shown as the one cover and selected."""
         path = os.path.join(self.tmp_dir, 'deletable.cbz')
         with open(path, 'wb') as handle:
             handle.write(b'not really a book')
@@ -1133,11 +1135,7 @@ class DeleteFromDiskTest(MComixTest):
     def test_a_book_the_trash_refuses_can_be_deleted_for_good(self):
         """GLib keeps no trash on a bind-mounted folder, and the library
         could then only say the book had not gone."""
-        path = os.path.join(self.tmp_dir, 'deletable.cbz')
-        with open(path, 'wb') as handle:
-            handle.write(b'not really a book')
-        self.area._covers.set_items([book_area._BookItem(_Book(1, path))])
-        self.area._covers.selection.select_all()
+        path = self._deletable()
 
         def refuse(path):
             raise GLib.Error('Trashing on system internal mounts is not '
@@ -1177,11 +1175,7 @@ class DeleteFromDiskTest(MComixTest):
     def test_deleting_a_bookmarked_book_asks_about_its_bookmarks(self):
         """The window's own delete asks; the library deleted the file
         and left the bookmark pointing at nothing."""
-        path = os.path.join(self.tmp_dir, 'deletable.cbz')
-        with open(path, 'wb') as handle:
-            handle.write(b'not really a book')
-        self.area._covers.set_items([book_area._BookItem(_Book(1, path))])
-        self.area._covers.selection.select_all()
+        path = self._deletable()
         store = self._bookmark_store()
         store.add_bookmark(self._bookmark(path))
 
@@ -1199,11 +1193,7 @@ class DeleteFromDiskTest(MComixTest):
         self.assertEqual(store.get_bookmarks(), [])
 
     def test_deleting_a_book_nobody_bookmarked_asks_nothing(self):
-        path = os.path.join(self.tmp_dir, 'deletable.cbz')
-        with open(path, 'wb') as handle:
-            handle.write(b'not really a book')
-        self.area._covers.set_items([book_area._BookItem(_Book(1, path))])
-        self.area._covers.selection.select_all()
+        self._deletable()
         self._bookmark_store()
 
         self.area._remove_answered(Response.YES)
@@ -1212,11 +1202,7 @@ class DeleteFromDiskTest(MComixTest):
         self.assertEqual(self._dialogs(), [])
 
     def test_a_book_that_was_deleted_says_nothing_of_the_kind(self):
-        path = os.path.join(self.tmp_dir, 'deletable.cbz')
-        with open(path, 'wb') as handle:
-            handle.write(b'not really a book')
-        self.area._covers.set_items([book_area._BookItem(_Book(1, path))])
-        self.area._covers.selection.select_all()
+        path = self._deletable()
 
         self.area._remove_answered(Response.YES)
 
@@ -1227,11 +1213,7 @@ class DeleteFromDiskTest(MComixTest):
 
     def test_a_deleted_book_goes_to_the_trash(self):
         """It was removed for good (upstream feature request 107)."""
-        path = os.path.join(self.tmp_dir, 'deletable.cbz')
-        with open(path, 'wb') as handle:
-            handle.write(b'not really a book')
-        self.area._covers.set_items([book_area._BookItem(_Book(1, path))])
-        self.area._covers.selection.select_all()
+        self._deletable()
 
         self.area._remove_answered(Response.YES)
 
@@ -1274,11 +1256,7 @@ class DeleteFromDiskTest(MComixTest):
     def test_a_deleted_book_leaves_the_recent_files(self):
         """The window's own delete forgets the path there; the library
         deleted the file and the recent files went on offering it."""
-        path = os.path.join(self.tmp_dir, 'deletable.cbz')
-        with open(path, 'wb') as handle:
-            handle.write(b'not really a book')
-        self.area._covers.set_items([book_area._BookItem(_Book(1, path))])
-        self.area._covers.selection.select_all()
+        path = self._deletable()
 
         self.area._remove_answered(Response.YES)
 
@@ -1287,11 +1265,7 @@ class DeleteFromDiskTest(MComixTest):
     def test_deleting_the_open_book_forgets_its_unwritten_changes(self):
         """Otherwise closing it offers to write the archive back where
         it was just deleted from, and Enter there saves."""
-        path = os.path.join(self.tmp_dir, 'deletable.cbz')
-        with open(path, 'wb') as handle:
-            handle.write(b'not really a book')
-        self.area._covers.set_items([book_area._BookItem(_Book(1, path))])
-        self.area._covers.selection.select_all()
+        path = self._deletable()
         self.library.open_book.path = path
 
         self.area._remove_answered(Response.YES)
@@ -1299,11 +1273,7 @@ class DeleteFromDiskTest(MComixTest):
         self.assertTrue(self.library.open_book.forgotten)
 
     def test_deleting_another_book_keeps_the_open_ones_changes(self):
-        path = os.path.join(self.tmp_dir, 'deletable.cbz')
-        with open(path, 'wb') as handle:
-            handle.write(b'not really a book')
-        self.area._covers.set_items([book_area._BookItem(_Book(1, path))])
-        self.area._covers.selection.select_all()
+        self._deletable()
         self.library.open_book.path = os.path.join(self.tmp_dir, 'open.cbz')
 
         self.area._remove_answered(Response.YES)

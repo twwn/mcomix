@@ -16,7 +16,7 @@ import unittest.mock
 import zipfile
 import xml.etree.ElementTree as ElementTree
 
-from . import MComixTest, get_testfile_path
+from . import MComixTest, replace_held_once, sample_pages
 
 from mcomix import archive_packer
 from mcomix import constants
@@ -26,9 +26,7 @@ class PackerTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        self.pages = [get_testfile_path('images', name)
-                      for name in ('01-JPG-Indexed.jpg', '02-JPG-RGB.jpg',
-                                   '03-PNG-RGB.png')]
+        self.pages = sample_pages()
         self.comment = os.path.join(self.tmp_dir, 'comment.txt')
         with open(self.comment, 'w') as comment:
             comment.write('a comment')
@@ -181,8 +179,7 @@ class WriterTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        self.pages = [get_testfile_path('images', name)
-                      for name in ('01-JPG-Indexed.jpg', '02-JPG-RGB.jpg')]
+        self.pages = sample_pages(2)
 
     def _pack(self, name, archive_type):
         path = os.path.join(self.tmp_dir, name)
@@ -379,9 +376,7 @@ class WriteArchiveTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        self.pages = [get_testfile_path('images', name)
-                      for name in ('01-JPG-Indexed.jpg', '02-JPG-RGB.jpg',
-                                   '03-PNG-RGB.png')]
+        self.pages = sample_pages()
         self.directory = os.path.join(self.tmp_dir, 'books')
         os.makedirs(self.directory)
         self.archive = os.path.join(self.directory, 'packed.cbz')
@@ -551,18 +546,7 @@ class WriteArchiveTest(MComixTest):
         virus scanner opens the archive just written: the save failed
         with an error for the reader to try again."""
         self._write()
-        held = PermissionError(13, 'The process cannot access the file '
-                               'because it is being used by another process')
-        held.winerror = 32
-        replace = os.replace
-        refusals = [held]
-
-        def refused_once(*args, **kwargs):
-            if refusals:
-                raise refusals.pop()
-            return replace(*args, **kwargs)
-
-        with unittest.mock.patch('os.replace', refused_once):
+        with replace_held_once() as refusals:
             self._write(pages=self.pages[:1])
         self.assertEqual(['packed.cbz'], os.listdir(self.directory))
         self.assertEqual([], refusals)
@@ -612,9 +596,7 @@ class StoppingTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        self.pages = [get_testfile_path('images', name)
-                      for name in ('01-JPG-Indexed.jpg', '02-JPG-RGB.jpg',
-                                   '03-PNG-RGB.png')]
+        self.pages = sample_pages()
         self.directory = os.path.join(self.tmp_dir, 'books')
         os.makedirs(self.directory)
         self.archive = os.path.join(self.directory, 'packed.cbz')

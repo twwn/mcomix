@@ -41,14 +41,18 @@ Class or helper | For
 `MainWindowOpenTest` | A test with the main window open and no book.
 `MainWindowLaterTest` | A test that opens the main window itself, if at all; it is closed afterwards.
 `open_main_window()`, `close_main_window()` | The main window as MComix opens and quits it.
+`open_main_window_on_a_book()` | The main window opened on a four-page ZIP, once its pages are listed.
 `pump()`, `wait_for()`, `wait_frames()` | Let the main loop run; wait for a condition rather than a time.
 `children()`, `descendants()` | The widgets inside a widget.
 `visible_prompts()`, `prompts_over(window)` | The message dialogs on screen, or standing over a window.
 `notebook_tabs(notebook)` | The labels of a notebook's tabs.
+`simple_file_chooser()` | The `SimpleFileChooserDialog` on screen, if any.
 `hold_open(popover)` | A popover that stays open under Xvfb.
 `refuse_passwords(test)` | Cancel every password prompt; the archives asked about are listed.
 `FolderDialogStub(folder)` | Stands in for a folder chooser's answer.
 `windows_refusal(name)` | `os.remove` or `os.unlink` refusing a read-only file, as on Windows.
+`replace_held_once()` | `os.replace` refusing once, as on Windows while another process holds the file.
+`sample_pages(count)` | Paths of up to three pictures to pack or open.
 `pixel(pixbuf, x, y)` | One pixel's channels.
 `get_testfile_path(...)` | A file under `test/files/`.
 

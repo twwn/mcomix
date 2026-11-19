@@ -38,6 +38,7 @@ class _ViewTest(MComixTest):
     def _build(self, view, width):
         """Make <view> self.view, at thumbnails of 64 pixels, in a window
         <width> wide and 400 high."""
+        self._width = width
         self.view = view
         self.view.set_thumbnail_size(64)
         self.scroller = Gtk.ScrolledWindow()
@@ -53,6 +54,23 @@ class _ViewTest(MComixTest):
         self.window.destroy()
         pump()
         super().tearDown()
+
+    def _settle(self):
+        """Give the view frames to lay itself out in, at its window's
+        width.
+
+        A queued allocation runs from the frame clock, so draining what
+        is pending is not enough: the rows are bound only once the view
+        has been given its size.
+        """
+        for _ in range(40):
+            pump()
+            self.scroller.allocate(self._width, 400, -1, None)
+
+    def _drawn(self):
+        """Wait for every bound entry to have its thumbnail."""
+        return wait_for(lambda: all(item.thumbnail is not None
+                                    for item in self.view._bound), seconds=10)
 
 
 class ThumbnailListViewTest(_ViewTest):
@@ -72,17 +90,6 @@ class ThumbnailListViewTest(_ViewTest):
     def _generate(self, uid):
         self.asked.append(uid)
         return _cover()
-
-    def _settle(self):
-        """Give the list frames to lay itself out in.
-
-        A queued allocation runs from the frame clock, so draining what
-        is pending is not enough: the rows are bound only once the view
-        has been given its size.
-        """
-        for _ in range(40):
-            pump()
-            self.scroller.allocate(300, 400, -1, None)
 
     def _fill(self):
         self.view.set_pages(range(1, self.ROWS + 1))
@@ -315,16 +322,6 @@ class ThumbnailsOnScreenFirstTest(_ViewTest):
             self.go_on.wait(10)
         return _cover()
 
-    def _settle(self):
-        for _ in range(40):
-            pump()
-            self.scroller.allocate(600, 400, -1, None)
-
-    def _drawn(self):
-        """Wait for every bound entry to have its thumbnail."""
-        return wait_for(lambda: all(item.thumbnail is not None
-                                    for item in self.view._bound), seconds=10)
-
     def _jump(self, share):
         """Scroll to <share> of the way down, in one step."""
         adjustment = self.scroller.get_vadjustment()
@@ -480,15 +477,6 @@ class ThumbnailsAtHandTest(_ViewTest):
         """Even uids are at hand."""
         self.looked_up.append(item.uid)
         return _cover() if item.uid % 2 == 0 else None
-
-    def _settle(self):
-        for _ in range(40):
-            pump()
-            self.scroller.allocate(600, 400, -1, None)
-
-    def _drawn(self):
-        return wait_for(lambda: all(item.thumbnail is not None
-                                    for item in self.view._bound), seconds=10)
 
     def test_a_thumbnail_at_hand_is_shown_as_its_cell_is_bound(self):
         self.view.set_items(self.items)

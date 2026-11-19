@@ -11,7 +11,7 @@ import tempfile
 import xml.etree.ElementTree as ElementTree
 import zipfile
 
-from . import MComixTest, get_testfile_path
+from . import MComixTest, get_testfile_path, sample_pages
 
 from mcomix import archive_tools
 from mcomix import comicinfo
@@ -23,9 +23,7 @@ class ForPagesTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        self.pages = [get_testfile_path('images', name)
-                      for name in ('01-JPG-Indexed.jpg', '02-JPG-RGB.jpg',
-                                   '03-PNG-RGB.png')]
+        self.pages = sample_pages()
 
     def _written(self, existing=None):
         """The root element for_pages() produces, or None."""

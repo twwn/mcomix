@@ -60,13 +60,7 @@ class _LibraryWindowTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        self.make_user_directories()
-        icons.load_icons()
-        self.open_main_window(
-            open_path=get_testfile_path('archives', '01-ZIP-Normal.zip'))
-        self.assertTrue(wait_for(
-            lambda: self.window.imagehandler.get_number_of_pages() > 0,
-            seconds=20))
+        self.open_main_window_on_a_book()
 
     def tearDown(self):
         main_dialog._close_dialog()

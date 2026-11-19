@@ -22,7 +22,7 @@ from gi.repository import Gdk, GdkPixbuf, Gio, GLib, Gtk
 
 from . import (MComixTest, MainWindowLaterTest, children, descendants,
                fresh_bookmarks_store, get_testfile_path, hold_open,
-               prompts_over, pump, wait_for, windows_refusal)
+               prompts_over, pump, sample_pages, wait_for, windows_refusal)
 
 from mcomix import archive_packer
 from mcomix import bookmark_backend
@@ -881,6 +881,18 @@ class MainWindowTest(MComixTest):
                      .get_number_of_pages() > 2, seconds=20),
             'the fixture archive never listed its pages')
         return self._pages()
+
+    def _open_a_copy(self):
+        """Open a copy of the fixture archive, Book.cbz in the test's
+        folder, and return its path once its pages are listed."""
+        source = os.path.join(self.tmp_dir, 'Book.cbz')
+        shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'), source)
+        self.window.filehandler.open_file(source)
+        self.assertTrue(
+            wait_for(lambda: self.window.imagehandler
+                     .get_number_of_pages() > 2, seconds=20),
+            'the copied archive never listed its pages')
+        return source
 
     def _selected_images(self):
         """The page widgets drawn with the picked-out outline."""
@@ -2957,13 +2969,7 @@ class MainWindowTest(MComixTest):
                          'the book the page went from was not written')
 
     def test_saving_writes_the_book_over_the_archive_it_came_from(self):
-        source = os.path.join(self.tmp_dir, 'Book.cbz')
-        shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'), source)
-        self.window.filehandler.open_file(source)
-        self.assertTrue(
-            wait_for(lambda: self.window.imagehandler
-                     .get_number_of_pages() > 2, seconds=20),
-            'the copied archive never listed its pages')
+        source = self._open_a_copy()
         before = self.window.imagehandler.get_number_of_pages()
         mode = os.stat(source).st_mode
 
@@ -2989,13 +2995,7 @@ class MainWindowTest(MComixTest):
         written, so closing it has nothing to offer: it asked "Write
         again before closing?" all the same, and called the archive it
         had just written one that did not hold the changes."""
-        source = os.path.join(self.tmp_dir, 'Book.cbz')
-        shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'), source)
-        self.window.filehandler.open_file(source)
-        self.assertTrue(
-            wait_for(lambda: self.window.imagehandler
-                     .get_number_of_pages() > 2, seconds=20),
-            'the copied archive never listed its pages')
+        self._open_a_copy()
         actions = self.window.file_actions
         self.window.select_page(1)
         with self._quietly():
@@ -3023,13 +3023,7 @@ class MainWindowTest(MComixTest):
     def _changed_book(self):
         """A copied book with a page removed, and its archive written
         meanwhile by another program, which added a page."""
-        source = os.path.join(self.tmp_dir, 'Book.cbz')
-        shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'), source)
-        self.window.filehandler.open_file(source)
-        self.assertTrue(
-            wait_for(lambda: self.window.imagehandler
-                     .get_number_of_pages() > 2, seconds=20),
-            'the copied archive never listed its pages')
+        source = self._open_a_copy()
         self.window.select_page(1)
         with self._quietly():
             self.window.file_actions.delete_page()
@@ -3145,13 +3139,7 @@ class MainWindowTest(MComixTest):
         """Windows replaces no file that is open, and the extractor kept
         the archive open for as long as the book was: saving there failed
         with "Access is denied"."""
-        source = os.path.join(self.tmp_dir, 'Book.cbz')
-        shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'), source)
-        self.window.filehandler.open_file(source)
-        self.assertTrue(
-            wait_for(lambda: self.window.imagehandler
-                     .get_number_of_pages() > 2, seconds=20),
-            'the copied archive never listed its pages')
+        self._open_a_copy()
         self.window.select_page(1)
         with self._quietly():
             self.window.file_actions.delete_page()
@@ -3625,13 +3613,7 @@ class MainWindowTest(MComixTest):
         self.assertEqual(opened, [True])
 
     def test_removing_them_takes_them_out_and_writes_the_archive(self):
-        source = os.path.join(self.tmp_dir, 'Book.cbz')
-        shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'), source)
-        self.window.filehandler.open_file(source)
-        self.assertTrue(
-            wait_for(lambda: self.window.imagehandler
-                     .get_number_of_pages() > 2, seconds=20),
-            'the copied archive never listed its pages')
+        source = self._open_a_copy()
         before = self.window.imagehandler.get_number_of_pages()
 
         self.window.select_page(1)
@@ -3722,8 +3704,7 @@ class MainWindowTest(MComixTest):
             and self.window.imagehandler.get_current_page() == 2, seconds=20))
 
         # Several are one book of just those, as on the command line.
-        pictures = [get_testfile_path('images', name)
-                    for name in ('01-JPG-Indexed.jpg', '02-JPG-RGB.jpg')]
+        pictures = sample_pages(2)
         with unittest.mock.patch.object(self.window, 'present'):
             self.window.open_from_outside(pictures)
         self.assertTrue(wait_for(
@@ -6049,13 +6030,7 @@ class PageMenuSubmenusTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        self.make_user_directories()
-        icons.load_icons()
-        self.open_main_window(
-            open_path=get_testfile_path('archives', '01-ZIP-Normal.zip'))
-        self.assertTrue(wait_for(
-            lambda: self.window.imagehandler.get_number_of_pages() > 0,
-            seconds=20))
+        self.open_main_window_on_a_book()
         self.window.present()
         pump()
 

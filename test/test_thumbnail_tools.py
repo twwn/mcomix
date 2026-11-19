@@ -11,7 +11,8 @@ import PIL.Image
 import PIL.PngImagePlugin
 from gi.repository import Gio
 
-from . import MComixTest, get_testfile_path, refuse_passwords, wait_for
+from . import (MComixTest, get_testfile_path, refuse_passwords,
+               replace_held_once, wait_for)
 
 from mcomix import constants
 from mcomix import image_tools
@@ -108,18 +109,7 @@ class ThumbnailNameTest(MComixTest):
         thumbnailer = thumbnail_tools.Thumbnailer(
             dst_dir=self._thumbnailer.dst_dir, store_on_disk=True,
             size=(128, 128))
-        held = PermissionError(13, 'The process cannot access the file '
-                               'because it is being used by another process')
-        held.winerror = 32
-        replace = os.replace
-        refusals = [held]
-
-        def refused_once(*args, **kwargs):
-            if refusals:
-                raise refusals.pop()
-            return replace(*args, **kwargs)
-
-        with unittest.mock.patch('os.replace', refused_once):
+        with replace_held_once() as refusals:
             thumbnailer.thumbnail(source)
         self.assertEqual([], refusals)
         self.assertTrue(os.path.isfile(thumbnailer._path_to_thumbpath(source)))

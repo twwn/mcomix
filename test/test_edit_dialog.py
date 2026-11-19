@@ -13,7 +13,8 @@ import zipfile
 from gi.repository import Gdk, Gtk
 
 from . import (MComixTest, children, descendants, get_testfile_path, hold_open,
-               prompts_over, pump, take_activation_from, wait_for)
+               prompts_over, pump, simple_file_chooser, take_activation_from,
+               wait_for)
 
 from mcomix import archive_packer
 from mcomix import constants
@@ -32,13 +33,7 @@ class EditArchiveDialogTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        self.make_user_directories()
-        icons.load_icons()
-        self.open_main_window(
-            open_path=get_testfile_path('archives', '01-ZIP-Normal.zip'))
-        self.assertTrue(wait_for(
-            lambda: self.window.imagehandler.get_number_of_pages() > 0,
-            seconds=20))
+        self.open_main_window_on_a_book()
         self.dialog = edit_dialog._EditArchiveDialog(self.window)
         pump()
 
@@ -51,13 +46,6 @@ class EditArchiveDialogTest(MComixTest):
         edit_dialog.close_dialog()
         self.close_main_window()
         super().tearDown()
-
-    def _chooser(self):
-        for window in Gtk.Window.list_toplevels():
-            if isinstance(window, file_chooser_simple_dialog.
-                          SimpleFileChooserDialog):
-                return window
-        return None
 
     def test_the_buttons_end_with_the_one_that_applies(self):
         """Import, which closes nothing, came last, after Apply."""
@@ -963,7 +951,7 @@ class EditArchiveDialogTest(MComixTest):
                          (constants.ZIP, '.zip'))
         self.dialog._response(self.dialog, constants.RESPONSE_SAVE_AS)
         pump()
-        chooser = self._chooser()
+        chooser = simple_file_chooser()
         self.assertEqual(chooser.save_name, '01-ZIP-Normal.zip')
         self.assertIsNone(chooser._note,
                           'the format is the one that was opened, so '
@@ -1018,7 +1006,7 @@ class EditArchiveDialogTest(MComixTest):
                                         packed.append):
             self.dialog._response(self.dialog, constants.RESPONSE_SAVE_AS)
             pump()
-            chooser = self._chooser()
+            chooser = simple_file_chooser()
             # A Save chooser's file is its folder and the name typed in,
             # and the folder changes once GTK has listed it.  On GitHub's
             # runner (b227b832) the five seconds this waited for that ran
@@ -1048,7 +1036,7 @@ class EditArchiveDialogTest(MComixTest):
     def test_save_as_opens_a_chooser_saying_what_it_writes(self):
         self.dialog._response(self.dialog, constants.RESPONSE_SAVE_AS)
         pump()
-        chooser = self._chooser()
+        chooser = simple_file_chooser()
         self.assertIsNotNone(chooser)
         self.assertEqual(chooser._note.get_text(),
                          'Archives are stored as ZIP files.')
@@ -1056,13 +1044,13 @@ class EditArchiveDialogTest(MComixTest):
     def test_save_as_offers_the_archive_under_a_name_of_its_own(self):
         self.dialog._response(self.dialog, constants.RESPONSE_SAVE_AS)
         pump()
-        chooser = self._chooser()
+        chooser = simple_file_chooser()
         self.assertEqual(chooser.save_name, '01-ZIP-Normal.cbz')
 
     def test_import_opens_a_chooser_without_a_note(self):
         self.dialog._response(self.dialog, constants.RESPONSE_IMPORT)
         pump()
-        chooser = self._chooser()
+        chooser = simple_file_chooser()
         self.assertIsNotNone(chooser)
         self.assertIsNone(chooser._note)
 

@@ -7,7 +7,7 @@ import unittest
 
 from gi.repository import GLib, Gtk
 
-from . import MComixTest, posix_byte_names, pump, wait_for
+from . import MComixTest, posix_byte_names, pump, simple_file_chooser, wait_for
 
 from mcomix import bookmark_backend
 from mcomix import callback
@@ -299,7 +299,7 @@ class MoveToMenuTest(MComixTest):
 
         menu._actions.activate_action('other', None)
         pump()
-        dialog = self._chooser()
+        dialog = simple_file_chooser()
         self.assertIsNotNone(dialog, 'no chooser was opened')
         widgets.set_chooser_folder(dialog.filechooser, destination)
         wait_for(lambda: widgets.chooser_folder(dialog.filechooser)
@@ -308,14 +308,6 @@ class MoveToMenuTest(MComixTest):
         pump()
 
         self.assertEqual(self.window.moved_to, [destination])
-
-    @staticmethod
-    def _chooser():
-        for window in Gtk.Window.list_toplevels():
-            if isinstance(window, file_chooser_simple_dialog
-                          .SimpleFileChooserDialog):
-                return window
-        return None
 
     def test_there_is_nothing_to_move_with_no_file_open(self):
         menu = self._menu()

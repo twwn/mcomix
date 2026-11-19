@@ -74,6 +74,17 @@ class LibraryDatabaseTest(unittest.TestCase):
         database."""
         return get_testfile_path('archives', '01-ZIP-Normal.zip')
 
+    def _a_book_read_to_page_3(self):
+        """A library of its own, closed after the test, holding one book
+        read to page 3: the library and the book."""
+        library = backend.LibraryBackend()
+        self.addCleanup(library.close)
+        path = self._archive()
+        self.assertTrue(library.add_book(path))
+        book = library.get_book_by_path(path)
+        book.set_last_read_page(3)
+        return library, book
+
     def _write_database(self, version):
         """Write a library as the MComix that used <version> wrote it.
 
@@ -2474,12 +2485,8 @@ class SharedConnectionTest(LibraryDatabaseTest):
     ROUNDS = 1000
 
     def test_threads_reading_at_once_each_get_their_answer(self):
-        library = backend.LibraryBackend()
-        self.addCleanup(library.close)
+        library, book = self._a_book_read_to_page_3()
         path = self._archive()
-        self.assertTrue(library.add_book(path))
-        book = library.get_book_by_path(path)
-        book.set_last_read_page(3)
         wrong = []
 
         def read():
@@ -2517,12 +2524,7 @@ class LastReadPageRewriteTest(LibraryDatabaseTest):
     """
 
     def test_no_statement_leaves_the_book_without_its_page(self):
-        library = backend.LibraryBackend()
-        self.addCleanup(library.close)
-        path = self._archive()
-        self.assertTrue(library.add_book(path))
-        book = library.get_book_by_path(path)
-        book.set_last_read_page(3)
+        library, book = self._a_book_read_to_page_3()
         seen = []
         execute = library.execute
 
@@ -2539,12 +2541,7 @@ class LastReadPageRewriteTest(LibraryDatabaseTest):
         self.assertEqual(when, book.get_last_read_date())
 
     def test_no_page_still_removes_it(self):
-        library = backend.LibraryBackend()
-        self.addCleanup(library.close)
-        path = self._archive()
-        self.assertTrue(library.add_book(path))
-        book = library.get_book_by_path(path)
-        book.set_last_read_page(3)
+        library, book = self._a_book_read_to_page_3()
         book.set_last_read_page(None)
         self.assertIsNone(book.get_last_read_page())
         self.assertIsNone(book.get_last_read_date())

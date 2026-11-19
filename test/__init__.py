@@ -53,6 +53,7 @@ gi.require_version('GdkPixbuf', '2.0')
 # now, before a test can point the environment somewhere shorter-lived.
 
 import atexit
+import contextlib
 import copy
 import gc
 import shutil
@@ -526,6 +527,18 @@ def prompts_over(window):
             and dialog.get_transient_for() is window]
 
 
+def simple_file_chooser():
+    """The SimpleFileChooserDialog on screen, if one is open, else
+    None."""
+    from gi.repository import Gtk
+    from mcomix import file_chooser_simple_dialog
+    for window in Gtk.Window.list_toplevels():
+        if isinstance(window,
+                      file_chooser_simple_dialog.SimpleFileChooserDialog):
+            return window
+    return None
+
+
 def notebook_tabs(notebook):
     """The labels of <notebook>'s tabs, in order."""
     return [notebook.get_tab_label_text(notebook.get_nth_page(index))
@@ -546,6 +559,28 @@ class FolderDialogStub:
         if self._folder is None:
             raise GLib.Error('dismissed')
         return Gio.File.new_for_path(self._folder)
+
+
+@contextlib.contextmanager
+def replace_held_once():
+    """Patch os.replace to refuse once as Windows does while another
+    process holds the file (a sharing violation, winerror 32), and to
+    replace after; yields the refusals still to come, empty once that
+    one was raised."""
+    from unittest import mock
+    held = PermissionError(13, 'The process cannot access the file '
+                           'because it is being used by another process')
+    held.winerror = 32
+    replace = os.replace
+    refusals = [held]
+
+    def refused_once(*args, **kwargs):
+        if refusals:
+            raise refusals.pop()
+        return replace(*args, **kwargs)
+
+    with mock.patch('os.replace', refused_once):
+        yield refusals
 
 
 def windows_refusal(name):
@@ -761,6 +796,20 @@ class MComixTest(unittest.TestCase):
         main.set_main_window(self.window)
         return self.window
 
+    def open_main_window_on_a_book(self):
+        """Open the main window on test/files' 01-ZIP-Normal.zip, as
+        MComix started with it, over the user's directories made and the
+        icons loaded; return once the archive's pages are listed, which
+        a worker thread does after the window is built."""
+        from mcomix import icons
+        self.make_user_directories()
+        icons.load_icons()
+        self.open_main_window(
+            open_path=get_testfile_path('archives', '01-ZIP-Normal.zip'))
+        self.assertTrue(wait_for(
+            lambda: self.window.imagehandler.get_number_of_pages() > 0,
+            seconds=20))
+
     def close_main_window(self, rounds=4000):
         """Close self.window, the main window the test built, as MComix
         does when it quits, and let what that queued run, for up to
@@ -912,6 +961,14 @@ def session_tmp_dir():
 
 
 # Helper to get path to testsuite sample files.
+
+def sample_pages(count=3):
+    """The paths of the first <count> of three pictures under
+    test/files/images: an indexed JPEG, an RGB JPEG and an RGB PNG."""
+    return [get_testfile_path('images', name)
+            for name in ('01-JPG-Indexed.jpg', '02-JPG-RGB.jpg',
+                         '03-PNG-RGB.png')[:count]]
+
 
 def get_testfile_path(*components):
     return str(os.path.join(os.path.dirname(__file__), 'files', *components))

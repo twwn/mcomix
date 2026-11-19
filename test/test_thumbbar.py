@@ -17,7 +17,6 @@ from gi.repository import Gdk, GdkPixbuf, GLib, Gtk
 from . import MComixTest, get_testfile_path, pump, wait_for
 
 from mcomix import constants
-from mcomix import icons
 from mcomix import thumbbar
 from mcomix.preferences import prefs
 
@@ -26,19 +25,9 @@ class ThumbnailSidebarTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        self.make_user_directories()
         prefs['show thumbnails'] = True
-        icons.load_icons()
-        self.open_main_window(
-            open_path=get_testfile_path('archives', '01-ZIP-Normal.zip'))
+        self.open_main_window_on_a_book()
         self.sidebar = self.window.thumbnailsidebar
-        # The archive is listed on a worker thread, so the page count is
-        # zero for a while after the window is built. Waiting on the
-        # count rather than pumping a fixed number of rounds is what
-        # keeps this from racing the extractor.
-        self.assertTrue(wait_for(
-            lambda: self.window.imagehandler.get_number_of_pages() > 0,
-            seconds=20))
 
     def tearDown(self):
         # Only terminate_program() stops the worker threads, and a GTK4
@@ -517,7 +506,6 @@ class ThumbnailSidebarTest(MComixTest):
                                            'show_page_menu') as shown:
             self.sidebar._menu_click(unittest.mock.Mock(), 1, 10, 20)
         shown.assert_not_called()
-
 
 
 class BookmarkBadgeTest(MComixTest):
