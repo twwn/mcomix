@@ -11,7 +11,7 @@ import shutil
 
 from gi.repository import Gtk
 
-from . import MComixTest, get_testfile_path, pump
+from . import MComixTest, descendants, get_testfile_path, pump
 
 from mcomix import constants
 from mcomix.archive import rar
@@ -126,6 +126,33 @@ class AddProgressDialogTest(MComixTest):
              if isinstance(window, add_progress_dialog._AddLibraryProgressDialog)
              and window.get_visible()],
             'the progress dialog stayed up')
+
+    def test_the_bar_follows_the_books_gone_through(self):
+        """It followed the books added, so one that could not be added
+        held it back: a folder of damaged books, or of a RAR set's later
+        volumes, filled it a part of the way and no further."""
+        good = os.path.join(self.tmp_dir, 'good.cbz')
+        shutil.copy(get_testfile_path('archives', '01-ZIP-Normal.zip'), good)
+        paths = [self._damaged('bad.cbz'), self._damaged('worse.cbz'), good,
+                 self._damaged('worst.cbz')]
+        real = self.backend.add_book
+        fractions = []
+
+        def add_book(path, collection=None):
+            dialog, = [window for window in Gtk.Window.list_toplevels()
+                       if isinstance(
+                           window,
+                           add_progress_dialog._AddLibraryProgressDialog)]
+            bar, = [widget for widget in descendants(dialog)
+                    if isinstance(widget, Gtk.ProgressBar)]
+            fractions.append(bar.get_fraction())
+            return real(path, collection)
+
+        self.backend.add_book = add_book
+
+        self._add(paths)
+
+        self.assertEqual([0.0, 0.25, 0.5, 0.75], fractions)
 
     def _damaged(self, name):
         path = os.path.join(self.tmp_dir, name)

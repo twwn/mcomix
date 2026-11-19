@@ -97,8 +97,7 @@ class _AddLibraryProgressDialog(Dialog):
         widgets.pack(main_box, added_label, False, False, 0)
         self.set_visible(True)
 
-        total_paths_int = len(paths)
-        total_paths_float = float(len(paths))
+        total_paths = len(paths)
         total_added = 0
 
         # One transaction for the whole batch. The connection commits
@@ -110,19 +109,22 @@ class _AddLibraryProgressDialog(Dialog):
         # context manager commits on the way out either way.
         not_added = []
         with library.backend.transaction():
-            for path in paths:
+            for done, path in enumerate(paths, 1):
 
                 if library.backend.add_book(path, collection):
                     total_added += 1
 
-                    number_label.set_text('%d / %d' % (total_added, total_paths_int))
+                    number_label.set_text('%d / %d' % (total_added, total_paths))
                 elif not archive_tools.is_later_volume(path):
                     # A later volume is left out on purpose: its set is
                     # read through the first, so nothing is missing.
                     not_added.append(path)
 
                 added_label.set_text(_("Adding '%s'...") % path)
-                bar.set_fraction(total_added / total_paths_float)
+                # How far through the batch, not how much of it went in:
+                # a book that could not be added, or a later volume
+                # left out on purpose, is still gone through.
+                bar.set_fraction(done / total_paths)
 
                 context = GLib.MainContext.default()
                 while context.pending():
