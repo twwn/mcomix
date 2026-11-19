@@ -1100,7 +1100,6 @@ def load_pixbuf_size(path: str, width: int, height: int) -> GdkPixbuf.Pixbuf:
     def by_gdk_pixbuf() -> "GdkPixbuf.Pixbuf | None":
         # gdk-pixbuf answers with nothing rather than raising for some
         # of what it cannot read, which is why this may be None.
-        nonlocal width, height
         if (0, 0) == image_dimensions:
             # The header could not be read; let gdk-pixbuf load the file
             # anyway, so that it raises whatever is really wrong with it.
@@ -1110,12 +1109,10 @@ def load_pixbuf_size(path: str, width: int, height: int) -> GdkPixbuf.Pixbuf:
             # thing: https://gitlab.gnome.org/GNOME/gdk-pixbuf/issues/45
             return GdkPixbuf.Pixbuf.new_from_file(path)
         image_width, image_height = image_dimensions
-        if image_width <= width and image_height <= height:
-            # Fit the box to the image rather than scaling the image up,
-            # here and in the fit_in_rectangle() call below.
-            width, height = image_width, image_height
         # Twice the box, which Lanczos then halves: gdk-pixbuf's own
         # scaling to the box drew the stripes of a screentone as moiré.
+        # A picture inside the box is asked for at its own size, and
+        # fit_in_rectangle() below does not scale it up.
         return GdkPixbuf.Pixbuf.new_from_file_at_size(
             path, min(image_width, 2 * width), min(image_height, 2 * height))
 
