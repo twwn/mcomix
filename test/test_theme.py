@@ -120,9 +120,6 @@ class PaletteTest(MComixTest):
         self._drop_palette()
         super().tearDown()
 
-    def _drop_stated(self):
-        theme.apply_colour_scheme(theme.SYSTEM)
-
     def _drop_palette(self):
         """Leave the display as this test found it."""
         if theme._provider is not None:
