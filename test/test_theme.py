@@ -138,6 +138,14 @@ class PaletteTest(MComixTest):
         Gtk.StyleContext.add_provider_for_display(
             self.display, self.user, Gtk.STYLE_PROVIDER_PRIORITY_USER)
 
+    def _present_a_sidebar(self):
+        """Fill the window with a navigation sidebar and show it."""
+        sidebar = Gtk.Box()
+        sidebar.add_css_class('navigation-sidebar')
+        sidebar.set_size_request(200, 200)
+        self.window.set_child(sidebar)
+        self.window.present()
+
     def test_a_window_takes_the_colour_the_theme_names(self):
         self._state('@define-color window_bg_color rgb(1,2,3);')
         theme.follow_palette()
@@ -150,11 +158,7 @@ class PaletteTest(MComixTest):
         self._state('@define-color window_bg_color rgb(1,2,3);'
                     '@define-color sidebar_bg_color rgb(1,2,3);')
         theme.follow_palette()
-        sidebar = Gtk.Box()
-        sidebar.add_css_class('navigation-sidebar')
-        sidebar.set_size_request(200, 200)
-        self.window.set_child(sidebar)
-        self.window.present()
+        self._present_a_sidebar()
         self.assertEqual(background_of(self.window), self._COLOUR)
 
     def test_a_colour_nobody_names_costs_nothing(self):
@@ -268,11 +272,7 @@ class PaletteTest(MComixTest):
             theme.apply_colour_scheme(theme.LIGHT)
         finally:
             theme._adwaita_colours = stock
-        sidebar = Gtk.Box()
-        sidebar.add_css_class('navigation-sidebar')
-        sidebar.set_size_request(200, 200)
-        self.window.set_child(sidebar)
-        self.window.present()
+        self._present_a_sidebar()
         self.assertEqual(background_of(self.window), self._COLOUR)
 
     def test_the_light_and_the_dark_are_read_from_libadwaita(self):

@@ -156,15 +156,13 @@ class _Osd:
         self.shown.append(text)
 
 
-class ExecuteTest(MComixTest):
+class _RunTest(MComixTest):
 
-    """Running a command: where it runs, and what the reader is told
-    when it will not."""
+    """A test of commands run: process.popen stands in for the start,
+    in self.popen."""
 
     def setUp(self):
         super().setUp()
-        self.window = _StubWindow('page.jpg', '/books/page.jpg')
-        self.window.osd = _Osd()
         patcher = mock.patch.object(openwith.process, 'popen')
         self.popen = patcher.start()
         self.addCleanup(patcher.stop)
@@ -173,6 +171,17 @@ class ExecuteTest(MComixTest):
         platform = mock.patch.object(openwith.sys, 'platform', 'linux')
         platform.start()
         self.addCleanup(platform.stop)
+
+
+class ExecuteTest(_RunTest):
+
+    """Running a command: where it runs, and what the reader is told
+    when it will not."""
+
+    def setUp(self):
+        super().setUp()
+        self.window = _StubWindow('page.jpg', '/books/page.jpg')
+        self.window.osd = _Osd()
 
     def _command(self, command, cwd='', disabled_for_archives=False):
         return openwith.OpenWithCommand('Viewer', command, cwd,
@@ -216,21 +225,12 @@ class ExecuteTest(MComixTest):
         self.assertIn('No such file', self.window.osd.shown[0])
 
 
-class BookInTheLibraryTest(MComixTest):
+class BookInTheLibraryTest(_RunTest):
 
     """A command run on a book of the library, which is an archive that
     is not open."""
 
     PATH = os.path.join(os.sep, 'books', 'shelf', 'comic.zip')
-
-    def setUp(self):
-        super().setUp()
-        patcher = mock.patch.object(openwith.process, 'popen')
-        self.popen = patcher.start()
-        self.addCleanup(patcher.stop)
-        platform = mock.patch.object(openwith.sys, 'platform', 'linux')
-        platform.start()
-        self.addCleanup(platform.stop)
 
     @staticmethod
     def _command(command, cwd='', disabled_for_archives=False, label='Viewer'):

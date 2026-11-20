@@ -1926,9 +1926,9 @@ class MainWindowTest(MComixTest):
         return ((x + area.get_hadjustment().get_page_size() / 2) / width,
                 (y + area.get_vadjustment().get_page_size() / 2) / height)
 
-    def test_a_zoom_keeps_the_middle_of_the_view_where_it_was(self):
-        """Upstream feature request 74: zooming in or out jumped to
-        another part of the page, the scroll position kept in pixels."""
+    def _zoomed_in_on_a_tall_page(self):
+        """Page 2 of a Pepper and Carrot book, shown at manual zoom four
+        steps in, once it has settled."""
         self.window.filehandler.open_file(get_testfile_path(
             'pepper-and-carrot',
             'Pepper-and-Carrot_E01_The-Potion-of-Flight.cbz'), 2)
@@ -1939,6 +1939,11 @@ class MainWindowTest(MComixTest):
         for _ in range(4):
             self.window.manual_zoom_in()
         self._settled()
+
+    def test_a_zoom_keeps_the_middle_of_the_view_where_it_was(self):
+        """Upstream feature request 74: zooming in or out jumped to
+        another part of the page, the scroll position kept in pixels."""
+        self._zoomed_in_on_a_tall_page()
         area = self.window.page_area
         width, height = area.get_content_size()
         self.assertGreater(height, area.get_vadjustment().get_page_size() * 2,
@@ -1958,16 +1963,7 @@ class MainWindowTest(MComixTest):
         """The point under the pointer stays under it, as in an image
         viewer, rather than the page growing about the middle of the
         view and taking the detail aimed at away."""
-        self.window.filehandler.open_file(get_testfile_path(
-            'pepper-and-carrot',
-            'Pepper-and-Carrot_E01_The-Potion-of-Flight.cbz'), 2)
-        self.assertTrue(wait_for(
-            lambda: self.window.imagehandler.get_current_page() == 2
-            and self.window.imagehandler.page_is_available(), seconds=20))
-        self.window.actiongroup.get_action('fit_manual_mode').activate()
-        for _ in range(4):
-            self.window.manual_zoom_in()
-        self._settled()
+        self._zoomed_in_on_a_tall_page()
         area = self.window.page_area
         width, height = area.get_content_size()
         view = (area.get_hadjustment().get_page_size(),
@@ -2289,16 +2285,21 @@ class MainWindowTest(MComixTest):
         """The process-wide store, which MComixTest.setUp empties."""
         return bookmark_backend.BookmarksStore
 
-    def test_deleting_a_bookmarked_file_asks_about_its_bookmarks(self):
-        """A bookmark is a page the reader marked, not a record of a
-        file, so it is the one thing a delete does not take unasked."""
+    def _delete_a_bookmarked_book(self):
+        """Bookmark a page of a book of the test's own, delete the book
+        as if the reader had said yes, and return the bookmark store."""
         source = self._movable_book()
         store = self._bookmark_store()
         store.add_bookmark_by_values('Movable', source, 2, 4, None,
                                      datetime.datetime(2026, 1, 1))
-
         self.window.file_actions._delete_answered(Response.OK, source)
         self._pump()
+        return store
+
+    def test_deleting_a_bookmarked_file_asks_about_its_bookmarks(self):
+        """A bookmark is a page the reader marked, not a record of a
+        file, so it is the one thing a delete does not take unasked."""
+        store = self._delete_a_bookmarked_book()
 
         dialogs = prompts_over(self.window)
         self.assertEqual(len(dialogs), 1, 'nothing asked about the bookmark')
@@ -2678,13 +2679,7 @@ class MainWindowTest(MComixTest):
                          'it asked about the file as well')
 
     def test_keeping_the_bookmarks_of_a_deleted_file_keeps_them(self):
-        source = self._movable_book()
-        store = self._bookmark_store()
-        store.add_bookmark_by_values('Movable', source, 2, 4, None,
-                                     datetime.datetime(2026, 1, 1))
-
-        self.window.file_actions._delete_answered(Response.OK, source)
-        self._pump()
+        store = self._delete_a_bookmarked_book()
 
         dialogs = prompts_over(self.window)
         self.assertEqual(len(dialogs), 1)
