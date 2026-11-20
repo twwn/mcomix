@@ -34,6 +34,7 @@ xvfb-run -a .venv/bin/python -m pytest test/ -n auto
 
 Use what `test/__init__.py` has before writing a set-up or helper of your own.
 `test/test_copies.py` fails when a function body of some size appears twice, in the tests or the program.
+It also fails when six statements in a row appear twice in the tests: make them a helper.
 
 Class or helper | For
 ----------------|----
@@ -43,6 +44,7 @@ Class or helper | For
 `open_main_window()`, `close_main_window()` | The main window as MComix opens and quits it.
 `open_main_window_on_a_book()` | The main window opened on a four-page ZIP, once its pages are listed.
 `self.window_holding(child, size)` | A window of the test's own holding a widget, on screen, destroyed after the test.
+`self.make_user_directories()` | The configuration, data and thumbnail folders, which `setUp()` names but does not make.
 `self.wait_for_pages(count)` | Wait for the book opened in `self.window` to have its pages listed: any, or `count` of them.
 `pump()`, `wait_for()`, `wait_frames()` | Let the main loop run; wait for a condition rather than a time.
 `children()`, `descendants()` | The widgets inside a widget.
@@ -50,11 +52,15 @@ Class or helper | For
 `notebook_tabs(notebook)` | The labels of a notebook's tabs.
 `simple_file_chooser()` | The `SimpleFileChooserDialog` on screen, if any.
 `hold_open(popover)` | A popover that stays open under Xvfb.
+`take_activation_from(test, window)` | Another window made active, so that `window` is not.
+`keep_focus_within(window)` | The focus state kept on a window's widgets while another worker's window has the keyboard.
 `refuse_passwords(test)` | Cancel every password prompt; the archives asked about are listed.
 `FolderDialogStub(folder)` | Stands in for a folder chooser's answer.
 `StubFileHandler` | A window's file handler with no book and the `file_opened` and `file_closed` signals, for a menu's tests.
 `windows_refusal(name)` | `os.remove` or `os.unlink` refusing a read-only file, as on Windows.
 `replace_held_once()` | `os.replace` refusing once, as on Windows while another process holds the file.
+`fresh_bookmarks_store()` | The bookmarks store read again from the test's home. `setUp()` does it already.
+`session_tmp_dir()` | A folder that lasts the whole run, for what goes on writing after its test.
 `sample_pages(count)` | Paths of up to three pictures to pack or open.
 `pixel(pixbuf, x, y)` | One pixel's channels.
 `get_testfile_path(...)` | A file under `test/files/`.
@@ -64,6 +70,16 @@ A helper several tests of one file share goes on a base class in that file.
 A helper another file needs goes into `test/__init__.py` and this table.
 Before moving a method out of a class, check no subclass overrides it.
 Imports go at the top of the test module. One inside a test needs a reason: an optional library, or a module whose import the test watches.
+
+Waiting:
+
+- Wait for what the test needs, with `wait_for()`, `self.wait_for_pages()` or `wait_frames()`, never for a guessed time. `time.sleep()` belongs only in a polling loop or a stand-in for slow work.
+- A style, a layout or a paint comes with the frame clock: wait for a few frames, not milliseconds.
+- A pause or poll MComix keeps (a search delay, a preview poll) is patched shorter or called at once, not waited out.
+- Something asynchronous: assert what the call set at once, then pump, then assert what the answer changed.
+- A check that something does not happen waits a short, bounded time, and has been shown to fail when it does happen.
+
+A test that leaves a window on screen fails with "left on screen". Destroy what you present, or use `self.window_holding()`.
 
 ## Layout
 
