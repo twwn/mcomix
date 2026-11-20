@@ -484,7 +484,8 @@ class _AccelCell(Gtk.Button, _Cell):
     accelerator = ''
 
 
-class ColumnListView(Gtk.ColumnView, widgets.Releasable):
+class ColumnListView(Gtk.ColumnView, widgets.Releasable,
+                     widgets.DragReorderable):
 
     """A list of rows under titled columns.
 
@@ -534,7 +535,6 @@ class ColumnListView(Gtk.ColumnView, widgets.Releasable):
             self.selection.set_can_unselect(True)
         super().__init__(model=self.selection)
         sorted_model.set_sorter(self.get_sorter())
-        self._reorderable = False
         #: Every cell the columns' factories have built, on screen or
         #: kept aside for rows to come; release() needs both.
         self._cells: "weakref.WeakSet[_Cell]" = weakref.WeakSet()
@@ -956,12 +956,7 @@ class ColumnListView(Gtk.ColumnView, widgets.Releasable):
 
     # -- Reordering by dragging -------------------------------------------
 
-    #: What a reordering drag carries: the position it started from.
     _REORDER_TYPE = 'application/x-mcomix-row-position'
-
-    def set_reorderable(self, reorderable: bool) -> None:
-        """Let the rows be dragged into a different order."""
-        self._reorderable = reorderable
 
     def _decorate_cell(self, cell: _Cell) -> None:
         """Make <cell> one a reordering drag can start from and land on.
@@ -971,15 +966,13 @@ class ColumnListView(Gtk.ColumnView, widgets.Releasable):
         source and a drop target - any cell of a row, so that the row
         can be picked up wherever the pointer is on it.
         """
-        if not self._reorderable:
-            return
-        source = Gtk.DragSource()
-        source.set_actions(Gdk.DragAction.MOVE)
-        source.connect('prepare', self._reorder_prepare, cell)
-        cast(Gtk.Widget, cell).add_controller(source)
-        target = Gtk.DropTarget.new(str, Gdk.DragAction.MOVE)
-        target.connect('drop', self._reorder_drop, cell)
-        cast(Gtk.Widget, cell).add_controller(target)
+        self._add_reorder_controllers(cast(Gtk.Widget, cell))
+
+    def _may_reorder(self) -> bool:
+        return self._rows_are_the_store()
+
+    def _move_dragged(self, source: int, destination: int) -> bool:
+        return self.move_row(source, destination)
 
     def _rows_are_the_store(self) -> bool:
         """Whether what is drawn is the store, row for row.
@@ -999,27 +992,6 @@ class ColumnListView(Gtk.ColumnView, widgets.Releasable):
         sorter = self.get_sorter()
         return not isinstance(sorter, Gtk.ColumnViewSorter) \
             or sorter.get_primary_sort_column() is None
-
-    def _reorder_prepare(self, source: "Gtk.DragSource | None", x: float,
-                         y: float, cell: _Cell) -> "Gdk.ContentProvider | None":
-        # Nothing to carry is how a Gtk.DragSource is told not to start.
-        if not self._rows_are_the_store():
-            return None
-        return Gdk.ContentProvider.new_for_value(
-            '%s:%d' % (self._REORDER_TYPE, cell.position))
-
-    def _reorder_drop(self, target: "Gtk.DropTarget | None", value: str,
-                      x: float, y: float, cell: _Cell) -> bool:
-        prefix = self._REORDER_TYPE + ':'
-        if not isinstance(value, str) or not value.startswith(prefix):
-            return False
-        if not self._rows_are_the_store():
-            return False
-        try:
-            source_position = int(value[len(prefix):])
-        except ValueError:
-            return False
-        return self.move_row(source_position, cell.position)
 
     def move_row(self, source: int, destination: int) -> bool:
         """Move the row at <source> so that it sits at <destination>.

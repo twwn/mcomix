@@ -381,6 +381,80 @@ class Releasable:
         """Let go of everything that would keep the closed window alive."""
 
 
+class DragReorderable:
+
+    """A list view whose entries are put in a different order by
+    dragging one onto another, once set_reorderable() allows it.
+
+    Gtk.TreeView and Gtk.IconView did this for themselves; the list
+    models' views have no notion of it, so each cell carries a drag
+    source and a drop target, added by _add_reorder_controllers(). A
+    drag carries the position it started from, as text after
+    _REORDER_TYPE, so that a drag from anywhere else is refused.
+    A cell is any widget with a <position> attribute.
+    """
+
+    #: What a reordering drag carries: the position it started from.
+    _REORDER_TYPE: str
+    _reorderable = False
+
+    def set_reorderable(self, reorderable: bool) -> None:
+        """Let the entries be dragged into a different order."""
+        self._reorderable = reorderable
+
+    def _may_reorder(self) -> bool:
+        """Whether a drag may start or land now."""
+        return True
+
+    def _move_dragged(self, source: int, destination: int) -> bool:
+        """Move the entry at <source> to <destination>; whether it moved."""
+        raise NotImplementedError
+
+    def _add_reorder_controllers(self, cell: Gtk.Widget
+                                 ) -> Gtk.DragSource | None:
+        """Make <cell> one a reordering drag can start from and land on,
+        and return its drag source; None while reordering is off."""
+        if not self._reorderable:
+            return None
+        source = Gtk.DragSource()
+        source.set_actions(Gdk.DragAction.MOVE)
+        source.connect('prepare', self._reorder_prepare, cell)
+        cell.add_controller(source)
+        target = Gtk.DropTarget.new(str, Gdk.DragAction.MOVE)
+        target.connect('drop', self._reorder_drop, cell)
+        cell.add_controller(target)
+        return source
+
+    def _reorder_prepare(self, source: "Gtk.DragSource | None", x: float,
+                         y: float, cell: Gtk.Widget
+                         ) -> "Gdk.ContentProvider | None":
+        # Nothing to carry is how a Gtk.DragSource is told not to start.
+        if not self._may_reorder():
+            return None
+        return Gdk.ContentProvider.new_for_value(
+            '%s:%d' % (self._REORDER_TYPE, _position(cell)))
+
+    def _reorder_drop(self, target: "Gtk.DropTarget | None", value: str,
+                      x: float, y: float, cell: Gtk.Widget) -> bool:
+        prefix = self._REORDER_TYPE + ':'
+        if not isinstance(value, str) or not value.startswith(prefix):
+            return False
+        if not self._may_reorder():
+            return False
+        try:
+            source_position = int(value[len(prefix):])
+        except ValueError:
+            return False
+        return self._move_dragged(source_position, _position(cell))
+
+
+def _position(cell: Gtk.Widget) -> int:
+    """The position a reorderable view's <cell> is drawn at."""
+    position = getattr(cell, 'position')
+    assert isinstance(position, int)
+    return position
+
+
 def drop_focus_when_closed(window: Gtk.Window) -> None:
     """Take the focus off <window>'s widgets before its surface goes.
 

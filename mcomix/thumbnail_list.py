@@ -714,7 +714,8 @@ class ThumbnailListView(Gtk.ListView, _ThumbnailViewBase):
 _MOST_COLUMNS = 64
 
 
-class ThumbnailGridView(Gtk.GridView, _ThumbnailViewBase):
+class ThumbnailGridView(Gtk.GridView, _ThumbnailViewBase,
+                        widgets.DragReorderable):
 
     """A grid of thumbnails, as the library and the archive editor show.
 
@@ -726,7 +727,6 @@ class ThumbnailGridView(Gtk.GridView, _ThumbnailViewBase):
     CELL_ORIENTATION = Gtk.Orientation.VERTICAL
     CSS_CLASS = 'mcomix-thumbnail-grid'
 
-    #: What a reordering drag carries: the position it started from.
     _REORDER_TYPE = 'application/x-mcomix-thumbnail-position'
 
     def __init__(self) -> None:
@@ -739,7 +739,6 @@ class ThumbnailGridView(Gtk.GridView, _ThumbnailViewBase):
         self.model = self._sort_model
         self.selection = Gtk.MultiSelection(model=self.model)
         _ThumbnailViewBase._init_thumbnails(self)
-        self._reorderable = False
         #: Called just before a drag moves an entry, for whoever wants
         #: to remember the order it was in.  The archive editor does,
         #: for its undo.
@@ -789,43 +788,19 @@ class ThumbnailGridView(Gtk.GridView, _ThumbnailViewBase):
 
     # -- Reordering -------------------------------------------------------
 
-    def set_reorderable(self, reorderable: bool) -> None:
-        """Let the entries be dragged into a different order."""
-        self._reorderable = reorderable
-
     def _decorate_cell(self, cell: _ThumbnailCell) -> None:
-        if not self._reorderable:
-            return
-        source = Gtk.DragSource()
-        source.set_actions(Gdk.DragAction.MOVE)
-        source.connect('prepare', self._reorder_prepare, cell)
-        source.connect('drag-begin', self._reorder_begin, cell)
-        cell.add_controller(source)
-        target = Gtk.DropTarget.new(str, Gdk.DragAction.MOVE)
-        target.connect('drop', self._reorder_drop, cell)
-        cell.add_controller(target)
+        source = self._add_reorder_controllers(cell)
+        if source is not None:
+            source.connect('drag-begin', self._reorder_begin, cell)
 
-    def _reorder_prepare(self, source: Gtk.DragSource, x: float, y: float,
-                         cell: _ThumbnailCell) -> Gdk.ContentProvider:
-        return Gdk.ContentProvider.new_for_value(
-            '%s:%d' % (self._REORDER_TYPE, cell.position))
+    def _move_dragged(self, source: int, destination: int) -> bool:
+        return self.move_item(source, destination)
 
     def _reorder_begin(self, source: Gtk.DragSource, drag: Gdk.Drag,
                        cell: _ThumbnailCell) -> None:
         paintable = cell.picture.get_paintable()
         if paintable is not None:
             source.set_icon(paintable, 0, 0)
-
-    def _reorder_drop(self, target: Gtk.DropTarget, value: str, x: float,
-                      y: float, cell: _ThumbnailCell) -> bool:
-        prefix = self._REORDER_TYPE + ':'
-        if not isinstance(value, str) or not value.startswith(prefix):
-            return False
-        try:
-            source_position = int(value[len(prefix):])
-        except ValueError:
-            return False
-        return self.move_item(source_position, cell.position)
 
     def move_item(self, source: int, destination: int) -> bool:
         """Move the entry at <source> so that it sits at <destination>.

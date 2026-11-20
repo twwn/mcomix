@@ -6,6 +6,8 @@ parented to a widget and pointed at a rectangle in that widget's
 coordinates - which is not the widget the pointer was over.
 """
 
+import unittest.mock
+
 from gi.repository import Gdk, Gio, Gtk
 
 from . import MComixTest, children, pump
@@ -110,6 +112,65 @@ class EmptyTest(MComixTest):
         other = Gtk.Box.new(Gtk.Orientation.VERTICAL, 0)
         other.append(label)
         self.assertEqual(self._children(other), [label])
+
+
+class _Reorderable(widgets.DragReorderable):
+
+    _REORDER_TYPE = 'application/x-mcomix-test-position'
+
+    def __init__(self):
+        self.moved = []
+
+    def _move_dragged(self, source, destination):
+        self.moved.append((source, destination))
+        return True
+
+
+class DragReorderableTest(MComixTest):
+
+    def _cell(self, position):
+        cell = Gtk.Label()
+        cell.position = position
+        return cell
+
+    def _controllers(self, cell):
+        controllers = cell.observe_controllers()
+        return {type(controllers.get_item(i))
+                for i in range(controllers.get_n_items())}
+
+    def test_a_cell_gets_a_drag_and_a_drop_only_once_reordering_is_on(self):
+        view = _Reorderable()
+        cell = self._cell(0)
+        self.assertIsNone(view._add_reorder_controllers(cell))
+        self.assertFalse({Gtk.DragSource, Gtk.DropTarget}
+                         & self._controllers(cell))
+        view.set_reorderable(True)
+        self.assertIsInstance(view._add_reorder_controllers(cell),
+                              Gtk.DragSource)
+        self.assertLessEqual({Gtk.DragSource, Gtk.DropTarget},
+                             self._controllers(cell))
+
+    def test_a_drag_from_one_cell_dropped_on_another_moves_the_first(self):
+        view = _Reorderable()
+        # PyGObject reads no value back out of a Gdk.ContentProvider,
+        # so the one it is made from is what is read.
+        with unittest.mock.patch.object(
+                Gdk.ContentProvider, 'new_for_value',
+                side_effect=lambda value: value):
+            value = view._reorder_prepare(None, 0.0, 0.0, self._cell(3))
+        self.assertEqual('application/x-mcomix-test-position:3', value)
+        self.assertTrue(
+            view._reorder_drop(None, value, 0.0, 0.0, self._cell(1)))
+        self.assertEqual([(3, 1)], view.moved)
+
+    def test_a_drop_of_anything_else_moves_nothing(self):
+        view = _Reorderable()
+        for value in ('text/plain:0',
+                      'application/x-mcomix-test-position:nowhere', 7):
+            with self.subTest(value=value):
+                self.assertFalse(
+                    view._reorder_drop(None, value, 0.0, 0.0, self._cell(1)))
+        self.assertEqual([], view.moved)
 
 
 class MenuClickTest(MComixTest):
