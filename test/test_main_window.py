@@ -21,7 +21,7 @@ import warnings
 from gi.repository import Gdk, GdkPixbuf, Gio, GLib, Gtk
 
 from . import (MComixTest, MainWindowLaterTest, NORMAL_ZIP, children,
-               descendants, fresh_bookmarks_store, get_testfile_path,
+               close_a_main_window, descendants, fresh_bookmarks_store, get_testfile_path,
                hold_open, prompts_over, pump, sample_pages, wait_for,
                windows_refusal)
 
@@ -6264,15 +6264,8 @@ class ResumeAfterSaveAndQuitTest(MComixTest):
     def _window(self, path=None):
         window = main.MainWindow(open_path=path)
         main.set_main_window(window)
-        self.addCleanup(self._close, window)
+        self.addCleanup(close_a_main_window, window)
         return window
-
-    @staticmethod
-    def _close(window):
-        window.terminate_program()
-        window.destroy()
-        main.set_main_window(None)
-        pump()
 
     @staticmethod
     def _where(window):
@@ -6291,7 +6284,7 @@ class ResumeAfterSaveAndQuitTest(MComixTest):
         # What save_and_terminate_program() leaves, less the quit.
         prefs['previous quit was quit and save'] = True
         window.write_config_files()
-        self._close(window)
+        close_a_main_window(window)
 
         again = self._window()
         self.assertTrue(wait_for(
@@ -6315,7 +6308,7 @@ class ResumeAfterSaveAndQuitTest(MComixTest):
         self.assertTrue(wait_for(
             lambda: window.imagehandler.get_number_of_pages() > 0))
         window.write_config_files()
-        self._close(window)
+        close_a_main_window(window)
         again = self._window()
         pump()
         self.assertFalse(again.filehandler.file_loaded)

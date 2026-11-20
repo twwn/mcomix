@@ -14,7 +14,7 @@ from unittest import mock
 
 from gi.repository import Gtk
 
-from . import MComixTest, NORMAL_ZIP, pump, wait_for
+from . import MComixTest, NORMAL_ZIP, close_a_main_window, pump, wait_for
 from .test_dialog_freed import _holders
 
 from mcomix import icons
@@ -83,10 +83,7 @@ class MainWindowFreedTest(MComixTest):
             window = main.MainWindow()
         main.set_main_window(window)
         pump()
-        window.terminate_program()
-        window.destroy()
-        main.set_main_window(None)
-        pump()
+        close_a_main_window(window)
         self.assertEqual(finalized, [], 'the title bar went before its window')
         del window
         gc.collect()

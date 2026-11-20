@@ -41,7 +41,7 @@ Class or helper | For
 `MComixTest` | Every test: a temporary home, preferences reset. `self.extracted(archive, name)` reads a member as the archive extracts it.
 `MainWindowOpenTest` | A test with the main window open and no book.
 `MainWindowLaterTest` | A test that opens the main window itself, if at all; it is closed afterwards.
-`open_main_window()`, `close_main_window()` | The main window as MComix opens and quits it.
+`open_main_window()`, `close_main_window()` | The main window as MComix opens and quits it; `close_a_main_window(window)` quits one the test built itself.
 `open_main_window_on_a_book()` | The main window opened on a four-page ZIP, once its pages are listed.
 `self.window_holding(child, size)` | A window of the test's own holding a widget, on screen, destroyed after the test.
 `self.make_user_directories()` | The configuration, data and thumbnail folders, which `setUp()` names but does not make.

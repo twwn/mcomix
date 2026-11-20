@@ -18,7 +18,7 @@ from gi.repository import Gtk
 from PIL import Image
 
 from . import (MComixTest, MainWindowLaterTest, MainWindowOpenTest, NORMAL_ZIP,
-               get_testfile_path, prompts_over, pump, wait_for)
+               close_a_main_window, get_testfile_path, prompts_over, pump, wait_for)
 
 from mcomix import archive_extractor
 from mcomix import constants
@@ -608,10 +608,7 @@ class ResumedWindowTest(MComixTest):
                 != self.books['a'], seconds=20))
             return os.path.basename(handler.get_path_to_base())
         finally:
-            window.terminate_program()
-            window.destroy()
-            main.set_main_window(None)
-            pump()
+            close_a_main_window(window)
 
     def test_the_next_session_walks_the_books_shown(self):
         self.assertEqual('c.cbz', self._next_after_a(resumed=True))

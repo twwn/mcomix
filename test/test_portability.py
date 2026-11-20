@@ -7,7 +7,7 @@ import unittest.mock
 
 from gi.repository import Gio, GLib
 
-from . import MComixTest, pump
+from . import MComixTest, close_a_main_window
 
 from mcomix import constants
 from mcomix import portability
@@ -304,17 +304,10 @@ class DescribeDesktopTest(MComixTest):
         with self.assertLogs('mcomix', 'INFO') as logs:
             window = main.MainWindow()
             main.set_main_window(window)
-            self.addCleanup(self._close, window)
+            self.addCleanup(close_a_main_window, window)
         expected = 'Desktop: ' + portability.describe_desktop(
             type(window.get_display()).__name__)
         self.assertTrue(any(line.endswith(expected) for line in logs.output),
                         logs.output)
-
-    @staticmethod
-    def _close(window):
-        window.terminate_program()
-        window.destroy()
-        main.set_main_window(None)
-        pump()
 
 # vim: expandtab:sw=4:ts=4

@@ -181,6 +181,17 @@ class PumpNeverIdle(UserWarning):
     """
 
 
+def close_a_main_window(window, rounds=4000):
+    """Close <window>, a main window, as MComix does when it quits, and
+    let what that queued run, for up to <rounds> rounds of the main
+    loop."""
+    from mcomix import main
+    window.terminate_program()
+    window.destroy()
+    main.set_main_window(None)
+    pump(rounds)
+
+
 def pump(rounds=4000, seconds=1.0):
     """Let the main loop run through whatever is pending.
 
@@ -881,11 +892,7 @@ class MComixTest(unittest.TestCase):
         threads, which are not daemons, and which destroying the window
         alone leaves waiting.
         """
-        from mcomix import main
-        self.window.terminate_program()
-        self.window.destroy()
-        main.set_main_window(None)
-        pump(rounds)
+        close_a_main_window(self.window, rounds)
 
     def _no_window_left_on_screen(self):
         """Fail the test that leaves a window up, rather than a later one.
