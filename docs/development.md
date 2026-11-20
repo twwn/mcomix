@@ -73,6 +73,7 @@ Before moving a method out of a class, check no subclass overrides it.
 Imports go at the top of the test module. One inside a test needs a reason: an optional library, or a module whose import the test watches.
 Undo what a test changes with `mock.patch`, `self.enterContext()` or `self.addCleanup()`, not by hand in a `finally`.
 Name each case of a loop with `self.subTest()`, not with a failure message built by hand.
+A search or filter a test types is matched against paths too, and `self.tmp_dir` ends in random letters, digits and underscores: give each word a dash, which the folder's name cannot hold.
 The CI also runs the tests on Windows and with the oldest supported libraries. Do not assume animations are on, that a key types what its name says, or that PyGObject hands back render nodes: wait for the size, check the keymap, or skip there.
 
 Waiting:
