@@ -1539,16 +1539,11 @@ class _AreaOnScreenTest(MComixTest):
     own; its menu, the area and the window are closed after the test."""
 
     def _present(self, size=None):
-        self.window = Gtk.Window()
-        if size is not None:
-            self.window.set_default_size(*size)
-        self.window.set_child(self.area)
-        self.window.present()
+        self.window = self.window_holding(self.area, size)
 
     def tearDown(self):
         self.area._book_menu.popdown()
         self.area.close()
-        self.window.destroy()
         super().tearDown()
 
 

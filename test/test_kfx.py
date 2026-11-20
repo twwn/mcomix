@@ -644,9 +644,7 @@ class KfxBookTest(_WindowTest):
         with open(path, 'wb') as fp:
             fp.write(Book().comic(picture(), picture()).container())
         self.assertTrue(self.handler.open_file(path))
-        self.assertTrue(wait_for(
-            lambda: self.window.imagehandler.get_number_of_pages() == 2,
-            seconds=20))
+        self.wait_for_pages(2)
         self.assertEqual(constants.KFX, self.handler.archive_type)
 
     def test_a_book_read_right_to_left_opens_in_manga_mode(self):

@@ -867,6 +867,22 @@ class MainWindowTest(MComixTest):
         return unittest.mock.patch.object(self.window.file_actions,
                                           'offer_to_save')
 
+    def _remove_first_page_quietly(self):
+        """Pick out the first page and remove it, with no prompt to
+        save."""
+        self.window.select_page(1)
+        with self._quietly():
+            self.window.file_actions.delete_page()
+        self._pump()
+
+    def _remove_second_page(self):
+        """Once the book is listed, pick out page 2 and remove it, and
+        let the prompt that offers to save come up."""
+        self._ready()
+        self.window.select_page(2)
+        self.window.file_actions.delete_page()
+        self._pump()
+
     def _swap_the_first_two(self):
         """Swap pages 1 and 2, with no prompt to save."""
         with self._quietly():
@@ -2723,9 +2739,7 @@ class MainWindowTest(MComixTest):
             shutil.copy(get_testfile_path('images', '03-PNG-RGB.png'), path)
             paths.append(path)
         self.window.filehandler.open_file(paths[0])
-        self.assertTrue(wait_for(
-            lambda: self.window.imagehandler.get_number_of_pages() == count,
-            seconds=20))
+        self.wait_for_pages(count)
         self._pump()
         return paths
 
@@ -2737,9 +2751,7 @@ class MainWindowTest(MComixTest):
         self.window.set_page(2)
         self._pump()
         self.window.file_actions._delete_answered(Response.OK, paths[1])
-        self.assertTrue(wait_for(
-            lambda: self.window.imagehandler.get_number_of_pages() == 3,
-            seconds=20))
+        self.wait_for_pages(3)
         self._pump()
         self.assertFalse(os.path.exists(paths[1]))
         self.assertEqual(paths[2], self._shown())
@@ -2749,9 +2761,7 @@ class MainWindowTest(MComixTest):
         self.window.set_page(3)
         self._pump()
         self.window.file_actions._delete_answered(Response.OK, paths[2])
-        self.assertTrue(wait_for(
-            lambda: self.window.imagehandler.get_number_of_pages() == 2,
-            seconds=20))
+        self.wait_for_pages(2)
         self._pump()
         self.assertFalse(os.path.exists(paths[2]))
         self.assertEqual(paths[1], self._shown())
@@ -2771,10 +2781,7 @@ class MainWindowTest(MComixTest):
                 .SAVE_EDITED_ARCHIVE]
 
     def test_removing_a_page_asks_whether_to_write_the_archive_again(self):
-        self._ready()
-        self.window.select_page(2)
-        self.window.file_actions.delete_page()
-        self._pump()
+        self._remove_second_page()
         try:
             self.assertEqual(len(self._save_prompts()), 1,
                              'nothing offered to save the archive')
@@ -2785,10 +2792,7 @@ class MainWindowTest(MComixTest):
 
     def test_the_prompt_defaults_to_leaving_the_archive_alone(self):
         """Enter must not overwrite an archive."""
-        self._ready()
-        self.window.select_page(2)
-        self.window.file_actions.delete_page()
-        self._pump()
+        self._remove_second_page()
         try:
             prompt = self._save_prompts()[0]
             self.assertIs(prompt.get_default_widget(),
@@ -2802,10 +2806,7 @@ class MainWindowTest(MComixTest):
         """Remove a page, answer the prompt with <response>, and say
         whether the archive would have been written.  The book is the
         fixture itself, so the writing is not let through."""
-        self._ready()
-        self.window.select_page(2)
-        self.window.file_actions.delete_page()
-        self._pump()
+        self._remove_second_page()
         prompts = self._save_prompts()
         self.assertEqual(1, len(prompts), 'nothing offered to save')
         with unittest.mock.patch.object(self.window.file_actions,
@@ -2982,10 +2983,7 @@ class MainWindowTest(MComixTest):
         before = self.window.imagehandler.get_number_of_pages()
         mode = os.stat(source).st_mode
 
-        self.window.select_page(1)
-        with self._quietly():
-            self.window.file_actions.delete_page()
-        self._pump()
+        self._remove_first_page_quietly()
         self.assertTrue(self.window.file_actions.save_archive(), 'the save failed')
 
         with zipfile.ZipFile(source) as written:
@@ -3006,10 +3004,7 @@ class MainWindowTest(MComixTest):
         had just written one that did not hold the changes."""
         self._open_a_copy()
         actions = self.window.file_actions
-        self.window.select_page(1)
-        with self._quietly():
-            actions.delete_page()
-        self._pump()
+        self._remove_first_page_quietly()
         self.assertTrue(actions.has_unsaved_changes())
         self.assertTrue(actions.save_archive(), 'the save failed')
         self.assertFalse(actions.has_unsaved_changes(),
@@ -3033,10 +3028,7 @@ class MainWindowTest(MComixTest):
         """A copied book with a page removed, and its archive written
         meanwhile by another program, which added a page."""
         source = self._open_a_copy()
-        self.window.select_page(1)
-        with self._quietly():
-            self.window.file_actions.delete_page()
-        self._pump()
+        self._remove_first_page_quietly()
         with zipfile.ZipFile(source, 'a') as archive:
             archive.writestr('zz-added.png', b'not read')
         return source
@@ -3124,10 +3116,7 @@ class MainWindowTest(MComixTest):
         handler = self.window.filehandler
         handler.open_file(books[2])
         self._ready()
-        self.window.select_page(1)
-        with self._quietly():
-            self.window.file_actions.delete_page()
-        self._pump()
+        self._remove_first_page_quietly()
         self.assertTrue(self.window.file_actions.save_archive())
         self.assertEqual((2, 4), handler.get_file_number())
         self.assertTrue(handler.open_next_archive())
@@ -3148,10 +3137,7 @@ class MainWindowTest(MComixTest):
         the archive open for as long as the book was: saving there failed
         with "Access is denied"."""
         self._open_a_copy()
-        self.window.select_page(1)
-        with self._quietly():
-            self.window.file_actions.delete_page()
-        self._pump()
+        self._remove_first_page_quietly()
         replace = os.replace
         held = []
 
@@ -4861,9 +4847,7 @@ class MainWindowTest(MComixTest):
                         os.path.join(directory, '%d.png' % number))
         self.window.filehandler.open_file(
             os.path.join(directory, '0.png'))
-        self.assertTrue(wait_for(
-            lambda: self.window.imagehandler.get_number_of_pages() == 3,
-            seconds=20))
+        self.wait_for_pages(3)
 
         self.assertEqual(self.window.file_actions.rename_page(1, 'Cover.png'),
                          'Cover.png')
@@ -4881,9 +4865,7 @@ class MainWindowTest(MComixTest):
                         os.path.join(directory, '%d.png' % number))
         self.window.filehandler.open_file(
             os.path.join(directory, '0.png'))
-        self.assertTrue(wait_for(
-            lambda: self.window.imagehandler.get_number_of_pages() == 3,
-            seconds=20))
+        self.wait_for_pages(3)
 
         self.assertIsNone(self.window.file_actions.rename_page(1, '1.png'))
         self._pump()

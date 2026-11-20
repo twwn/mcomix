@@ -11,7 +11,7 @@ import unittest
 import gi
 from gi.repository import Gdk, Gsk, Gtk
 
-from . import MComixTest, pump, wait_for
+from . import MComixTest, wait_for
 
 from mcomix import constants
 from mcomix import status
@@ -160,11 +160,7 @@ class StatusbarHeightTest(MComixTest):
         page area above it moved, and the page was scaled again, at every
         file whose name was in another script (upstream bug 148)."""
         bar = status.Statusbar()
-        window = Gtk.Window()
-        window.set_child(bar)
-        self.addCleanup(window.destroy)
-        window.present()
-        pump()
+        self.window_holding(bar)
         heights = set()
         for name in ('Volume 01 - page 003.jpg',
                      '\u9032\u6483\u306e\u5de8\u4eba 003.jpg',

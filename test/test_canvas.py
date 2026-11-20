@@ -25,15 +25,7 @@ class PageCanvasTest(MComixTest):
             picture.set_paintable(texture)
             picture.set_can_shrink(False)
             self.children.append(picture)
-        self.window = Gtk.Window()
-        self.window.set_child(self.canvas)
-        self.window.present()
-        pump()
-
-    def tearDown(self):
-        self.window.destroy()
-        pump()
-        super().tearDown()
+        self.window = self.window_holding(self.canvas)
 
     def _settle(self):
         # A queued allocation is run from the frame clock, so give it

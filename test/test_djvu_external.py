@@ -7,7 +7,7 @@ import unittest
 
 from PIL import Image
 
-from . import MComixTest, wait_for
+from . import MComixTest
 from .test_file_handler import _WindowTest
 
 from mcomix import archive_tools
@@ -93,9 +93,7 @@ class DjvuBookTest(_WindowTest):
     def test_it_opens_as_a_book_of_its_pages(self):
         path = _write_djvu(self.tmp_dir)
         self.assertTrue(self.handler.open_file(path))
-        self.assertTrue(wait_for(
-            lambda: self.window.imagehandler.get_number_of_pages() == 2,
-            seconds=20))
+        self.wait_for_pages(2)
         self.assertEqual(constants.DJVU, self.handler.archive_type)
 
 

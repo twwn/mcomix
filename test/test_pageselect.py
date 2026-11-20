@@ -204,9 +204,7 @@ class ChapterTest(_WindowTest):
         self.make_user_directories()
         icons.load_icons()
         self.open_main_window(open_path=path)
-        self.assertTrue(wait_for(
-            lambda: self.window.imagehandler.get_number_of_pages() == 4,
-            seconds=20))
+        self.wait_for_pages(4)
         self.assertTrue(wait_for(
             lambda: all(self.window.filehandler.file_is_available(member)
                         for member in self.window.filehandler.get_member_names()),

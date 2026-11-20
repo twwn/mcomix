@@ -1554,15 +1554,20 @@ def _stored_rar(path, members):
 @unittest.skipUnless(rar.RarArchive.is_available(), 'libunrar is not here')
 class RarLibraryMemberNameTest(MComixTest):
 
-    def test_a_name_cannot_write_outside_the_destination(self):
+    def _opened(self, members):
+        """A RAR of <members>, as _stored_rar() takes them, opened by
+        libunrar; its handler and the names that lists."""
         book = os.path.join(self.tmp_dir, 'book.rar')
-        _stored_rar(book, [('../../escaped.txt', b'out'),
-                           ('page.jpg', b'in')])
-        destination = os.path.join(self.tmp_dir, 'a', 'b', 'destination')
-        os.makedirs(destination)
+        _stored_rar(book, members)
         handler = rar.RarArchive(book)
         self.addCleanup(handler.close)
-        names = list(handler.iter_contents())
+        return handler, list(handler.iter_contents())
+
+    def test_a_name_cannot_write_outside_the_destination(self):
+        handler, names = self._opened([('../../escaped.txt', b'out'),
+                                       ('page.jpg', b'in')])
+        destination = os.path.join(self.tmp_dir, 'a', 'b', 'destination')
+        os.makedirs(destination)
         self.assertEqual(['escaped.txt', 'page.jpg'], names)
         for name in names:
             handler.extract(name, destination)
@@ -1574,11 +1579,8 @@ class RarLibraryMemberNameTest(MComixTest):
     def _refused(self, free):
         """What extracting a page raises when libunrar answers "Write
         error" and the folder has <free> bytes left."""
-        book = os.path.join(self.tmp_dir, 'book.rar')
-        _stored_rar(book, [('page.jpg', b'a picture')])
-        handler = rar.RarArchive(book)
-        self.addCleanup(handler.close)
-        self.assertEqual(['page.jpg'], list(handler.iter_contents()))
+        handler, names = self._opened([('page.jpg', b'a picture')])
+        self.assertEqual(['page.jpg'], names)
         real = handler._unrar.RARProcessFileW
 
         def process(handle, mode, path, name):
@@ -1619,14 +1621,10 @@ class RarLibraryMemberNameTest(MComixTest):
         return pictures
 
     def test_two_members_of_one_listed_name_each_keep_their_picture(self):
-        book = os.path.join(self.tmp_dir, 'book.rar')
-        _stored_rar(book, [('a.jpg', b'first'),
-                           ('../a.jpg', b'second'),
-                           ('a.jpg', b'third'),
-                           ('b.jpg', b'fourth')])
-        handler = rar.RarArchive(book)
-        self.addCleanup(handler.close)
-        names = list(handler.iter_contents())
+        handler, names = self._opened([('a.jpg', b'first'),
+                                       ('../a.jpg', b'second'),
+                                       ('a.jpg', b'third'),
+                                       ('b.jpg', b'fourth')])
         self.assertEqual(['a.jpg', 'a~2.jpg', 'a~3.jpg', 'b.jpg'], names)
         expected = {'a.jpg': b'first', 'a~2.jpg': b'second',
                     'a~3.jpg': b'third', 'b.jpg': b'fourth'}
@@ -1637,35 +1635,24 @@ class RarLibraryMemberNameTest(MComixTest):
         self.assertEqual(names, list(handler.iter_contents()))
 
     def test_names_that_differ_only_in_case_each_keep_their_picture(self):
-        book = os.path.join(self.tmp_dir, 'book.rar')
-        _stored_rar(book, [('Page1.jpg', b'upper'), ('page1.jpg', b'lower')])
         with unittest.mock.patch.object(archive_base, '_CASE_BLIND', True):
-            handler = rar.RarArchive(book)
-            self.addCleanup(handler.close)
-            names = list(handler.iter_contents())
+            handler, names = self._opened([('Page1.jpg', b'upper'),
+                                           ('page1.jpg', b'lower')])
             self.assertEqual(['Page1.jpg', 'page1~2.jpg'], names)
             self.assertEqual({'Page1.jpg': b'upper', 'page1~2.jpg': b'lower'},
                              self._extracted(names, handler))
 
     def test_a_later_member_keeps_a_name_the_earlier_ones_left_free(self):
-        book = os.path.join(self.tmp_dir, 'book.rar')
-        _stored_rar(book, [('a.jpg', b'first'),
-                           ('a.jpg', b'second'),
-                           ('a~2.jpg', b'third')])
-        handler = rar.RarArchive(book)
-        self.addCleanup(handler.close)
-        names = list(handler.iter_contents())
+        handler, names = self._opened([('a.jpg', b'first'),
+                                       ('a.jpg', b'second'),
+                                       ('a~2.jpg', b'third')])
         self.assertEqual(3, len(set(names)))
         self.assertEqual({b'first', b'second', b'third'},
                          set(self._extracted(names, handler).values()))
 
     def test_the_rest_of_a_member_from_a_volume_before_takes_no_name(self):
-        book = os.path.join(self.tmp_dir, 'book.rar')
-        _stored_rar(book, [('a.jpg', b'rest', 0x8001),
-                           ('a.jpg', b'whole')])
-        handler = rar.RarArchive(book)
-        self.addCleanup(handler.close)
-        names = list(handler.iter_contents())
+        handler, names = self._opened([('a.jpg', b'rest', 0x8001),
+                                       ('a.jpg', b'whole')])
         self.assertEqual(['a.jpg'], names)
         self.assertEqual({'a.jpg': b'whole'}, self._extracted(names, handler))
 

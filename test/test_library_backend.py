@@ -485,16 +485,21 @@ class UpgradeFromEveryVersionTest(LibraryDatabaseTest):
                 self.assertIn('member', columns)
                 self._done(library)
 
+    def _reopened_by_an_older_mcomix(self, library, version):
+        """Write <version> over the library's own, as an older MComix
+        that opened the file does, close it, and open it again."""
+        library._con.execute(
+            "update info set value = '%d' where key = 'version'" % version)
+        self._done(library)
+        backend._backend = None
+        return backend.LibraryBackend()
+
     def test_a_file_an_older_mcomix_opened_again_is_upgraded_again(self):
         """An older MComix writes its own version over a newer one it
         opens, and leaves the column there: the step finds it and does
         not add it a second time, which sqlite refuses."""
         library = self._upgraded(9)
-        library._con.execute(
-            "update info set value = '9' where key = 'version'")
-        self._done(library)
-        backend._backend = None
-        library = backend.LibraryBackend()
+        library = self._reopened_by_an_older_mcomix(library, 9)
         held = library._con.execute(
             "select value from info where key = 'version'").fetchone()
         self.assertEqual(int(held), backend._LibraryBackend.DB_VERSION)
@@ -511,11 +516,7 @@ class UpgradeFromEveryVersionTest(LibraryDatabaseTest):
                     'pragma table_info(book)').fetchall()]
                 self.assertEqual(1, columns.count('cover'))
                 self.assertTrue(library.set_chosen_cover(_A_BOOK, 'p02.jpg'))
-                library._con.execute(
-                    "update info set value = '10' where key = 'version'")
-                self._done(library)
-                backend._backend = None
-                library = backend.LibraryBackend()
+                library = self._reopened_by_an_older_mcomix(library, 10)
                 self.assertEqual('p02.jpg', library.get_chosen_cover(_A_BOOK))
                 self._done(library)
 
@@ -531,11 +532,7 @@ class UpgradeFromEveryVersionTest(LibraryDatabaseTest):
                 self.assertEqual(1, columns.count('position'))
                 self.assertEqual({}, library.get_book_positions(1))
                 library.set_collection_order(1, [1])
-                library._con.execute(
-                    "update info set value = '11' where key = 'version'")
-                self._done(library)
-                backend._backend = None
-                library = backend.LibraryBackend()
+                library = self._reopened_by_an_older_mcomix(library, 11)
                 self.assertEqual({1: 0}, library.get_book_positions(1))
                 self._done(library)
 

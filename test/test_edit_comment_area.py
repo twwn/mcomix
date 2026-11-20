@@ -9,7 +9,7 @@ archive reads them back out of it in the order they are shown.
 import os
 import unittest.mock
 
-from gi.repository import Gdk, GLib, Gtk
+from gi.repository import Gdk, GLib
 
 from . import MComixTest, pump, wait_for
 
@@ -83,18 +83,7 @@ class CommentAreaTest(MComixTest):
         self.main_window.filehandler.file_available = self.file_available
         self.area = edit_comment_area._CommentArea(self.dialog,
                                                    self.main_window)
-        self.window = Gtk.Window()
-        self.window.set_default_size(400, 300)
-        self.window.set_child(self.area)
-        self.window.present()
-        pump()
-
-    def tearDown(self):
-        # A window left on screen is answered by whatever looks for one
-        # next.
-        self.window.destroy()
-        pump()
-        super().tearDown()
+        self.window = self.window_holding(self.area, (400, 300))
 
     def test_fetching_the_comments_lists_every_one_of_them(self):
         self.area.fetch_comments()

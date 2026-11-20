@@ -571,8 +571,7 @@ class FileChooserTest(MainWindowOpenTest):
         self._select(folder)
         self.dialog.response(Response.OK)
         handler = self.window.filehandler
-        self.assertTrue(wait_for(
-            lambda: self.window.imagehandler.get_number_of_pages() == 2))
+        self.wait_for_pages(2)
         self.assertTrue(handler.open_next_directory())
         self.assertTrue(wait_for(
             lambda: self.window.imagehandler.get_image_files()

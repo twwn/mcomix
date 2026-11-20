@@ -357,9 +357,7 @@ class EpubBookTest(_WindowTest):
         path = Book().page('p1', 'a.png').page('p2', 'b.png').write(
             os.path.join(self.tmp_dir, 'book.epub'))
         self.assertTrue(self.handler.open_file(path))
-        self.assertTrue(wait_for(
-            lambda: self.window.imagehandler.get_number_of_pages() == 2,
-            seconds=20))
+        self.wait_for_pages(2)
         self.assertEqual(constants.EPUB, self.handler.archive_type)
 
     def test_a_book_read_right_to_left_opens_in_manga_mode(self):

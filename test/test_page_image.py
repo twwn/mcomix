@@ -4,7 +4,7 @@ import threading
 import time
 import unittest.mock
 
-from gi.repository import Gdk, GdkPixbuf, Gtk
+from gi.repository import Gdk, GdkPixbuf
 from PIL import Image
 
 from . import MComixTest, get_testfile_path, pump, wait_for
@@ -40,10 +40,7 @@ class PageImageTest(MComixTest):
     def setUp(self):
         super().setUp()
         self.image = PageImage()
-        self.window = Gtk.Window()
-        self.window.set_child(self.image)
-        self.window.present()
-        pump()
+        self.window = self.window_holding(self.image)
 
     def tearDown(self):
         # An animation is decoded in a thread of its own which runs until
@@ -51,8 +48,6 @@ class PageImageTest(MComixTest):
         # neither: a test that leaves one animating leaves its thread
         # decoding for the rest of the suite.
         self.image.clear()
-        self.window.destroy()
-        pump()
         super().tearDown()
 
     def test_a_page_is_drawn_at_its_own_size(self):

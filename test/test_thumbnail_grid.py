@@ -30,11 +30,7 @@ class ThumbnailGridViewTest(MComixTest):
         self.view.set_thumbnail_size(48)
         self.scroller = Gtk.ScrolledWindow()
         self.scroller.set_child(self.view)
-        self.window = Gtk.Window()
-        self.window.set_default_size(400, 400)
-        self.window.set_child(self.scroller)
-        self.window.present()
-        pump()
+        self.window = self.window_holding(self.scroller, (400, 400))
         self.view.set_items(
             thumbnail_list.ThumbnailItem(name, tooltip=name)
             for name in self.NAMES)
@@ -42,10 +38,6 @@ class ThumbnailGridViewTest(MComixTest):
 
     def tearDown(self):
         self.view.stop_update()
-        # A window left on screen is answered by whatever looks for one
-        # next.
-        self.window.destroy()
-        pump()
         super().tearDown()
 
     def _generate(self, uid):

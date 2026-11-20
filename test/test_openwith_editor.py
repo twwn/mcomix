@@ -10,26 +10,14 @@ from unittest import mock
 
 from gi.repository import Gdk, Gtk
 
-from . import MComixTest, descendants, pump, wait_for, wait_frames
+from . import (MComixTest, StubFileHandler, descendants, pump, wait_for,
+               wait_frames)
 
 from mcomix import callback
 from mcomix import column_list
 from mcomix import openwith
 from mcomix.dialog import Response
 from mcomix.preferences import prefs
-
-
-class _StubFileHandler:
-
-    file_loaded = False
-
-    @callback.Callback
-    def file_opened(self):
-        pass
-
-    @callback.Callback
-    def file_closed(self):
-        pass
 
 
 class _StubImageHandler:
@@ -42,7 +30,7 @@ class _StubWindow(Gtk.Window):
 
     def __init__(self):
         super().__init__()
-        self.filehandler = _StubFileHandler()
+        self.filehandler = StubFileHandler()
         # Selecting a command tests it, which reads the page on screen.
         self.imagehandler = _StubImageHandler()
 

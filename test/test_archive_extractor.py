@@ -47,6 +47,16 @@ class _ExtractorTest(MComixTest):
         self.extractor.close()
         super().tearDown()
 
+    def _extract(self, names):
+        """Extract <names> and wait until each is marked ready."""
+        self.extractor.set_files(names)
+        self.extractor.extract()
+        self.assertTrue(
+            wait_for(lambda: all(self.extractor.is_ready(name)
+                                 for name in names), seconds=20),
+            'never marked: %s' % [name for name in names
+                                  if not self.extractor.is_ready(name)])
+
 
 class ExtractorSetupTest(_ExtractorTest):
 
@@ -107,14 +117,6 @@ class ExtractorSetupTest(_ExtractorTest):
 
 
 class ExtractionTest(_ExtractorTest):
-
-    def _extract(self, names):
-        self.extractor.set_files(names)
-        self.extractor.extract()
-        self.assertTrue(
-            wait_for(lambda: all(self.extractor.is_ready(name)
-                                 for name in names), seconds=20),
-            'the files asked for never landed')
 
     def test_every_file_asked_for_lands_on_disk(self):
         self._extract(list(self.MEMBERS))
@@ -324,14 +326,8 @@ class FailedBatchTest(_ExtractorTest):
 
     def test_the_files_after_the_one_it_stopped_at_are_not_waited_for(self):
         names = sorted(self.MEMBERS)
-        self.extractor.set_files(names)
         with unittest.mock.patch.object(log, 'error') as error:
-            self.extractor.extract()
-            self.assertTrue(
-                wait_for(lambda: all(self.extractor.is_ready(name)
-                                     for name in names), seconds=5),
-                'never marked: %s' % [name for name in names
-                                      if not self.extractor.is_ready(name)])
+            self._extract(names)
         error.assert_called()
         self.assertTrue(os.path.isfile(os.path.join(self.destination, names[0])))
         self.assertFalse(os.path.exists(os.path.join(self.destination, names[1])))
@@ -378,12 +374,8 @@ class NoRoomTest(_ExtractorTest):
         self.extractor._archive = self._Refuses(
             self.extractor._archive, code, solid)
         names = sorted(self.MEMBERS)
-        self.extractor.set_files(names)
         with unittest.mock.patch.object(log, 'error'):
-            self.extractor.extract()
-            self.assertTrue(
-                wait_for(lambda: all(self.extractor.is_ready(name)
-                                     for name in names), seconds=5))
+            self._extract(names)
             # The answer comes back through the idle queue, put there
             # before the page it is about was marked done.
             pump()
@@ -430,13 +422,7 @@ class ShortBatchTest(_ExtractorTest):
 
     def test_a_file_the_pass_left_out_is_not_waited_for(self):
         names = sorted(self.MEMBERS)
-        self.extractor.set_files(names)
         with unittest.mock.patch.object(log, 'warning') as warning:
-            self.extractor.extract()
-            self.assertTrue(
-                wait_for(lambda: all(self.extractor.is_ready(name)
-                                     for name in names), seconds=5),
-                'never marked: %s' % [name for name in names
-                                      if not self.extractor.is_ready(name)])
+            self._extract(names)
         warning.assert_called_once()
         self.assertIn(names[0], warning.call_args.args[1])

@@ -7,30 +7,16 @@ import unittest
 
 from gi.repository import GLib, Gtk
 
-from . import MComixTest, posix_byte_names, pump, simple_file_chooser, wait_for
+from . import (MComixTest, StubFileHandler, posix_byte_names, pump,
+               simple_file_chooser, wait_for)
 
 from mcomix import bookmark_backend
-from mcomix import callback
 from mcomix import constants
 from mcomix import file_chooser_simple_dialog
 from mcomix import move_menu
 from mcomix import widgets
 from mcomix.dialog import Response
 from mcomix.preferences import prefs
-
-
-class _StubFileHandler:
-
-    file_loaded = True
-    archive_type = None
-
-    @callback.Callback
-    def file_opened(self):
-        pass
-
-    @callback.Callback
-    def file_closed(self):
-        pass
 
 
 class _StubImageHandler:
@@ -67,7 +53,8 @@ class _StubWindow(Gtk.Window):
 
     def __init__(self):
         super().__init__()
-        self.filehandler = _StubFileHandler()
+        self.filehandler = StubFileHandler()
+        self.filehandler.file_loaded = True
         self.imagehandler = _StubImageHandler()
         self.file_actions = _StubFileActions()
 

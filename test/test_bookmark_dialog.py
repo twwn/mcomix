@@ -13,6 +13,7 @@ from unittest import mock
 from gi.repository import Gdk, GLib, Gtk
 
 from . import MComixTest, keep_focus_within, pump
+from .test_bookmark_menu import _StubWindow
 
 from mcomix import bookmark_backend
 from mcomix import bookmark_dialog
@@ -22,39 +23,6 @@ from mcomix import tools
 from mcomix import message_dialog
 from mcomix.dialog import Response
 from mcomix.preferences import prefs
-
-
-class _StubImageHandler:
-
-    def get_image_files(self):
-        return []
-
-
-class _StubFileHandler:
-
-    archive_type = None
-
-    def get_path_to_base(self):
-        return None
-
-    def __init__(self):
-        self.opened = []
-
-    def open_file(self, path, page=1, start_member=None):
-        self.opened.append((path, page))
-        return True
-
-
-class _StubWindow(Gtk.Window):
-
-    def __init__(self):
-        super().__init__()
-        self.filehandler = _StubFileHandler()
-        self.imagehandler = _StubImageHandler()
-        self.pages = []
-
-    def set_page(self, page):
-        self.pages.append(page)
 
 
 class BookmarksDialogTest(MComixTest):
@@ -229,10 +197,7 @@ class BookmarksDialogTest(MComixTest):
 
     def test_remove_goes_insensitive_again_when_the_list_empties(self):
         self.dialog._list.select_only(0)
-        self.dialog.response(constants.RESPONSE_CLEAR)
-        pump()
-        self._dialogs()[0].response(Response.YES)
-        pump()
+        self._clear(Response.YES)
         self.assertFalse(self._remove_button().get_sensitive())
 
     def test_removing_with_nothing_selected_removes_nothing(self):
@@ -240,19 +205,19 @@ class BookmarksDialogTest(MComixTest):
         self.dialog._remove_selected()
         self.assertEqual(self._names(), ['gamma', 'beta', 'alpha'])
 
-    def test_delete_removes_the_selected_bookmark(self):
+    def _assert_the_key_removes_beta(self, key):
+        """<key> on the list, with beta selected, is handled and takes
+        beta out."""
         self.dialog._list.select_only(1)
         self.assertEqual(
-            self.dialog._key_press_event(None, Gdk.KEY_Delete, 0, 0),
-            Gdk.EVENT_STOP)
+            self.dialog._key_press_event(None, key, 0, 0), Gdk.EVENT_STOP)
         self.assertEqual(self._names(), ['gamma', 'alpha'])
 
+    def test_delete_removes_the_selected_bookmark(self):
+        self._assert_the_key_removes_beta(Gdk.KEY_Delete)
+
     def test_the_keypad_delete_removes_it_too(self):
-        self.dialog._list.select_only(1)
-        self.assertEqual(
-            self.dialog._key_press_event(None, Gdk.KEY_KP_Delete, 0, 0),
-            Gdk.EVENT_STOP)
-        self.assertEqual(self._names(), ['gamma', 'alpha'])
+        self._assert_the_key_removes_beta(Gdk.KEY_KP_Delete)
 
     # -- Opening ----------------------------------------------------------
 
@@ -261,6 +226,13 @@ class BookmarksDialogTest(MComixTest):
         return [window for window in Gtk.Window.list_toplevels()
                 if isinstance(window, message_dialog.MessageDialog)
                 and window.get_visible()]
+
+    def _clear(self, answer):
+        """Press Clear and give <answer> to the question it asks."""
+        self.dialog.response(constants.RESPONSE_CLEAR)
+        pump()
+        self._dialogs()[0].response(answer)
+        pump()
 
     def test_clearing_asks_before_it_removes_anything(self):
         self.dialog.response(constants.RESPONSE_CLEAR)
@@ -272,10 +244,7 @@ class BookmarksDialogTest(MComixTest):
         """The rows have to go with the store: _close() writes back
         whatever is left in the list, so a cleared store under a full
         list would be refilled from it on the way out."""
-        self.dialog.response(constants.RESPONSE_CLEAR)
-        pump()
-        self._dialogs()[0].response(Response.YES)
-        pump()
+        self._clear(Response.YES)
         self.assertEqual(self._names(), [])
         self.assertEqual(self.store.get_bookmarks(), [])
 
@@ -284,19 +253,13 @@ class BookmarksDialogTest(MComixTest):
                          'closing put the cleared bookmarks back')
 
     def test_answering_no_keeps_them(self):
-        self.dialog.response(constants.RESPONSE_CLEAR)
-        pump()
-        self._dialogs()[0].response(Response.NO)
-        pump()
+        self._clear(Response.NO)
         self.assertEqual(self._names(), ['gamma', 'beta', 'alpha'])
         self.assertEqual(len(self.store.get_bookmarks()), 3)
 
     def test_the_clear_button_follows_whether_there_is_anything_to_clear(self):
         self.assertTrue(self.dialog._clear_button.get_sensitive())
-        self.dialog.response(constants.RESPONSE_CLEAR)
-        pump()
-        self._dialogs()[0].response(Response.YES)
-        pump()
+        self._clear(Response.YES)
         self.assertFalse(self.dialog._clear_button.get_sensitive())
 
     def test_activating_a_bookmark_opens_it(self):

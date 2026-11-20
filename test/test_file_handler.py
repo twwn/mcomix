@@ -138,10 +138,8 @@ class DirectoryWalkTest(MainWindowLaterTest):
                 'open first file in prev directory': first_in_directory}):
             self.assertTrue(self.handler.open_previous_directory())
             self.assertEqual(archive, self._opened_file())
-            imagehandler = self.window.imagehandler
-            self.assertTrue(wait_for(
-                lambda: imagehandler.get_number_of_pages() == 4))
-            return imagehandler.get_current_page()
+            self.wait_for_pages(4)
+            return self.window.imagehandler.get_current_page()
 
     def test_walking_back_opens_the_last_page_when_neither_says_first(self):
         self.assertEqual(4, self._page_walked_back_to(False, False))
@@ -183,8 +181,7 @@ class DirectoryWalkTest(MainWindowLaterTest):
         archive = self._put_archive('b')
         self.assertTrue(self.handler.open_next_directory())
         self.assertEqual(archive, self._opened_file())
-        self.assertTrue(wait_for(
-            lambda: self.window.imagehandler.get_number_of_pages() == 4))
+        self.wait_for_pages(4)
 
     def test_walking_back_from_images_into_a_directory_of_archives(self):
         archive = self._put_archive('a')
@@ -350,8 +347,7 @@ class DirectoryWalkTest(MainWindowLaterTest):
             return True
         self.assertTrue(wait_for(removed))
         self.handler.refresh_file()
-        self.assertTrue(wait_for(
-            lambda: self.window.imagehandler.get_number_of_pages() == 2))
+        self.wait_for_pages(2)
         self.assertEqual(pictures[2],
                          self.window.imagehandler.get_real_path())
 
@@ -828,8 +824,7 @@ class AFolderTreeAsOneBookTest(_WindowTest):
             archives.append(os.path.join(folder, name))
             shutil.copy(NORMAL_ZIP, archives[-1])
         self.handler.open_file(folder)
-        self.assertTrue(wait_for(
-            lambda: self.window.imagehandler.get_number_of_pages() == 4))
+        self.wait_for_pages(4)
         self.assertEqual(archives[1], self.handler.get_path_to_base())
         self.assertTrue(self.handler.open_next_archive())
         self.assertTrue(wait_for(
@@ -841,8 +836,7 @@ class AFolderTreeAsOneBookTest(_WindowTest):
         os.makedirs(os.path.dirname(archive))
         shutil.copy(NORMAL_ZIP, archive)
         self.handler.open_file(folder)
-        self.assertTrue(wait_for(
-            lambda: self.window.imagehandler.get_number_of_pages() == 4))
+        self.wait_for_pages(4)
         self.assertEqual(archive, self.handler.get_path_to_base())
 
 
@@ -884,8 +878,7 @@ class AnExtensionlessPictureTest(_WindowTest):
             shutil.copyfile(get_testfile_path('images', 'red.png'),
                             os.path.join(folder, name))
         self.assertTrue(self.handler.open_file(os.path.join(folder, 'page')))
-        self.assertTrue(wait_for(
-            lambda: self.window.imagehandler.get_number_of_pages() == 2))
+        self.wait_for_pages(2)
         self.assertEqual(2, self.window.imagehandler.get_current_page())
 
 

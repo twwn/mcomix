@@ -48,13 +48,18 @@ class MergeTest(_StoreTest):
             pickle.dump([bookmark.pack() for bookmark in bookmarks], fd,
                         pickle.HIGHEST_PROTOCOL)
 
+    def _store_six_and_write_four(self):
+        """Six bookmarks in the store, pages 1 to 6, and in its file
+        what another instance wrote: the first three and page 7."""
+        ours = [self._bookmark(page) for page in range(1, 7)]
+        self.store._bookmarks = list(ours)
+        self._write_pickle(ours[:3] + [self._bookmark(7)])
+
     def test_a_merge_keeps_the_order_the_reader_sees(self):
         """The bookmarks menu lists the store in its own order, so a
         merge that reshuffles it rearranges the menu behind the reader's
         back - and writes the new arrangement out, so it sticks."""
-        ours = [self._bookmark(page) for page in range(1, 7)]
-        self.store._bookmarks = list(ours)
-        self._write_pickle(ours[:3] + [self._bookmark(7)])
+        self._store_six_and_write_four()
 
         self.store.write_bookmarks_file()
 
@@ -65,9 +70,7 @@ class MergeTest(_StoreTest):
     def test_a_merge_takes_the_other_instance_s_bookmarks_once(self):
         """They are identified by the page of the file they mark, so the
         three the two instances have in common are not duplicated."""
-        ours = [self._bookmark(page) for page in range(1, 7)]
-        self.store._bookmarks = list(ours)
-        self._write_pickle(ours[:3] + [self._bookmark(7)])
+        self._store_six_and_write_four()
 
         self.store.write_bookmarks_file()
 
@@ -234,9 +237,7 @@ class MergeTest(_StoreTest):
         self.assertEqual(written, [], 'the file kept a bookmark')
 
     def test_the_merged_order_is_what_reaches_the_file(self):
-        ours = [self._bookmark(page) for page in range(1, 7)]
-        self.store._bookmarks = list(ours)
-        self._write_pickle(ours[:3] + [self._bookmark(7)])
+        self._store_six_and_write_four()
 
         self.store.write_bookmarks_file()
         written, _mtime = self.store.load_bookmarks()

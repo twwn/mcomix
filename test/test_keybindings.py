@@ -92,20 +92,33 @@ class StoredKeybindingsTest(MComixTest):
         super().setUp()
         os.makedirs(constants.CONFIG_DIR, exist_ok=True)
 
-    def _manager(self, stored):
+    def _stored_manager(self, stored, defaults, moves=None):
         """Return a manager over a keybindings.conf holding <stored>,
-        with the four actions the tests use registered on it."""
+        with each (action, default) of <defaults> registered on it to
+        add the action to self.fired; given <moves>, as
+        preferences.keybinding_moves holds them, it takes them over."""
+        if moves is not None:
+            self.addCleanup(preferences.keybinding_moves.clear)
+            preferences.keybinding_moves[:] = moves
         with open(constants.KEYBINDINGS_CONF_PATH, 'w') as fp:
             json.dump(stored, fp)
         manager = keybindings._KeybindingManager(_StubWindow())
         self.fired = []
-        for action, default in (('slideshow', '<Control>S'),
-                                ('extract_page', '<Control><Shift>s'),
-                                ('close', '<Control>W'),
-                                ('quit', '<Control>Q')):
+        for action, default in defaults:
             manager.register(action, [default],
                              self.fired.append, args=[action])
+        if moves is not None:
+            manager.take_over_moved_keys()
         return manager
+
+    def _manager(self, stored):
+        """A manager over <stored> with the four actions the tests use
+        registered on it."""
+        return self._stored_manager(stored, (
+            ('slideshow', '<Control>S'),
+            ('extract_page', '<Control><Shift>s'),
+            ('close', '<Control>W'),
+            ('quit', '<Control>Q')))
 
     def _press(self, manager, accelerator):
         manager.execute(keybindings.parse_accelerator(accelerator))
@@ -125,18 +138,9 @@ class StoredKeybindingsTest(MComixTest):
     def _escape_manager(self, stored):
         """A manager over <stored> with Leave fullscreen on Escape and
         Quit on Ctrl+Q by default, and Escape moved to Quit."""
-        self.addCleanup(preferences.keybinding_moves.clear)
-        preferences.keybinding_moves[:] = [('quit', 'Escape', None)]
-        with open(constants.KEYBINDINGS_CONF_PATH, 'w') as fp:
-            json.dump(stored, fp)
-        manager = keybindings._KeybindingManager(_StubWindow())
-        self.fired = []
-        for action, default in (('exit_fullscreen', 'Escape'),
-                                ('quit', '<Control>Q')):
-            manager.register(action, [default],
-                             self.fired.append, args=[action])
-        manager.take_over_moved_keys()
-        return manager
+        return self._stored_manager(
+            stored, (('exit_fullscreen', 'Escape'), ('quit', '<Control>Q')),
+            [('quit', 'Escape', None)])
 
     def test_a_moved_key_reaches_its_new_action(self):
         """With nothing stored, Quit keeps its own default as well: an
@@ -161,20 +165,12 @@ class StoredKeybindingsTest(MComixTest):
     def _ten_page_manager(self, stored):
         """A manager over <stored> with SHIFT+ALT+Left moved, as format 7
         moves it, from Back 10 pages to 10 pages to the left."""
-        self.addCleanup(preferences.keybinding_moves.clear)
-        preferences.keybinding_moves[:] = [
-            ('previous_page_ff_dynamic', '<Shift><Alt>Left',
-             'previous_page_ff')]
-        with open(constants.KEYBINDINGS_CONF_PATH, 'w') as fp:
-            json.dump(stored, fp)
-        manager = keybindings._KeybindingManager(_StubWindow())
-        for action, default in (
-                ('previous_page_ff', '<Shift>Page_Up'),
-                ('zoom_in', 'plus'),
-                ('previous_page_ff_dynamic', '<Shift><Alt>Left')):
-            manager.register(action, [default], lambda: None)
-        manager.take_over_moved_keys()
-        return manager
+        return self._stored_manager(
+            stored, (('previous_page_ff', '<Shift>Page_Up'),
+                     ('zoom_in', 'plus'),
+                     ('previous_page_ff_dynamic', '<Shift><Alt>Left')),
+            [('previous_page_ff_dynamic', '<Shift><Alt>Left',
+              'previous_page_ff')])
 
     def test_a_key_moves_off_the_action_that_held_it_by_default(self):
         left = keybindings.parse_accelerator('<Shift><Alt>Left')
@@ -198,16 +194,9 @@ class StoredKeybindingsTest(MComixTest):
     def _new_default_manager(self, stored):
         """A manager over <stored> with CTRL+Plus given to Zoom in as
         a new default, as format 10 gives it."""
-        self.addCleanup(preferences.keybinding_moves.clear)
-        preferences.keybinding_moves[:] = [('zoom_in', '<Control>plus', '')]
-        with open(constants.KEYBINDINGS_CONF_PATH, 'w') as fp:
-            json.dump(stored, fp)
-        manager = keybindings._KeybindingManager(_StubWindow())
-        for action, default in (('zoom_in', 'plus'),
-                                ('slideshow', '<Control>S')):
-            manager.register(action, [default], lambda: None)
-        manager.take_over_moved_keys()
-        return manager
+        return self._stored_manager(
+            stored, (('zoom_in', 'plus'), ('slideshow', '<Control>S')),
+            [('zoom_in', '<Control>plus', '')])
 
     def test_a_new_default_joins_the_keys_a_file_lists(self):
         """Every keybindings.conf lists Zoom in, which therefore never

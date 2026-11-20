@@ -27,21 +27,10 @@ class ColumnListViewTest(MComixTest):
         self.view.add_text_column('Size', 'size')
         self.scroller = Gtk.ScrolledWindow()
         self.scroller.set_child(self.view)
-        self.window = Gtk.Window()
-        self.window.set_default_size(400, 300)
-        self.window.set_child(self.scroller)
-        self.window.present()
-        pump()
+        self.window = self.window_holding(self.scroller, (400, 300))
         self.view.set_rows(column_list.Row(name=name, size=str(len(name)))
                            for name in self.NAMES)
         self._settle()
-
-    def tearDown(self):
-        # A window left on screen is answered by whatever looks for one
-        # next.
-        self.window.destroy()
-        pump()
-        super().tearDown()
 
     def _settle(self):
         for _ in range(20):
@@ -55,11 +44,7 @@ class ColumnListViewTest(MComixTest):
         """Put <view> on screen, so that it draws cells to look at."""
         scroller = Gtk.ScrolledWindow()
         scroller.set_child(view)
-        window = Gtk.Window()
-        window.set_default_size(400, 300)
-        window.set_child(scroller)
-        window.present()
-        self.addCleanup(window.destroy)
+        window = self.window_holding(scroller, (400, 300))
         for _ in range(20):
             pump()
             scroller.allocate(400, 300, -1, None)
@@ -581,33 +566,26 @@ class ColumnListViewTest(MComixTest):
         different width every time the list was scrolled - and a
         Gtk.ShortcutLabel, which cannot be drawn narrower than the key
         caps it holds, took that width out of the column beside it."""
-        window = Gtk.Window()
         box = Gtk.Box()
-        window.set_child(box)
-        window.present()
-        try:
-            pump()
-            empty = column_list._AccelCell()
-            long = column_list._AccelCell()
-            # Four caps cannot be drawn under their minimum widths,
-            # whatever the desktop's language calls them.
-            long.accelerator = '<Control><Shift><Alt>a'
-            long._show()
-            for cell in (empty, long):
-                box.append(cell)
-            pump()
-            self.assertEqual(
-                empty.measure(Gtk.Orientation.HORIZONTAL, -1)[1],
-                long.measure(Gtk.Orientation.HORIZONTAL, -1)[1])
-            # What does not fit is cut off, and spelled out instead.
-            self.assertIsNone(empty.get_tooltip_text())
-            self.assertEqual(
-                long.get_tooltip_text(),
-                Gtk.accelerator_get_label(
-                    *Gtk.accelerator_parse('<Control><Shift><Alt>a')[1:]))
-        finally:
-            window.destroy()
-            pump()
+        self.window_holding(box)
+        empty = column_list._AccelCell()
+        long = column_list._AccelCell()
+        # Four caps cannot be drawn under their minimum widths,
+        # whatever the desktop's language calls them.
+        long.accelerator = '<Control><Shift><Alt>a'
+        long._show()
+        for cell in (empty, long):
+            box.append(cell)
+        pump()
+        self.assertEqual(
+            empty.measure(Gtk.Orientation.HORIZONTAL, -1)[1],
+            long.measure(Gtk.Orientation.HORIZONTAL, -1)[1])
+        # What does not fit is cut off, and spelled out instead.
+        self.assertIsNone(empty.get_tooltip_text())
+        self.assertEqual(
+            long.get_tooltip_text(),
+            Gtk.accelerator_get_label(
+                *Gtk.accelerator_parse('<Control><Shift><Alt>a')[1:]))
 
     @staticmethod
     def _cap_widths(label):
@@ -723,63 +701,49 @@ class ColumnListViewTest(MComixTest):
         """The cell asks for one width whatever it holds; the shortcut
         in it is drawn at its own, rather than stretched to fill the
         cell out."""
-        window = Gtk.Window()
         box = Gtk.Box()
-        window.set_child(box)
-        window.present()
-        try:
-            pump()
-            cell = column_list._AccelCell()
-            cell.accelerator = '<Control>a'
-            cell._show()
-            box.append(cell)
-            pump()
-            wanted = cell.label.measure(Gtk.Orientation.HORIZONTAL, -1)[1]
-            self.assertTrue(wanted, 'the shortcut was not drawn at all')
-            # More room than the caps need, as a wide column would give.
-            cell.allocate(wanted * 3,
-                          cell.measure(Gtk.Orientation.VERTICAL, -1)[1],
-                          -1, None)
-            pump()
-            self.assertEqual(cell.label.get_width(), wanted)
-        finally:
-            window.destroy()
-            pump()
+        self.window_holding(box)
+        cell = column_list._AccelCell()
+        cell.accelerator = '<Control>a'
+        cell._show()
+        box.append(cell)
+        pump()
+        wanted = cell.label.measure(Gtk.Orientation.HORIZONTAL, -1)[1]
+        self.assertTrue(wanted, 'the shortcut was not drawn at all')
+        # More room than the caps need, as a wide column would give.
+        cell.allocate(wanted * 3,
+                      cell.measure(Gtk.Orientation.VERTICAL, -1)[1],
+                      -1, None)
+        pump()
+        self.assertEqual(cell.label.get_width(), wanted)
 
     def test_a_shortcut_too_wide_for_its_cell_is_cut_in_whole_letters(self):
         """Clipping alone cut through whatever letter fell on the edge
         of the cell.  The caps ellipsize instead, so what is dropped is
         dropped as text, and the tooltip spells the shortcut out."""
-        window = Gtk.Window()
         box = Gtk.Box()
-        window.set_child(box)
-        window.present()
-        try:
-            pump()
-            cell = column_list._AccelCell()
-            # Four caps cannot be drawn under their minimum widths.
-            cell.accelerator = '<Control><Shift><Alt>a'
-            cell._show()
-            box.append(cell)
-            pump()
-            room = cell.measure(Gtk.Orientation.HORIZONTAL, -1)[1]
-            self.assertGreater(
-                cell.label.measure(Gtk.Orientation.HORIZONTAL, -1)[1], room,
-                'the shortcut fits, and says nothing about one that does not')
-            cell.allocate(room, cell.measure(Gtk.Orientation.VERTICAL, -1)[1],
-                          -1, None)
-            pump()
-            self.assertLessEqual(cell.label.get_width(), room)
-            ellipsized = [child.get_ellipsize()
-                          for child in children(cell.label)
-                          if isinstance(child, Gtk.Label)
-                          and 'keycap' in child.get_css_classes()]
-            self.assertTrue(ellipsized, 'the label drew no caps')
-            self.assertTrue(all(mode == Pango.EllipsizeMode.END
-                                for mode in ellipsized))
-        finally:
-            window.destroy()
-            pump()
+        self.window_holding(box)
+        cell = column_list._AccelCell()
+        # Four caps cannot be drawn under their minimum widths.
+        cell.accelerator = '<Control><Shift><Alt>a'
+        cell._show()
+        box.append(cell)
+        pump()
+        room = cell.measure(Gtk.Orientation.HORIZONTAL, -1)[1]
+        self.assertGreater(
+            cell.label.measure(Gtk.Orientation.HORIZONTAL, -1)[1], room,
+            'the shortcut fits, and says nothing about one that does not')
+        cell.allocate(room, cell.measure(Gtk.Orientation.VERTICAL, -1)[1],
+                      -1, None)
+        pump()
+        self.assertLessEqual(cell.label.get_width(), room)
+        ellipsized = [child.get_ellipsize()
+                      for child in children(cell.label)
+                      if isinstance(child, Gtk.Label)
+                      and 'keycap' in child.get_css_classes()]
+        self.assertTrue(ellipsized, 'the label drew no caps')
+        self.assertTrue(all(mode == Pango.EllipsizeMode.END
+                            for mode in ellipsized))
 
     # -- Text rewritten in place ------------------------------------------
 

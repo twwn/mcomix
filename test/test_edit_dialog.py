@@ -465,6 +465,12 @@ class EditArchiveDialogTest(MComixTest):
         return shortcut.get_action().activate(
             Gtk.ShortcutActionFlags(0), self.dialog, None)
 
+    def _save_as_chooser(self):
+        """Answer the editor with Save as; the chooser that opens."""
+        self.dialog._response(self.dialog, constants.RESPONSE_SAVE_AS)
+        pump()
+        return simple_file_chooser()
+
     def _pages(self):
         return list(self.dialog._image_area.get_file_listing())
 
@@ -719,23 +725,22 @@ class EditArchiveDialogTest(MComixTest):
         self.assertEqual([0], area._grid.get_selected_positions())
         self.assertFalse(area._popup_menu.get_visible())
 
-    def test_the_delete_key_takes_the_selected_pages_out(self):
+    def _assert_the_key_removes_the_first_page(self, key):
+        """<key> on the page list, the first page selected, is handled
+        and takes that page out."""
         self._load()
         before = self._pages()
         area = self.dialog._image_area
         area._grid.select_only(0)
         self.assertEqual(Gdk.EVENT_STOP, area._key_press(
-            None, Gdk.KEY_Delete, 0, Gdk.ModifierType(0)))
+            None, key, 0, Gdk.ModifierType(0)))
         self.assertEqual(before[1:], self._pages())
 
+    def test_the_delete_key_takes_the_selected_pages_out(self):
+        self._assert_the_key_removes_the_first_page(Gdk.KEY_Delete)
+
     def test_the_keypad_delete_removes_the_page_too(self):
-        self._load()
-        before = self._pages()
-        area = self.dialog._image_area
-        area._grid.select_only(0)
-        self.assertEqual(Gdk.EVENT_STOP, area._key_press(
-            None, Gdk.KEY_KP_Delete, 0, Gdk.ModifierType(0)))
-        self.assertEqual(before[1:], self._pages())
+        self._assert_the_key_removes_the_first_page(Gdk.KEY_KP_Delete)
 
     def test_with_nothing_or_two_selected_there_is_nothing_to_act_on(self):
         """Removing needs a page picked out, and renaming exactly one."""
@@ -919,9 +924,7 @@ class EditArchiveDialogTest(MComixTest):
         prefs['keep archive format when saving'] = True
         self.assertEqual(self.dialog._save_format(),
                          (constants.ZIP, '.zip'))
-        self.dialog._response(self.dialog, constants.RESPONSE_SAVE_AS)
-        pump()
-        chooser = simple_file_chooser()
+        chooser = self._save_as_chooser()
         self.assertEqual(chooser.save_name, '01-ZIP-Normal.zip')
         self.assertIsNone(chooser._note,
                           'the format is the one that was opened, so '
@@ -974,9 +977,7 @@ class EditArchiveDialogTest(MComixTest):
         packed = []
         with unittest.mock.patch.object(self.dialog, '_pack_archive',
                                         packed.append):
-            self.dialog._response(self.dialog, constants.RESPONSE_SAVE_AS)
-            pump()
-            chooser = simple_file_chooser()
+            chooser = self._save_as_chooser()
             # A Save chooser's file is its folder and the name typed in,
             # and the folder changes once GTK has listed it.  On GitHub's
             # runner (b227b832) the five seconds this waited for that ran
@@ -1004,17 +1005,13 @@ class EditArchiveDialogTest(MComixTest):
         self.assertEqual(packed, [target])
 
     def test_save_as_opens_a_chooser_saying_what_it_writes(self):
-        self.dialog._response(self.dialog, constants.RESPONSE_SAVE_AS)
-        pump()
-        chooser = simple_file_chooser()
+        chooser = self._save_as_chooser()
         self.assertIsNotNone(chooser)
         self.assertEqual(chooser._note.get_text(),
                          'Archives are stored as ZIP files.')
 
     def test_save_as_offers_the_archive_under_a_name_of_its_own(self):
-        self.dialog._response(self.dialog, constants.RESPONSE_SAVE_AS)
-        pump()
-        chooser = simple_file_chooser()
+        chooser = self._save_as_chooser()
         self.assertEqual(chooser.save_name, '01-ZIP-Normal.cbz')
 
     def test_import_opens_a_chooser_without_a_note(self):

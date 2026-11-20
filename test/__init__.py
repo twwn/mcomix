@@ -336,6 +336,7 @@ def take_activation_from(test, window):
 
 import unittest
 
+from mcomix import callback
 from mcomix import constants
 from mcomix import preferences
 from mcomix import tools
@@ -559,6 +560,22 @@ class FolderDialogStub:
         if self._folder is None:
             raise GLib.Error('dismissed')
         return Gio.File.new_for_path(self._folder)
+
+
+class StubFileHandler:
+    """A file handler with no book, and the two signals a menu listens
+    to; set file_loaded to say a book is open."""
+
+    file_loaded = False
+    archive_type = None
+
+    @callback.Callback
+    def file_opened(self):
+        pass
+
+    @callback.Callback
+    def file_closed(self):
+        pass
 
 
 @contextlib.contextmanager
@@ -786,6 +803,25 @@ class MComixTest(unittest.TestCase):
                           constants.THUMBNAIL_PATH):
             os.makedirs(directory, exist_ok=True)
 
+    def window_holding(self, child, size=None):
+        """Present a window of the test's own holding <child>, <size>
+        (width, height) by default, and return it once the main loop has
+        turned.  It is destroyed after the test, and the loop turned
+        again."""
+        window = Gtk.Window()
+        if size is not None:
+            window.set_default_size(*size)
+        window.set_child(child)
+        window.present()
+        pump()
+
+        def destroy():
+            window.destroy()
+            pump()
+
+        self.addCleanup(destroy)
+        return window
+
     def open_main_window(self, **options):
         """Build the main window as self.window, with <options> as
         MainWindow takes them, and name it the one main.main_window()
@@ -796,11 +832,14 @@ class MComixTest(unittest.TestCase):
         main.set_main_window(self.window)
         return self.window
 
-    def wait_for_pages(self):
+    def wait_for_pages(self, count=None):
         """Wait for the book open in self.window to have its pages
-        listed, which a worker thread does after the book is opened."""
+        listed, which a worker thread does after the book is opened:
+        any pages, or as many as count."""
         self.assertTrue(wait_for(
-            lambda: self.window.imagehandler.get_number_of_pages() > 0,
+            lambda: (self.window.imagehandler.get_number_of_pages() > 0
+                     if count is None else
+                     self.window.imagehandler.get_number_of_pages() == count),
             seconds=20))
 
     def open_main_window_on_a_book(self):

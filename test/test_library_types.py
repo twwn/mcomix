@@ -6,23 +6,17 @@ import shutil
 import os
 
 from . import NORMAL_ZIP, get_testfile_path, posix_byte_names
+from .test_library_backend import OpenLibraryTest
 
 from mcomix import constants
 from mcomix.library import backend
 from mcomix.library import backend_types
 
 
-class CollectionTest(unittest.TestCase):
+class CollectionTest(OpenLibraryTest):
 
     def setUp(self):
-        # Database file
-        fp, self.db = tempfile.mkstemp('.db', 'mcomix-test')
-        os.close(fp)
-
-        # Initialize library (path must be patched for testing)
-        constants.LIBRARY_DATABASE_PATH = self.db
-        self.library = backend.LibraryBackend()
-
+        super().setUp()
         # Initialize database
         self.library.add_collection("Test")
         self.library.add_collection("Subtest")
@@ -43,12 +37,6 @@ class CollectionTest(unittest.TestCase):
         self.library.add_book(tar_archive, None)
         self.library.add_book(rar_archive, test_col.id)
         self.library.add_book(sz_archive, sub_col.id)
-
-    def tearDown(self):
-        self.library.close()
-        # Remove singleton instance
-        backend._backend = None
-        os.unlink(self.db)
 
     def _read(self, name, page):
         """Leave the book named <name> on <page>."""
@@ -428,7 +416,7 @@ class WatchListEntryTest(unittest.TestCase):
             shutil.rmtree(tmpdir)
 
 
-class WatchListTest(unittest.TestCase):
+class WatchListTest(OpenLibraryTest):
 
     """Looking a watched directory up by the path the caller happens to
     have.
@@ -440,11 +428,7 @@ class WatchListTest(unittest.TestCase):
     """
 
     def setUp(self):
-        fp, self.db = tempfile.mkstemp('.db', 'mcomix-test')
-        os.close(fp)
-        self._saved_path = constants.LIBRARY_DATABASE_PATH
-        constants.LIBRARY_DATABASE_PATH = self.db
-        self.library = backend.LibraryBackend()
+        super().setUp()
         # realpath so that chdir() below lands on the name that was
         # stored: getcwd() reports a directory with its symlinks
         # resolved, and abspath() does not resolve any.
@@ -454,9 +438,7 @@ class WatchListTest(unittest.TestCase):
         self.library.watchlist.add_directory(self.watched)
 
     def tearDown(self):
-        self.library.close()
-        constants.LIBRARY_DATABASE_PATH = self._saved_path
-        os.unlink(self.db)
+        super().tearDown()
         shutil.rmtree(self.tmpdir)
 
     def test_an_absolute_path_finds_the_entry(self):
@@ -540,7 +522,7 @@ class WatchListTest(unittest.TestCase):
             self.library.watchlist.get_watchlist_entry(self.tmpdir)
 
 
-class CollectionBooksPlanTest(unittest.TestCase):
+class CollectionBooksPlanTest(OpenLibraryTest):
 
     """The books of a collection are found without sorting them twice.
 
@@ -561,11 +543,7 @@ class CollectionBooksPlanTest(unittest.TestCase):
     BOOKS = 2000
 
     def setUp(self):
-        fp, self.db = tempfile.mkstemp('.db', 'mcomix-test')
-        os.close(fp)
-        self._saved_path = constants.LIBRARY_DATABASE_PATH
-        constants.LIBRARY_DATABASE_PATH = self.db
-        self.library = backend.LibraryBackend()
+        super().setUp()
         connection = self.library._con
         connection.execute('begin')
         connection.execute(
@@ -581,11 +559,6 @@ class CollectionBooksPlanTest(unittest.TestCase):
                 (index,))
         connection.execute('commit')
         connection.execute('analyze')
-
-    def tearDown(self):
-        self.library.close()
-        constants.LIBRARY_DATABASE_PATH = self._saved_path
-        os.unlink(self.db)
 
     def _plan_of_get_books(self, filter_string=None,
                            read_state=backend_types.ReadState.ANY,

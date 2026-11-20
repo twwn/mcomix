@@ -448,9 +448,7 @@ class BookmarkInTheOpenBookTest(MainWindowLaterTest):
 
     def _open(self, path, pages):
         self.open_main_window(open_path=path)
-        self.assertTrue(wait_for(
-            lambda: self.window.imagehandler.get_number_of_pages() == pages,
-            seconds=20))
+        self.wait_for_pages(pages)
 
     def _folder(self):
         """A folder of three loose images, opened at the first."""
@@ -501,9 +499,9 @@ class BookmarkInTheOpenBookTest(MainWindowLaterTest):
         self.assertEqual(3, self.window.imagehandler.get_current_page())
         self.assertEqual({1}, self.window.selected_pages)
 
-    def test_a_bookmark_in_an_archive_follows_its_picture(self):
-        """A bookmark in an archive kept the page number alone, so sorting
-        the archive the other way moved it to another picture."""
+    def _bookmark_page_two_of_the_zip(self):
+        """Open the fixture ZIP, bookmark its page 2, and return the
+        bookmark and the name of the picture it marks."""
         self._open(NORMAL_ZIP, 4)
         self.window.set_page(2)
         pump()
@@ -512,6 +510,12 @@ class BookmarkInTheOpenBookTest(MainWindowLaterTest):
         pump()
         bookmark = store.get_bookmarks()[-1]
         shown = os.path.basename(self.window.imagehandler.get_path_to_page(2))
+        return bookmark, shown
+
+    def test_a_bookmark_in_an_archive_follows_its_picture(self):
+        """A bookmark in an archive kept the page number alone, so sorting
+        the archive the other way moved it to another picture."""
+        bookmark, shown = self._bookmark_page_two_of_the_zip()
         prefs['sort archive order'] = constants.SORT_DESCENDING
         self.window.filehandler.refresh_file()
         self.assertTrue(wait_for(
@@ -528,14 +532,7 @@ class BookmarkInTheOpenBookTest(MainWindowLaterTest):
     def test_it_follows_its_picture_into_a_closed_archive_as_well(self):
         """Opened from elsewhere, the archive came up at the page
         number."""
-        self._open(NORMAL_ZIP, 4)
-        self.window.set_page(2)
-        pump()
-        store = bookmark_backend.BookmarksStore
-        store.add_current_to_bookmarks()
-        pump()
-        bookmark = store.get_bookmarks()[-1]
-        shown = os.path.basename(self.window.imagehandler.get_path_to_page(2))
+        bookmark, shown = self._bookmark_page_two_of_the_zip()
         self.window.filehandler.close_file()
         pump()
         prefs['sort archive order'] = constants.SORT_DESCENDING

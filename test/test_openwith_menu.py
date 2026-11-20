@@ -2,25 +2,12 @@
 
 from gi.repository import GLib, Gtk
 
-from . import MComixTest, pump
+from . import MComixTest, StubFileHandler, pump
 
 from mcomix import callback
 from mcomix import openwith_menu
 from mcomix.dialog import Response
 from mcomix.preferences import prefs
-
-
-class _StubFileHandler:
-
-    file_loaded = False
-
-    @callback.Callback
-    def file_opened(self):
-        pass
-
-    @callback.Callback
-    def file_closed(self):
-        pass
 
 
 class _StubWindow(Gtk.Window):
@@ -29,7 +16,7 @@ class _StubWindow(Gtk.Window):
 
     def __init__(self):
         super().__init__()
-        self.filehandler = _StubFileHandler()
+        self.filehandler = StubFileHandler()
 
     @callback.Callback
     def page_changed(self):

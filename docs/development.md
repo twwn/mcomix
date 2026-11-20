@@ -42,7 +42,8 @@ Class or helper | For
 `MainWindowLaterTest` | A test that opens the main window itself, if at all; it is closed afterwards.
 `open_main_window()`, `close_main_window()` | The main window as MComix opens and quits it.
 `open_main_window_on_a_book()` | The main window opened on a four-page ZIP, once its pages are listed.
-`self.wait_for_pages()` | Wait for the book opened in `self.window` to have its pages listed.
+`self.window_holding(child, size)` | A window of the test's own holding a widget, on screen, destroyed after the test.
+`self.wait_for_pages(count)` | Wait for the book opened in `self.window` to have its pages listed: any, or `count` of them.
 `pump()`, `wait_for()`, `wait_frames()` | Let the main loop run; wait for a condition rather than a time.
 `children()`, `descendants()` | The widgets inside a widget.
 `visible_prompts()`, `prompts_over(window)` | The message dialogs on screen, or standing over a window.
@@ -51,6 +52,7 @@ Class or helper | For
 `hold_open(popover)` | A popover that stays open under Xvfb.
 `refuse_passwords(test)` | Cancel every password prompt; the archives asked about are listed.
 `FolderDialogStub(folder)` | Stands in for a folder chooser's answer.
+`StubFileHandler` | A window's file handler with no book and the `file_opened` and `file_closed` signals, for a menu's tests.
 `windows_refusal(name)` | `os.remove` or `os.unlink` refusing a read-only file, as on Windows.
 `replace_held_once()` | `os.replace` refusing once, as on Windows while another process holds the file.
 `sample_pages(count)` | Paths of up to three pictures to pack or open.

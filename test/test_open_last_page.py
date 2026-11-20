@@ -1,34 +1,20 @@
-import unittest
-import tempfile
-import os
-
 from . import NORMAL_ZIP, get_testfile_path
+from .test_library_backend import OpenLibraryTest
 
-from mcomix import constants
 from mcomix import last_read_page
 from mcomix.library import backend
 
 
-class OpenLastPageBasicTest(unittest.TestCase):
+class OpenLastPageBasicTest(OpenLibraryTest):
     def setUp(self):
-        # Database file
-        fp, self.db = tempfile.mkstemp('.db', 'mcomix-test')
-        os.close(fp)
-        constants.LIBRARY_DATABASE_PATH = self.db
+        super().setUp()
 
         # Dummy archive (files are checked for existance)
         self.archive1 = NORMAL_ZIP
         self.archive2 = get_testfile_path('archives', '02-TAR-Normal.tar')
 
-        # Library backend
-        self.backend = backend.LibraryBackend()
-
-        self.lastread = last_read_page.LastReadPage(self.backend)
+        self.lastread = last_read_page.LastReadPage(self.library)
         self.lastread.set_enabled(True)
-
-    def tearDown(self):
-        self.backend.close()
-        os.unlink(self.db)
 
     def test_init(self):
         self.assertEqual(0, self.lastread.count())
@@ -91,9 +77,9 @@ class OpenLastPageBasicTest(unittest.TestCase):
         self.assertEqual(1, self.lastread.get_page(self.archive1))
         self.assertEqual(2, self.lastread.get_page(self.archive2))
 
-        self.backend.close()
-        self.backend = backend.LibraryBackend()
-        self.lastread = last_read_page.LastReadPage(self.backend)
+        self.library.close()
+        self.library = backend.LibraryBackend()
+        self.lastread = last_read_page.LastReadPage(self.library)
         self.lastread.set_enabled(True)
 
         self.assertEqual(1, self.lastread.get_page(self.archive1),

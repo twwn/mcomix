@@ -138,8 +138,7 @@ class ViewActionsTest(MainWindowOpenTest):
         prefs['fit to size width other'] = 400
         prefs['fit to size height other'] = 400
         self.window.filehandler.open_file(os.path.join(book, '1.png'))
-        self.assertTrue(wait_for(
-            lambda: self.window.imagehandler.get_number_of_pages() == 2))
+        self.wait_for_pages(2)
         pump()
         self._activate('fit_size_mode')
         self.assertEqual((400, 400), self._shown_size())
@@ -168,8 +167,7 @@ class ViewActionsTest(MainWindowOpenTest):
             page.save(os.path.join(book, name))
         prefs['crop borders'] = True
         self.window.filehandler.open_file(os.path.join(book, '1.png'))
-        self.assertTrue(wait_for(
-            lambda: self.window.imagehandler.get_number_of_pages() == 2))
+        self.wait_for_pages(2)
         pump()
         self.assertTrue(self.window.statusbar._resolution.startswith(
             '600x800 ('), self.window.statusbar._resolution)
@@ -189,8 +187,7 @@ class ViewActionsTest(MainWindowOpenTest):
         prefs['crop borders'] = True
         handler = self.window.imagehandler
         self.window.filehandler.open_file(os.path.join(book, '1.png'))
-        self.assertTrue(wait_for(
-            lambda: handler.get_number_of_pages() == 3))
+        self.wait_for_pages(3)
         # The page after the one shown is read ahead, on the thread.
         self.assertTrue(wait_for(lambda: 1 in handler._raw_pixbufs))
         ahead = handler._raw_pixbufs[1]

@@ -1,5 +1,6 @@
 """ Tests for moving the opened file, or its archive, to another folder. """
 
+import contextlib
 import errno
 import os
 import shutil
@@ -9,6 +10,17 @@ import unittest.mock
 from . import MComixTest, get_testfile_path
 
 from mcomix import file_mover
+
+
+@contextlib.contextmanager
+def _across_file_systems(free):
+    """While it lasts, a move goes to another file system, with <free>
+    bytes left on it."""
+    with unittest.mock.patch.object(file_mover, 'same_file_system',
+                                    return_value=False), \
+            unittest.mock.patch('shutil.disk_usage',
+                                return_value=types.SimpleNamespace(free=free)):
+        yield
 
 
 class FileMoverTest(MComixTest):
@@ -83,10 +95,7 @@ class FileMoverTest(MComixTest):
         usage.assert_not_called()
 
     def test_a_move_across_file_systems_that_would_not_fit(self):
-        with unittest.mock.patch.object(file_mover, 'same_file_system',
-                                        return_value=False), \
-                unittest.mock.patch('shutil.disk_usage',
-                                    return_value=types.SimpleNamespace(free=1023)):
+        with _across_file_systems(1023):
             with self.assertRaises(OSError) as raised:
                 file_mover.move_file(self.book, self.target)
 
@@ -96,10 +105,7 @@ class FileMoverTest(MComixTest):
         self.assertEqual(os.listdir(self.target), [])
 
     def test_a_move_across_file_systems_that_fits(self):
-        with unittest.mock.patch.object(file_mover, 'same_file_system',
-                                        return_value=False), \
-                unittest.mock.patch('shutil.disk_usage',
-                                    return_value=types.SimpleNamespace(free=1024)):
+        with _across_file_systems(1024):
             moved = file_mover.move_file(self.book, self.target)
 
         self.assertTrue(os.path.isfile(moved))
@@ -140,10 +146,7 @@ class FileMoverTest(MComixTest):
         volumes = self._volume_set()
         # Room for each volume, not for all of them.
         free = max(os.path.getsize(volume) for volume in volumes)
-        with unittest.mock.patch.object(file_mover, 'same_file_system',
-                                        return_value=False), \
-                unittest.mock.patch('shutil.disk_usage',
-                                    return_value=types.SimpleNamespace(free=free)):
+        with _across_file_systems(free):
             with self.assertRaises(OSError) as raised:
                 file_mover.move_book(volumes[0], self.target)
         self.assertEqual(raised.exception.errno, errno.ENOSPC)
@@ -173,10 +176,7 @@ class FileMoverTest(MComixTest):
         """Move the book as across file systems, with <stand_in> for the
         function called <name>."""
         crossing = OSError(errno.EXDEV, os.strerror(errno.EXDEV))
-        with unittest.mock.patch.object(file_mover, 'same_file_system',
-                                        return_value=False), \
-                unittest.mock.patch('shutil.disk_usage',
-                                    return_value=types.SimpleNamespace(free=4096)), \
+        with _across_file_systems(4096), \
                 unittest.mock.patch('os.rename', side_effect=crossing), \
                 unittest.mock.patch(name, stand_in), \
                 self.assertRaises(OSError):
