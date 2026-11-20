@@ -372,9 +372,7 @@ class SortFilesTest(MComixTest):
         files = []
         for name in ('3.png', '10.png', '1.png', '2.png'):
             path = os.path.join(directory, name)
-            with open(path, 'wb') as page:
-                page.write(b'x' * 10)
-            os.utime(path, (1_000_000_000, 1_000_000_000))
+            self._write(path, 10, 1_000_000_000)
             files.append(path)
         expected = [os.path.join(directory, name)
                     for name in ('1.png', '2.png', '3.png', '10.png')]
@@ -394,9 +392,7 @@ class SortFilesTest(MComixTest):
         books = []
         for number in (1, 2, 3):
             path = os.path.join(directory, 'Book %d.cbz' % number)
-            with open(path, 'wb') as book:
-                book.write(b'x' * 10 * number)
-            os.utime(path, (1_000_000_000 + number, 1_000_000_000 + number))
+            self._write(path, 10 * number, 1_000_000_000 + number)
             books.append(path)
         self.addCleanup(file_provider._SORTED_AS.clear)
         return books
