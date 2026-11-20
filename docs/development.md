@@ -34,7 +34,7 @@ xvfb-run -a .venv/bin/python -m pytest test/ -n auto
 
 Use what `test/__init__.py` has before writing a set-up or helper of your own.
 `test/test_copies.py` fails when a function body of some size appears twice, in the tests or the program.
-It also fails when six statements in a row appear twice in the tests: make them a helper.
+It also fails when five statements in a row, imports aside, appear twice in the tests: make them a helper.
 
 Class or helper | For
 ----------------|----

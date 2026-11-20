@@ -22,8 +22,9 @@ MINIMUM_NODES = 30
 #: the steps one test takes before what it checks, written out again by
 #: the next.  Fewer than this are often a protocol the tests walk
 #: through on purpose, step by step.  Every run of this length found
-#: when the check was written was folded into a helper.
-MINIMUM_STEPS = 6
+#: when the check was written was folded into a helper; runs of imports
+#: alone are not counted.
+MINIMUM_STEPS = 5
 
 _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -79,6 +80,10 @@ def _step_runs():
                     continue
                 dumps = [ast.dump(statement) for statement in block]
                 for start in range(len(block) - MINIMUM_STEPS + 1):
+                    if all(isinstance(statement, (ast.Import, ast.ImportFrom))
+                           for statement
+                           in block[start:start + MINIMUM_STEPS]):
+                        continue
                     key = tuple(dumps[start:start + MINIMUM_STEPS])
                     places[key].add('%s:%d' % (os.path.relpath(path, _ROOT),
                                                block[start].lineno))
