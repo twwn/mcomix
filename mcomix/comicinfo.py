@@ -116,14 +116,7 @@ def reads_right_to_left(path: str) -> bool:
     to left: Manga is YesAndRightToLeft.  Plain Yes says the comic is a
     manga and nothing about its direction, so it is not taken for one;
     a file that cannot be read says nothing either."""
-    try:
-        with open(path, 'rb') as handle:
-            document = handle.read(LARGEST + 1)
-    except OSError:
-        return False
-    if len(document) > LARGEST:
-        return False
-    root = _parse(document)
+    root = _read(path)
     return root is not None and \
         (root.findtext('Manga') or '').strip() == 'YesAndRightToLeft'
 
@@ -140,14 +133,7 @@ def chapters(path: str, page_count: int) -> list[tuple[str, int]]:
     otherwise was written for another set of pages, and its chapters
     would land on the wrong ones.
     """
-    try:
-        with open(path, 'rb') as handle:
-            document = handle.read(LARGEST + 1)
-    except OSError:
-        return []
-    if len(document) > LARGEST:
-        return []
-    root = _parse(document)
+    root = _read(path)
     listed = None if root is None else root.find('Pages')
     if root is None or listed is None:
         return []
@@ -258,6 +244,19 @@ def _parse(existing: bytes) -> "ElementTree.Element | None":
     return root if root.tag == 'ComicInfo' else None
 
 
+def _read(path: str) -> "ElementTree.Element | None":
+    """The root of the ComicInfo.xml at <path>, or None for a file that
+    cannot be read, is larger than LARGEST or is not a ComicInfo.xml."""
+    try:
+        with open(path, 'rb') as handle:
+            document = handle.read(LARGEST + 1)
+    except OSError:
+        return None
+    if len(document) > LARGEST:
+        return None
+    return _parse(document)
+
+
 def describe(path: str) -> list[tuple[str, str]]:
     """What the ComicInfo.xml at <path> says about the comic.
 
@@ -269,14 +268,7 @@ def describe(path: str) -> list[tuple[str, str]]:
     and later refuse the entity expansions that would blow a small file
     up in memory.
     """
-    try:
-        with open(path, 'rb') as handle:
-            document = handle.read(LARGEST + 1)
-    except OSError:
-        return []
-    if len(document) > LARGEST:
-        return []
-    root = _parse(document)
+    root = _read(path)
     if root is None:
         return []
     described = []
