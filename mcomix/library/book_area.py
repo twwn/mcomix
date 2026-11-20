@@ -1265,7 +1265,7 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable, LibraryPart):
 
             # The paths have to be read before the books go: removing
             # them from the library takes their rows with them.
-            paths = [item.path for item in self._selected_items()]
+            paths = self._selected_paths()
             # A RAR set goes with its first volume, the book listed:
             # the later ones are listed nowhere.
             volumes = {path: archive_tools.volume_set(path)
