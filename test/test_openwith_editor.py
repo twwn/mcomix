@@ -6,6 +6,7 @@ editor closes: it owns that itself, because it is the only thing that
 knows whether the question about unsaved changes has been answered.
 """
 
+import subprocess
 from unittest import mock
 
 from gi.repository import Gdk, Gtk
@@ -199,6 +200,16 @@ class OpenWithEditorTest(MComixTest):
         self.assertEqual(('sh -c ls ""', ''),
                          self._tried('Listing', 'sh -c "ls" ""', self.tmp_dir))
         self.assertTrue(self.editor._run_button.get_sensitive())
+
+    def test_on_windows_the_command_is_shown_as_windows_is_given_it(self):
+        """process.Win32Popen() joins the arguments with
+        subprocess.list2cmdline(); the preview quoted them by a copy of
+        its rules that left a tab unquoted."""
+        args = ['C:\\Program Files\\x.exe', 'a\tb', 'say "hi"', 'end\\',
+                'sp ace\\', '']
+        with mock.patch.object(openwith.sys, 'platform', 'win32'):
+            shown = ' '.join(map(self.editor._quote_if_necessary, args))
+        self.assertEqual(subprocess.list2cmdline(args), shown)
 
     def test_a_working_directory_that_is_not_there_is_pointed_out(self):
         missing = self.tmp_dir + '/not-there'

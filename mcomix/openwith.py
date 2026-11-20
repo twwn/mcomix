@@ -3,6 +3,7 @@ import operator
 import sys
 import os
 import re
+import subprocess
 from gi.repository import Gdk, Gtk, Pango
 
 from mcomix.dialog import Dialog
@@ -777,29 +778,9 @@ class OpenWithEditor(Dialog):
         if arg == "":
             return '""'
         if sys.platform == 'win32':
-            # based on http://msdn.microsoft.com/en-us/library/17w5ykft%28v=vs.85%29.aspx
-            backslash_counter = 0
-            needs_quoting = False
-            result = ""
-            for c in arg:
-                if c == '\\':
-                    backslash_counter += 1
-                else:
-                    if c == '\"':
-                        result += '\\' * (2 * backslash_counter + 1)
-                    else:
-                        result += '\\' * backslash_counter
-                    backslash_counter = 0
-                    result += c
-                if c == ' ':
-                    needs_quoting = True
-
-            if needs_quoting:
-                result += '\\' * (2 * backslash_counter)
-                result = '"' + result + '"'
-            else:
-                result += '\\' * backslash_counter
-            return result
+            # What process.Win32Popen() hands CreateProcessW, by the
+            # rules of the Microsoft C runtime.
+            return subprocess.list2cmdline([arg])
         else:
             # simplified version of
             # http://www.gnu.org/software/bash/manual/bashref.html#Double-Quotes
