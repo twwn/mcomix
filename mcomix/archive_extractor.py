@@ -380,9 +380,7 @@ class Extractor:
             # handed over everything: the external handlers once
             # dropped every empty file.  What it left out is marked as
             # done, for the same reason as below.
-            missing = self._finish_the_rest(files)
-            if missing:
-                log.warning('! Not extracted in one pass: %s', ', '.join(missing))
+            self._finish_the_rest(files, left_out=True)
 
         except Exception as ex:
             # Logged rather than raised over, as _extract_file() does and
@@ -397,15 +395,19 @@ class Extractor:
                 return
             self._finish_the_rest(files)
 
-    def _finish_the_rest(self, files: Sequence[str]) -> list[str]:
+    def _finish_the_rest(self, files: Sequence[str],
+                         left_out: bool = False) -> None:
         """Mark those of <files> not yet on disk as done, though not
-        whole, and return them."""
+        whole; where a pass that did not fail <left_out> them, warn
+        first.  The warning comes before the marks, so that whoever
+        waits on a mark finds the warning already given."""
         with self._condition:
             missing = [name for name in files
                        if name not in self._extracted]
+        if left_out and missing:
+            log.warning('! Not extracted in one pass: %s', ', '.join(missing))
         for name in missing:
             self._extraction_finished(name, whole=False)
-        return missing
 
     def _extraction_failed(self, error: Exception) -> None:
         """Log <error>, forget the password, which may be what was
