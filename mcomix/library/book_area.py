@@ -598,6 +598,11 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable, LibraryPart):
         item = self._item_at(position)
         return None if item is None else item.uid
 
+    def _book_under(self, x: float, y: float) -> int | None:
+        """The book ID of the cover under (<x>, <y>), or None if no
+        cover is there."""
+        return self.get_book_at_path(self._covers.position_at(x, y))
+
     def shown_ids(self) -> list[int]:
         """The id of every book shown, in the order shown."""
         return [item.uid for item in self._each_item()]
@@ -1461,10 +1466,7 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable, LibraryPart):
         selection, and leaves the selection alone, so a reader can send
         off one book without losing the several they had picked.
         """
-        position = self._covers.position_at(x, y)
-        if position < 0:
-            return
-        book = self.get_book_at_path(position)
+        book = self._book_under(x, y)
         if book is None:
             return
         path = self._library.backend.get_book_path(book)
@@ -1487,10 +1489,7 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable, LibraryPart):
             | Gdk.ModifierType.ALT_MASK)
         if state != Gdk.ModifierType.CONTROL_MASK:
             return
-        position = self._covers.position_at(x, y)
-        if position < 0:
-            return
-        book = self.get_book_at_path(position)
+        book = self._book_under(x, y)
         if book is None:
             return
         gesture.set_state(Gtk.EventSequenceState.CLAIMED)
@@ -1730,7 +1729,7 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable, LibraryPart):
         books = [book for book in map(self.get_book_at_path, positions)
                  if book is not None]
         return self._place_books(
-            books, self.get_book_at_path(self._covers.position_at(x, y)))
+            books, self._book_under(x, y))
 
     def _place_books(self, books: "Sequence[int]", beside: int | None) -> bool:
         """Put <books>, which are ids, beside the book <beside> in the
