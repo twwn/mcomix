@@ -462,14 +462,10 @@ def ask_before_closing(parent: "main.MainWindow", *,
         _('Close the book the archive editor is working on?'),
         _('The editor holds changes that have not been applied or '
           'saved. They go with the book.'))
-    dialog.add_button(_('_Go on editing'), Response.NO)
-    dialog.add_button(_('_Close the book'), Response.YES)
     # A confirmation defaults to the answer that changes nothing, and
     # the one that throws the editor's work away is drawn as what it is.
-    dialog.set_default_response(Response.NO)
-    closes = dialog.get_widget_for_response(Response.YES)
-    if closes is not None:
-        closes.add_css_class('destructive-action')
+    dialog.add_confirmation_buttons(_('_Go on editing'), Response.NO,
+                                    _('_Close the book'), Response.YES)
     dialog.run_async(
         lambda response: closing() if response == Response.YES else keeping())
 

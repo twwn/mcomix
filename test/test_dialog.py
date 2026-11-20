@@ -8,7 +8,7 @@ its own buttons out. These pin the shape all of them shared.
 
 from gi.repository import Gtk
 
-from . import MComixTest, pump, wait_for
+from . import MComixTest, children, pump, wait_for
 
 from mcomix import dialog
 from mcomix import message_dialog
@@ -132,6 +132,19 @@ class DialogTest(MComixTest):
         for response in (Response.CANCEL, Response.OK):
             self.assertIsNotNone(
                 self.dialog.get_widget_for_response(response))
+
+    def test_a_confirmation_defaults_to_the_button_that_changes_nothing(self):
+        """The button that acts comes after it, drawn as the destructive
+        action, and Enter presses the other one."""
+        self.dialog.add_confirmation_buttons('_Keep', Response.NO,
+                                             '_Remove', Response.YES)
+        keep = self.dialog.get_widget_for_response(Response.NO)
+        acts = self.dialog.get_widget_for_response(Response.YES)
+        self.assertIs(self.dialog.get_default_widget(), keep)
+        self.assertTrue(acts.has_css_class('destructive-action'))
+        self.assertFalse(keep.has_css_class('destructive-action'))
+        row = list(children(self.dialog._button_row))
+        self.assertLess(row.index(keep), row.index(acts))
 
     def test_a_widget_in_the_button_row_answers_when_it_is_clicked(self):
         button = Gtk.Button(label='Reset')

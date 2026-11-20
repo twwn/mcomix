@@ -710,12 +710,8 @@ class FileActions:
             _('Another program has written it. Saving replaces it with the '
               'book as MComix shows it, and what that program changed is '
               'lost.'))
-        dialog.add_button(_('_Cancel'), Response.NO)
-        dialog.add_button(_('_Save'), Response.YES)
-        dialog.set_default_response(Response.NO)
-        overwrites = dialog.get_widget_for_response(Response.YES)
-        if overwrites is not None:
-            overwrites.add_css_class('destructive-action')
+        dialog.add_confirmation_buttons(_('_Cancel'), Response.NO,
+                                        _('_Save'), Response.YES)
         dialog.run_async(lambda response: self._overwrite_answered(response,
                                                                    then))
 
@@ -1241,12 +1237,8 @@ class FileActions:
     def add_delete_permanently_buttons(
             dialog: message_dialog.MessageDialog) -> None:
         """Cancel, the default, and the destructive Delete Permanently."""
-        dialog.add_button(_('_Cancel'), Response.CANCEL)
-        dialog.add_button(_('_Delete Permanently'), Response.OK)
-        dialog.set_default_response(Response.CANCEL)
-        deletes = dialog.get_widget_for_response(Response.OK)
-        if deletes is not None:
-            deletes.add_css_class('destructive-action')
+        dialog.add_confirmation_buttons(_('_Cancel'), Response.CANCEL,
+                                        _('_Delete Permanently'), Response.OK)
 
     def delete_files_permanently(self, paths: "Iterable[str]",
                                  parent: "Gtk.Window | None" = None

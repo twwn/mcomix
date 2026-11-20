@@ -1555,14 +1555,10 @@ class MainWindow(Gtk.Window):
             _('They are taken out of the archive on disk, which is '
               'written again at once. Leaving the book without removing '
               'them forgets which pages they were.'))
-        dialog.add_button(_('_Keep them'), Response.NO)
-        dialog.add_button(_('_Remove'), Response.YES)
         # Enter must not take pages out of an archive.  A confirmation
         # defaults to the answer that changes nothing.
-        dialog.set_default_response(Response.NO)
-        removes = dialog.get_widget_for_response(Response.YES)
-        if removes is not None:
-            removes.add_css_class('destructive-action')
+        dialog.add_confirmation_buttons(_('_Keep them'), Response.NO,
+                                        _('_Remove'), Response.YES)
         dialog.run_async(lambda response: self._leaving_answered(response,
                                                                  then))
 

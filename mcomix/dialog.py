@@ -153,6 +153,14 @@ class Dialog(Gtk.Window):
             widget.connect('activate', lambda _w: self.response(response))
         self._button_row.append(widget)
 
+    def add_confirmation_buttons(self, keep: str, keep_response: int,
+                                 act: str, act_response: int) -> None:
+        """Add the button that changes nothing, which Enter presses, and
+        after it the one that acts, drawn as the destructive action."""
+        self.add_button(keep, keep_response)
+        self.add_button(act, act_response).add_css_class('destructive-action')
+        self.set_default_response(keep_response)
+
     def get_widget_for_response(self, response: int) -> "Gtk.Button | None":
         """The button that answers with <response>, if there is one."""
         return self._response_buttons.get(response)

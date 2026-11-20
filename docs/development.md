@@ -98,6 +98,7 @@ What the refactors and speed-ups of the program taught, so it is not written aga
 - Build a menu or a dialog when it is first opened, not at start, and once.
 - Opening a book reads that book. Do not open or read every file beside it on the main thread; cache what a later open asks again.
 - Keep steps that run in order, such as the preferences' migrations, in that order in the code.
+- A confirmation's two buttons come from `Dialog.add_confirmation_buttons()`: the answer that changes nothing first, pressed by Enter, then the one that acts, drawn as destructive.
 
 ## Layout
 
