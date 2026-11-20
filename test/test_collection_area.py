@@ -15,7 +15,8 @@ import unittest.mock
 
 from gi.repository import Gdk, Gio, GLib, Gtk
 
-from . import MComixTest, hold_open, pump, take_activation_from, wait_for
+from . import (MComixTest, focused_row, hold_open, pump, take_activation_from,
+               wait_for)
 
 from mcomix import constants
 from mcomix.dialog import Response
@@ -442,18 +443,8 @@ class CollectionAreaTest(MComixTest):
 
     def _focused_collection(self):
         """The collection of the row the window's focus widget shows."""
-        stack = [self.window.get_focus()]
-        while stack:
-            widget = stack.pop()
-            if widget is None:
-                continue
-            row = getattr(widget, 'row', None)
-            if row is not None:
-                return row.collection
-            stack.append(widget.get_first_child())
-            if widget is not self.window.get_focus():
-                stack.append(widget.get_next_sibling())
-        return None
+        row = focused_row(self.window)
+        return None if row is None else row.collection
 
     def test_the_menu_key_and_shift_f10_both_open_the_menu(self):
         """A GTK3 widget's popup-menu signal answered both keys.

@@ -12,7 +12,7 @@ from unittest import mock
 
 from gi.repository import Gdk, GLib, Gtk
 
-from . import MComixTest, keep_focus_within, pump
+from . import MComixTest, focused_row, keep_focus_within, pump
 from .test_bookmark_menu import _StubWindow
 
 from mcomix import bookmark_backend
@@ -157,19 +157,8 @@ class BookmarksDialogTest(MComixTest):
 
     def _focused(self):
         """The name of the row the dialog's focus widget shows."""
-        focus = self.dialog.get_focus()
-        stack = [focus]
-        while stack:
-            widget = stack.pop()
-            if widget is None:
-                continue
-            row = getattr(widget, 'row', None)
-            if row is not None:
-                return row.name
-            stack.append(widget.get_first_child())
-            if widget is not focus:
-                stack.append(widget.get_next_sibling())
-        return None
+        row = focused_row(self.dialog)
+        return None if row is None else row.name
 
     def test_removing_the_last_one_selects_the_one_above_it(self):
         self.dialog._list.select_only(2)

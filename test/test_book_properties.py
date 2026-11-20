@@ -11,7 +11,8 @@ from gi.repository import Gdk, Gtk
 
 from . import (MComixTest, NORMAL_ZIP, descendants, get_testfile_path, pump,
                wait_for)
-from .test_book_area import _MarkingLibrary
+from .test_book_area import (_MarkingLibrary,
+                             assert_offered_once_a_book_is_selected)
 
 from mcomix import image_tools
 from mcomix.archive import password as archive_password
@@ -264,12 +265,6 @@ class BookAreaPropertiesTest(MComixTest):
         dialog.assert_not_called()
 
     def test_the_menu_offers_it_for_a_selection_only(self):
-        action = self.area._popup_actions.lookup_action('properties')
-        with unittest.mock.patch.object(book_area.widgets, 'popup_at'):
-            self.area._popup_book_menu()
-            self.assertFalse(action.get_enabled())
-            self.area._covers.selection.select_all()
-            self.area._popup_book_menu()
-            self.assertTrue(action.get_enabled())
+        assert_offered_once_a_book_is_selected(self, self.area, 'properties')
 
 # vim: expandtab:sw=4:ts=4

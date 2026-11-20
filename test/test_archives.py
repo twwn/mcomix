@@ -281,6 +281,14 @@ class ArchiveFormatTest:
         list(self.archive.iter_contents())
         self.assertEqual(self.solid, self.archive.is_solid())
 
+    def _assert_unpacked_as_packed(self, name):
+        """<name> is in dest_dir, the same as the file it was packed from."""
+        path = os.path.join(self.dest_dir, name)
+        self.assertTrue(os.path.isfile(path))
+        extracted_md5 = md5(path)
+        original_md5 = md5(get_testfile_path(self.archive_contents[name]))
+        self.assertEqual((name, extracted_md5), (name, original_md5))
+
     def test_extract(self):
         self.archive = self.handler(self.archive_path)
         contents = self.archive.list_contents()
@@ -288,11 +296,7 @@ class ArchiveFormatTest:
         # Use out-of-order extraction to try to trip implementation.
         for name in reversed(contents):
             self.archive.extract(name, self.dest_dir)
-            path = os.path.join(self.dest_dir, name)
-            self.assertTrue(os.path.isfile(path))
-            extracted_md5 = md5(path)
-            original_md5 = md5(get_testfile_path(self.archive_contents[name]))
-            self.assertEqual((name, extracted_md5), (name, original_md5))
+            self._assert_unpacked_as_packed(name)
 
     def test_iter_extract(self):
         self.archive = self.handler(self.archive_path)
@@ -301,11 +305,7 @@ class ArchiveFormatTest:
         extracted = []
         for name in self.archive.iter_extract(reversed(contents), self.dest_dir):
             extracted.append(name)
-            path = os.path.join(self.dest_dir, name)
-            self.assertTrue(os.path.isfile(path))
-            extracted_md5 = md5(path)
-            original_md5 = md5(get_testfile_path(self.archive_contents[name]))
-            self.assertEqual((name, extracted_md5), (name, original_md5))
+            self._assert_unpacked_as_packed(name)
         # Entries must have been extracted in the order they are listed in the archive.
         # (necessary to prevent bad performances on solid archives)
         self.assertEqual(extracted, contents)

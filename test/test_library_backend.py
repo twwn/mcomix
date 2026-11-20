@@ -628,6 +628,20 @@ class _InterruptedOpenTest(LibraryDatabaseTest):
         self.addCleanup(restore)
         return restore
 
+    def _stop_an_open_at(self, method):
+        """Open the library with <method> raising, as a process dying
+        there would stop it; returns what puts <method> back."""
+        restore = self._interrupt(method)
+        with self.assertRaises(self.Interrupted):
+            backend.LibraryBackend()
+        return restore
+
+    def _open_again(self, restore):
+        """The next process's open, with nothing raising this time."""
+        restore()
+        backend._backend = None
+        return backend.LibraryBackend()
+
     def _query(self, statement):
         """Run <statement> against the database file directly, on a
         connection of its own: the backend never finished opening.
@@ -665,10 +679,7 @@ class InterruptedUpgradeTest(_InterruptedOpenTest):
         reader's books in it: they have to still be there afterwards, and
         under the name the next attempt will look for."""
         self._write_database(2)
-        self._interrupt('_create_table_book')
-
-        with self.assertRaises(self.Interrupted):
-            backend.LibraryBackend()
+        self._stop_an_open_at('_create_table_book')
 
         self.assertIn('book', self._tables(),
                       'the book table was renamed away and not put back')
@@ -681,14 +692,8 @@ class InterruptedUpgradeTest(_InterruptedOpenTest):
         the old version behind and the next open runs the steps again.
         That is only any use if the step left the table alone."""
         self._write_database(2)
-        restore = self._interrupt('_create_table_book')
-        with self.assertRaises(self.Interrupted):
-            backend.LibraryBackend()
-        backend._backend = None
-
-        # The process starts again, with nothing raising this time.
-        restore()
-        library = backend.LibraryBackend()
+        restore = self._stop_an_open_at('_create_table_book')
+        library = self._open_again(restore)
         try:
             self.assertEqual(backend._LibraryBackend.DB_VERSION,
                              library._library_version())
@@ -704,10 +709,7 @@ class InterruptedUpgradeTest(_InterruptedOpenTest):
     def test_the_watchlist_rebuild_is_covered_too(self):
         """Version 3 rebuilds watchlist the same way."""
         self._write_database(3)
-        self._interrupt('_create_table_watchlist')
-
-        with self.assertRaises(self.Interrupted):
-            backend.LibraryBackend()
+        self._stop_an_open_at('_create_table_watchlist')
 
         self.assertIn('watchlist', self._tables())
         self.assertNotIn('watchlist_old', self._tables())
@@ -718,10 +720,7 @@ class InterruptedUpgradeTest(_InterruptedOpenTest):
         the old collection one, which is a shape no step is written
         against - and the retry would rebuild book a second time."""
         self._write_database(5)
-        self._interrupt('_create_table_collection')
-
-        with self.assertRaises(self.Interrupted):
-            backend.LibraryBackend()
+        self._stop_an_open_at('_create_table_collection')
 
         tables = self._tables()
         self.assertIn('book', tables)
@@ -776,15 +775,9 @@ class InterruptedCreationTest(_InterruptedOpenTest):
     def test_a_creation_that_stops_after_the_info_table_leaves_nothing(self):
         """Nothing rather than a database that says it is finished: the
         next open has to find a file it can tell is not there yet."""
-        restore = self._interrupt('_create_table_watchlist')
-        with self.assertRaises(self.Interrupted):
-            backend.LibraryBackend()
-
+        restore = self._stop_an_open_at('_create_table_watchlist')
         self.assertEqual(set(), self._tables())
-        restore()
-        backend._backend = None
-
-        library = backend.LibraryBackend()
+        library = self._open_again(restore)
         try:
             for table in self.TABLES:
                 self.assertTrue(library._table_exists(table),
@@ -797,13 +790,8 @@ class InterruptedCreationTest(_InterruptedOpenTest):
         """What the half-created database broke.  The watch list is read
         whenever the library scans for new books, so this was not a
         corner the reader could avoid."""
-        restore = self._interrupt('_create_table_watchlist')
-        with self.assertRaises(self.Interrupted):
-            backend.LibraryBackend()
-        restore()
-        backend._backend = None
-
-        library = backend.LibraryBackend()
+        restore = self._stop_an_open_at('_create_table_watchlist')
+        library = self._open_again(restore)
         try:
             self.assertEqual([], library.watchlist.get_watchlist())
             self.assertEqual([], library.get_paths_of_books_outside_recent())
@@ -814,15 +802,9 @@ class InterruptedCreationTest(_InterruptedOpenTest):
         """The half that was self-healing before is covered as well, so
         that the transaction cannot be narrowed to the tables after
         info."""
-        restore = self._interrupt('_create_table_contain')
-        with self.assertRaises(self.Interrupted):
-            backend.LibraryBackend()
-
+        restore = self._stop_an_open_at('_create_table_contain')
         self.assertEqual(set(), self._tables())
-        restore()
-        backend._backend = None
-
-        library = backend.LibraryBackend()
+        library = self._open_again(restore)
         try:
             for table in self.TABLES:
                 self.assertTrue(library._table_exists(table))

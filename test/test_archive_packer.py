@@ -365,14 +365,10 @@ class WriterTest(MComixTest):
             self.assertFalse(archive_packer.can_write(constants.RAR))
 
 
-class WriteArchiveTest(MComixTest):
+class _PackingTest(MComixTest):
 
-    """write_archive(), and the ComicInfo.xml it puts in every archive.
-
-    A book saved without one is a ZIP of pictures to every other reader,
-    so one goes in; one the archive already carried is kept as it is
-    unless a page added or removed has made its count wrong.
-    """
+    """The sample pages, and where a test packs them: packed.cbz in a
+    folder of its own."""
 
     def setUp(self):
         super().setUp()
@@ -380,6 +376,16 @@ class WriteArchiveTest(MComixTest):
         self.directory = os.path.join(self.tmp_dir, 'books')
         os.makedirs(self.directory)
         self.archive = os.path.join(self.directory, 'packed.cbz')
+
+
+class WriteArchiveTest(_PackingTest):
+
+    """write_archive(), and the ComicInfo.xml it puts in every archive.
+
+    A book saved without one is a ZIP of pictures to every other reader,
+    so one goes in; one the archive already carried is kept as it is
+    unless a page added or removed has made its count wrong.
+    """
 
     def _write(self, pages=None, carried_files=None):
         archive_packer.write_archive(
@@ -588,7 +594,7 @@ class WriteArchiveTest(MComixTest):
 
 
 
-class StoppingTest(MComixTest):
+class StoppingTest(_PackingTest):
 
     """A save is written on a thread that can be told to stop, and that
     says how far it has got.  Stopped, it leaves the archive that was
@@ -596,10 +602,6 @@ class StoppingTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        self.pages = sample_pages()
-        self.directory = os.path.join(self.tmp_dir, 'books')
-        os.makedirs(self.directory)
-        self.archive = os.path.join(self.directory, 'packed.cbz')
         self.go_on = threading.Event()
         add = archive_packer._ZipWriter.add
 

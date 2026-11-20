@@ -10,7 +10,7 @@ from gi.repository import Gdk, Gio, Graphene, Gtk
 
 from . import (MainWindowLaterTest, get_testfile_path, pump, wait_for,
                wait_frames)
-from .test_key_press import _Controller
+from .test_key_press import _Controller, bindings_recorded
 
 from mcomix import constants
 from mcomix import keybindings
@@ -248,12 +248,7 @@ class ShelfKeysTest(_ShelfWindowTest):
             backend.LibraryBackend().add_book(path)
         self._window()
         self.covers = self._shown().book_area._covers
-        self.executed = []
-        manager = keybindings.keybinding_manager(self.window)
-        patcher = unittest.mock.patch.object(
-            manager, 'execute', side_effect=self.executed.append)
-        patcher.start()
-        self.addCleanup(patcher.stop)
+        self.executed = bindings_recorded(self, self.window)
 
     def test_the_covers_have_the_keys_that_move_among_them(self):
         self.covers.grab_focus()

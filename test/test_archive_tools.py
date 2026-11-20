@@ -365,28 +365,36 @@ class FinderFileTest(MComixTest):
                          archive_tools.get_archive_info(path)[:2])
 
 
+def _libunrar_load(test):
+    """Look for libunrar where the system has none and nothing loads;
+    returns what that answered and every path it tried."""
+    if sys.platform == 'win32':
+        test.skipTest('Windows searches for DLLs by its own rules')
+    tried = []
+
+    def load(path):
+        tried.append(path)
+        raise OSError('not loaded')
+
+    # Cached for the process: cleared on both sides, so that neither
+    # this answer nor an earlier one outlives the patch.
+    rar._get_unrar_dll.cache_clear()
+    test.addCleanup(rar._get_unrar_dll.cache_clear)
+    with unittest.mock.patch('ctypes.util.find_library',
+                             return_value=None), \
+            unittest.mock.patch.object(ctypes.cdll, 'LoadLibrary', load):
+        loaded = rar._get_unrar_dll()
+    return loaded, tried
+
+
 class UnrarLibraryTest(MComixTest):
 
     def test_libunrar_is_not_loaded_from_the_current_directory(self):
         """Where the system had no libunrar, the one in whatever
         directory MComix was started from was loaded: a library planted
         in a folder of downloads ran as MComix."""
-        if sys.platform == 'win32':
-            self.skipTest('Windows searches for DLLs by its own rules')
-        tried = []
-
-        def load(path):
-            tried.append(path)
-            raise OSError('not loaded')
-
-        # Cached for the process: cleared on both sides, so that neither
-        # this answer nor an earlier one outlives the patch.
-        rar._get_unrar_dll.cache_clear()
-        self.addCleanup(rar._get_unrar_dll.cache_clear)
-        with unittest.mock.patch('ctypes.util.find_library',
-                                 return_value=None), \
-                unittest.mock.patch.object(ctypes.cdll, 'LoadLibrary', load):
-            self.assertIsNone(rar._get_unrar_dll())
+        loaded, tried = _libunrar_load(self)
+        self.assertIsNone(loaded)
         self.assertTrue(tried, 'nothing was tried, so this proves nothing')
         cwd = os.getcwd()
         self.assertEqual([path for path in tried
@@ -399,20 +407,7 @@ class FlatpakUnrarTest(MComixTest):
     def test_the_flatpak_s_libunrar_is_tried(self):
         """libunrar's makefile gives the library no soname, so
         find_library() does not answer for the one the Flatpak builds."""
-        if sys.platform == 'win32':
-            self.skipTest('Windows searches for DLLs by its own rules')
-        tried = []
-
-        def load(path):
-            tried.append(path)
-            raise OSError('not loaded')
-
-        rar._get_unrar_dll.cache_clear()
-        self.addCleanup(rar._get_unrar_dll.cache_clear)
-        with unittest.mock.patch('ctypes.util.find_library',
-                                 return_value=None), \
-                unittest.mock.patch.object(ctypes.cdll, 'LoadLibrary', load):
-            rar._get_unrar_dll()
+        _loaded, tried = _libunrar_load(self)
         self.assertIn('/app/lib/libunrar.so', tried)
 
 

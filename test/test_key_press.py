@@ -51,6 +51,19 @@ class _KeyPressWindowTest(MainWindowLaterTest):
             _Controller(), typed, key.keycode, state)
 
 
+def bindings_recorded(test, window):
+    """Have <window>'s key bindings listed rather than carried out, for
+    the rest of <test>; returns the list, of the key and modifiers each
+    was looked up by."""
+    executed = []
+    manager = keybindings.keybinding_manager(window)
+    patcher = unittest.mock.patch.object(
+        manager, 'execute', side_effect=executed.append)
+    patcher.start()
+    test.addCleanup(patcher.stop)
+    return executed
+
+
 class _BindingsRecordedTest(_KeyPressWindowTest):
 
     """A main window whose key bindings are not carried out but listed,
@@ -58,12 +71,7 @@ class _BindingsRecordedTest(_KeyPressWindowTest):
 
     def setUp(self):
         super().setUp()
-        self.executed = []
-        manager = keybindings.keybinding_manager(self.window)
-        patcher = unittest.mock.patch.object(
-            manager, 'execute', side_effect=self.executed.append)
-        patcher.start()
-        self.addCleanup(patcher.stop)
+        self.executed = bindings_recorded(self, self.window)
 
 
 class KeyPressTest(_BindingsRecordedTest):

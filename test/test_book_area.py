@@ -1940,6 +1940,18 @@ class OpenAndClickTest(_AreaOnScreenTest):
         self.assertEqual([0, 1, 2], self.area._covers.get_selected_positions())
 
 
+def assert_offered_once_a_book_is_selected(test, area, name):
+    """<area>'s book menu has its <name> entry off while nothing is
+    selected, and on once every book is."""
+    action = area._popup_actions.lookup_action(name)
+    with unittest.mock.patch.object(book_area.widgets, 'popup_at'):
+        area._popup_book_menu()
+        test.assertFalse(action.get_enabled())
+        area._covers.selection.select_all()
+        area._popup_book_menu()
+        test.assertTrue(action.get_enabled())
+
+
 class _MarkingLibrary:
 
     """A library window over the real backend, for what the menu
@@ -2108,13 +2120,7 @@ class RenameFromLibraryTest(MComixTest):
         rename.assert_called_once_with()
 
     def test_the_menu_offers_it_for_one_book_only(self):
-        action = self.area._popup_actions.lookup_action('rename')
-        with unittest.mock.patch.object(book_area.widgets, 'popup_at'):
-            self.area._popup_book_menu()
-            self.assertFalse(action.get_enabled())
-            self.area._covers.selection.select_all()
-            self.area._popup_book_menu()
-            self.assertTrue(action.get_enabled())
+        assert_offered_once_a_book_is_selected(self, self.area, 'rename')
 
 # vim: expandtab:sw=4:ts=4
 

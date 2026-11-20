@@ -11,7 +11,8 @@ import unittest.mock
 
 from gi.repository import Gdk, Graphene, Gtk, Pango
 
-from . import MComixTest, children, descendants, keep_focus_within, pump
+from . import (MComixTest, children, descendants, focused_row,
+               keep_focus_within, pump)
 
 from mcomix import column_list
 
@@ -190,6 +191,17 @@ class ColumnListViewTest(MComixTest):
         self.assertFalse(self.view.move_row(0, len(self.NAMES)))
         self.assertEqual(self._names(), list(self.NAMES))
 
+    def _reorderable_sorted_by_name(self):
+        """A view of NAMES that rows can be dragged in, its Name heading
+        sorting them backwards."""
+        view = column_list.ColumnListView()
+        column = view.add_text_column('Name', 'name',
+                                      sort_key=lambda row: row.name)
+        view.set_rows(column_list.Row(name=name) for name in self.NAMES)
+        view.set_reorderable(True)
+        view.sort_by(column, descending=True)
+        return view
+
     def test_a_drag_is_refused_while_a_heading_is_sorting(self):
         """A drag moves a row in the store, which is not what is shown.
 
@@ -198,12 +210,7 @@ class ColumnListViewTest(MComixTest):
         so those are not the store's any more and a drop would move
         whichever row happened to sit at that number.
         """
-        view = column_list.ColumnListView()
-        column = view.add_text_column('Name', 'name',
-                                      sort_key=lambda row: row.name)
-        view.set_rows(column_list.Row(name=name) for name in self.NAMES)
-        view.set_reorderable(True)
-        view.sort_by(column, descending=True)
+        view = self._reorderable_sorted_by_name()
         self._present(view)
         self.assertEqual([row.name for row in view.each_row()],
                          ['two', 'three', 'one'])
@@ -222,12 +229,7 @@ class ColumnListViewTest(MComixTest):
                          list(self.NAMES))
 
     def test_a_drag_is_allowed_again_once_nothing_is_sorting(self):
-        view = column_list.ColumnListView()
-        column = view.add_text_column('Name', 'name',
-                                      sort_key=lambda row: row.name)
-        view.set_rows(column_list.Row(name=name) for name in self.NAMES)
-        view.set_reorderable(True)
-        view.sort_by(column, descending=True)
+        view = self._reorderable_sorted_by_name()
         view.sort_by(None)
         self._present(view)
 
@@ -297,18 +299,8 @@ class ColumnListViewTest(MComixTest):
 
     def _focused(self):
         """The name of the row the window's focus widget shows."""
-        stack = [self.window.get_focus()]
-        while stack:
-            widget = stack.pop()
-            if widget is None:
-                continue
-            row = getattr(widget, 'row', None)
-            if row is not None:
-                return row.name
-            stack.append(widget.get_first_child())
-            if widget is not self.window.get_focus():
-                stack.append(widget.get_next_sibling())
-        return None
+        row = focused_row(self.window)
+        return None if row is None else row.name
 
     def test_typing_something_no_row_starts_with_selects_nothing(self):
         self.view.set_search_attribute('name')

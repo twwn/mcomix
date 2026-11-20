@@ -84,6 +84,18 @@ class _LibraryWindowTest(MComixTest):
         prefs['last library collection'] = constants.COLLECTION_ALL
         return self._open()
 
+    def _watching(self, dialog):
+        """Watch an empty directory, so that a scan has work to report."""
+        directory = os.path.join(self.tmp_dir, 'watched')
+        os.makedirs(directory, exist_ok=True)
+        dialog.backend.watchlist.add_directory(directory)
+        return directory
+
+    @staticmethod
+    def _cursor_name(dialog):
+        cursor = dialog.get_cursor()
+        return None if cursor is None else cursor.get_name()
+
 
 class LibraryDialogTest(_LibraryWindowTest):
 
@@ -434,16 +446,9 @@ class WatchListScanTest(_LibraryWindowTest):
         pump()
         return watch_list
 
-    @staticmethod
-    def _cursor_name(dialog):
-        cursor = dialog.get_cursor()
-        return None if cursor is None else cursor.get_name()
-
     def test_scan_now_scans_the_library_it_was_opened_from(self):
         dialog = self._open()
-        directory = os.path.join(self.tmp_dir, 'watched')
-        os.makedirs(directory, exist_ok=True)
-        dialog.backend.watchlist.add_directory(directory)
+        self._watching(dialog)
         watch_list = self._watch_list(dialog)
 
         watch_list.response(watchlist.WatchListDialog.RESPONSE_SCANNOW)
@@ -464,9 +469,7 @@ class WatchListScanTest(_LibraryWindowTest):
         scan; Scan now has already covered them, so closing after one
         does not."""
         dialog = self._open()
-        directory = os.path.join(self.tmp_dir, 'watched')
-        os.makedirs(directory, exist_ok=True)
-        dialog.backend.watchlist.add_directory(directory)
+        self._watching(dialog)
         watch_list = self._watch_list(dialog)
         watch_list._changed = True
 
@@ -682,18 +685,6 @@ class LibraryScanCursorTest(_LibraryWindowTest):
     cursor handler cannot show it: that one draws on the page area of a
     window the reader is not looking at while the library is up.
     """
-
-    def _watching(self, dialog):
-        """Watch an empty directory, so that a scan has work to report."""
-        directory = os.path.join(self.tmp_dir, 'watched')
-        os.makedirs(directory, exist_ok=True)
-        dialog.backend.watchlist.add_directory(directory)
-        return directory
-
-    @staticmethod
-    def _cursor_name(dialog):
-        cursor = dialog.get_cursor()
-        return None if cursor is None else cursor.get_name()
 
     def test_a_scan_puts_the_wait_pointer_over_the_library(self):
         dialog = self._open()

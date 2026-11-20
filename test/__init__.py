@@ -252,6 +252,25 @@ def keep_focus_within(window):
         widget = parent
 
 
+def focused_row(window):
+    """The row a column list's cell under <window>'s focus widget
+    shows, or None: the focus widget, then its children and theirs,
+    depth first."""
+    focus = window.get_focus()
+    stack = [focus]
+    while stack:
+        widget = stack.pop()
+        if widget is None:
+            continue
+        row = getattr(widget, 'row', None)
+        if row is not None:
+            return row
+        stack.append(widget.get_first_child())
+        if widget is not focus:
+            stack.append(widget.get_next_sibling())
+    return None
+
+
 def wait_for(predicate, seconds=5):
     """Run the main loop until <predicate> holds, or time runs out.
 

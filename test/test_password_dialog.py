@@ -230,6 +230,26 @@ class SessionPasswordTest(MComixTest):
         patcher.start()
         self.addCleanup(patcher.stop)
 
+    def _listed(self, path, folder):
+        """An Extractor of <path> into a new <folder> of tmp_dir, once
+        it has listed the archive."""
+        destination = os.path.join(self.tmp_dir, folder)
+        os.makedirs(destination)
+        extractor = archive_extractor.Extractor()
+        extractor.setup(path, destination)
+        self.addCleanup(extractor.close)
+        self.assertTrue(wait_for(lambda: extractor.get_files() is not None,
+                                 seconds=20))
+        return extractor
+
+    def _unpack(self, extractor, members):
+        """Have <extractor> unpack <members> and wait until it is done
+        with each."""
+        extractor.set_files(members)
+        extractor.extract()
+        self.assertTrue(wait_for(lambda: all(
+            extractor.is_ready(member) for member in members), seconds=20))
+
     def _extract_with_a_new_archive(self):
         archive = zip_archive.ZipArchive(self.ARCHIVE)
         self.addCleanup(archive.close)
@@ -277,17 +297,7 @@ class SessionPasswordTest(MComixTest):
 
     def test_a_page_that_will_not_unpack_forgets_it(self):
         self.answer = 'wrong'
-        destination = os.path.join(self.tmp_dir, 'extracted')
-        os.makedirs(destination)
-        extractor = archive_extractor.Extractor()
-        extractor.setup(self.ARCHIVE, destination)
-        self.addCleanup(extractor.close)
-        self.assertTrue(wait_for(lambda: extractor.get_files() is not None,
-                                 seconds=20))
-        extractor.set_files([self.MEMBER])
-        extractor.extract()
-        self.assertTrue(wait_for(lambda: extractor.is_ready(self.MEMBER),
-                                 seconds=20))
+        self._unpack(self._listed(self.ARCHIVE, 'extracted'), [self.MEMBER])
         self.assertEqual([self.ARCHIVE], self.asked)
         self.assertIsNone(archive_password.remembered(self.ARCHIVE))
         self.answer = 'password'
@@ -302,17 +312,8 @@ class SessionPasswordTest(MComixTest):
         for name in ('Encrypted.7z', 'SolidEncrypted.7z'):
             with self.subTest(name=name):
                 path = get_testfile_path('archives', name)
-                destination = os.path.join(self.tmp_dir, name)
-                os.makedirs(destination)
-                extractor = archive_extractor.Extractor()
-                extractor.setup(path, destination)
-                self.addCleanup(extractor.close)
-                self.assertTrue(wait_for(
-                    lambda: extractor.get_files() is not None, seconds=20))
-                extractor.set_files([self.MEMBER])
-                extractor.extract()
-                self.assertTrue(wait_for(
-                    lambda: extractor.is_ready(self.MEMBER), seconds=20))
+                extractor = self._listed(path, name)
+                self._unpack(extractor, [self.MEMBER])
                 self.assertIsNone(archive_password.remembered(path))
                 self.assertEqual(frozenset(), extractor.unpacked())
 
@@ -330,20 +331,10 @@ class SessionPasswordTest(MComixTest):
         path = get_testfile_path('archives', 'Encrypted.rar')
         for members in (['arg.jpeg'], ['arg.jpeg', 'foo.JPG']):
             with self.subTest(members=members):
-                destination = os.path.join(self.tmp_dir, str(len(members)))
-                os.makedirs(destination)
-                extractor = archive_extractor.Extractor()
-                extractor.setup(path, destination)
-                self.addCleanup(extractor.close)
-                self.assertTrue(wait_for(
-                    lambda: extractor.get_files() is not None, seconds=20))
+                extractor = self._listed(path, str(len(members)))
                 self.assertIsInstance(extractor._opened_archive._main_archive,
                                       rar_external.RarArchive)
-                extractor.set_files(members)
-                extractor.extract()
-                self.assertTrue(wait_for(lambda: all(
-                    extractor.is_ready(member) for member in members),
-                    seconds=20))
+                self._unpack(extractor, members)
                 self.assertIsNone(archive_password.remembered(path))
                 self.assertEqual(frozenset(), extractor.unpacked())
 

@@ -4919,6 +4919,19 @@ class MainWindowTest(MComixTest):
             seconds=20), 'the folder of images never opened')
         return directory
 
+    def _first_page_read_again(self):
+        """Read the book again and draw its first page; returns the
+        mock that watched image_tools.missing_image_icon meanwhile."""
+        with unittest.mock.patch.object(
+                image_tools, 'missing_image_icon',
+                wraps=image_tools.missing_image_icon) as drawn:
+            self.window.filehandler.refresh_file()
+            self._pump()
+            self.window.set_page(1)
+            self.window.draw_image()
+            self._pump()
+        return drawn
+
     def test_a_page_that_will_not_load_is_drawn_as_large_as_a_page(self):
         """The picture for a page that would not load was drawn at 24
         pixels and shown at that size, or scaled up from it into a
@@ -4928,14 +4941,7 @@ class MainWindowTest(MComixTest):
         with open(os.path.join(directory, '0.png'), 'wb') as damaged:
             damaged.write(b'not an image')
         prefs['stretch'] = False
-        with unittest.mock.patch.object(
-                image_tools, 'missing_image_icon',
-                wraps=image_tools.missing_image_icon) as drawn:
-            self.window.filehandler.refresh_file()
-            self._pump()
-            self.window.set_page(1)
-            self.window.draw_image()
-            self._pump()
+        drawn = self._first_page_read_again()
         shown = self.window.images[0].get_paintable()
         height = shown.get_intrinsic_height()
         self.assertGreater(height, 200,
@@ -4956,14 +4962,7 @@ class MainWindowTest(MComixTest):
             damaged.write(b'not an image')
         prefs['rotation'] = 90
         prefs['keep transformation'] = True
-        with unittest.mock.patch.object(
-                image_tools, 'missing_image_icon',
-                wraps=image_tools.missing_image_icon) as drawn:
-            self.window.filehandler.refresh_file()
-            self._pump()
-            self.window.set_page(1)
-            self.window.draw_image()
-            self._pump()
+        drawn = self._first_page_read_again()
         width, height = self.window.layout.get_content_boxes()[0].get_size()
         self.assertNotEqual(width, height)
         shown = self.window.images[0].get_paintable()

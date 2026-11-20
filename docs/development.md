@@ -54,6 +54,7 @@ Class or helper | For
 `hold_open(popover)` | A popover that stays open under Xvfb.
 `take_activation_from(test, window)` | Another window made active, so that `window` is not.
 `keep_focus_within(window)` | The focus state kept on a window's widgets while another worker's window has the keyboard.
+`focused_row(window)` | The column list row under a window's focus widget, or None.
 `refuse_passwords(test)` | Cancel every password prompt; the archives asked about are listed.
 `FolderDialogStub(folder)` | Stands in for a folder chooser's answer.
 `StubFileHandler` | A window's file handler with no book and the `file_opened` and `file_closed` signals, for a menu's tests.
