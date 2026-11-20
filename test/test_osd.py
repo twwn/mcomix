@@ -14,7 +14,7 @@ from gi.repository import Pango
 
 from . import MComixTest
 
-from mcomix.osd import OnScreenDisplay
+from mcomix.osd import OnScreenDisplay, PageCounter
 
 
 class ScaleFontTest(MComixTest):
@@ -73,6 +73,18 @@ class DrawTest(MComixTest):
     def _rendered(self, text, rect, size=(200, 100)):
         """Draw the OSD of <text> at <rect>, render it over a <size>
         field of grey, and answer with the rendered texture."""
+        overlays = {}
+        page_area = types.SimpleNamespace(
+            set_overlay=lambda name, draw: overlays.__setitem__(name, draw))
+        osd = OnScreenDisplay(types.SimpleNamespace(page_area=page_area))
+        layout = Gtk.Label().create_pango_layout(text)
+        osd._draw_osd(layout, rect)
+        self.assertEqual([OnScreenDisplay._OVERLAY], list(overlays))
+        return self._render(overlays[OnScreenDisplay._OVERLAY], size)
+
+    def _render(self, draw, size):
+        """Render what <draw> puts on a snapshot over a <size> field of
+        grey, and answer with the rendered texture."""
         if gi.version_info < (3, 48):
             # Rendering takes the snapshot's render node, a fundamental
             # type, which PyGObject hands to Python only from 3.48 on:
@@ -81,20 +93,12 @@ class DrawTest(MComixTest):
             # skips for the same reason).
             raise unittest.SkipTest('PyGObject %s cannot read render nodes'
                                     % gi.__version__)
-        overlays = {}
-        page_area = types.SimpleNamespace(
-            set_overlay=lambda name, draw: overlays.__setitem__(name, draw))
-        osd = OnScreenDisplay(types.SimpleNamespace(page_area=page_area))
-        layout = Gtk.Label().create_pango_layout(text)
-        osd._draw_osd(layout, rect)
-        self.assertEqual([OnScreenDisplay._OVERLAY], list(overlays))
-
         snapshot = Gtk.Snapshot()
         field = Graphene.Rect().init(0, 0, *size)
         grey = Gdk.RGBA()
         grey.parse('#808080')
         snapshot.append_color(grey, field)
-        overlays[OnScreenDisplay._OVERLAY](snapshot)
+        draw(snapshot)
         renderer = Gsk.CairoRenderer()
         renderer.realize_for_display(Gdk.Display.get_default())
         self.addCleanup(renderer.unrealize)
@@ -118,6 +122,21 @@ class DrawTest(MComixTest):
         self.assertEqual((128, 128, 128), pixels[71][118])
         self.assertEqual((128, 128, 128), pixels[50][19])
         self.assertEqual((128, 128, 128), pixels[50][121])
+
+    def test_the_page_counter_sits_on_a_box_the_page_shows_through(self):
+        """The counter's box, in the lower right corner, is black at
+        0.6: the grey under it comes through at 0.4."""
+        counter = PageCounter(types.SimpleNamespace(
+            get_visible_area_size=lambda: (200, 100),
+            scroll_offset=lambda: (0, 0)))
+        layout = Gtk.Label().create_pango_layout('')
+        pixels = self._pixels(self._render(
+            lambda snapshot: counter._draw(snapshot, layout), (200, 100)))
+        for value in pixels[100 - PageCounter._MARGIN - 3][
+                200 - PageCounter._MARGIN - 3]:
+            self.assertAlmostEqual(0.4 * 128, value, delta=1)
+        self.assertEqual((128, 128, 128),
+                         pixels[100 - PageCounter._MARGIN + 3][190])
 
     def test_the_text_is_white_inside_the_box(self):
         # The drawing is clipped to the box, so text laid out anywhere

@@ -13,7 +13,22 @@ from mcomix.preferences import prefs
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    import cairo
     from mcomix import main
+
+
+def _black_box(snapshot: Gtk.Snapshot, rect: tuple[int, int, int, int],
+               alpha: float) -> "cairo.Context[cairo.Surface]":
+    """Fill <rect> of <snapshot> black, <alpha> opaque, and return the
+    cairo context, bounded by <rect>, for what goes on the box."""
+    bounds = Graphene.Rect()
+    bounds.init(*rect)
+    cr = snapshot.append_cairo(bounds)
+    black = image_tools.RGBA_BLACK
+    cr.set_source_rgba(black.red, black.green, black.blue, alpha)
+    cr.rectangle(*rect)
+    cr.fill()
+    return cr
 
 
 class OnScreenDisplay:
@@ -140,13 +155,7 @@ class OnScreenDisplay:
         # The canvas draws the OSD over the pages, with cairo from the
         # snapshot, and works out for itself what that damages.
         def draw(snapshot: Gtk.Snapshot) -> None:
-            bounds = Graphene.Rect()
-            bounds.init(*rect)
-            cr = snapshot.append_cairo(bounds)
-            black = image_tools.RGBA_BLACK
-            cr.set_source_rgb(black.red, black.green, black.blue)
-            cr.rectangle(*rect)
-            cr.fill()
+            cr = _black_box(snapshot, rect, 1.0)
             extents = layout.get_extents()[0]
             white = image_tools.RGBA_WHITE
             cr.set_source_rgb(white.red, white.green, white.blue)
@@ -246,13 +255,7 @@ class PageCounter:
         rect = (int(offset_x) + view_width - width - 2 * pad - self._MARGIN,
                 int(offset_y) + view_height - height - 2 * pad - self._MARGIN,
                 width + 2 * pad, height + 2 * pad)
-        bounds = Graphene.Rect()
-        bounds.init(*rect)
-        cr = snapshot.append_cairo(bounds)
-        black = image_tools.RGBA_BLACK
-        cr.set_source_rgba(black.red, black.green, black.blue, 0.6)
-        cr.rectangle(*rect)
-        cr.fill()
+        cr = _black_box(snapshot, rect, 0.6)
         white = image_tools.RGBA_WHITE
         cr.set_source_rgb(white.red, white.green, white.blue)
         cr.move_to(rect[0] + pad, rect[1] + pad)
