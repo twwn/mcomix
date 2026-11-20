@@ -70,6 +70,9 @@ A helper several tests of one file share goes on a base class in that file.
 A helper another file needs goes into `test/__init__.py` and this table.
 Before moving a method out of a class, check no subclass overrides it.
 Imports go at the top of the test module. One inside a test needs a reason: an optional library, or a module whose import the test watches.
+Undo what a test changes with `mock.patch`, `self.enterContext()` or `self.addCleanup()`, not by hand in a `finally`.
+Name each case of a loop with `self.subTest()`, not with a failure message built by hand.
+The CI also runs the tests on Windows and with the oldest supported libraries. Do not assume animations are on, that a key types what its name says, or that PyGObject hands back render nodes: wait for the size, check the keymap, or skip there.
 
 Waiting:
 
