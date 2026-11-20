@@ -4835,14 +4835,7 @@ class MainWindowTest(MComixTest):
     def test_renaming_a_loose_image_renames_the_file_on_disk(self):
         """A book read as a folder of images has no archive to write,
         so the rename happens at once."""
-        directory = os.path.join(self.tmp_dir, 'loose')
-        os.makedirs(directory)
-        for number in range(3):
-            shutil.copy(get_testfile_path('images', '03-PNG-RGB.png'),
-                        os.path.join(directory, '%d.png' % number))
-        self.window.filehandler.open_file(
-            os.path.join(directory, '0.png'))
-        self.wait_for_pages(3)
+        directory = self._loose_book('loose')
 
         self.assertEqual(self.window.file_actions.rename_page(1, 'Cover.png'),
                          'Cover.png')
@@ -4853,14 +4846,7 @@ class MainWindowTest(MComixTest):
         self.assertEqual(self.window.file_actions.page_name(1), 'Cover.png')
 
     def test_a_loose_image_is_not_renamed_over_another_file(self):
-        directory = os.path.join(self.tmp_dir, 'loose2')
-        os.makedirs(directory)
-        for number in range(3):
-            shutil.copy(get_testfile_path('images', '03-PNG-RGB.png'),
-                        os.path.join(directory, '%d.png' % number))
-        self.window.filehandler.open_file(
-            os.path.join(directory, '0.png'))
-        self.wait_for_pages(3)
+        directory = self._loose_book('loose2')
 
         self.assertIsNone(self.window.file_actions.rename_page(1, '1.png'))
         self._pump()

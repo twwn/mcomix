@@ -241,6 +241,17 @@ class MigratePreferencesTest(MComixTest):
         self.assertEqual(prefs['stored dialog choices'],
                          {'delete-opened-file': -5})
 
+    def _read_stored(self, key, stored, version, before) -> None:
+        """Read a file holding <stored> under <key>, at format <version>
+        (None: from before files had one), with <key> set to <before>
+        first, so that what an earlier round read is not what is read."""
+        saved = {key: stored}
+        if version is not None:
+            saved[preferences._FORMAT_VERSION_KEY] = version
+        self._write(saved)
+        prefs[key] = before
+        preferences.read_preferences_file()
+
     def test_recent_files_stored_as_a_number_keep_their_answer(self) -> None:
         """MComix before 2012 stored "never" as 0 and the two ways of
         storing as 1 and 2, and the number stayed in the file for as
@@ -251,12 +262,7 @@ class MigratePreferencesTest(MComixTest):
         for version in (None, 2):
             for stored, kept in ((0, False), (1, True), (2, True)):
                 with self.subTest(version=version, stored=stored):
-                    saved = {'store recent file info': stored}
-                    if version is not None:
-                        saved[preferences._FORMAT_VERSION_KEY] = version
-                    self._write(saved)
-                    prefs['store recent file info'] = not kept
-                    preferences.read_preferences_file()
+                    self._read_stored('store recent file info', stored, version, not kept)
                     self.assertIs(kept, prefs['store recent file info'])
 
     def test_the_old_default_of_one_extraction_thread_gives_way(self) -> None:
@@ -265,13 +271,7 @@ class MigratePreferencesTest(MComixTest):
         for version in (None, 3):
             for stored, read in ((1, 0), (2, 2), (8, 8)):
                 with self.subTest(version=version, stored=stored):
-                    saved = {'max extract threads': stored}
-                    if version is not None:
-                        saved[preferences._FORMAT_VERSION_KEY] = version
-                    self._write(saved)
-                    # What the last round read is not the default.
-                    prefs['max extract threads'] = 0
-                    preferences.read_preferences_file()
+                    self._read_stored('max extract threads', stored, version, 0)
                     self.assertEqual(read, prefs['max extract threads'])
 
     def test_mcomix_3_s_default_of_three_thumbnail_threads_gives_way(self) -> None:
@@ -281,13 +281,7 @@ class MigratePreferencesTest(MComixTest):
         for version in (None, 5):
             for stored, read in ((3, 0), (2, 2), (8, 8)):
                 with self.subTest(version=version, stored=stored):
-                    saved = {'max threads': stored}
-                    if version is not None:
-                        saved[preferences._FORMAT_VERSION_KEY] = version
-                    self._write(saved)
-                    # What the last round read is not the default.
-                    prefs['max threads'] = 0
-                    preferences.read_preferences_file()
+                    self._read_stored('max threads', stored, version, 0)
                     self.assertEqual(read, prefs['max threads'])
 
     def test_three_thumbnail_threads_chosen_since_is_kept(self) -> None:
