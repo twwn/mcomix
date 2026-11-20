@@ -32,7 +32,6 @@ from mcomix import file_actions
 from mcomix import i18n
 from mcomix import icons
 from mcomix import last_read_page
-from mcomix import message_dialog
 from mcomix import openwith
 from mcomix import page_marks
 from mcomix import page_rotations
@@ -2174,9 +2173,7 @@ class AddCollectionTest(_LibraryWindowTest):
         dialog = self._open()
         dialog.collection_area.add_collection()
         pump()
-        prompts = [window for window in Gtk.Window.list_toplevels()
-                   if isinstance(window, message_dialog.MessageDialog)
-                   and window.get_visible()]
+        prompts = visible_prompts()
         self.assertEqual(1, len(prompts))
         entry = self._entry_in(prompts[0])
         entry.set_text(name)

@@ -26,7 +26,6 @@ from mcomix import file_handler
 from mcomix import file_provider
 from mcomix import icons
 from mcomix import main
-from mcomix import message_dialog
 from mcomix import tools
 from mcomix import run
 from mcomix.dialog import Response
@@ -1100,9 +1099,7 @@ class RememberedResumeAnswerTest(MainWindowLaterTest):
         """Open the book with no standing answer, answer the prompt that
         comes up with <response>, and give the page shown then."""
         self._open_and_settle()
-        prompts = [window for window in Gtk.Window.list_toplevels()
-                   if isinstance(window, message_dialog.MessageDialog)
-                   and window.get_transient_for() is self.window]
+        prompts = prompts_over(self.window)
         self.assertEqual(1, len(prompts), 'nothing asked where to resume')
         self.assertEqual(1, self.window.imagehandler.get_current_page(),
                          'the book was not shown from the front while '
@@ -1124,9 +1121,7 @@ class RememberedResumeAnswerTest(MainWindowLaterTest):
         # The answer that there is nothing to resume to finishes the
         # opening as an answer from the prompt would.
         recorded.assert_called_once_with()
-        prompts = [window for window in Gtk.Window.list_toplevels()
-                   if isinstance(window, message_dialog.MessageDialog)
-                   and window.get_transient_for() is self.window]
+        prompts = prompts_over(self.window)
         self.assertEqual([], prompts)
         self.assertEqual(1, page)
 
@@ -1246,9 +1241,7 @@ class ExtractionOrderTest(MainWindowLaterTest):
         unpacked = self._unpacked()
         prompts = []
         self.assertTrue(wait_for(lambda: prompts.extend(
-            window for window in Gtk.Window.list_toplevels()
-            if isinstance(window, message_dialog.MessageDialog)
-            and window.get_transient_for() is self.window) or prompts))
+            prompts_over(self.window)) or prompts))
         prompts[0].response(Response.YES)
         pump()
         self.assertEqual([1, 2, 3, 4, 5, 6, 10, 11, 9, 12, 7, 8], unpacked)

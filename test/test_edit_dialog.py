@@ -14,7 +14,8 @@ from gi.repository import Gdk, Gtk
 
 from . import (MComixTest, MainWindowLaterTest, children, descendants,
                get_testfile_path, hold_open, prompts_over, pump,
-               simple_file_chooser, take_activation_from, wait_for)
+               simple_file_chooser, take_activation_from, visible_prompts,
+               wait_for)
 
 from mcomix import archive_packer
 from mcomix import constants
@@ -991,9 +992,7 @@ class EditArchiveDialogTest(MComixTest):
                 == [target], seconds=20), 'the chooser never chose it')
             chooser.response(Response.OK)
             pump()
-            questions = [window for window in Gtk.Window.list_toplevels()
-                         if isinstance(window, message_dialog.MessageDialog)
-                         and window.get_visible()]
+            questions = visible_prompts()
             self.assertEqual(len(questions), 1, 'nothing asked')
             question = questions[0]
             self.assertIs(question.get_transient_for(), chooser)

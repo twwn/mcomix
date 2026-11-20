@@ -15,7 +15,7 @@ import PIL.Image
 from gi.repository import Gdk, GdkPixbuf, Gio, GLib, Gtk
 
 from . import (MComixTest, NORMAL_ZIP, children, get_testfile_path, hold_open,
-               pump, take_activation_from, wait_for)
+               prompts_over, pump, take_activation_from, wait_for)
 from .test_theme import background_of
 
 from mcomix import bookmark_backend
@@ -947,22 +947,17 @@ class DeleteFromDiskTest(MComixTest):
         self.area._covers.selection.select_all()
 
     def tearDown(self):
-        for dialog in self._dialogs():
+        for dialog in prompts_over(self.library):
             dialog.destroy()
         self.library.destroy()
         self.area.close()
         super().tearDown()
 
-    def _dialogs(self):
-        return [window for window in Gtk.Window.list_toplevels()
-                if isinstance(window, message_dialog.MessageDialog)
-                and window.get_transient_for() is self.library]
-
     def test_it_defaults_to_the_answer_that_deletes_nothing(self):
         """The books go from the disk as well as from the library, so
         Enter must not be what does it."""
         self.area._completely_remove_book()
-        dialogs = self._dialogs()
+        dialogs = prompts_over(self.library)
         self.assertEqual(1, len(dialogs), 'nothing asked before deleting')
         dialog = dialogs[0]
         keeps = dialog.get_widget_for_response(Response.NO)
@@ -990,7 +985,7 @@ class DeleteFromDiskTest(MComixTest):
                                         return_value=True):
             self.area._completely_remove_book()
             pump()
-        dialogs = self._dialogs()
+        dialogs = prompts_over(self.library)
         self.assertEqual(1, len(dialogs), 'nothing asked before deleting')
         return dialogs[0]
 
@@ -1024,7 +1019,7 @@ class DeleteFromDiskTest(MComixTest):
             pump()
         trash.assert_not_called()
         self.assertFalse(os.path.exists(path))
-        self.assertEqual([], self._dialogs(),
+        self.assertEqual([], prompts_over(self.library),
                          'a second question followed the first')
         self.assertIn(path, self.library.recent.removed)
 
@@ -1035,7 +1030,7 @@ class DeleteFromDiskTest(MComixTest):
         self.assertEqual(Gdk.EVENT_STOP, self.area._key_press(
             None, Gdk.KEY_Delete, 0, Gdk.ModifierType.SHIFT_MASK))
         pump()
-        dialogs = self._dialogs()
+        dialogs = prompts_over(self.library)
         self.assertEqual(1, len(dialogs), 'nothing asked before deleting')
         dialog = dialogs[0]
         self.assertEqual('Delete "deletable.cbz" permanently?',
@@ -1060,7 +1055,7 @@ class DeleteFromDiskTest(MComixTest):
         self.area._covers.selection.select_all()
         self.area.delete_permanently()
         pump()
-        dialog, = self._dialogs()
+        dialog, = prompts_over(self.library)
         self.assertEqual('Delete 2 books permanently?',
                          dialog._primary.get_text())
         dialog.get_widget_for_response(Response.CANCEL).emit('clicked')
@@ -1116,7 +1111,7 @@ class DeleteFromDiskTest(MComixTest):
         system with no trash."""
         self.area._remove_answered(Response.YES)
         pump()
-        offers = self._dialogs()
+        offers = prompts_over(self.library)
         self.assertEqual(1, len(offers), 'nothing was offered')
         offers[0].get_widget_for_response(Response.CANCEL).emit('clicked')
         pump()
@@ -1137,7 +1132,7 @@ class DeleteFromDiskTest(MComixTest):
                                         refuse):
             self.area._remove_answered(Response.YES)
         pump()
-        offers = self._dialogs()
+        offers = prompts_over(self.library)
         self.assertEqual(1, len(offers), 'nothing was offered')
         self.assertTrue(os.path.isfile(path), 'the book went unasked')
         self.assertEqual('Could not move "deletable.cbz" to the trash',
@@ -1170,7 +1165,7 @@ class DeleteFromDiskTest(MComixTest):
         self.area._remove_answered(Response.YES)
         pump()
 
-        dialogs = [window for window in self._dialogs()
+        dialogs = [window for window in prompts_over(self.library)
                    if window.dialog_id == message_dialog.RememberedDialog
                    .REMOVE_BOOKMARKS_OF_DELETED_FILE]
         self.assertEqual(len(dialogs), 1, 'nothing asked about the bookmark')
@@ -1187,7 +1182,7 @@ class DeleteFromDiskTest(MComixTest):
         self.area._remove_answered(Response.YES)
         pump()
 
-        self.assertEqual(self._dialogs(), [])
+        self.assertEqual(prompts_over(self.library), [])
 
     def test_a_book_that_was_deleted_says_nothing_of_the_kind(self):
         path = self._deletable()

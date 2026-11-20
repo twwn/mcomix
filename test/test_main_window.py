@@ -22,8 +22,8 @@ from gi.repository import Gdk, GdkPixbuf, Gio, GLib, Gtk
 
 from . import (MComixTest, MainWindowLaterTest, NORMAL_ZIP, children,
                close_a_main_window, descendants, fresh_bookmarks_store, get_testfile_path,
-               hold_open, prompts_over, pump, sample_pages, wait_for,
-               windows_refusal)
+               hold_open, prompts_over, pump, sample_pages, visible_prompts,
+               wait_for, windows_refusal)
 
 from mcomix import archive_packer
 from mcomix import bookmark_backend
@@ -2869,9 +2869,7 @@ class MainWindowTest(MComixTest):
                 side_effect=OSError(28, 'No space left on device')):
             self.assertFalse(self.window.file_actions.save_archive())
         self._pump()
-        notices = [window for window in Gtk.Window.list_toplevels()
-                   if isinstance(window, message_dialog.MessageDialog)
-                   and window.get_visible()]
+        notices = visible_prompts()
         try:
             self.assertEqual(1, len(notices))
             self.assertEqual('The new archive could not be saved!',

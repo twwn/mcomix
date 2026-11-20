@@ -12,7 +12,8 @@ from unittest import mock
 
 from gi.repository import Gdk, GLib, Gtk
 
-from . import MComixTest, focused_row, keep_focus_within, pump
+from . import (MComixTest, focused_row, keep_focus_within, pump,
+               visible_prompts)
 from .test_bookmark_menu import _StubWindow
 
 from mcomix import bookmark_backend
@@ -20,7 +21,6 @@ from mcomix import bookmark_dialog
 from mcomix import bookmark_menu_item
 from mcomix import constants
 from mcomix import tools
-from mcomix import message_dialog
 from mcomix.dialog import Response
 from mcomix.preferences import prefs
 
@@ -210,23 +210,17 @@ class BookmarksDialogTest(MComixTest):
 
     # -- Opening ----------------------------------------------------------
 
-    def _dialogs(self):
-        """The prompts the dialog has put on screen."""
-        return [window for window in Gtk.Window.list_toplevels()
-                if isinstance(window, message_dialog.MessageDialog)
-                and window.get_visible()]
-
     def _clear(self, answer):
         """Press Clear and give <answer> to the question it asks."""
         self.dialog.response(constants.RESPONSE_CLEAR)
         pump()
-        self._dialogs()[0].response(answer)
+        visible_prompts()[0].response(answer)
         pump()
 
     def test_clearing_asks_before_it_removes_anything(self):
         self.dialog.response(constants.RESPONSE_CLEAR)
         pump()
-        self.assertEqual(len(self._dialogs()), 1, 'nothing was asked')
+        self.assertEqual(len(visible_prompts()), 1, 'nothing was asked')
         self.assertEqual(self._names(), ['gamma', 'beta', 'alpha'])
 
     def test_clearing_empties_the_list_and_the_store(self):

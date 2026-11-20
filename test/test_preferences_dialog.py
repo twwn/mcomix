@@ -493,9 +493,7 @@ class PreferencesDialogTest(MainWindowOpenTest):
         button.get_active.return_value = False
         self.dialog._check_button_cb(button, 'store recent file info')
         pump()
-        return recent, [window for window in Gtk.Window.list_toplevels()
-                        if isinstance(window, message_dialog.MessageDialog)
-                        and window.get_visible()]
+        return recent, visible_prompts()
 
     def test_never_storing_recent_files_asks_to_forget_them(self):
         recent, questions = self._never_store_recent(2)
