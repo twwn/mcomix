@@ -25,8 +25,6 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from mcomix.library import main_dialog
 
-_dialog = None
-
 #: How many of the books not added the status bar names.
 _NAMES_SHOWN = 3
 
