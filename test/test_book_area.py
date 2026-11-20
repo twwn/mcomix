@@ -1967,7 +1967,26 @@ class _MarkingLibrary:
         self.collection_area = _CollectionArea()
 
 
-class MarkReadTest(MComixTest):
+class _OneBookAreaTest(MComixTest):
+
+    """A cover area over a library of <library_class>, showing
+    NORMAL_ZIP alone: self.book, its self.item, and self.area."""
+
+    library_class = _MarkingLibrary
+
+    def setUp(self):
+        super().setUp()
+        self.library = self.library_class()
+        self.addCleanup(self.library.backend.close)
+        self.assertTrue(self.library.backend.add_book(NORMAL_ZIP))
+        self.book = self.library.backend.get_book_by_path(NORMAL_ZIP)
+        self.area = book_area._BookArea(self.library)
+        self.addCleanup(self.area.close)
+        self.item = book_area._BookItem(self.book)
+        self.area._covers.set_items([self.item])
+
+
+class MarkReadTest(_OneBookAreaTest):
 
     """"Mark as read" and "Mark as unread" in the covers' menu (upstream
     feature request 59).  A book is shown read, with a tick, when the
@@ -1975,13 +1994,6 @@ class MarkReadTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        self.library = _MarkingLibrary()
-        self.addCleanup(self.library.backend.close)
-        self.assertTrue(self.library.backend.add_book(NORMAL_ZIP))
-        self.book = self.library.backend.get_book_by_path(NORMAL_ZIP)
-        self.area = book_area._BookArea(self.library)
-        self.addCleanup(self.area.close)
-        self.area._covers.set_items([book_area._BookItem(self.book)])
         self.area._covers.selection.select_all()
         self.redrawn = []
         patcher = unittest.mock.patch.object(
@@ -2077,21 +2089,14 @@ class _RenamingLibrary(_MarkingLibrary):
         self.main_window = _main_window(file_actions=unittest.mock.Mock())
 
 
-class RenameFromLibraryTest(MComixTest):
+class RenameFromLibraryTest(_OneBookAreaTest):
 
     """"Rename" in the covers' menu, and F2."""
 
+    library_class = _RenamingLibrary
+
     def setUp(self):
         super().setUp()
-        self.library = _RenamingLibrary()
-        self.addCleanup(self.library.backend.close)
-        path = NORMAL_ZIP
-        self.assertTrue(self.library.backend.add_book(path))
-        self.book = self.library.backend.get_book_by_path(path)
-        self.area = book_area._BookArea(self.library)
-        self.addCleanup(self.area.close)
-        self.item = book_area._BookItem(self.book)
-        self.area._covers.set_items([self.item])
         self.ask = self.library.main_window.file_actions.ask_to_rename_book
 
     def test_the_book_selected_is_renamed(self):

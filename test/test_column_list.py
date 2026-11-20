@@ -594,6 +594,24 @@ class ColumnListViewTest(MComixTest):
                 if isinstance(child, Gtk.Label)
                 and 'keycap' in child.get_css_classes()]
 
+    @staticmethod
+    def _accel_cell(accelerator):
+        """An _AccelCell showing <accelerator>."""
+        cell = column_list._AccelCell()
+        cell.accelerator = accelerator
+        cell._show()
+        return cell
+
+    def _drawn_accel_cell(self, accelerator):
+        """An _AccelCell showing <accelerator>, drawn in a window of
+        its own."""
+        box = Gtk.Box()
+        self.window_holding(box)
+        cell = self._accel_cell(accelerator)
+        box.append(cell)
+        pump()
+        return cell
+
     def test_a_key_with_a_sign_on_it_is_drawn_as_that_sign(self):
         """A Gtk.ShortcutLabel spells out Page Up, Backspace and Tab,
         which are the longest things in a column of shortcuts."""
@@ -611,9 +629,7 @@ class ColumnListViewTest(MComixTest):
     def test_the_caps_are_not_joined_up_with_plusses(self):
         """Keys drawn as keys read as keys held down together, and the
         plusses are a third of the width of a short shortcut."""
-        cell = column_list._AccelCell()
-        cell.accelerator = '<Control><Shift>Page_Up'
-        cell._show()
+        cell = self._accel_cell('<Control><Shift>Page_Up')
         joined = [child.get_visible() for child in children(cell.label)
                   if isinstance(child, Gtk.Label)
                   and 'dim-label' in child.get_css_classes()]
@@ -622,9 +638,7 @@ class ColumnListViewTest(MComixTest):
 
     def test_the_modifiers_but_shift_keep_the_names_they_are_given(self):
         """Ctrl and Alt are printed as words, and are left as words."""
-        cell = column_list._AccelCell()
-        cell.accelerator = '<Control><Alt>Page_Up'
-        cell._show()
+        cell = self._accel_cell('<Control><Alt>Page_Up')
         caps = self._caps(cell.label)
         self.assertEqual(len(caps), 3)
         self.assertEqual(
@@ -636,9 +650,7 @@ class ColumnListViewTest(MComixTest):
         """It is the widest of the modifiers in several languages -
         German spells it "Umschalt" - and the only one a keyboard puts
         a sign on rather than a word."""
-        cell = column_list._AccelCell()
-        cell.accelerator = '<Control><Shift>Page_Up'
-        cell._show()
+        cell = self._accel_cell('<Control><Shift>Page_Up')
         caps = self._caps(cell.label)
         self.assertEqual(len(caps), 3)
         self.assertEqual(caps[0], '\u21e7')
@@ -650,9 +662,7 @@ class ColumnListViewTest(MComixTest):
         is printed on it, to line the modifiers of one shortcut up
         under those of the next.  Here they stand one to a row, with
         nothing to line up with."""
-        cell = column_list._AccelCell()
-        cell.accelerator = '<Control>a'
-        cell._show()
+        cell = self._accel_cell('<Control>a')
         drawn = self._cap_widths(cell.label)
         asked = self._cap_widths(Gtk.ShortcutLabel(accelerator='<Control>a'))
         self.assertEqual(len(drawn), 2)
@@ -684,22 +694,14 @@ class ColumnListViewTest(MComixTest):
 
     def test_the_plain_key_of_that_name_is_drawn_as_the_sign_alone(self):
         """Nothing marks it, because there is nothing to tell it from."""
-        cell = column_list._AccelCell()
-        cell.accelerator = 'Page_Down'
-        cell._show()
+        cell = self._accel_cell('Page_Down')
         self.assertEqual(self._caps(cell.label)[-1], '\u21df')
 
     def test_an_accelerator_is_drawn_at_the_size_its_caps_come_to(self):
         """The cell asks for one width whatever it holds; the shortcut
         in it is drawn at its own, rather than stretched to fill the
         cell out."""
-        box = Gtk.Box()
-        self.window_holding(box)
-        cell = column_list._AccelCell()
-        cell.accelerator = '<Control>a'
-        cell._show()
-        box.append(cell)
-        pump()
+        cell = self._drawn_accel_cell('<Control>a')
         wanted = cell.label.measure(Gtk.Orientation.HORIZONTAL, -1)[1]
         self.assertTrue(wanted, 'the shortcut was not drawn at all')
         # More room than the caps need, as a wide column would give.
@@ -713,14 +715,8 @@ class ColumnListViewTest(MComixTest):
         """Clipping alone cut through whatever letter fell on the edge
         of the cell.  The caps ellipsize instead, so what is dropped is
         dropped as text, and the tooltip spells the shortcut out."""
-        box = Gtk.Box()
-        self.window_holding(box)
-        cell = column_list._AccelCell()
         # Four caps cannot be drawn under their minimum widths.
-        cell.accelerator = '<Control><Shift><Alt>a'
-        cell._show()
-        box.append(cell)
-        pump()
+        cell = self._drawn_accel_cell('<Control><Shift><Alt>a')
         room = cell.measure(Gtk.Orientation.HORIZONTAL, -1)[1]
         self.assertGreater(
             cell.label.measure(Gtk.Orientation.HORIZONTAL, -1)[1], room,
@@ -781,41 +777,38 @@ class ColumnListViewTest(MComixTest):
         boxes[0].set_active(True)
         self.assertEqual(toggled, [(row, True)])
 
-    def test_a_choice_column_reports_the_pick_with_the_row_it_was_in(self):
-        """The watch list's collection column: a pick in the drop-down
-        is handed over as the row and the name picked, and the cell
-        starts out on the choice the row holds."""
+    def _shelf_choice(self, row):
+        """The drop-down a Shelf choice column draws for <row> alone,
+        and the list of the picks it reports."""
         view = column_list.ColumnListView()
         chosen = []
         view.add_choice_column('Shelf', 'shelf',
                                lambda: ['top', 'middle', 'bottom'],
                                lambda row, name: chosen.append((row, name)))
-        row = column_list.Row(shelf='middle')
         view.set_rows([row])
         self._present(view)
         cells = [cell for cell in view._each_cell()
                  if isinstance(cell, Gtk.DropDown)]
         self.assertEqual(1, len(cells), 'the column drew no drop-down')
-        self.assertEqual(1, cells[0].get_selected())
+        return cells[0], chosen
+
+    def test_a_choice_column_reports_the_pick_with_the_row_it_was_in(self):
+        """The watch list's collection column: a pick in the drop-down
+        is handed over as the row and the name picked, and the cell
+        starts out on the choice the row holds."""
+        row = column_list.Row(shelf='middle')
+        cell, chosen = self._shelf_choice(row)
+        self.assertEqual(1, cell.get_selected())
         self.assertEqual([], chosen)
-        cells[0].set_selected(2)
+        cell.set_selected(2)
         self.assertEqual(chosen, [(row, 'bottom')])
 
     def test_a_choice_no_longer_offered_shows_the_first(self):
         """A drop-down cannot be left with nothing chosen, so a value
         no longer offered shows the first choice; it is not reported as
         picked."""
-        view = column_list.ColumnListView()
-        chosen = []
-        view.add_choice_column('Shelf', 'shelf',
-                               lambda: ['top', 'middle', 'bottom'],
-                               lambda row, name: chosen.append((row, name)))
-        view.set_rows([column_list.Row(shelf='gone')])
-        self._present(view)
-        cells = [cell for cell in view._each_cell()
-                 if isinstance(cell, Gtk.DropDown)]
-        self.assertEqual(1, len(cells), 'the column drew no drop-down')
-        self.assertEqual(0, cells[0].get_selected())
+        cell, chosen = self._shelf_choice(column_list.Row(shelf='gone'))
+        self.assertEqual(0, cell.get_selected())
         self.assertEqual([], chosen)
 
 # vim: expandtab:sw=4:ts=4

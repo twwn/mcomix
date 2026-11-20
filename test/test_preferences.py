@@ -301,6 +301,14 @@ class MigratePreferencesTest(MComixTest):
         preferences.read_preferences_file()
         self.assertEqual(1, prefs['max extract threads'])
 
+    def _read_for_its_key_moves(self, stored) -> None:
+        """Read a preferences file holding <stored> into an empty
+        preferences.keybinding_moves, emptied again after the test."""
+        self.addCleanup(preferences.keybinding_moves.clear)
+        preferences.keybinding_moves.clear()
+        self._write(stored)
+        preferences.read_preferences_file()
+
     def test_escape_quits_becomes_a_key_of_quit(self) -> None:
         """"Escape key closes program" said what a key does, which the
         key bindings say now; a file from before format 5 that had it on
@@ -319,10 +327,7 @@ class MigratePreferencesTest(MComixTest):
 
     def test_a_file_at_format_5_moves_no_key_but_the_ten_page_turns(
             self) -> None:
-        self.addCleanup(preferences.keybinding_moves.clear)
-        preferences.keybinding_moves.clear()
-        self._write({_FORMAT_VERSION_KEY: 5, 'escape quits': True})
-        preferences.read_preferences_file()
+        self._read_for_its_key_moves({_FORMAT_VERSION_KEY: 5, 'escape quits': True})
         self.assertEqual(['previous_page_ff_dynamic', 'next_page_ff_dynamic'],
                          [move[0] for move in preferences.keybinding_moves
                           if move[2] != ''])
@@ -331,10 +336,7 @@ class MigratePreferencesTest(MComixTest):
             self) -> None:
         """Only where the keys are free: a holder of '' takes them off
         no action."""
-        self.addCleanup(preferences.keybinding_moves.clear)
-        preferences.keybinding_moves.clear()
-        self._write({_FORMAT_VERSION_KEY: 9})
-        preferences.read_preferences_file()
+        self._read_for_its_key_moves({_FORMAT_VERSION_KEY: 9})
         self.assertEqual(
             [('zoom_in', '<Control>plus', ''), ('zoom_in', '<Control>equal', ''),
              ('zoom_in', '<Control>KP_Add', ''),
@@ -344,10 +346,7 @@ class MigratePreferencesTest(MComixTest):
             preferences.keybinding_moves)
 
     def test_a_file_at_format_10_gives_f5_to_refresh(self) -> None:
-        self.addCleanup(preferences.keybinding_moves.clear)
-        preferences.keybinding_moves.clear()
-        self._write({_FORMAT_VERSION_KEY: 10})
-        preferences.read_preferences_file()
+        self._read_for_its_key_moves({_FORMAT_VERSION_KEY: 10})
         self.assertEqual([('refresh_archive', 'F5', '')],
                          preferences.keybinding_moves)
 
@@ -357,10 +356,7 @@ class MigratePreferencesTest(MComixTest):
         whichever way the book reads (upstream bug 57).  A file from
         before format 7 hands them to the actions that follow manga
         mode, from the ones that held them by default."""
-        self.addCleanup(preferences.keybinding_moves.clear)
-        preferences.keybinding_moves.clear()
-        self._write({_FORMAT_VERSION_KEY: 6})
-        preferences.read_preferences_file()
+        self._read_for_its_key_moves({_FORMAT_VERSION_KEY: 6})
         self.assertEqual(
             [('previous_page_ff_dynamic', '<Shift><Alt>Left',
               'previous_page_ff'),
@@ -368,10 +364,7 @@ class MigratePreferencesTest(MComixTest):
             [move for move in preferences.keybinding_moves if move[2] != ''])
 
     def test_a_file_at_format_11_moves_no_key(self) -> None:
-        self.addCleanup(preferences.keybinding_moves.clear)
-        preferences.keybinding_moves.clear()
-        self._write({_FORMAT_VERSION_KEY: 11})
-        preferences.read_preferences_file()
+        self._read_for_its_key_moves({_FORMAT_VERSION_KEY: 11})
         self.assertEqual([], preferences.keybinding_moves)
 
     def test_the_two_page_counter_buttons_become_one_choice(self) -> None:

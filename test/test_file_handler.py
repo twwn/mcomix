@@ -379,12 +379,23 @@ class DirectoryWalkTest(MainWindowLaterTest):
                         os.path.join(self.root, directory, name))
         return os.path.join(self.root, directory, 'Multivolume.part1.rar')
 
-    def test_the_later_volumes_of_a_rar_set_are_not_books_of_their_own(self):
-        """Opened by itself, part2 is the rest of the set from the middle
-        of a page on; the set is read through part1."""
+    def _rar_set_and_an_archive(self):
+        """The RAR set in b, and z.cbz after it there; both paths."""
         first = self._put_rar_set('b')
         after = os.path.join(self.root, 'b', 'z.cbz')
         shutil.copy(NORMAL_ZIP, after)
+        return first, after
+
+    def _rar_set_without_its_first(self):
+        """The RAR set in b with part1 gone; the path of part2."""
+        self._put_rar_set('b')
+        os.remove(os.path.join(self.root, 'b', 'Multivolume.part1.rar'))
+        return os.path.join(self.root, 'b', 'Multivolume.part2.rar')
+
+    def test_the_later_volumes_of_a_rar_set_are_not_books_of_their_own(self):
+        """Opened by itself, part2 is the rest of the set from the middle
+        of a page on; the set is read through part1."""
+        first, after = self._rar_set_and_an_archive()
         self._open(first)
         self.assertTrue(self.handler.open_next_archive())
         self.assertEqual(after, self._opened_file())
@@ -394,9 +405,7 @@ class DirectoryWalkTest(MainWindowLaterTest):
     def test_the_later_volumes_of_a_rar_set_are_not_counted_as_books(self):
         """The counter says how many books the archive keys can reach:
         a set in three volumes and one archive more are two."""
-        first = self._put_rar_set('b')
-        after = os.path.join(self.root, 'b', 'z.cbz')
-        shutil.copy(NORMAL_ZIP, after)
+        first, after = self._rar_set_and_an_archive()
         self._open(first)
         self.assertEqual((1, 2), self.handler.get_file_number())
         self._open(after)
@@ -405,9 +414,7 @@ class DirectoryWalkTest(MainWindowLaterTest):
     def test_a_later_volume_open_without_its_first_is_counted(self):
         """Nothing else stands for the book being read, and the counter
         does not say it is somewhere it is not."""
-        self._put_rar_set('b')
-        os.remove(os.path.join(self.root, 'b', 'Multivolume.part1.rar'))
-        second = os.path.join(self.root, 'b', 'Multivolume.part2.rar')
+        second = self._rar_set_without_its_first()
         self._open(second)
         self.assertEqual((1, 1), self.handler.get_file_number())
 
@@ -421,9 +428,7 @@ class DirectoryWalkTest(MainWindowLaterTest):
         self.assertEqual(4, self.window.imagehandler.get_number_of_pages())
 
     def test_without_its_first_volume_a_later_one_opens_as_it_is(self):
-        self._put_rar_set('b')
-        os.remove(os.path.join(self.root, 'b', 'Multivolume.part1.rar'))
-        second = os.path.join(self.root, 'b', 'Multivolume.part2.rar')
+        second = self._rar_set_without_its_first()
         self._open(second)
         self.assertEqual(second, self._opened_file())
 

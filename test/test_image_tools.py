@@ -359,6 +359,27 @@ class ImageToolsTest(MComixTest):
             get_image_path('landscape-exif-270-rotation.jpg'), 64, 64)
         self.assertEqual(270, image_tools.get_implied_rotation(pixbuf))
 
+    def _adobe_rgb_red(self, size):
+        """A JPEG of <size> pixels a side, all of one red stored in Adobe
+        RGB with the profile embedded; its path, and that red in sRGB."""
+        from PIL import ImageCms
+        with open(_ADOBE_RGB_PROFILE, 'rb') as fp:
+            profile = fp.read()
+        path = os.path.join(self.tmp_dir, 'adobe-rgb.jpg')
+        Image.new('RGB', (size, size), (200, 30, 30)).save(
+            path, quality=98, icc_profile=profile)
+        expected = ImageCms.profileToProfile(
+            Image.new('RGB', (1, 1), (200, 30, 30)), BytesIO(profile),
+            ImageCms.createProfile('sRGB')).getpixel((0, 0))
+        return path, expected
+
+    def _assert_first_pixel_is(self, pixbuf, expected):
+        """<pixbuf>'s first pixel is <expected>, give or take 3 a
+        channel."""
+        red = tuple(pixbuf.get_pixels()[:3])
+        for got, want in zip(red, expected):
+            self.assertAlmostEqual(got, want, delta=3, msg=(red, expected))
+
     @unittest.skipUnless(os.path.isfile(_ADOBE_RGB_PROFILE),
                          'needs an Adobe RGB colour profile')
     def test_a_scaled_jpeg_with_a_colour_profile_comes_out_in_srgb(self):
@@ -366,21 +387,11 @@ class ImageToolsTest(MComixTest):
         sRGB, so a page read through gdk-pixbuf is shown converted;
         read through PIL, the thumbnail of the same page showed the
         stored numbers, and an Adobe RGB red came out duller."""
-        from PIL import ImageCms
-        with open(_ADOBE_RGB_PROFILE, 'rb') as fp:
-            profile = fp.read()
-        path = os.path.join(self.tmp_dir, 'adobe-rgb.jpg')
-        Image.new('RGB', (64, 64), (200, 30, 30)).save(
-            path, quality=98, icc_profile=profile)
-        expected = ImageCms.profileToProfile(
-            Image.new('RGB', (1, 1), (200, 30, 30)), BytesIO(profile),
-            ImageCms.createProfile('sRGB')).getpixel((0, 0))
+        path, expected = self._adobe_rgb_red(64)
 
         pixbuf = image_tools.load_pixbuf_size(path, 32, 32)
 
-        red = tuple(pixbuf.get_pixels()[:3])
-        for got, want in zip(red, expected):
-            self.assertAlmostEqual(got, want, delta=3, msg=(red, expected))
+        self._assert_first_pixel_is(pixbuf, expected)
 
     @unittest.skipUnless(os.path.isfile(_ADOBE_RGB_PROFILE),
                          'needs an Adobe RGB colour profile')
@@ -389,17 +400,9 @@ class ImageToolsTest(MComixTest):
         over the stored numbers where glycin would have converted them;
         the same page would then look different depending on which of
         the two read it."""
-        from PIL import ImageCms
-        with open(_ADOBE_RGB_PROFILE, 'rb') as fp:
-            profile = fp.read()
-        path = os.path.join(self.tmp_dir, 'adobe-rgb.jpg')
-        Image.new('RGB', (8, 8), (200, 30, 30)).save(
-            path, quality=98, icc_profile=profile)
+        path, expected = self._adobe_rgb_red(8)
         with open(path, 'rb') as fp:
             data = fp.read()
-        expected = ImageCms.profileToProfile(
-            Image.new('RGB', (1, 1), (200, 30, 30)), BytesIO(profile),
-            ImageCms.createProfile('sRGB')).getpixel((0, 0))
 
         def refuse(*args):
             raise GLib.Error('refused')
@@ -411,10 +414,7 @@ class ImageToolsTest(MComixTest):
                                                side_effect=GLib.Error('no'))):
             for pixbuf in (image_tools.load_pixbuf(path),
                            image_tools.load_pixbuf_data(data)):
-                red = tuple(pixbuf.get_pixels()[:3])
-                for got, want in zip(red, expected):
-                    self.assertAlmostEqual(got, want, delta=3,
-                                           msg=(red, expected))
+                self._assert_first_pixel_is(pixbuf, expected)
 
     # Expose a rounding error bug in load_pixbuf_size.
     def test_load_pixbuf_rounding_error(self):

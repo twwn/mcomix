@@ -11,12 +11,11 @@ from gi.repository import Gdk, Gtk
 
 from . import (MComixTest, NORMAL_ZIP, descendants, get_testfile_path, pump,
                wait_for)
-from .test_book_area import (_MarkingLibrary,
+from .test_book_area import (_MarkingLibrary, _OneBookAreaTest,
                              assert_offered_once_a_book_is_selected)
 
 from mcomix import image_tools
 from mcomix.archive import password as archive_password
-from mcomix.library import book_area
 from mcomix.library import book_properties
 
 
@@ -210,27 +209,9 @@ class BookPropertiesTest(MComixTest):
              if name.startswith('mcomix_book_properties.')], [])
 
 
-class _PropertiesLibrary(_MarkingLibrary):
-
-    manages = True
-
-
-class BookAreaPropertiesTest(MComixTest):
+class BookAreaPropertiesTest(_OneBookAreaTest):
 
     """Reaching the properties from the covers."""
-
-    def setUp(self):
-        super().setUp()
-        self.library = _PropertiesLibrary()
-        self.addCleanup(self.library.backend.close)
-        self.assertTrue(self.library.backend.add_book(NORMAL_ZIP))
-        self.book = self.library.backend.get_book_by_path(NORMAL_ZIP)
-        self.area = book_area._BookArea(self.library)
-        self.area._covers.set_items([book_area._BookItem(self.book)])
-
-    def tearDown(self):
-        self.area.close()
-        super().tearDown()
 
     def test_alt_return_describes_the_selection(self):
         with unittest.mock.patch.object(self.area,
