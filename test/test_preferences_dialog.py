@@ -14,7 +14,7 @@ import unittest.mock
 
 from gi.repository import GdkPixbuf, Gtk
 
-from . import (MainWindowOpenTest, NORMAL_ZIP, descendants, pump,
+from . import (MainWindowOpenTest, NORMAL_ZIP, children, descendants, pump,
                visible_prompts)
 
 from mcomix import constants
@@ -670,14 +670,6 @@ class PreferenceCallbacksTest(MainWindowOpenTest):
                 ('_double_page_autoresize_changed_cb',
                  'double page autoresize',
                  constants.DOUBLE_PAGE_AUTORESIZE_FIT_SIZE, draw),
-                ('_sort_by_changed_cb', 'sort by', constants.SORT_SIZE,
-                 refresh),
-                ('_sort_order_changed_cb', 'sort order',
-                 constants.SORT_DESCENDING, refresh),
-                ('_sort_archive_by_changed_cb', 'sort archive by',
-                 constants.SORT_NAME_LITERAL, refresh),
-                ('_sort_archive_order_changed_cb', 'sort archive order',
-                 constants.SORT_DESCENDING, refresh),
                 ('_scaling_quality_changed_cb', 'scaling quality',
                  constants.SCALING_LANCZOS, draw),
                 ('_scaling_quality_changed_cb', 'scaling quality',
@@ -689,6 +681,32 @@ class PreferenceCallbacksTest(MainWindowOpenTest):
             with self.subTest(callback=callback, value=value, called=called):
                 self.assertEqual(called, self._choose(callback, value))
                 self.assertEqual(value, prefs[preference])
+
+    def test_each_sort_dropdown_stores_its_pick_and_opens_the_book_again(
+            self):
+        """The pages are listed in the new order, so the book is read
+        again rather than drawn again."""
+        for build, picks in (
+                ('_create_sort_by_control',
+                 (('sort by', constants.SORT_NAME, constants.SORT_SIZE),
+                  ('sort order', constants.SORT_ASCENDING,
+                   constants.SORT_DESCENDING))),
+                ('_create_archive_sort_by_control',
+                 (('sort archive by', constants.SORT_NAME,
+                   constants.SORT_NAME_LITERAL),
+                  ('sort archive order', constants.SORT_ASCENDING,
+                   constants.SORT_DESCENDING)))):
+            for preference, before, _after in picks:
+                prefs[preference] = before
+            row = getattr(self.dialog, build)()
+            for chooser, (preference, before, after) in zip(children(row),
+                                                            picks):
+                with self.subTest(preference=preference):
+                    self.assertEqual(before, chooser.get_value())
+                    self.assertEqual(
+                        {'filehandler.refresh_file'},
+                        self._called(lambda: chooser.set_value(after)))
+                    self.assertEqual(after, prefs[preference])
 
     def test_the_page_number_choice_is_stored_and_shown_again(self):
         prefs['page counter'] = 0
