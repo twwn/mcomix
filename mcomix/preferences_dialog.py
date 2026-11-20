@@ -68,6 +68,22 @@ def _store_when_done(entry: Gtk.Entry,
     entry.add_controller(focus)
 
 
+def _text_entry(text: str, tooltip: str,
+                store: Callable[[Gtk.Entry], None],
+                placeholder: str | None = None) -> Gtk.Entry:
+    """An entry 200 pixels wide holding <text>, with <placeholder> shown
+    while it is empty; <store> is called with it when Enter is pressed
+    and when the focus leaves it."""
+    entry = Gtk.Entry()
+    entry.set_size_request(200, -1)
+    entry.set_text(text)
+    if placeholder is not None:
+        entry.set_placeholder_text(placeholder)
+    entry.set_tooltip_text(tooltip)
+    _store_when_done(entry, lambda *args: store(entry))
+    return entry
+
+
 class _PreferencesDialog(Dialog):
 
     """The preferences dialog where most (but not all) settings that are
@@ -915,21 +931,16 @@ class _PreferencesDialog(Dialog):
     def _create_screen_profile_entry(self) -> Gtk.Entry:
         """The ICC file of the screen, typed in: empty is none, and the
         pages are drawn in sRGB as they come."""
-        entry = Gtk.Entry()
-        entry.set_size_request(200, -1)
-        entry.set_text(prefs['screen profile'])
-        entry.set_placeholder_text(_('None'))
-        entry.set_tooltip_text(
-            _('The ICC profile of the screen, such as one made by calibrating it. Pages are converted into it from sRGB. Leave it empty where the desktop already converts for the screen.'))
-
-        def store(*args: object) -> None:
+        def store(entry: Gtk.Entry) -> None:
             value = entry.get_text().strip()
             if value != prefs['screen profile']:
                 prefs['screen profile'] = value
                 self._window.enhancer.signal_update()
 
-        _store_when_done(entry, store)
-        return entry
+        return _text_entry(
+            prefs['screen profile'],
+            _('The ICC profile of the screen, such as one made by calibrating it. Pages are converted into it from sRGB. Leave it empty where the desktop already converts for the screen.'),
+            store, _('None'))
 
     def _create_rendering_intent_combobox(self) -> "widgets.Chooser[int]":
         """How the conversion into the screen's profile treats colours
@@ -999,27 +1010,19 @@ class _PreferencesDialog(Dialog):
     def _create_unpack_folder_entry(self) -> Gtk.Entry:
         """Where books are unpacked, typed in: empty is the system's
         temporary folder.  Read when a book is opened."""
-        entry = Gtk.Entry()
-        entry.set_size_request(200, -1)
-        entry.set_text(prefs['unpack folder'])
-        entry.set_placeholder_text(_('The temporary folder'))
-        entry.set_tooltip_text(
-            _('The folder archives are unpacked into while they are read, such as a RAM disk. Empty, the system\'s temporary folder. Takes effect with the next book opened.'))
-
-        def store(*args: object) -> None:
+        def store(entry: Gtk.Entry) -> None:
             prefs['unpack folder'] = entry.get_text().strip()
 
-        _store_when_done(entry, store)
-        return entry
+        return _text_entry(
+            prefs['unpack folder'],
+            _('The folder archives are unpacked into while they are read, such as a RAM disk. Empty, the system\'s temporary folder. Takes effect with the next book opened.'),
+            store, _('The temporary folder'))
 
     def _create_extensions_entry(self) -> Gtk.Entry:
-        entry = Gtk.Entry()
-        entry.set_size_request(200, -1)
-        entry.set_text(', '.join(prefs['comment extensions']))
-        _store_when_done(entry, lambda *args: self._entry_cb(entry))
-        entry.set_tooltip_text(
-            _('Treat all files found within archives, that have one of these file endings, as comments.'))
-        return entry
+        return _text_entry(
+            ', '.join(prefs['comment extensions']),
+            _('Treat all files found within archives, that have one of these file endings, as comments.'),
+            self._entry_cb)
 
     def _create_pref_check_button(self, label: str, prefkey: str,
                                   tooltip_text: str | None) -> Gtk.CheckButton:
