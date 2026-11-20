@@ -380,13 +380,9 @@ class Extractor:
             # handed over everything: the external handlers once
             # dropped every empty file.  What it left out is marked as
             # done, for the same reason as below.
-            with self._condition:
-                missing = [name for name in files
-                           if name not in self._extracted]
+            missing = self._finish_the_rest(files)
             if missing:
                 log.warning('! Not extracted in one pass: %s', ', '.join(missing))
-            for name in missing:
-                self._extraction_finished(name, whole=False)
 
         except Exception as ex:
             # Logged rather than raised over, as _extract_file() does and
@@ -396,17 +392,28 @@ class Extractor:
             # cannot unpack, so every file after that one is missing too
             # and is marked done with it; left unmarked, each of them
             # kept whoever waited on it parked until the book was closed.
-            log.error(_('! Extraction error: %s'), ex)
-            log.debug('Traceback:\n%s', traceback.format_exc())
-            self._opened_archive.forget_password()
-            self._tell_if_no_room(ex)
+            self._extraction_failed(ex)
             if self._extract_thread.must_stop():
                 return
-            with self._condition:
-                missing = [name for name in files
-                           if name not in self._extracted]
-            for name in missing:
-                self._extraction_finished(name, whole=False)
+            self._finish_the_rest(files)
+
+    def _finish_the_rest(self, files: Sequence[str]) -> list[str]:
+        """Mark those of <files> not yet on disk as done, though not
+        whole, and return them."""
+        with self._condition:
+            missing = [name for name in files
+                       if name not in self._extracted]
+        for name in missing:
+            self._extraction_finished(name, whole=False)
+        return missing
+
+    def _extraction_failed(self, error: Exception) -> None:
+        """Log <error>, forget the password, which may be what was
+        wrong, and say so if the disk is full."""
+        log.error(_('! Extraction error: %s'), error)
+        log.debug('Traceback:\n%s', traceback.format_exc())
+        self._opened_archive.forget_password()
+        self._tell_if_no_room(error)
 
     def _extract_file(self, name: str) -> None:
         """Extract the file named <name> to the destination directory,
@@ -425,10 +432,7 @@ class Extractor:
             # and the window handles a missing page, where a thread that
             # died here would leave whoever is waiting on the condition
             # waiting for good.
-            log.error(_('! Extraction error: %s'), ex)
-            log.debug('Traceback:\n%s', traceback.format_exc())
-            self._opened_archive.forget_password()
-            self._tell_if_no_room(ex)
+            self._extraction_failed(ex)
 
         if self._extract_thread.must_stop():
             return
