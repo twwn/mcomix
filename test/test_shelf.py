@@ -338,13 +338,17 @@ class ShelfDrawnAgainTest(_ShelfWindowTest):
         which brought back books before it, showed the covers from
         that one on."""
         library = backend.LibraryBackend()
+        # The search looks at the path too.  A word the temporary
+        # folder's name could hold - 'b0' did, one run in 200 - found
+        # the two books of setUp() as well: mkdtemp() names it with
+        # letters, digits and underscores, never a dash.
         for index in range(8):
-            path = os.path.join(self.tmp_dir, 'b%02d.zip' % index)
+            path = os.path.join(self.tmp_dir, 'b-%02d.zip' % index)
             shutil.copy(self.books[0], path)
             library.add_book(path)
         prefs['library cover size'] = constants.SIZE_HUGE
         shelf = self._shown()
-        shelf.filter_string = 'b0'
+        shelf.filter_string = 'b-0'
         self.area.load_covers()
         adjustment = self.area.get_vadjustment()
         # Two waits, so that a failure says which of them timed out
