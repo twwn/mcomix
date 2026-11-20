@@ -84,6 +84,20 @@ Waiting:
 
 A test that leaves a window on screen fails with "left on screen". Destroy what you present, or use `self.window_holding()`.
 
+## Writing code
+
+What the refactors and speed-ups of the program taught, so it is not written again:
+
+- GTK 4 sets these already: a widget is visible from the start (windows and popovers aside), a window is resizable, a label is centred both ways, a scrolled window shows its scroll bars as needed. Set them only to undo something.
+- A `Gio.Menu` item shows no tooltip.
+- `test/test_copies.py` fails on a function body written twice. Make one function and pass the difference.
+- Leave out what nothing reads: a parameter only MComix passes, a method that only calls the one it overrides, a constant. A value read only in the method that sets it is a local, not an attribute.
+- Do not test what the annotation already rules out. mypy runs strict.
+- Sort on keys made once per item, such as `tools.natural_key()`, not by comparing pairs in Python. Keep the keys where the same items are sorted again.
+- Build a menu or a dialog when it is first opened, not at start, and once.
+- Opening a book reads that book. Do not open or read every file beside it on the main thread; cache what a later open asks again.
+- Keep steps that run in order, such as the preferences' migrations, in that order in the code.
+
 ## Layout
 
 Path | What
