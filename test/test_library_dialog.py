@@ -84,6 +84,16 @@ class _LibraryWindowTest(MComixTest):
         prefs['last library collection'] = constants.COLLECTION_ALL
         return self._open()
 
+    def _covers_drawn(self, dialog):
+        """Wait until <dialog> shows covers and has drawn every one of
+        them, which it reads from the books on a worker thread; fail the
+        test if that does not come."""
+        def drawn():
+            items = list(dialog.book_area._covers.each_item())
+            return items and all(item.thumbnail is not None
+                                 for item in items)
+        self.assertTrue(wait_for(drawn), 'the cover was never drawn')
+
     def _watching(self, dialog):
         """Watch an empty directory, so that a scan has work to report."""
         directory = os.path.join(self.tmp_dir, 'watched')
@@ -1505,12 +1515,9 @@ class MissingBooksTest(_LibraryWindowTest):
         dialog.backend.add_book(path)
         dialog.book_area.display_covers(constants.COLLECTION_ALL)
         pump()
-        # The cover is read from the book on a worker thread; Windows
-        # refuses to delete a file that is still open (WinError 32).
-        self.assertTrue(wait_for(
-            lambda: [item.thumbnail is not None for item in
-                     dialog.book_area._covers.each_item()] == [True]),
-            'the cover was never drawn')
+        # Windows refuses to delete a file that is still open, as it is
+        # while its cover is read (WinError 32).
+        self._covers_drawn(dialog)
         os.remove(path)
         self.assertEqual(constants.COLLECTION_ALL,
                          dialog.collection_area.get_current_collection())
@@ -1742,10 +1749,7 @@ class OpenFromLibraryTest(_LibraryWindowTest):
         self.assertFalse(dialog.get_visible())
 
         main_dialog.open_dialog(None, self.window)
-        self.assertTrue(wait_for(
-            lambda: all(item.thumbnail is not None
-                        for item in covers.each_item())),
-            'the cover was never drawn')
+        self._covers_drawn(dialog)
 
     def test_a_cover_double_clicked_while_drawing(self):
         self._open_while_drawing(
@@ -2229,13 +2233,10 @@ class CollectionMenuTest(_LibraryWindowTest):
         shutil.copy(NORMAL_ZIP, path)
         dialog.backend.add_book(path)
         pump()
-        # The covers on show take the new book in, and read its cover on
-        # a worker thread; Windows refuses to delete a file that is
-        # still open (WinError 32 on GitHub's runner).
-        self.assertTrue(wait_for(
-            lambda: [item.thumbnail is not None for item in
-                     dialog.book_area._covers.each_item()] == [True]),
-            'the cover was never drawn')
+        # The covers on show take the new book in; Windows refuses to
+        # delete a file that is still open, as it is while its cover is
+        # read (WinError 32 on GitHub's runner).
+        self._covers_drawn(dialog)
         os.remove(path)
         self.assertEqual(constants.COLLECTION_ALL,
                          dialog.collection_area.get_current_collection())
