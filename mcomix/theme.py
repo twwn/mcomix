@@ -1,5 +1,6 @@
 """theme.py - Following the colours a desktop theme states."""
 
+import functools
 import re
 
 from collections.abc import Sequence
@@ -87,22 +88,16 @@ _PAGE_MARKS = '''
    inwards, since a page is drawn to the edge of the box it was laid
    out in and an outline outside that would be off screen. */
 picture.mcomix-selected-page, picture.mcomix-marked-page {
-    /* Stated twice: a theme that does not define an accent colour -
-       GTK has only defined one since 4.14 - leaves the second
-       declaration unparsed, and the first one stands. */
-    outline: 4px solid rgb(53, 132, 228);
     outline: 4px solid @accent_bg_color;
     outline-offset: -4px;
 }
 
 /* What tells the two apart at a glance, the rest being shared.  A page
    picked out is one Delete takes out of the book for good, so it is in
-   the red of the button that deletes for good, and the same twice over
-   for a theme without the colour.  The page marked to be swapped is
-   dashed.  A page can be both at once, and is then drawn red and
-   dashed. */
+   the red of the button that deletes for good.  The page marked to be
+   swapped is dashed.  A page can be both at once, and is then drawn
+   red and dashed. */
 picture.mcomix-selected-page {
-    outline-color: rgb(224, 27, 36);
     outline-color: @destructive_bg_color;
 }
 
@@ -110,6 +105,33 @@ picture.mcomix-marked-page {
     outline-style: dashed;
 }
 '''
+
+#: The colours MComix' own rules name, for a theme that does not
+#: define them: plain GTK4's own theme defines neither, only
+#: libadwaita's does.  Stating a colour twice, a fixed one and then the
+#: named one, does not cover that: a name no provider defines does not
+#: leave its declaration unparsed, so that the fixed one would stand;
+#: it parses, overrides the fixed one, and then paints nothing.  Without
+#: libadwaita, as in the Windows packages, the selected library cover
+#: and the outline round a page picked out or marked to swap were not
+#: drawn at all.  Defined below every theme, so that a theme's own
+#: colours still win.
+_FALLBACK_COLOURS = '''
+@define-color accent_bg_color rgb(53, 132, 228);
+@define-color destructive_bg_color rgb(224, 27, 36);
+'''
+
+
+@functools.cache
+def define_fallback_colours(display: Gdk.Display) -> None:
+    """Give <display> the colours MComix' own rules name, for a theme
+    that does not define them.  Once per display: the provider stays
+    with the display for as long as it lasts."""
+    provider = Gtk.CssProvider()
+    provider.load_from_string(_FALLBACK_COLOURS)
+    Gtk.StyleContext.add_provider_for_display(
+        display, provider, Gtk.STYLE_PROVIDER_PRIORITY_FALLBACK)
+
 
 #: The CSS class on the lines between the status bar's fields.
 STATUS_SEPARATOR_CLASS = 'mcomix-status-separator'
@@ -216,6 +238,7 @@ def show_own_styles(display: "Gdk.Display | None" = None) -> None:
         display = Gdk.Display.get_default()
     if display is None or _own_styles is not None:
         return
+    define_fallback_colours(display)
     _own_styles = Gtk.CssProvider()
     _own_styles.load_from_string(_PAGE_MARKS + _STATUS_SEPARATORS)
     Gtk.StyleContext.add_provider_for_display(
