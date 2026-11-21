@@ -17,6 +17,7 @@ from gi.repository import Gio, GLib
 
 from mcomix import archive_tools
 from mcomix import log
+from mcomix import widgets
 
 #: The most folders watched at once.  Each is an inotify watch on Linux,
 #: and those are counted per user, against every program the user runs
@@ -52,7 +53,8 @@ class FolderWatcher:
         self._monitors: dict[str, Gio.FileMonitor] = {}
         #: The folders watched with their subfolders.
         self._recursive: list[str] = []
-        self._pending: int | None = None
+        #: The wait before what has arrived is scanned for.
+        self._pending = widgets.Timer(self._due)
         #: Bumped by stop(), so that the folders a walk started before it
         #: found are not watched after it.
         self._generation = 0
@@ -83,9 +85,7 @@ class FolderWatcher:
         for monitor in self._monitors.values():
             monitor.cancel()
         self._monitors.clear()
-        if self._pending is not None:
-            GLib.source_remove(self._pending)
-            self._pending = None
+        self._pending.stop()
 
     def _find_folders(self, entries: list[tuple[str, bool]],
                       generation: int) -> None:
@@ -146,14 +146,10 @@ class FolderWatcher:
 
     def _later(self) -> None:
         """Scan DELAY seconds from now, after whatever arrives before."""
-        if self._pending is not None:
-            GLib.source_remove(self._pending)
-        self._pending = GLib.timeout_add(int(DELAY * 1000), self._due)
+        self._pending.start(int(DELAY * 1000))
 
-    def _due(self) -> bool:
-        self._pending = None
+    def _due(self) -> None:
         if self._monitors:
             self._scan()
-        return GLib.SOURCE_REMOVE
 
 # vim: expandtab:sw=4:ts=4

@@ -1532,7 +1532,7 @@ class MainWindowTest(MComixTest):
         path = self.window.imagehandler.get_real_path()
         self.window.set_page(3)
         self._pump()
-        self.assertIsNotNone(self.window._position_source,
+        self.assertTrue(self.window._position_source.running,
                              'nothing is waiting to store the page')
         self.assertIsNone(self.window.filehandler.last_read_page
                           .get_page(path), 'stored before the pages stopped')
@@ -1546,12 +1546,16 @@ class MainWindowTest(MComixTest):
         self._ready()
         self.window.set_page(2)
         self._pump()
-        first = self.window._position_source
-        self.window.set_page(3)
-        self._pump()
-        self.assertIsNotNone(self.window._position_source)
-        self.assertNotEqual(first, self.window._position_source,
-                            'the second turn did not restart the wait')
+        # A start drops the wait under way (TimerTest), so a second
+        # start is the wait counted again from the second turn.
+        timer = self.window._position_source
+        with unittest.mock.patch.object(timer, 'start',
+                                        wraps=timer.start) as started:
+            self.window.set_page(3)
+            self._pump()
+        self.assertEqual(1, started.call_count,
+                         'the second turn did not restart the wait')
+        self.assertTrue(timer.running)
 
     def test_the_status_bar_knows_the_path_to_copy(self):
         self._ready()

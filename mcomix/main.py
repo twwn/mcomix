@@ -158,9 +158,8 @@ class MainWindow(Gtk.Window):
         self._waiting_for_redraw = False
         #: The idle that will run _draw_image(), while one is queued.
         self._redraw_source: int | None = None
-        #: The timeout that will run _keep_reading_position(), while one
-        #: is counting down.
-        self._position_source: int | None = None
+        #: The wait before _keep_reading_position() runs.
+        self._position_source = widgets.Timer(self._keep_reading_position)
         #: The idle that will give the window back its size after
         #: fullscreen, while one is queued.
         self._geometry_source: int | None = None
@@ -1370,12 +1369,9 @@ class MainWindow(Gtk.Window):
         # new page early.
         self.event_handler.reset_extra_scroll_events()
         # Once the pages stop turning: a run of turns is one write.
-        if self._position_source is not None:
-            GLib.source_remove(self._position_source)
-        self._position_source = GLib.timeout_add_seconds(
-            _POSITION_DELAY_S, self._keep_reading_position)
+        self._position_source.start(_POSITION_DELAY_S * 1000)
 
-    def _keep_reading_position(self) -> bool:
+    def _keep_reading_position(self) -> None:
         """Store where the book is being read, as closing it and quitting
         do.
 
@@ -1383,10 +1379,8 @@ class MainWindow(Gtk.Window):
         power cut lost the whole session's reading: the book reopened at
         the page it had been opened at (upstream feature request 47).
         """
-        self._position_source = None
         self.filehandler.update_last_read_page()
         self._remember_last_file()
-        return GLib.SOURCE_REMOVE
 
     def _remember_last_file(self) -> None:
         """Note the book and page on screen for "auto load last file",
@@ -2945,9 +2939,7 @@ class MainWindow(Gtk.Window):
             # cleared page area, and hold the window until it ran.
             GLib.source_remove(self._redraw_source)
             self._redraw_source = None
-        if self._position_source is not None:
-            GLib.source_remove(self._position_source)
-            self._position_source = None
+        self._position_source.stop()
         if self._geometry_source is not None:
             GLib.source_remove(self._geometry_source)
             self._geometry_source = None

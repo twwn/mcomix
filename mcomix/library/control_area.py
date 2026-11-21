@@ -40,7 +40,7 @@ class _ControlArea(Gtk.Box, LibraryPart):
 
         self._library_ref = weakref.ref(library)
         #: The search typed but not yet run, while the typing goes on.
-        self._pending_filter = 0
+        self._pending_filter = widgets.Timer(self._run_pending_filter)
 
         borderbox = Gtk.Frame()
         borderbox.set_size_request(350, -1)
@@ -230,14 +230,10 @@ class _ControlArea(Gtk.Box, LibraryPart):
         search does: a query per keystroke would run on every letter of
         a word, over a library of tens of thousands of books.  Enter
         still filters at once."""
-        self._cancel_pending_filter()
-        self._pending_filter = GLib.timeout_add(
-            self.SEARCH_DELAY_MS, self._run_pending_filter, entry)
+        self._pending_filter.start(self.SEARCH_DELAY_MS)
 
-    def _run_pending_filter(self, entry: Gtk.Entry) -> bool:
-        self._pending_filter = 0
-        self._filter_books(entry)
-        return GLib.SOURCE_REMOVE
+    def _run_pending_filter(self) -> None:
+        self._filter_books(self.search_entry)
 
     def clear_search(self) -> bool:
         """Empty a search field that holds text and show every book of
@@ -249,9 +245,7 @@ class _ControlArea(Gtk.Box, LibraryPart):
         return True
 
     def _cancel_pending_filter(self, *args: object) -> None:
-        if self._pending_filter:
-            GLib.source_remove(self._pending_filter)
-            self._pending_filter = 0
+        self._pending_filter.stop()
 
     def _read_state_chosen(
             self, chooser: 'widgets.Chooser[backend_types.ReadState]') -> None:

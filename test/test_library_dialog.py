@@ -280,11 +280,11 @@ class LibraryDialogTest(_LibraryWindowTest):
         dialog = self._open()
         entry = dialog.control_area.search_entry
         entry.set_text('night')
-        self.assertTrue(dialog.control_area._pending_filter)
+        self.assertTrue(dialog.control_area._pending_filter.running)
         control = dialog.control_area
         dialog.close()
         pump()
-        self.assertFalse(control._pending_filter)
+        self.assertFalse(control._pending_filter.running)
 
     def test_escape_in_a_search_empties_it_before_it_hides_the_library(self):
         dialog = self._open()
@@ -333,7 +333,7 @@ class LibraryDialogTest(_LibraryWindowTest):
         self.assertTrue(entry.has_focus()
                         or dialog.get_focus().get_parent() is entry)
         self.assertEqual(1, entry.get_position())
-        self.assertTrue(dialog.control_area._pending_filter)
+        self.assertTrue(dialog.control_area._pending_filter.running)
 
     def test_keys_that_are_not_letters_stay_with_the_covers(self):
         dialog = self._open()
@@ -540,7 +540,7 @@ class FolderWatchTest(_LibraryWindowTest):
         self.addCleanup(control.cancel)
         control.connect('changed', lambda monitor, file, other, event:
                         arrived.append(event))
-        with unittest.mock.patch.object(folder_watcher, 'DELAY', 0):
+        with unittest.mock.patch.object(folder_watcher, 'DELAY', 0.001):
             act()
             self.assertTrue(wait_for(
                 lambda: Gio.FileMonitorEvent.CHANGES_DONE_HINT in arrived,
@@ -638,8 +638,8 @@ class FolderWatchTest(_LibraryWindowTest):
         dialog = self._open_watching((folder, False))
         watcher = dialog._watcher
         with unittest.mock.patch.object(watcher, '_scan') as scan, \
-                unittest.mock.patch.object(folder_watcher, 'DELAY', 0):
-            # Due as soon as the main loop turns.
+                unittest.mock.patch.object(folder_watcher, 'DELAY', 0.001):
+            # Due a millisecond on: a wait of 0 is no wait at all.
             watcher._later()
             main_dialog._close_dialog()
             pump()
