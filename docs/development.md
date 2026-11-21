@@ -62,6 +62,7 @@ Class or helper | For
 `refuse_passwords(test)` | Cancel every password prompt; the archives asked about are listed.
 `FolderDialogStub(folder)` | Stands in for a folder chooser's answer.
 `StubFileHandler` | A window's file handler with no book and the `file_opened` and `file_closed` signals, for a menu's tests.
+`menu_keys(model)` | The key each item of a menu model shows, by its action, through its sections and submenus.
 `mounted_at(*folders)` | Drives mounted at those folders, for `os.path.ismount()`; take one out of the set it yields to unmount it.
 `windows_refusal(name)` | `os.remove` or `os.unlink` refusing a read-only file, as on Windows.
 `replace_held_once()` | `os.replace` refusing once, as on Windows while another process holds the file.

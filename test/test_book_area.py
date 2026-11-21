@@ -14,8 +14,8 @@ import PIL.Image
 from gi.repository import Gdk, Gio, GLib, Gtk
 
 from . import (MComixTest, NORMAL_ZIP, children, copy_rar_set,
-               get_testfile_path, hold_open, prompts_over, pump, solid_pixbuf,
-               take_activation_from, wait_for)
+               get_testfile_path, hold_open, menu_keys, prompts_over, pump,
+               solid_pixbuf, take_activation_from, wait_for)
 from .test_theme import background_of
 
 from mcomix import bookmark_backend
@@ -1903,17 +1903,7 @@ class MenuKeyTest(_AreaOnScreenTest):
         typed.assert_called_once_with(Gdk.KEY_c, Gdk.ModifierType(0))
 
     def test_the_menu_shows_the_keys_the_area_answers(self):
-        accels = {}
-        sections = self.area._book_menu.get_menu_model()
-        for i in range(sections.get_n_items()):
-            section = sections.get_item_link(i, Gio.MENU_LINK_SECTION)
-            for j in range(section.get_n_items()):
-                action = section.get_item_attribute_value(
-                    j, Gio.MENU_ATTRIBUTE_ACTION, GLib.VariantType('s'))
-                accel = section.get_item_attribute_value(
-                    j, 'accel', GLib.VariantType('s'))
-                if action is not None and accel is not None:
-                    accels[action.get_string()] = accel.get_string()
+        accels = menu_keys(self.area._book_menu.get_menu_model())
         self.assertEqual({'books.open-by-hand': '<Control>Return',
                           'books.remove-from-collection': 'Delete',
                           'books.delete-permanently': '<Shift>Delete',

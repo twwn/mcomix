@@ -535,6 +535,22 @@ def children(widget):
         child = child.get_next_sibling()
 
 
+def menu_keys(model):
+    """The key each item of the menu <model>, its sections and its
+    submenus shows, by the name of the item's action; items without an
+    action or a key are left out."""
+    keys = {}
+    for index in range(model.get_n_items()):
+        action = model.get_item_attribute_value(index, 'action', None)
+        accel = model.get_item_attribute_value(index, 'accel', None)
+        if action is not None and accel is not None:
+            keys[action.get_string()] = accel.get_string()
+        links = model.iterate_item_links(index)
+        while links.next():
+            keys.update(menu_keys(links.get_value()))
+    return keys
+
+
 def label_texts(widget):
     """Every label's text under <widget>, depth first."""
     return [child.get_text() for child in descendants(widget)

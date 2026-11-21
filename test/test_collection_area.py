@@ -13,10 +13,10 @@ import os
 import time
 import unittest.mock
 
-from gi.repository import Gdk, Gio, GLib, Gtk
+from gi.repository import Gdk, Gtk
 
-from . import (MComixTest, focused_row, hold_open, pump, take_activation_from,
-               wait_for)
+from . import (MComixTest, focused_row, hold_open, menu_keys, pump,
+               take_activation_from, wait_for)
 
 from mcomix import constants
 from mcomix.dialog import Response
@@ -315,17 +315,7 @@ class CollectionAreaTest(MComixTest):
         self.assertEqual([], self._dialogs_opened_by(Gdk.KEY_F2))
 
     def test_the_menu_shows_the_keys_the_area_answers(self):
-        accels = {}
-        sections = self.area._collection_menu.get_menu_model()
-        for i in range(sections.get_n_items()):
-            section = sections.get_item_link(i, Gio.MENU_LINK_SECTION)
-            for j in range(section.get_n_items()):
-                action = section.get_item_attribute_value(
-                    j, Gio.MENU_ATTRIBUTE_ACTION, GLib.VariantType('s'))
-                accel = section.get_item_attribute_value(
-                    j, 'accel', GLib.VariantType('s'))
-                if action is not None and accel is not None:
-                    accels[action.get_string()] = accel.get_string()
+        accels = menu_keys(self.area._collection_menu.get_menu_model())
         self.assertEqual({'collections.rename': 'F2',
                           'collections.remove': 'Delete'}, accels)
 
