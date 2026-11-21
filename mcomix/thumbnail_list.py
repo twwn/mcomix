@@ -746,7 +746,7 @@ class ThumbnailListView(Gtk.ListView, _ThumbnailViewBase):
 _MOST_COLUMNS = 64
 
 
-class ThumbnailGridView(Gtk.GridView, _ThumbnailViewBase, widgets.Selecting,
+class ThumbnailGridView(widgets.Selecting, Gtk.GridView, _ThumbnailViewBase,
                         widgets.DragReorderable):
 
     """A grid of thumbnails, as the library and the archive editor show.

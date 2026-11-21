@@ -397,7 +397,11 @@ class Releasable:
 class Selecting:
 
     """A list, grid or column view whose items are picked out through
-    <selection>, the selection model it shows."""
+    <selection>, the selection model it shows.
+
+    It comes before the Gtk class in the bases, so that a method of
+    the same name a later GTK adds does not take the place of its own.
+    """
 
     selection: Gtk.SelectionModel
 
@@ -428,7 +432,9 @@ class Selecting:
             self.scroll_to(position, None, flags, None)
         elif isinstance(self, (Gtk.ListView, Gtk.GridView)):
             self.scroll_to(position, flags, None)
-        assert isinstance(self, Gtk.Widget)
+        else:
+            raise TypeError(f'{type(self).__name__} is no list, grid or '
+                            'column view')
         focus_where_scrolled(self)
 
     def unselect_all(self) -> None:

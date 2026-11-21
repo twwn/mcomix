@@ -484,7 +484,7 @@ class _AccelCell(Gtk.Button, _Cell):
     accelerator = ''
 
 
-class ColumnListView(Gtk.ColumnView, widgets.Releasable, widgets.Selecting,
+class ColumnListView(widgets.Selecting, Gtk.ColumnView, widgets.Releasable,
                      widgets.DragReorderable):
 
     """A list of rows under titled columns.
