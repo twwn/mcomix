@@ -382,8 +382,7 @@ class MainWindowTest(MComixTest):
         What the user picks is left out: the answer comes back through
         a callback that only the real chooser can fire.
         """
-        target_dir = os.path.join(constants.DATA_DIR, 'saved')
-        os.makedirs(target_dir, exist_ok=True)
+        target_dir = self._save_folder()
         prefs['path of last saved in filechooser'] = target_dir
 
         # There is nothing to save until the page has been extracted.
@@ -395,9 +394,7 @@ class MainWindowTest(MComixTest):
 
         self.window.file_actions.extract_page()
         self._pump()
-        dialogs = self._save_dialogs()
-        self.assertEqual(1, len(dialogs), 'no save dialog was opened')
-        dialog = dialogs[0]
+        dialog = self._the_save_dialog()
         try:
             self.assertIsInstance(dialog, dialog_module.Dialog,
                                   'the chooser is not one MComix paints')
@@ -756,6 +753,19 @@ class MainWindowTest(MComixTest):
         self.assertFalse(self.window.enhancer.invert_color,
                          'showing the state inverted the pages as well')
 
+    @staticmethod
+    def _save_folder():
+        """A folder to save pages into, made under the data directory."""
+        target_dir = os.path.join(constants.DATA_DIR, 'saved')
+        os.makedirs(target_dir, exist_ok=True)
+        return target_dir
+
+    def _the_save_dialog(self):
+        """The one save chooser this window has open."""
+        dialogs = self._save_dialogs()
+        self.assertEqual(1, len(dialogs), 'no save dialog was opened')
+        return dialogs[0]
+
     def _save_dialogs(self):
         """Every save chooser this window has standing open.
 
@@ -773,8 +783,7 @@ class MainWindowTest(MComixTest):
         Gtk.FileDialog has none of, and which answered None whenever the
         pick was not a local folder - putting None in the preference.
         """
-        target_dir = os.path.join(constants.DATA_DIR, 'saved')
-        os.makedirs(target_dir, exist_ok=True)
+        target_dir = self._save_folder()
         elsewhere = os.path.join(constants.DATA_DIR, 'saved-elsewhere')
         os.makedirs(elsewhere, exist_ok=True)
         prefs['path of last saved in filechooser'] = target_dir
@@ -807,14 +816,12 @@ class MainWindowTest(MComixTest):
                         'the first page was never extracted')
         self.window.file_actions.extract_page()
         self._pump()
-        dialogs = self._save_dialogs()
-        self.assertEqual(1, len(dialogs), 'no save dialog was opened')
-        self.addCleanup(dialogs[0].destroy)
-        return dialogs[0]
+        dialog = self._the_save_dialog()
+        self.addCleanup(dialog.destroy)
+        return dialog
 
     def test_a_name_taken_in_the_folder_is_offered_with_a_number(self):
-        target_dir = os.path.join(constants.DATA_DIR, 'saved')
-        os.makedirs(target_dir, exist_ok=True)
+        target_dir = self._save_folder()
         for name in ('01-ZIP-Normal_01-JPG-Indexed.jpg',
                      '01-ZIP-Normal_01-JPG-Indexed (1).jpg'):
             with open(os.path.join(target_dir, name), 'wb'):
@@ -824,8 +831,7 @@ class MainWindowTest(MComixTest):
                          dialog.save_name)
 
     def test_the_page_is_written_where_the_chooser_answers(self):
-        target_dir = os.path.join(constants.DATA_DIR, 'saved')
-        os.makedirs(target_dir, exist_ok=True)
+        target_dir = self._save_folder()
         dialog = self._save_first_page(target_dir)
         target = os.path.join(target_dir, 'kept.jpg')
         dialog.files_chosen([target])
@@ -837,8 +843,7 @@ class MainWindowTest(MComixTest):
                          'the chooser was left standing')
 
     def test_a_save_that_was_cancelled_writes_nothing(self):
-        target_dir = os.path.join(constants.DATA_DIR, 'saved')
-        os.makedirs(target_dir, exist_ok=True)
+        target_dir = self._save_folder()
         dialog = self._save_first_page(target_dir)
         with unittest.mock.patch.object(
                 self.window.file_actions, '_save_page_to') as saved:
@@ -5466,8 +5471,7 @@ class MainWindowTest(MComixTest):
         """Save As on the menu bar offers both pages of a double page,
         one chooser after the other, because nothing says which of them
         is meant.  The right-click menu was opened on one of them."""
-        target_dir = os.path.join(constants.DATA_DIR, 'saved')
-        os.makedirs(target_dir, exist_ok=True)
+        target_dir = self._save_folder()
         prefs['path of last saved in filechooser'] = target_dir
 
         handler = self.window.imagehandler
@@ -5478,15 +5482,14 @@ class MainWindowTest(MComixTest):
         self.window.popup_page = 2
         self.window.file_actions.extract_popup_page()
         self._pump()
-        dialogs = self._save_dialogs()
-        self.assertEqual(1, len(dialogs), 'no save dialog was opened')
+        dialog = self._the_save_dialog()
         try:
             with warnings.catch_warnings():
                 warnings.simplefilter('ignore', DeprecationWarning)
-                self.assertEqual(dialogs[0].filechooser.get_current_name(),
+                self.assertEqual(dialog.filechooser.get_current_name(),
                                  '01-ZIP-Normal_02-JPG-RGB.jpg')
         finally:
-            dialogs[0].destroy()
+            dialog.destroy()
             self._pump()
 
     def test_which_page_a_click_landed_on_is_answered_by_where_it_was(self):
