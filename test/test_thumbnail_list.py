@@ -30,6 +30,12 @@ def _cover():
     return solid_pixbuf(32, 48, 0x336699ff, has_alpha=True)
 
 
+def _made_again(item, was):
+    """Whether <item> comes to show a thumbnail other than <was>, the
+    one it showed when it was to be made again, within ten seconds."""
+    return wait_for(lambda: item.thumbnail is not was, seconds=10)
+
+
 class _ViewTest(MComixTest):
 
     """A thumbnail view in a scrolled window of its own, which the test
@@ -321,6 +327,14 @@ class ThumbnailsOnScreenFirstTest(_ViewTest):
             self.go_on.wait(10)
         return _cover()
 
+    def _park_making(self, item):
+        """Have <item>'s thumbnail made again, and wait until the worker
+        is making it and parked: what is asked for next waits behind
+        it until go_on is set."""
+        self.parking = True
+        self.view.redraw_item(item)
+        self.assertTrue(wait_for(self.entered.is_set, seconds=10))
+
     def _jump(self, share):
         """Scroll to <share> of the way down, in one step."""
         adjustment = self.scroller.get_vadjustment()
@@ -386,8 +400,7 @@ class ThumbnailsOnScreenFirstTest(_ViewTest):
         self.assertTrue(wait_for(lambda: not self.view._thread._orders_set))
         self.assertNotIn(5, self.asked, 'made for no cell to show it')
         self._jump(0.0)
-        self.assertTrue(wait_for(lambda: item.thumbnail is not was,
-                                 seconds=10))
+        self.assertTrue(_made_again(item, was))
         self.assertEqual(1, self.asked.count(5))
 
     def test_a_thumbnail_to_be_made_again_is_when_its_cell_went_first(self):
@@ -396,9 +409,7 @@ class ThumbnailsOnScreenFirstTest(_ViewTest):
         first, second = self.items[3], self.items[5]
         was = second.thumbnail
         del self.asked[:]
-        self.parking = True
-        self.view.redraw_item(first)
-        self.assertTrue(wait_for(self.entered.is_set, seconds=10))
+        self._park_making(first)
         self.view.redraw_item(second)
         self._jump(1.0)
         self.assertNotIn(second, self.view._bound)
@@ -406,8 +417,7 @@ class ThumbnailsOnScreenFirstTest(_ViewTest):
         self.assertTrue(self._drawn())
         self.assertNotIn(5, self.asked)
         self._jump(0.0)
-        self.assertTrue(wait_for(lambda: second.thumbnail is not was,
-                                 seconds=10))
+        self.assertTrue(_made_again(second, was))
         self.assertEqual(1, self.asked.count(5))
 
     def test_an_entry_shown_again_is_still_made_as_it_was_to_be(self):
@@ -416,16 +426,13 @@ class ThumbnailsOnScreenFirstTest(_ViewTest):
         replaced, it would wait for forever."""
         first, second = self.items[3], self.items[4]
         was = second.thumbnail
-        self.parking = True
-        self.view.redraw_item(first)
-        self.assertTrue(wait_for(self.entered.is_set, seconds=10))
+        self._park_making(first)
         # Waits behind the first, which is parked.
         self.view.redraw_item(second)
         self.view.set_items(self.items)
         self._settle()
         self.go_on.set()
-        self.assertTrue(wait_for(lambda: second.thumbnail is not was,
-                                 seconds=10))
+        self.assertTrue(_made_again(second, was))
 
     def test_an_entry_shown_again_is_made_again_when_it_is_shown(self):
         item = self.items[5]
@@ -438,8 +445,7 @@ class ThumbnailsOnScreenFirstTest(_ViewTest):
         # GTK puts the view back where it was once the entries are in.
         self._settle()
         self._jump(0.0)
-        self.assertTrue(wait_for(lambda: item.thumbnail is not was,
-                                 seconds=10))
+        self.assertTrue(_made_again(item, was))
 
 
 class ThumbnailsAtHandTest(_ViewTest):
@@ -509,8 +515,7 @@ class ThumbnailsAtHandTest(_ViewTest):
         self.view.redraw_item(item)
         adjustment.set_value(0)
         self._settle()
-        self.assertTrue(wait_for(lambda: item.thumbnail is not was,
-                                 seconds=10))
+        self.assertTrue(_made_again(item, was))
         self.assertEqual([4], [uid for uid in self.asked if uid == 4])
         self.assertNotIn(4, self.looked_up)
 
