@@ -22,8 +22,8 @@ import PIL.Image
 from gi.repository import Gdk, GdkPixbuf, Gio, GLib, Gtk, Pango
 
 from . import (FolderDialogStub, MComixTest, NORMAL_ZIP, descendants,
-               get_testfile_path, pixel, pump, solid_pixbuf, visible_prompts,
-               wait_for)
+               get_testfile_path, mounted_at, pixel, pump, solid_pixbuf,
+               visible_prompts, wait_for)
 
 from mcomix import bookmark_backend
 from mcomix import bookmark_menu_item
@@ -2294,6 +2294,7 @@ class CollectionMenuTest(_LibraryWindowTest):
         dialog = self._open_all()
         folder = os.path.join(self.tmp_dir, 'drive')
         os.mkdir(folder)
+        self.enterContext(mounted_at(folder))
         path = os.path.join(folder, 'away.cbz')
         shutil.copy(NORMAL_ZIP, path)
         self._held(dialog, path)

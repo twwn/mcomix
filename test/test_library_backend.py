@@ -16,8 +16,8 @@ from sqlite3 import dbapi2
 
 import PIL.Image
 
-from . import (NORMAL_ZIP, copy_rar_set, get_testfile_path, posix_byte_names,
-               refuse_passwords, skip_unless_rar_reads)
+from . import (NORMAL_ZIP, copy_rar_set, get_testfile_path, mounted_at,
+               posix_byte_names, refuse_passwords, skip_unless_rar_reads)
 
 from mcomix import constants
 from mcomix import thumbnail_tools
@@ -123,7 +123,10 @@ class LibraryDatabaseTest(unittest.TestCase):
             'create table contain ('
             ' collection integer not null,'
             ' book integer not null,'
-            ' primary key (collection, book))')
+            '{position}'
+            ' primary key (collection, book))'.format(
+                # Version 12 added a book's place in its collection.
+                position=' position integer,' if version >= 12 else ''))
         # Version 8 added the index on contain (book).
         if version >= 8:
             connection.execute('create index contain_book on contain (book)')
@@ -892,7 +895,8 @@ class CleanCollectionOutOfReachTest(OpenLibraryTest):
     """Clean up removed every book whose file was not there, and so
     every book on a drive or share not connected at the time: their
     collections, covers and the pages they were left at went with
-    them.  A book is taken out only when its folder is there and holds
+    them.  A book the library has not found since it began recording
+    volumes is taken out only when its folder is there and holds
     something; an empty folder is where a drive is mounted."""
 
     def _add(self, path):
@@ -974,14 +978,121 @@ class BooksMissingFromTest(OpenLibraryTest):
             missing[os.path.join('mount', 'deep', 'unmounted.zip')])
         self.assertEqual(5, len(missing))
 
-    def test_nothing_is_missing_from_a_folder_not_there_or_empty(self):
-        """As the drive it is on is while it is not connected."""
+    def test_nothing_is_missing_from_a_folder_not_there(self):
+        """A watched folder renamed is followed by "Relocate..."."""
         shutil.rmtree(self.watched)
         self.assertEqual([], self.library.books_missing_from(self.watched,
                                                              True))
+
+    def test_nothing_is_gone_from_an_empty_folder_of_unknown_volume(self):
+        """As the drive it is on is while it is not connected."""
+        shutil.rmtree(self.watched)
         os.mkdir(self.watched)
-        self.assertEqual([], self.library.books_missing_from(self.watched,
-                                                             True))
+        self.assertEqual([], self._gone())
+
+
+class MissingBooksByVolumeTest(OpenLibraryTest):
+
+    """A book whose file is not there is gone when the drive the library
+    last found it on is connected, and kept while it is not.  The
+    folder could not tell: a folder deleted was taken for a drive not
+    connected, and so was a folder emptied of its last book."""
+
+    def setUp(self):
+        super().setUp()
+        self.drive = os.path.join(self.tmp_dir, 'drive')
+        self.mounts = self.enterContext(mounted_at(self.drive))
+        self.books = {}
+        for name in ('series/one.zip', 'series/two.zip', 'other/three.zip'):
+            path = os.path.join(self.drive, *name.split('/'))
+            os.makedirs(os.path.dirname(path), exist_ok=True)
+            shutil.copy(NORMAL_ZIP, path)
+            self.assertTrue(self.library.add_book(path))
+            self.books[name] = path
+
+    def _left(self):
+        """Clean up the library, and the books it keeps."""
+        self.library.clean_collection()
+        return sorted(name for name, path in self.books.items()
+                      if self.library.get_book_by_path(path) is not None)
+
+    def _with_device(self, device):
+        """Have the library hold every book as found on <device>."""
+        self.library._con.execute('update book set device = ?', (device,))
+
+    def _device(self):
+        return os.stat(self.drive).st_dev
+
+    def test_a_book_records_the_volume_it_was_added_from(self):
+        volume, device = self.library._con.execute(
+            'select volume, device from book where path = ?',
+            (self.books['other/three.zip'],)).fetchone()
+        self.assertEqual(self.drive, volume)
+        self.assertEqual(self._device(), device)
+
+    def test_the_books_of_a_folder_deleted_go(self):
+        shutil.rmtree(os.path.join(self.drive, 'series'))
+        self.assertEqual(['other/three.zip'], self._left())
+
+    def test_the_last_book_of_a_folder_deleted_goes(self):
+        os.remove(self.books['other/three.zip'])
+        self.assertTrue(os.path.isdir(os.path.join(self.drive, 'other')))
+        self.assertEqual(['series/one.zip', 'series/two.zip'], self._left())
+
+    def test_every_book_of_a_drive_deleted_goes(self):
+        """The drive is known by its device, with no book of the
+        library left on it to tell."""
+        shutil.rmtree(os.path.join(self.drive, 'series'))
+        shutil.rmtree(os.path.join(self.drive, 'other'))
+        self.assertEqual([], self._left())
+
+    def test_the_books_of_a_drive_unplugged_stay(self):
+        shutil.rmtree(self.drive)
+        self.assertEqual(sorted(self.books), self._left())
+
+    def test_the_books_of_a_drive_unmounted_from_its_folder_stay(self):
+        shutil.rmtree(self.drive)
+        os.mkdir(self.drive)
+        self.mounts.clear()
+        self.assertEqual(sorted(self.books), self._left())
+
+    def test_another_drive_in_its_place_takes_nothing(self):
+        """As another stick given the same drive letter: none of the
+        library's books are on it, and its device is not theirs."""
+        self._with_device(self._device() + 1)
+        shutil.rmtree(os.path.join(self.drive, 'series'))
+        os.remove(self.books['other/three.zip'])
+        self.assertEqual(sorted(self.books), self._left())
+
+    def test_the_drive_plugged_in_again_under_a_new_device_is_known(self):
+        """By the books of the library it still holds."""
+        self._with_device(self._device() + 1)
+        os.remove(self.books['series/one.zip'])
+        self.assertEqual(['other/three.zip', 'series/two.zip'], self._left())
+
+    def test_a_book_found_records_the_device_it_is_on_now(self):
+        self._with_device(self._device() + 1)
+        self.library.clean_collection()
+        self.assertEqual(
+            {self._device()},
+            set(self.library._con.execute('select device from book')))
+
+    def test_a_watched_folder_emptied_has_its_books_gone(self):
+        folder = os.path.join(self.drive, 'series')
+        os.remove(self.books['series/one.zip'])
+        os.remove(self.books['series/two.zip'])
+        self.assertEqual(
+            [(self.books['series/one.zip'], True),
+             (self.books['series/two.zip'], True)],
+            sorted((path, gone) for book, path, size, gone
+                   in self.library.books_missing_from(folder, True)))
+
+    def test_a_volume_is_read_from_its_books_by_the_index(self):
+        plan = self._plan(self.library._con,
+                          'select path from Book where volume = ?',
+                          (self.drive,))
+        self.assertNotIn('SCAN', plan)
+        self.assertIn('book_volume', plan)
 
 
 class RemoveCollectionTest(OpenLibraryTest):

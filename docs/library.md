@@ -22,7 +22,9 @@ While no book is open, the main window shows the covers of "Recent" itself, or o
 - "Add..." and books dropped from a file manager go into the collection on show; under "All books" or "Recent" they join no collection.
 - Right-clicking a collection offers "Add...", "New", "Rename", "Duplicate", "Clean up", "Relocate..." and "Remove".
   - "Duplicate" makes a copy beside it, holding every book it shows.
-  - "Clean up" drops books whose files are gone from their folders. A book whose folder is not there, or empty, is kept, as on a drive not connected; the status line says how many.
+  - "Clean up" drops books whose files are gone from a drive that is connected, even where their whole folder was deleted. Books on a drive not connected are kept; the status line says how many.
+    A drive is known by where it is mounted (on Windows, its letter) and by the books MComix last found on it. Another drive under the same letter takes nothing.
+    A folder moved away is gone too: use "Relocate..." first.
   - "Relocate..." follows a folder of books that was moved or renamed outside MComix; see below.
   - "Remove" keeps the books in the library, and moves the collections under it to the top.
   - F2 renames the selected collection; Delete removes it.
@@ -93,7 +95,7 @@ While no book is open, the main window shows the covers of "Recent" itself, or o
 - "Scan now" searches at once; closing an edited list searches too.
 - A book that has been read, and so is in "Recent" alone, is filed in the folder's collection by the next search. A folder watched into no collection leaves it as it is.
 - Each search also follows a book moved or renamed within the folder, found by its name and size, with its collections, cover, bookmarks and the page it was left at, and removes a book deleted from it.
-  A folder that is not there, or empty, is taken for a drive not connected, and its books are kept; so are those of an empty folder inside it.
+  Books on a drive not connected are kept. A watched folder that is not there is left alone, for "Relocate..." to follow.
 - With "Automatically scan for new books when library is opened", the search runs whenever the library opens.
   While the library is open, the folders are watched too: a book copied or moved into one, or into a new subfolder of one searched with its subfolders, is added a moment after it has arrived, and one deleted or moved away is followed or removed as the search does. The first 1000 folders are watched; a deeper library is still searched whenever it opens.
 

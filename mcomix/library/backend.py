@@ -12,6 +12,7 @@ _upgrade_database() brings an older file up to it a version at a time.
 
 import contextlib
 import os
+import stat
 import threading
 
 from collections.abc import Iterable, Iterator, Sequence
@@ -61,6 +62,104 @@ def _holds_anything(folder: str) -> bool:
         return False
 
 
+def _volume_of(path: str, known: dict[str, str]) -> str:
+    """The volume <path> lies on, by the folder it is mounted on: where
+    a drive or a share is mounted, or the root of the file system (on
+    Windows, of its drive).
+
+    <known> holds the answer for each folder asked about before, which
+    the books of a library share.
+    """
+    walked = []
+    folder = os.path.dirname(path)
+    while folder not in known:
+        walked.append(folder)
+        parent = os.path.dirname(folder)
+        if parent == folder or os.path.ismount(folder):
+            known[folder] = folder
+            break
+        folder = parent
+    volume = known[folder]
+    for each in walked:
+        known[each] = volume
+    return volume
+
+
+def _device_of(path: str) -> int | None:
+    """The device of the file at <path>, or None if no file is there.
+    On Windows it is the serial number of the volume, which stays with
+    the drive; elsewhere the number of the device it is mounted from,
+    which a drive plugged in again may be given anew."""
+    try:
+        status = os.stat(path)
+    except (OSError, ValueError):
+        return None
+    return status.st_dev if stat.S_ISREG(status.st_mode) else None
+
+
+def _device_of_folder(folder: str) -> int | None:
+    """The device of <folder>, or None if it cannot be read."""
+    try:
+        return os.stat(folder).st_dev
+    except (OSError, ValueError):
+        return None
+
+
+class _Volumes:
+
+    """What one look through the library learns of the volumes its
+    books lie on.
+
+    The library records the volume of a book, and its device, whenever
+    it finds the book's file, so that a book whose file is not there
+    can be told apart: gone, from a drive that is connected, or on a
+    drive that is not.  Its folder alone cannot tell: a folder deleted
+    and a drive unplugged both leave the path missing, and a folder
+    emptied of its last book looks like an empty folder a drive is
+    mounted on.
+    """
+
+    def __init__(self, library: '_LibraryBackend') -> None:
+        self._library = library
+        self._of: dict[str, str] = {}
+        self._devices: dict[str, int | None] = {}
+        self._held: dict[str, bool] = {}
+
+    def found(self, book: int, path: str, device: int) -> None:
+        """Record the volume of <book>, whose file was found at <path>
+        on <device>."""
+        self._library.execute(
+            'update Book set volume = ?, device = ? where id = ?',
+            (_volume_of(path, self._of), device, book))
+
+    def there(self, volume: str, device: int | None) -> bool:
+        """Whether the drive a book was last found on, at <volume> and
+        on <device>, is connected.
+
+        Something has to be mounted at <volume>, and be that drive and
+        not another mounted in its place, as drive letters and fixed
+        mount points take whichever drive comes: either its device is
+        still <device>, or it holds another book the library found on
+        it.  A drive plugged in again under a new device number, whose
+        every book is gone, counts as away: the safe answer.
+        """
+        if volume not in self._devices:
+            self._devices[volume] = (
+                _device_of_folder(volume) if os.path.ismount(volume)
+                else None)
+        there = self._devices[volume]
+        if there is None:
+            return False
+        if there == device:
+            return True
+        if volume not in self._held:
+            self._held[volume] = any(
+                _device_of(path) == there
+                for path in self._library.fetchall(
+                    'select path from Book where volume = ?', (volume,)))
+        return self._held[volume]
+
+
 class _LibraryBackend:
 
     """The library database, and the statements run against it.
@@ -73,7 +172,7 @@ class _LibraryBackend:
 
     #: Current version of the library database structure.
     # See method _upgrade_database() for changes between versions.
-    DB_VERSION = 12
+    DB_VERSION = 13
 
     def __init__(self) -> None:
         #: Held from running a statement to closing its cursor.  Threads
@@ -195,7 +294,7 @@ class _LibraryBackend:
         list of tuples.
         """
         if collection is None:
-            return self.fetchall('select %s from Book' % columns)
+            return self.fetchall('select %s from Book order by id' % columns)
         # One statement over the collection and everything under it,
         # rather than one each with the answers added together, which
         # named a book filed in both a collection and one under it once
@@ -634,10 +733,13 @@ class _LibraryBackend:
         old = self.fetchone('''select id, added from Book
             where path = ?''', (path,))
         try:
+            volume = _volume_of(path, {})
+            device = _device_of(path)
             if old is not None:
                 self.execute('''update Book set
-                    name = ?, pages = ?, format = ?, size = ?
-                    where path = ?''', (name, pages, format, size, path))
+                    name = ?, pages = ?, format = ?, size = ?, volume = ?,
+                    device = ? where path = ?''', (
+                        name, pages, format, size, volume, device, path))
                 book_id, added = old
                 book = backend_types._Book(book_id, name, path, pages,
                                            format, size, added)
@@ -648,9 +750,10 @@ class _LibraryBackend:
                 # in sqlite's, so the library sorted a book by "Date
                 # added" against a date no other book had.
                 book_id, added = self.fetchone('''insert into Book
-                    (name, path, pages, format, size)
-                    values (?, ?, ?, ?, ?)
-                    returning id, added''', (name, path, pages, format, size))
+                    (name, path, pages, format, size, volume, device)
+                    values (?, ?, ?, ?, ?, ?, ?)
+                    returning id, added''', (name, path, pages, format, size,
+                                             volume, device))
                 book = backend_types._Book(book_id, name, path, pages,
                                            format, size, added)
                 self.book_added(book)
@@ -685,9 +788,11 @@ class _LibraryBackend:
             # stays where it was, for "Clean up" to find gone.
             return False
         try:
-            changed = self.execute('''update Book set path = ?, name = ?
-                where path = ?''', (new_path, os.path.basename(new_path),
-                                    old_path))
+            # The volume is found again by the next look that finds
+            # the file.
+            changed = self.execute('''update Book set path = ?, name = ?,
+                volume = null, device = null where path = ?''', (
+                    new_path, os.path.basename(new_path), old_path))
         except dbapi2.Error:
             log.error(_('! Could not move book "%s" in the library'), old_path)
             return False
@@ -759,8 +864,9 @@ class _LibraryBackend:
                 for book, path in books:
                     target = new + path[len(old):]
                     if self.execute(
-                            'update or ignore Book set path = ? where id = ?',
-                            (target, book)):
+                            '''update or ignore Book set path = ?,
+                            volume = null, device = null
+                            where id = ?''', (target, book)):
                         followed.append((path, target))
                 self.execute(
                     '''update or ignore watchlist
@@ -960,32 +1066,46 @@ class _LibraryBackend:
     def clean_collection(self,
                          collection: int | None = None) -> tuple[int, int]:
         """Remove the books of <collection>, or of the whole library when
-        it is None, whose files are gone from their folders.  Returns
-        how many were removed, and how many were kept because their
-        folder is not there.
+        it is None, whose files are gone.  Returns how many were
+        removed, and how many were kept as possibly on a drive not
+        connected.
 
-        A book whose folder is missing, or there but empty, is kept: it
-        is more likely on a drive or a share not connected, or in an
-        empty folder a drive is mounted on, than gone, and "Relocate..."
-        follows a folder moved away.  The books on a drive left
+        A book is gone when the volume the library last found it on is
+        connected (_Volumes.there()), whatever is left of its folder.
+        It is kept while that volume is not: the books on a drive left
         unplugged were all removed, with their collections, covers and
-        the pages they were left at.
+        the pages they were left at.  A book never found since the
+        library began recording volumes is judged by its folder, and
+        kept while that is missing or empty.
         """
         # The paths come back with the ids rather than being looked up
         # one at a time, which was a statement per book in the library.
-        books = self.get_book_paths_in_collection(collection)
+        books = self._books_in_collection('id, path, volume, device',
+                                          collection)
+        volumes = _Volumes(self)
         reached: dict[str, bool] = {}
         deleted = kept = 0
         # A sweep of a real library runs the two deletes remove_book()
         # makes thousands of times; take the lot as one transaction.
         with self.transaction():
-            for id, path in books:
-                if not path or os.path.isfile(path):
+            missing = []
+            for id, path, volume, device in books:
+                if not path:
                     continue
-                folder = os.path.dirname(path)
-                if folder not in reached:
-                    reached[folder] = _holds_anything(folder)
-                if reached[folder]:
+                found = _device_of(path)
+                if found is None:
+                    missing.append((id, path, volume, device))
+                elif volume is None or found != device:
+                    volumes.found(id, path, found)
+            for id, path, volume, device in missing:
+                if volume is not None:
+                    gone = volumes.there(volume, device)
+                else:
+                    folder = os.path.dirname(path)
+                    if folder not in reached:
+                        reached[folder] = _holds_anything(folder)
+                    gone = reached[folder]
+                if gone:
                     self.remove_book(id)
                     deleted += 1
                 else:
@@ -1000,37 +1120,52 @@ class _LibraryBackend:
         it with <recursive>, whose files are not there: (id, path, size,
         gone) each.
 
-        None while <folder> is missing or empty, as a drive not
-        connected is.  Under a folder that is there, a book is gone when
-        the nearest folder above it that is there holds anything: a
-        subfolder deleted takes its books with it.  One whose nearest
-        folder is empty, as one a drive is mounted on is, may be on a
-        drive not connected; or its folder was left empty when its last
-        book was moved or deleted.
+        None while <folder> is not there: a watched folder renamed is
+        followed by "Relocate...", and its books would otherwise all be
+        gone.  A book is gone when the volume the library last found it
+        on is connected (_Volumes.there()).  One never found since the
+        library began recording volumes is judged by its folder: gone
+        when the nearest folder above it that is there holds anything,
+        so that a subfolder deleted takes its books with it, and not
+        while <folder> or that nearest folder is empty, as a folder a
+        drive is mounted on is while the drive is not.
         """
-        if not _holds_anything(folder):
+        if not os.path.isdir(folder):
             return []
         prefix = tools.folder_prefix(folder)
         # As relocate() reads a folder's books: a range the index on the
         # path answers, ended by the separator's successor.
         end = prefix[:-1] + chr(ord(prefix[-1]) + 1)
         books = self.fetchall(
-            'select id, path, size from Book where path >= ? and path < ?',
-            (prefix, end))
-        reached: dict[str, bool] = {}
+            '''select id, path, size, volume, device from Book
+            where path >= ? and path < ?''', (prefix, end))
+        volumes = _Volumes(self)
+        reached: dict[str, bool] = {folder: _holds_anything(folder)}
         missing = []
-        for book, path, size in books:
+        for book, path, size, volume, device in books:
             if not recursive and os.sep in path[len(prefix):]:
                 continue
-            if os.path.isfile(path):
-                continue
-            there = os.path.dirname(path)
-            while len(there) >= len(prefix) and not os.path.isdir(there):
-                there = os.path.dirname(there)
-            if there not in reached:
-                reached[there] = _holds_anything(there)
-            missing.append((book, path, size, reached[there]))
-        return missing
+            found = _device_of(path)
+            if found is None:
+                missing.append((book, path, size, volume, device))
+            elif volume is None or found != device:
+                volumes.found(book, path, found)
+        judged = []
+        for book, path, size, volume, device in missing:
+            if volume is not None:
+                gone = volumes.there(volume, device)
+            elif not reached[folder]:
+                gone = False
+            else:
+                there = os.path.dirname(path)
+                while len(there) >= len(prefix) \
+                        and not os.path.isdir(there):
+                    there = os.path.dirname(there)
+                if there not in reached:
+                    reached[there] = _holds_anything(there)
+                gone = reached[there]
+            judged.append((book, path, size, gone))
+        return judged
 
     def remove_book(self, book: int) -> None:
         """Remove the <book> from the library."""
@@ -1278,6 +1413,7 @@ class _LibraryBackend:
         """
         with self._migration():
             self._create_table_book()
+            self._create_index_book_volume()
             self._create_table_collection()
             self._create_table_contain()
             self._create_table_info()
@@ -1354,6 +1490,9 @@ class _LibraryBackend:
                 # it is not there, and the second run finds it empty and
                 # moves nothing.
                 self._create_table_recent()
+                # The books it adds are written as add_book() writes
+                # them, with the columns of version 13.
+                self._add_columns_book_volume()
                 lastread = last_read_page.LastReadPage(self)
                 lastread.migrate_database_to_library(constants.COLLECTION_RECENT)
 
@@ -1438,6 +1577,9 @@ class _LibraryBackend:
                     self._con.execute(
                         '''alter table contain add column position integer''')
 
+            if 12 in upgrades:
+                self._add_columns_book_volume()
+
             self._con.execute('''update info set value = ? where key = 'version' ''',
                               (str(_LibraryBackend.DB_VERSION),))
 
@@ -1450,7 +1592,30 @@ class _LibraryBackend:
             format integer,
             size integer,
             added datetime default current_timestamp,
-            cover text)''')
+            cover text,
+            volume text,
+            device integer)''')
+
+    def _create_index_book_volume(self) -> None:
+        """Index the volume books were found on, which _Volumes.there()
+        looks a volume's books up by."""
+        self._con.execute('''create index if not exists book_volume
+            on book (volume)''')
+
+    def _add_columns_book_volume(self) -> None:
+        """Add the volume and the device each book was last found on
+        (_Volumes), which tell a book deleted from one on a drive not
+        connected; null until the book is next found.  As with the
+        columns of the steps before, each is added only where it is
+        missing, so that the step can run twice."""
+        columns = [row[1] for row in self._con.execute(
+            '''pragma table_info(book)''').fetchall()]
+        if 'volume' not in columns:
+            self._con.execute('''alter table book add column volume text''')
+        if 'device' not in columns:
+            self._con.execute(
+                '''alter table book add column device integer''')
+        self._create_index_book_volume()
 
     def _create_table_collection(self) -> None:
         self._con.execute('''create table if not exists collection (

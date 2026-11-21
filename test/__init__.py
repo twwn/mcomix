@@ -699,6 +699,24 @@ def replace_held_once():
         yield refusals
 
 
+@contextlib.contextmanager
+def mounted_at(*folders):
+    """os.path.ismount() answering that a drive is mounted at each of
+    <folders> while the folder is there, and at the root of the file
+    system, and nowhere else: drives plugged in and out.  Yields the set
+    of folders; take one out to unmount its drive and leave its folder
+    behind."""
+    from unittest import mock
+    mounts = {os.path.abspath(folder) for folder in folders}
+
+    def ismount(path):
+        path = os.path.abspath(path)
+        return os.path.dirname(path) == path or (
+            path in mounts and os.path.isdir(path))
+    with mock.patch('os.path.ismount', ismount):
+        yield mounts
+
+
 def windows_refusal(name):
     """A patch of os.<name>, remove or unlink, that refuses a read-only
     file as Windows does, and removes any other."""
