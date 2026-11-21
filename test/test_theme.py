@@ -45,7 +45,7 @@ def _painted(window, kind, done):
         raise unittest.SkipTest('PyGObject %s cannot read render nodes'
                                 % gi.__version__)
     if not wait_for(lambda: window.get_width() > 0
-                    and window.get_height() > 0, seconds=5):
+                    and window.get_height() > 0):
         raise AssertionError('the window was never allocated')
     paintable = Gtk.WidgetPaintable.new(window)
     found = []

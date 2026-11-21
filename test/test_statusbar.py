@@ -199,7 +199,7 @@ class StatusbarLayoutTest(MComixTest):
         self.bar.set_filename(filename)
         self.bar.set_filesize(size)
         self.bar.update()
-        self.assertTrue(wait_for(self._laid_out, seconds=5))
+        self.assertTrue(wait_for(self._laid_out))
 
     def _laid_out(self):
         """Whether every field shown has been given the room it asks

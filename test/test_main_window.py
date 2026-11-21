@@ -1915,7 +1915,7 @@ class MainWindowTest(MComixTest):
                     and across.get_upper() == max(width, across.get_page_size())
                     and down.get_upper() == max(height, down.get_page_size()))
 
-        self.assertTrue(wait_for(spans, seconds=5))
+        self.assertTrue(wait_for(spans))
         self._pump()
 
     def _view_middle(self):

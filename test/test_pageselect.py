@@ -159,8 +159,7 @@ class PageselectTest(_WindowTest):
     def test_it_opens_large_enough_for_a_preview(self):
         """With no size remembered it came up 154 pixels wide, around a
         preview a thumbnail across."""
-        self.assertTrue(wait_for(lambda: self.dialog.get_width() > 0,
-                                 seconds=5))
+        self.assertTrue(wait_for(lambda: self.dialog.get_width() > 0))
         self.assertGreaterEqual(self.dialog.get_width(), 320)
         self.assertGreaterEqual(self.dialog.get_height(), 420)
 
@@ -173,7 +172,7 @@ class PageselectTest(_WindowTest):
         self.dialog.set_default_size(420, 360)
         self.assertTrue(wait_for(
             lambda: prefs['pageselector width'] == self.dialog.get_width()
-            and self.dialog.get_width() > 0, seconds=5))
+            and self.dialog.get_width() > 0))
         self.assertEqual(self.dialog.get_height(),
                          prefs['pageselector height'])
 

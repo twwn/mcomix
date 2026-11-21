@@ -1051,8 +1051,8 @@ class CoverInFlightTest(_OneBookTest):
                 # The new entry's order is taken by a worker that either
                 # waits for the read under way or begins one of its own.
                 self.assertTrue(wait_for(
-                    lambda: waiting.is_set() or len(self.reads) > 1,
-                    seconds=5), 'the book was not asked for again')
+                    lambda: waiting.is_set() or len(self.reads) > 1),
+                    'the book was not asked for again')
             self.assertEqual(self.reads, [self.path])
 
         self._with_a_cover_in_flight(drawn_anew)
@@ -1508,8 +1508,8 @@ class MissingBooksTest(_LibraryWindowTest):
         # refuses to delete a file that is still open (WinError 32).
         self.assertTrue(wait_for(
             lambda: [item.thumbnail is not None for item in
-                     dialog.book_area._covers.each_item()] == [True],
-            seconds=5), 'the cover was never drawn')
+                     dialog.book_area._covers.each_item()] == [True]),
+            'the cover was never drawn')
         os.remove(path)
         self.assertEqual(constants.COLLECTION_ALL,
                          dialog.collection_area.get_current_collection())
@@ -1750,7 +1750,7 @@ class OpenFromLibraryTest(_LibraryWindowTest):
         main_dialog.open_dialog(None, self.window)
         self.assertTrue(wait_for(
             lambda: all(item.thumbnail is not None
-                        for item in covers.each_item()), seconds=5),
+                        for item in covers.each_item())),
             'the cover was never drawn')
 
     def test_a_cover_double_clicked_while_drawing(self):
@@ -2240,8 +2240,8 @@ class CollectionMenuTest(_LibraryWindowTest):
         # still open (WinError 32 on GitHub's runner).
         self.assertTrue(wait_for(
             lambda: [item.thumbnail is not None for item in
-                     dialog.book_area._covers.each_item()] == [True],
-            seconds=5), 'the cover was never drawn')
+                     dialog.book_area._covers.each_item()] == [True]),
+            'the cover was never drawn')
         os.remove(path)
         self.assertEqual(constants.COLLECTION_ALL,
                          dialog.collection_area.get_current_collection())

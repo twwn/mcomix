@@ -282,14 +282,13 @@ class LensFollowsThePagesTest(MainWindowLaterTest):
         adjustment = self.window.page_area.get_hadjustment()
         self.assertTrue(wait_for(
             lambda: adjustment.get_upper() - adjustment.get_page_size()
-            > 100,
-            seconds=5))
+            > 100))
         before_x = self.drawn[-1][1][0]
         start = adjustment.get_value()
         self.window.page_area.scroll_to(
             start + 60, self.window.page_area.get_position()[1])
         self.assertTrue(wait_for(
-            lambda: adjustment.get_value() == start + 60, seconds=5),
+            lambda: adjustment.get_value() == start + 60),
             'the page did not scroll 60 pixels across')
         self.assertEqual(before_x + 60, self.drawn[-1][1][0],
                          'the lens stayed where the pointer was on the '

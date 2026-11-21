@@ -163,7 +163,7 @@ class ThumbnailListViewTest(_ViewTest):
         # to clear the stop flag afterwards and turn all of them away.
         # They are asked for once the main loop turns.
         self.view.set_pages(range(1, self.ROWS + 1))
-        self.assertTrue(wait_for(lambda: self.asked, seconds=5),
+        self.assertTrue(wait_for(lambda: self.asked),
                         'the rows were bound while the list was stopped')
 
     def test_the_rows_bound_together_are_asked_for_after_and_in_order(self):
@@ -176,7 +176,7 @@ class ThumbnailListViewTest(_ViewTest):
         self.assertEqual([], self.asked)
         # Ten of them, not the first only: what the worker had reached by
         # the first said nothing of the order of the rest.
-        self.assertTrue(wait_for(lambda: len(self.asked) >= 10, seconds=5))
+        self.assertTrue(wait_for(lambda: len(self.asked) >= 10))
         self.assertEqual(sorted(self.asked[:10]), self.asked[:10])
         self.assertEqual(1, self.asked[0])
 
@@ -384,8 +384,7 @@ class ThumbnailsOnScreenFirstTest(_ViewTest):
         # worker holds no order, nothing for it can still be on its way.
         self.assertIn(item, self.view._stale)
         pump()
-        self.assertTrue(wait_for(lambda: not self.view._thread._orders_set,
-                                 seconds=5))
+        self.assertTrue(wait_for(lambda: not self.view._thread._orders_set))
         self.assertNotIn(5, self.asked, 'made for no cell to show it')
         self._jump(0.0)
         self.assertTrue(wait_for(lambda: item.thumbnail is not was,

@@ -272,7 +272,7 @@ class PageImageTest(MComixTest):
         parked = self._parking()
         self.image.set_paused(True)
         self.assertTrue(self.image.is_paused())
-        self.assertTrue(wait_for(parked.is_set, seconds=5),
+        self.assertTrue(wait_for(parked.is_set),
                         'the decoder did not stop for the pause')
         # A frame already handed to the main loop may still arrive.
         pump()
@@ -319,7 +319,7 @@ class PageImageTest(MComixTest):
         parked = self._parking()
         self.image.set_paused(True)
         worker = self.image._worker
-        self.assertTrue(wait_for(parked.is_set, seconds=5))
+        self.assertTrue(wait_for(parked.is_set))
         self.image.clear()
         worker.join(5)
         self.assertFalse(worker.is_alive(),
