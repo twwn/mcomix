@@ -320,6 +320,17 @@ class _CoverAreaTest(MComixTest):
         self.area = book_area._BookArea(self.library)
         self.area._cache.invalidate_all()
 
+    def _open_over_a_page(self, page, member):
+        """Build self.area over a library of self.archive, a book of
+        the one picture <page> as <member>, whose covers self.backend
+        keeps."""
+        self.archive = os.path.join(self.tmp_dir, 'book.cbz')
+        with zipfile.ZipFile(self.archive, 'w') as book:
+            book.write(page, member)
+        self.backend = _KeepingBackend(
+            self.archive, os.path.join(self.tmp_dir, 'covers'))
+        self._open_area(self.backend)
+
     def tearDown(self):
         self.area.close()
         self.area._cache.invalidate_all()
@@ -336,7 +347,6 @@ class KeptCoverTest(_CoverAreaTest):
 
     def setUp(self):
         super().setUp()
-        self.archive = os.path.join(self.tmp_dir, 'book.cbz')
         # Three times the picture's size, its Exif kept: large enough
         # for the cover stored to be 500 pixels across.
         page = os.path.join(self.tmp_dir, '01.jpg')
@@ -344,11 +354,7 @@ class KeptCoverTest(_CoverAreaTest):
                 'images', 'landscape-exif-270-rotation.jpg')) as picture:
             picture.resize((picture.width * 3, picture.height * 3)).save(
                 page, exif=picture.info['exif'])
-        with zipfile.ZipFile(self.archive, 'w') as book:
-            book.write(page, '01.jpg')
-        self.backend = _KeepingBackend(
-            self.archive, os.path.join(self.tmp_dir, 'covers'))
-        self._open_area(self.backend)
+        self._open_over_a_page(page, '01.jpg')
         prefs['library cover size'] = constants.SIZE_NORMAL
         self.first = self.area._get_pixbuf(1)
         # As after a start of the program: nothing in memory.
@@ -465,14 +471,9 @@ class CoverAtHandTest(_CoverAreaTest):
 
     def setUp(self):
         super().setUp()
-        self.archive = os.path.join(self.tmp_dir, 'book.cbz')
-        with zipfile.ZipFile(self.archive, 'w') as book:
-            book.write(get_testfile_path('images', 'landscape-no-exif.jpg'),
-                       '01.jpg')
-        self.backend = _KeepingBackend(
-            self.archive, os.path.join(self.tmp_dir, 'covers'))
         prefs['library cover size'] = constants.SIZE_NORMAL
-        self._open_area(self.backend)
+        self._open_over_a_page(
+            get_testfile_path('images', 'landscape-no-exif.jpg'), '01.jpg')
         self.item = book_area._BookItem(self.backend.get_book_by_id(1))
 
     def test_it_is_what_the_view_asks_at_bind(self):
@@ -513,16 +514,11 @@ class AbsentBookTest(_CoverAreaTest):
 
     def setUp(self):
         super().setUp()
-        self.archive = os.path.join(self.tmp_dir, 'book.cbz')
         page = os.path.join(self.tmp_dir, '01.png')
         # In colour, to be seen turned grey.
         PIL.Image.new('RGB', (200, 300), (200, 60, 30)).save(page)
-        with zipfile.ZipFile(self.archive, 'w') as book:
-            book.write(page, '01.png')
-        self.backend = _KeepingBackend(
-            self.archive, os.path.join(self.tmp_dir, 'covers'))
         prefs['library cover size'] = constants.SIZE_NORMAL
-        self._open_area(self.backend)
+        self._open_over_a_page(page, '01.png')
         self.item = book_area._BookItem(self.backend.get_book_by_id(1))
         # Drawn while the file is there: the cover is in memory.
         self.present = self.area._get_pixbuf(1)
@@ -683,6 +679,23 @@ class CoverOrderTest(MComixTest):
              _Book(2, '/a/alpha.cbz', size=10, added='2001', pages=40),
              _Book(3, '/c/mid.cbz', size=20, added='2002', pages=12))
 
+    def _area_by_name(self, control_area=None):
+        """An area of its own over BOOKS, sorted by name and closed
+        after the test; <control_area>, where given, is told of every
+        change of selection."""
+        prefs['lib sort key'] = constants.SORT_NAME
+        prefs['lib sort order'] = constants.SORT_ASCENDING
+        # Held here: an area holds its library window only weakly.
+        self.library = _Library()
+        if control_area is not None:
+            self.library.control_area = control_area
+        area = book_area._BookArea(self.library)
+        self.addCleanup(area.close)
+        area._covers.set_items(
+            book_area._BookItem(book) for book in self.BOOKS)
+        area.set_sort_order()
+        return area
+
     def _order(self, key, ascending=True, read=None, books=None):
         prefs['lib sort key'] = key
         prefs['lib sort order'] = (constants.SORT_ASCENDING if ascending
@@ -772,15 +785,7 @@ class CoverOrderTest(MComixTest):
         """The popup menu's "Sort by" and ascending/descending choices
         are one stateful action each; picking one keeps the choice and
         puts the covers on show in the new order."""
-        prefs['lib sort key'] = constants.SORT_NAME
-        prefs['lib sort order'] = constants.SORT_ASCENDING
-        # Held here: an area holds its library window only weakly.
-        self.library = _Library()
-        area = book_area._BookArea(self.library)
-        self.addCleanup(area.close)
-        area._covers.set_items(
-            book_area._BookItem(book) for book in self.BOOKS)
-        area.set_sort_order()
+        area = self._area_by_name()
 
         def order():
             return [item.uid for item in area._covers.each_item()]
@@ -806,16 +811,8 @@ class CoverOrderTest(MComixTest):
         order, for GTK's sort to find them sorted: 10000 books took 81
         ms to sort by name, 45 since.  The selection goes with the
         covers, not with the places they were at."""
-        prefs['lib sort key'] = constants.SORT_NAME
-        prefs['lib sort order'] = constants.SORT_ASCENDING
-        self.library = _Library()
         # Told of every change of selection.
-        self.library.control_area = _ControlArea()
-        area = book_area._BookArea(self.library)
-        self.addCleanup(area.close)
-        area._covers.set_items(
-            book_area._BookItem(book) for book in self.BOOKS)
-        area.set_sort_order()
+        area = self._area_by_name(control_area=_ControlArea())
         # alpha, mid, zeta: zeta and alpha selected.
         area._covers.select_positions([0, 2])
         prefs['lib sort key'] = constants.SORT_PATH
