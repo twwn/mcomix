@@ -1253,18 +1253,6 @@ class ColumnListView(Gtk.ColumnView, widgets.Releasable, widgets.Selecting,
         return [cast(Row, self._row_of(self.model.get_item(position)))
                 for position in self.get_selected_positions()]
 
-    def select_and_focus(self, position: int) -> None:
-        """Select the row at <position> alone, scroll to it and give it
-        the keyboard focus.
-
-        The focus goes with the selection, as Gtk.TreeView's cursor
-        did: Enter and the arrow keys act on the row that has the
-        focus, not on the one highlighted.
-        """
-        self.select_only(position)
-        self.scroll_to(position, None, Gtk.ListScrollFlags.FOCUS, None)
-        widgets.focus_where_scrolled(self)
-
     def select_row(self, row: Row, focus: bool = False) -> bool:
         """Select <row>, and with <focus> give it the keyboard focus as
         select_and_focus() does; False if it is not shown."""
@@ -1276,17 +1264,6 @@ class ColumnListView(Gtk.ColumnView, widgets.Releasable, widgets.Selecting,
                     self.select_only(position)
                 return True
         return False
-
-    def unselect_all(self) -> None:
-        """Leave nothing selected."""
-        if isinstance(self.selection, Gtk.SingleSelection):
-            # GTK 4.14's Gtk.SingleSelection has no unselect_all() of
-            # its own, and the one it inherits goes through
-            # set_selection(), which it does not implement either, so
-            # it did nothing.  GTK 4.22's is this.
-            self.selection.unselect_item(self.selection.get_selected())
-        else:
-            self.selection.unselect_all()
 
     def row_at(self, x: float, y: float) -> "Row | None":
         """The row under (<x>, <y>), or None if no row is."""

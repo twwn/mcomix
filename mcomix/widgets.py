@@ -411,6 +411,37 @@ class Selecting:
         """Select the item at <position> and nothing else."""
         self.selection.select_item(position, True)
 
+    def select_and_focus(self, position: int) -> None:
+        """Select the item at <position> alone, scroll to it and give it
+        the keyboard focus.
+
+        Enter, the menu key and the arrow keys act on the item with the
+        focus, not on the one highlighted, as Gtk.TreeView's cursor
+        did: a right click selects without moving the focus, and Enter
+        then opened the item clicked before.  The focus moves only
+        within a view that has it.
+        """
+        self.select_only(position)
+        flags = Gtk.ListScrollFlags.FOCUS
+        if isinstance(self, Gtk.ColumnView):
+            # Its scroll_to() also takes the column to scroll to.
+            self.scroll_to(position, None, flags, None)
+        elif isinstance(self, (Gtk.ListView, Gtk.GridView)):
+            self.scroll_to(position, flags, None)
+        assert isinstance(self, Gtk.Widget)
+        focus_where_scrolled(self)
+
+    def unselect_all(self) -> None:
+        """Leave nothing selected."""
+        if isinstance(self.selection, Gtk.SingleSelection):
+            # GTK 4.14's Gtk.SingleSelection has no unselect_all() of
+            # its own, and the one it inherits goes through
+            # set_selection(), which it does not implement either, so
+            # it did nothing.  GTK 4.22's is this.
+            self.selection.unselect_item(self.selection.get_selected())
+        else:
+            self.selection.unselect_all()
+
 
 class DragReorderable:
 
