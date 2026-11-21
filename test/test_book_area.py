@@ -506,6 +506,74 @@ class CoverAtHandTest(_CoverAreaTest):
             self.assertIsNone(self.area._cover_at_hand(self.item))
 
 
+class AbsentBookTest(_CoverAreaTest):
+
+    """A book whose file is not there, as on a drive not connected,
+    looked like any other in the library until it was opened."""
+
+    def setUp(self):
+        super().setUp()
+        self.archive = os.path.join(self.tmp_dir, 'book.cbz')
+        page = os.path.join(self.tmp_dir, '01.png')
+        # In colour, to be seen turned grey.
+        PIL.Image.new('RGB', (200, 300), (200, 60, 30)).save(page)
+        with zipfile.ZipFile(self.archive, 'w') as book:
+            book.write(page, '01.png')
+        self.backend = _KeepingBackend(
+            self.archive, os.path.join(self.tmp_dir, 'covers'))
+        prefs['library cover size'] = constants.SIZE_NORMAL
+        self._open_area(self.backend)
+        self.item = book_area._BookItem(self.backend.get_book_by_id(1))
+        # Drawn while the file is there: the cover is in memory.
+        self.present = self.area._get_pixbuf(1)
+        self.away = os.path.join(self.tmp_dir, 'away.cbz')
+
+    @staticmethod
+    def _middle(pixbuf):
+        return image_tools.pixbuf_to_pil(pixbuf).convert('RGBA').getpixel(
+            (pixbuf.get_width() // 2, pixbuf.get_height() // 2))
+
+    @staticmethod
+    def _coloured(pixbuf):
+        """How many pixels of <pixbuf> are not grey."""
+        return sum(1 for red, green, blue, alpha
+                   in image_tools.pixbuf_to_pil(pixbuf).convert(
+                       'RGBA').getdata()
+                   if not red == green == blue)
+
+    def test_the_cover_of_a_book_not_there_is_grey_and_faded(self):
+        self.assertEqual(255, self._middle(self.present)[3])
+        self.assertGreater(self._coloured(self.present), 1000)
+        os.rename(self.archive, self.away)
+        absent = self.area._get_pixbuf(1)
+        self.assertEqual(0, self._coloured(absent))
+        self.assertLess(self._middle(absent)[3], 128)
+
+    def test_a_cover_in_memory_is_drawn_as_a_worker_last_found_it(self):
+        """A cell is bound on the main thread, which does not look."""
+        os.rename(self.archive, self.away)
+        self.assertEqual(255, self._middle(
+            self.area._cover_at_hand(self.item))[3])
+        self.area._get_pixbuf(1)
+        self.assertLess(self._middle(
+            self.area._cover_at_hand(self.item))[3], 128)
+        os.rename(self.away, self.archive)
+        self.area._get_pixbuf(1)
+        self.assertEqual(255, self._middle(
+            self.area._cover_at_hand(self.item))[3])
+
+    def test_showing_the_covers_draws_again_those_whose_files_went(self):
+        with unittest.mock.patch.object(
+                self.area._covers, 'redraw_item') as redraw:
+            self.area._look_for_files([self.item])
+            self.assertFalse(wait_for(lambda: redraw.called, seconds=0.3),
+                             'a cover drawn as it is was drawn again')
+            os.rename(self.archive, self.away)
+            self.area._look_for_files([self.item])
+            self.assertTrue(wait_for(lambda: redraw.called, seconds=10))
+        redraw.assert_called_once_with(self.item)
+
+
 class TurnedCoverTest(_CoverAreaTest):
 
     """A cover is drawn turned as the page it is shows when the book is

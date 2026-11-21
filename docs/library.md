@@ -46,6 +46,7 @@ While no book is open, the main window shows the covers of "Recent" itself, or o
 - A book's cover is its first picture, or the first one named "cover" or "front". Pictures named "credit" or "banner" are passed over.
 - To choose another, open the book, right-click the page and tick "Cover in the library". The book is not changed. Untick it there to go back.
 - A book read to its last page has a tick on its cover.
+- A book whose file is not there, as on a drive not connected, has its cover drawn in grey and faded. Showing the covers looks again, and a book that has come back is drawn as before.
 - "Mark as read" in the books' right-click menu gives the selected books the tick; "Mark as unread" takes it away, with the page they were left at.
 - The line under the covers gives the selected book's folder, size, page count, and the page it was left on or when it was finished.
 - With several books selected, it sums them up: how many, their pages and size together, and how many of them are started and finished.

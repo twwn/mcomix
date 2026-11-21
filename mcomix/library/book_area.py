@@ -50,6 +50,22 @@ if TYPE_CHECKING:
     from mcomix.library import main_dialog
 
 
+def _faded(pixbuf: GdkPixbuf.Pixbuf) -> GdkPixbuf.Pixbuf:
+    """<pixbuf> in grey, at two fifths of its strength over whatever is
+    behind it: the cover of a book whose file is not there."""
+    grey = pixbuf.copy()
+    assert grey is not None, 'the cover could not be copied'
+    pixbuf.saturate_and_pixelate(grey, 0.0, False)
+    width, height = grey.get_width(), grey.get_height()
+    faded = GdkPixbuf.Pixbuf.new(GdkPixbuf.Colorspace.RGB, True, 8,
+                                 width, height)
+    assert faded is not None, 'no room for the faded cover'
+    faded.fill(0x00000000)
+    grey.composite(faded, 0, 0, width, height, 0, 0, 1.0, 1.0,
+                   GdkPixbuf.InterpType.NEAREST, 102)
+    return faded
+
+
 @functools.cache
 def _paint_black(display: Gdk.Display, css_class: str) -> None:
     """Give <display> the rule that paints <css_class> black, once.
@@ -176,6 +192,11 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable, LibraryPart):
         #: The paths of the books whose covers a worker is reading, and
         #: what the others wait on for one to be done.
         self._being_read: set[str] = set()
+        #: The books whose files a worker last found not there: their
+        #: covers are drawn faded (_dressed()).  Only a worker looks,
+        #: never the main thread, where a share that does not answer
+        #: would stop the window.
+        self._absent: set[str] = set()
         self._reading = threading.Condition()
         #: Whether display_covers() may show again the entries on show,
         #: with their covers, rather than new ones: not once the covers
@@ -506,10 +527,41 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable, LibraryPart):
             self._covers.scroll_to(0, Gtk.ListScrollFlags.NONE, None)
         for item in redraw:
             self._covers.redraw_item(item)
+        self._look_for_files(items)
         # Nothing is selected in a collection just shown, and the info
         # box speaks for the books on show.
         self._library.control_area.update_info(
             self._covers.get_selected_positions())
+
+    def _look_for_files(self, items: Sequence[_BookItem]) -> None:
+        """Look, on a thread of its own, whether the files of <items>
+        are there, and draw again the covers of those that came or went
+        since a worker last looked.
+
+        A cover in memory is drawn as its cell is bound, on the main
+        thread, by what was last found: a drive taken away while its
+        covers were in memory left them drawn as before.
+        """
+        paths = [(item, item.path) for item in items]
+        absent = self._absent
+
+        def look() -> None:
+            changed = [item for item, path in paths
+                       if os.path.isfile(path) == (path in absent)]
+            if changed:
+                GLib.idle_add(self._presence_changed, changed)
+
+        thread = threading.Thread(target=look, daemon=True)
+        thread.name += '-look_for_books'
+        thread.start()
+
+    def _presence_changed(self, items: list[_BookItem]) -> bool:
+        """Draw the covers of <items> again, whose files came or went: a
+        worker looks again as it draws each."""
+        if not self._closed:
+            for item in items:
+                self._covers.redraw_item(item)
+        return GLib.SOURCE_REMOVE
 
     def _place(self, items: Iterable[_BookItem],
                collection: int | None) -> None:
@@ -1045,6 +1097,10 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable, LibraryPart):
                 scale=self._covers.device_scale, framed=False))
         # The view's scale, which it records on the cover it is made for.
         scale = self._covers.device_scale
+        if os.path.isfile(book.path):
+            self._absent.discard(book.path)
+        else:
+            self._absent.add(book.path)
         return self._dressed(book, self._cover_of(book, scale), scale)
 
     def _cover_at_hand(self, item: thumbnail_list.ThumbnailItem
@@ -1070,8 +1126,20 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable, LibraryPart):
     def _dressed(self, book: 'backend_types._Book',
                  pixbuf: GdkPixbuf.Pixbuf, scale: float) -> GdkPixbuf.Pixbuf:
         """<book>'s cover <pixbuf> as the view draws it at <scale>:
-        enhanced, framed in white as wide as the thumbnails' frame, and
-        ticked if the book was read to the end.
+        enhanced, framed, ticked if the book was read to the end
+        (_framed()), and faded where a worker last found its file not
+        there, as on a drive not connected: such a book looked like any
+        other until it was opened."""
+        pixbuf = self._framed(book, pixbuf, scale)
+        if book.path in self._absent:
+            pixbuf = _faded(pixbuf)
+        return pixbuf
+
+    def _framed(self, book: 'backend_types._Book',
+                pixbuf: GdkPixbuf.Pixbuf, scale: float) -> GdkPixbuf.Pixbuf:
+        """<book>'s cover <pixbuf> enhanced, framed in white as wide as
+        the thumbnails' frame, and ticked if the book was read to the
+        end.
 
         The frame can be none: a white one round each cover stands out
         on the black the covers are shown on, which the main window
