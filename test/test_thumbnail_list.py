@@ -20,6 +20,7 @@ from gi.repository import Gtk
 
 from . import MComixTest, pump, solid_pixbuf, wait_for
 
+from mcomix import image_tools
 from mcomix import thumbnail_list
 from mcomix import properties_page
 
@@ -567,6 +568,38 @@ class ThumbnailGridViewTest(_ViewTest):
                 tops.setdefault(round(bounds[1].get_y()), set()).add(
                     round(bounds[1].get_x()))
         return len(tops[min(tops)])
+
+    def _pitches(self):
+        """How far apart the grid lays its cells out: across, and down."""
+        lefts, tops = set(), set()
+        for cell in self.view._each_cell():
+            bounds = cell.get_parent().compute_bounds(self.view)
+            if bounds[0] and cell.get_width() > 0:
+                lefts.add(round(bounds[1].get_x()))
+                tops.add(round(bounds[1].get_y()))
+        lefts, tops = sorted(lefts), sorted(tops)
+        return lefts[1] - lefts[0], tops[1] - tops[0]
+
+    def test_rows_of_covers_wider_than_the_box_are_as_tall_as_the_covers(self):
+        """The library fits each cover into a box half again as tall as
+        it is wide, and a row was as tall as the box: a cover any wider
+        than that had a strip of black above and below it, and the rows
+        stood twice as far apart as the columns."""
+        self.view.set_thumbnail_size(64, 96)
+        items = [thumbnail_list.ThumbnailItem(uid) for uid in range(24)]
+        self.window.present()
+        self.view.set_items(items)
+        self._settle()
+        across, down = self._pitches()
+        # Nothing drawn yet: each cell keeps the whole box.
+        padding = down - 96
+        self.assertLess(padding, 16)
+        cover = image_tools.pixbuf_to_texture(
+            solid_pixbuf(64, 80, 0x336699ff, has_alpha=True))
+        for item in items:
+            item.thumbnail = cover
+        self._settle()
+        self.assertEqual((across, 80 + padding), self._pitches())
 
     def test_entries_shown_before_the_grid_is_laid_out_bind_few_cells(self):
         """GTK binds every entry of some thirty rows of the most columns

@@ -11,6 +11,7 @@ from mcomix.worker_thread import WorkerThread
 
 from collections.abc import Callable, Iterable, Iterator, Sequence
 import bisect
+import math
 import weakref
 from typing import Any, cast
 
@@ -282,7 +283,7 @@ class _ThumbnailViewBase(widgets.Releasable):
                 item.thumbnail = image_tools.pixbuf_to_texture(pixbuf)
         cell.label.set_text(item.label)
         cell.set_tooltip_text(item.tooltip or None)
-        cell.picture.set_paintable(_shown(item))
+        self._show_thumbnail(cell, item)
         # The thumbnail and the badge are the only properties there are.
         cell.handler = item.connect('notify', self._thumbnail_arrived, cell)
         self._bound[item] = list_item.get_position()
@@ -389,11 +390,21 @@ class _ThumbnailViewBase(widgets.Releasable):
     def _thumbnail_arrived(self, item: ThumbnailItem,
                            parameter: GObject.ParamSpec,
                            cell: _ThumbnailCell) -> None:
-        cell.picture.set_paintable(_shown(item))
+        self._show_thumbnail(cell, item)
 
-    def _size_cell(self, cell: _ThumbnailCell) -> None:
+    def _show_thumbnail(self, cell: _ThumbnailCell,
+                        item: ThumbnailItem) -> None:
+        """Draw <item>'s thumbnail in <cell>, and size the cell for it."""
+        cell.picture.set_paintable(_shown(item))
+        self._size_picture(cell)
+
+    def _size_picture(self, cell: _ThumbnailCell) -> None:
+        """Make room in <cell> for a thumbnail as large as any may be."""
         cell.picture.set_size_request(self._thumbnail_width,
                                       self._thumbnail_height)
+
+    def _size_cell(self, cell: _ThumbnailCell) -> None:
+        self._size_picture(cell)
         cell.label.set_visible(self._labels_visible)
         if self._label_width:
             cell.label.set_width_chars(self._label_width)
@@ -802,6 +813,29 @@ class ThumbnailGridView(widgets.Selecting, Gtk.GridView, _ThumbnailViewBase,
         columns = min(_MOST_COLUMNS, width // max(1, least) + 1)
         if columns != self.get_max_columns():
             self.set_max_columns(columns)
+
+    def _size_picture(self, cell: _ThumbnailCell) -> None:
+        """Make <cell> as tall as the thumbnail it draws, no taller than
+        the box every thumbnail is fitted into.
+
+        The library's box is half again as tall as it is wide, and most
+        covers are wider than that: the box's height left them a strip
+        of black above and below, and rows twice as far apart as the
+        columns.  A grid lays each row out as tall as its tallest cell,
+        so with each cell as tall as its cover only the grid's own
+        padding parts one row from the next.  A cell with nothing to
+        draw yet keeps the whole box.
+        """
+        width, height = self._thumbnail_width, self._thumbnail_height
+        paintable = cell.picture.get_paintable()
+        if paintable is not None:
+            drawn_width = paintable.get_intrinsic_width()
+            drawn_height = paintable.get_intrinsic_height()
+            if drawn_width > 0 and drawn_height > 0:
+                # As the picture draws it: scaled down to fit, never up.
+                fit = min(1.0, width / drawn_width, height / drawn_height)
+                height = min(height, math.ceil(drawn_height * fit))
+        cell.picture.set_size_request(width, height)
 
     def set_sorter(self, sorter: "Gtk.Sorter | None") -> None:
         """Show the entries in the order <sorter> puts them in.
