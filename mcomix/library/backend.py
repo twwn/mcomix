@@ -993,6 +993,45 @@ class _LibraryBackend:
 
         return deleted, kept
 
+    def books_missing_from(
+            self, folder: str,
+            recursive: bool) -> list[tuple[int, str, int, bool]]:
+        """The books the library holds in <folder>, or at any depth under
+        it with <recursive>, whose files are not there: (id, path, size,
+        gone) each.
+
+        None while <folder> is missing or empty, as a drive not
+        connected is.  Under a folder that is there, a book is gone when
+        the nearest folder above it that is there holds anything: a
+        subfolder deleted takes its books with it.  One whose nearest
+        folder is empty, as one a drive is mounted on is, may be on a
+        drive not connected; or its folder was left empty when its last
+        book was moved or deleted.
+        """
+        if not _holds_anything(folder):
+            return []
+        prefix = tools.folder_prefix(folder)
+        # As relocate() reads a folder's books: a range the index on the
+        # path answers, ended by the separator's successor.
+        end = prefix[:-1] + chr(ord(prefix[-1]) + 1)
+        books = self.fetchall(
+            'select id, path, size from Book where path >= ? and path < ?',
+            (prefix, end))
+        reached: dict[str, bool] = {}
+        missing = []
+        for book, path, size in books:
+            if not recursive and os.sep in path[len(prefix):]:
+                continue
+            if os.path.isfile(path):
+                continue
+            there = os.path.dirname(path)
+            while len(there) >= len(prefix) and not os.path.isdir(there):
+                there = os.path.dirname(there)
+            if there not in reached:
+                reached[there] = _holds_anything(there)
+            missing.append((book, path, size, reached[there]))
+        return missing
+
     def remove_book(self, book: int) -> None:
         """Remove the <book> from the library."""
         path = self.get_book_path(book)

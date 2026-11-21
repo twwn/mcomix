@@ -922,6 +922,68 @@ class CleanCollectionOutOfReachTest(OpenLibraryTest):
                           'unmounted too'}, left)
 
 
+class BooksGoneFromTest(OpenLibraryTest):
+
+    """What a scan of a watched folder takes out of the library: the
+    books deleted from it, not those of a drive not connected."""
+
+    def _add(self, *parts):
+        path = os.path.join(self.tmp_dir, *parts)
+        cursor = self.library._con.execute(
+            '''insert into book (name, path, pages, format, size)
+            values (?, ?, ?, ?, ?)''', (parts[-1], path, 1, 1, 7))
+        return cursor.lastrowid
+
+    def _gone(self, recursive=True):
+        return sorted(
+            os.path.relpath(path, self.watched) for book, path, size, gone
+            in self.library.books_missing_from(self.watched, recursive)
+            if gone)
+
+    def setUp(self):
+        super().setUp()
+        self.watched = os.path.join(self.tmp_dir, 'comics')
+        os.makedirs(os.path.join(self.watched, 'series'))
+        os.makedirs(os.path.join(self.watched, 'mount'))
+        shutil.copy(NORMAL_ZIP, os.path.join(self.watched, 'here.zip'))
+        shutil.copy(NORMAL_ZIP, os.path.join(self.watched, 'series', 'here.zip'))
+        self._add('comics', 'here.zip')
+        self._add('comics', 'deleted.zip')
+        self._add('comics', 'series', 'here.zip')
+        self._add('comics', 'series', 'deleted.zip')
+        self._add('comics', 'deleted series', 'deleted.zip')
+        self._add('comics', 'mount', 'unmounted.zip')
+        self._add('comics', 'mount', 'deep', 'unmounted.zip')
+        self._add('comics-old', 'beside.zip')
+
+    def test_the_books_deleted_go_and_those_of_an_empty_mount_stay(self):
+        self.assertEqual([os.path.join('deleted series', 'deleted.zip'),
+                          'deleted.zip', os.path.join('series', 'deleted.zip')],
+                         self._gone())
+
+    def test_without_subfolders_only_the_folders_own_books(self):
+        self.assertEqual(['deleted.zip'], self._gone(recursive=False))
+
+    def test_the_books_of_an_empty_mount_are_missing_but_not_gone(self):
+        """A move out of the folder is still followed."""
+        missing = {os.path.relpath(path, self.watched): gone
+                   for book, path, size, gone
+                   in self.library.books_missing_from(self.watched, True)}
+        self.assertFalse(missing[os.path.join('mount', 'unmounted.zip')])
+        self.assertFalse(
+            missing[os.path.join('mount', 'deep', 'unmounted.zip')])
+        self.assertEqual(5, len(missing))
+
+    def test_nothing_is_missing_from_a_folder_not_there_or_empty(self):
+        """As the drive it is on is while it is not connected."""
+        shutil.rmtree(self.watched)
+        self.assertEqual([], self.library.books_missing_from(self.watched,
+                                                             True))
+        os.mkdir(self.watched)
+        self.assertEqual([], self.library.books_missing_from(self.watched,
+                                                             True))
+
+
 class RemoveCollectionTest(OpenLibraryTest):
 
     """Removing a shelf touches four tables, and must do so atomically.

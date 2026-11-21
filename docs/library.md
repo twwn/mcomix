@@ -91,8 +91,10 @@ While no book is open, the main window shows the covers of "Recent" itself, or o
 - "Remove", or Delete, takes the selected folder off the list. Its books stay in the library.
 - "Scan now" searches at once; closing an edited list searches too.
 - A book that has been read, and so is in "Recent" alone, is filed in the folder's collection by the next search. A folder watched into no collection leaves it as it is.
+- Each search also follows a book moved or renamed within the folder, found by its name and size, with its collections, cover, bookmarks and the page it was left at, and removes a book deleted from it.
+  A folder that is not there, or empty, is taken for a drive not connected, and its books are kept; so are those of an empty folder inside it.
 - With "Automatically scan for new books when library is opened", the search runs whenever the library opens.
-  While the library is open, the folders are watched too: a book copied or moved into one, or into a new subfolder of one searched with its subfolders, is added a moment after it has arrived. The first 1000 folders are watched; a deeper library is still searched whenever it opens.
+  While the library is open, the folders are watched too: a book copied or moved into one, or into a new subfolder of one searched with its subfolders, is added a moment after it has arrived, and one deleted or moved away is followed or removed as the search does. The first 1000 folders are watched; a deeper library is still searched whenever it opens.
 
 ## Recent books
 

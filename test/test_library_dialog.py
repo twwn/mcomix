@@ -602,6 +602,56 @@ class FolderWatchTest(_LibraryWindowTest):
             self.assertEqual(3, len(dialog._watcher.folders))
             self.assertIn(folder, dialog._watcher.folders)
 
+    def _held(self, dialog, *paths):
+        """Put the books at <paths> in the library, and wait until their
+        covers are drawn: Windows refuses to delete or move a file that
+        is open, as one is while its cover is read."""
+        for path in paths:
+            self.assertTrue(dialog.backend.add_book(path))
+        dialog.book_area.display_covers(constants.COLLECTION_ALL)
+        self._covers_drawn(dialog)
+
+    def test_a_book_deleted_from_a_watched_folder_is_removed(self):
+        """Only books arriving were scanned for, and the library kept a
+        book deleted from a watched folder until "Clean up"."""
+        folder = self._watched()
+        kept = self._arrive(folder, 'kept.cbz')
+        deleted = self._arrive(folder, 'deleted.cbz')
+        prefs['last library collection'] = constants.COLLECTION_ALL
+        dialog = self._open_watching((folder, False))
+        self._held(dialog, kept, deleted)
+        os.remove(deleted)
+        self.assertTrue(wait_for(
+            lambda: dialog.backend.get_book_by_path(deleted) is None,
+            seconds=20), 'the book deleted was kept')
+        self.assertIsNotNone(dialog.backend.get_book_by_path(kept))
+        self.assertTrue(wait_for(lambda: [kept] == [
+            item.path for item in dialog.book_area._covers.each_item()]),
+            'the deleted book is still shown')
+
+    def test_a_book_moved_within_a_watched_folder_keeps_its_place(self):
+        """Removed and added again, it would lose its collections, cover
+        and the page it was left at."""
+        folder = self._watched()
+        os.makedirs(os.path.join(folder, 'a'))
+        os.makedirs(os.path.join(folder, 'b'))
+        old = self._arrive(os.path.join(folder, 'a'), 'book.cbz')
+        dialog = self._open_watching((folder, True))
+        self._held(dialog, old)
+        dialog.backend.add_collection('Shelf')
+        shelf = dialog.backend.get_collection_by_name('Shelf').id
+        book = dialog.backend.get_book_by_path(old).id
+        dialog.backend.add_book_to_collection(book, shelf)
+        new = os.path.join(folder, 'b', 'book.cbz')
+        os.rename(old, new)
+        self.assertTrue(wait_for(
+            lambda: dialog.backend.get_book_by_path(new) is not None,
+            seconds=20), 'the book moved was not found')
+        pump()
+        self.assertEqual(book, dialog.backend.get_book_by_path(new).id)
+        self.assertIsNone(dialog.backend.get_book_by_path(old))
+        self.assertIn(book, dialog.backend.get_books_in_collection(shelf))
+
     def test_a_batch_of_books_is_one_scan(self):
         folder = self._watched()
         dialog = self._open_watching((folder, False))
@@ -2101,7 +2151,8 @@ class AddBooksTest(_LibraryWindowTest):
         comics = self._open_all().backend.add_collection('Comics')
         dialog = self._showing(comics)
         entry = types.SimpleNamespace(
-            collection=backend_types.DefaultCollection, directory='/comics')
+            collection=backend_types.DefaultCollection, directory='/comics',
+            recursive=False)
         dialog._new_files_found([self.path], entry)
         self._wait_for_book(dialog)
         self.assertEqual([], self._filed(dialog))
@@ -2116,7 +2167,7 @@ class AddBooksTest(_LibraryWindowTest):
         dialog = self._showing(comics)
         entry = types.SimpleNamespace(
             collection=backend.get_collection_by_id(manga),
-            directory='/manga')
+            directory='/manga', recursive=False)
         dialog._new_files_found([self.path], entry)
         self._wait_for_book(dialog)
         book = backend.get_book_by_path(self.path)
@@ -2146,6 +2197,9 @@ class NewBooksMessageTest(MComixTest):
 
             def set_status_message(self, message):
                 self.message = message
+
+            def _follow_and_remove(self, filelist, entry):
+                return filelist, 0
 
         library = _Library()
         entry = types.SimpleNamespace(collection=None, directory='/comics')

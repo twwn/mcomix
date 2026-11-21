@@ -4,9 +4,9 @@ A scan of the watch list ran when the library was opened, and by hand;
 a book copied into a watched folder while the library was on screen
 appeared only at the next one.  While the library is open, and the scan
 at its opening is on, the folders are watched for files now: a book
-that has arrived - written and closed, or moved in - starts the same
-scan, a moment after the last of a batch, and is added as that scan
-adds books.
+that has arrived - written and closed, or moved in - or gone - deleted
+or moved out - starts the same scan, a moment after the last of a
+batch, which adds, follows and removes books as it does.
 """
 
 import os
@@ -35,6 +35,10 @@ _ARRIVED = (Gio.FileMonitorEvent.CHANGES_DONE_HINT,
             Gio.FileMonitorEvent.MOVED_IN,
             Gio.FileMonitorEvent.RENAMED)
 
+#: And of a file that has gone: deleted, or moved out of the folder.
+_GONE = (Gio.FileMonitorEvent.DELETED,
+         Gio.FileMonitorEvent.MOVED_OUT)
+
 #: And of a folder that has appeared, to be watched in its turn where
 #: it is under a folder watched with its subfolders.
 _APPEARED = (Gio.FileMonitorEvent.CREATED,
@@ -46,7 +50,7 @@ class FolderWatcher:
 
     """Gio monitors on the watched folders, and on their subfolders for
     the entries that take them in; scan() is called when a book has
-    arrived in one of them."""
+    arrived in one of them, or gone from it."""
 
     def __init__(self, scan: Callable[[], None]) -> None:
         self._scan = scan
@@ -141,7 +145,8 @@ class FolderWatcher:
                 # What was moved in with the folder is new as well.
                 self._later()
             return
-        if event in _ARRIVED and archive_tools.is_archive_file(path):
+        if (event in _ARRIVED or event in _GONE) \
+                and archive_tools.is_archive_file(path):
             self._later()
 
     def _later(self) -> None:

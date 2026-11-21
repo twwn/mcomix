@@ -13,6 +13,7 @@ from gi.repository import Gdk, Gio, GLib, Gtk, Pango
 from mcomix.preferences import prefs
 from mcomix import bookmark_backend
 from mcomix import constants
+from mcomix import file_actions
 from mcomix import i18n
 from mcomix import page_marks
 from mcomix import page_rotations
@@ -206,8 +207,13 @@ class _LibraryDialog(Gtk.Window):
 
     def _new_files_found(self, filelist: Sequence[str],
                          watchentry: "backend_types._WatchListEntry") -> None:
-        """ Called after the scan for new files finished. """
+        """Called when the scan has walked <watchentry>'s folder, with
+        the books found there that the library lacks.  Brings the
+        library up to the folder as it stands: what moved within it is
+        followed, what was deleted from it removed, what is new added.
+        """
 
+        filelist, removed = self._follow_and_remove(filelist, watchentry)
         if filelist:
             # A watch list entry that has been removed keeps its
             # directory but no longer names a collection, and one that
@@ -228,12 +234,65 @@ class _LibraryDialog(Gtk.Window):
                     "Added %(count)d new book from folder '%(directory)s'.",
                     "Added %(count)d new books from folder '%(directory)s'.",
                     len(filelist))
-
-            self.set_status_message(message % {'directory': watchentry.directory,
-                                               'count': len(filelist), 'bookname': os.path.basename(filelist[0])})
+            message %= {'directory': watchentry.directory,
+                        'count': len(filelist),
+                        'bookname': os.path.basename(filelist[0])}
         else:
-            self.set_status_message(
-                _("No new books found in folder '%s'.") % watchentry.directory)
+            message = _("No new books found in folder '%s'.") \
+                % watchentry.directory
+        if removed:
+            message += ' ' + i18n.get_translation().ngettext(
+                'Removed %d book from the library.',
+                'Removed %d books from the library.',
+                removed) % removed
+        self.set_status_message(message)
+
+    def _follow_and_remove(
+            self, filelist: Sequence[str],
+            watchentry: "backend_types._WatchListEntry"
+    ) -> tuple[list[str], int]:
+        """Take out of the library the books gone from <watchentry>'s
+        folder, and say which of <filelist>, the books found there that
+        the library lacks, are still new, and how many were removed.
+
+        A book missing whose name and size one found has, and no other
+        missing or found book has, was moved or renamed within the
+        folder: it follows, and keeps its collections, cover, bookmarks
+        and the page it was left at.  Of the others, those that may be
+        on a drive not connected are kept (books_missing_from()).
+        """
+        missing = self.backend.books_missing_from(watchentry.directory,
+                                                  watchentry.recursive)
+        if not missing:
+            return list(filelist), 0
+        found: dict[tuple[str, int], list[str]] = {}
+        for path in filelist:
+            try:
+                size = os.path.getsize(path)
+            except OSError:
+                continue
+            found.setdefault((os.path.basename(path), size), []).append(path)
+        alike: dict[tuple[str, int], list[tuple[int, str, bool]]] = {}
+        for book, path, size, gone in missing:
+            alike.setdefault((os.path.basename(path), size), []).append(
+                (book, path, gone))
+        followed: set[str] = set()
+        removing: list[int] = []
+        for key, books in alike.items():
+            targets = found.get(key, [])
+            if len(books) == 1 and len(targets) == 1:
+                file_actions.follow_book(books[0][1], targets[0])
+                followed.add(targets[0])
+            else:
+                removing.extend(book for book, path, gone in books if gone)
+        if removing:
+            with self.backend.transaction():
+                for book in removing:
+                    self.backend.remove_book(book)
+            GLib.idle_add(self.book_area.display_covers,
+                          self.collection_area.get_current_collection())
+        return ([path for path in filelist if path not in followed],
+                len(removing))
 
     def set_status_message(self, message: str) -> None:
         """Set a specific message on the statusbar, replacing whatever was

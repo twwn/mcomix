@@ -48,6 +48,24 @@ if TYPE_CHECKING:
     from mcomix import main
 
 
+def follow_book(current_file: str, target: str) -> None:
+    """Bring forward what is recorded under <current_file>, which is now
+    <target>: the library's book, the bookmarks, and the store of last
+    read pages, which is the library's.  For a book MComix moved or
+    renamed, and for one the library's scan found moved within a
+    watched folder."""
+    backend.LibraryBackend().update_book_path(current_file, target)
+    bookmark_backend.BookmarksStore.update_path(current_file, target)
+    # The turns and the marks the reader gave its pages, and the
+    # direction the book was set to, are kept by its path as well, and
+    # so is the password typed for it this session.
+    old, new = os.path.abspath(current_file), os.path.abspath(target)
+    page_rotations.follow(old, new)
+    page_marks.follow(old, new)
+    reading_directions.follow(old, new)
+    archive_password.follow(old, new)
+
+
 def _same_file_recased(path: str, target: str) -> bool:
     """Whether <target> is <path> itself under a name that differs only
     in case, which is what a file system that ignores case answers."""
@@ -1364,7 +1382,7 @@ class FileActions:
         asks.
 
         What was recorded under each book's old path follows it, as for
-        the book being read (_follow()).  That one, if it is among them,
+        the book being read (follow_book()).  That one, if it is among them,
         goes last and as "Move to" moves it: its changes offered to be
         saved first, and reopened where it landed.  A book that will not
         go stays where it is; the first is said why over <parent>, the
@@ -1382,7 +1400,7 @@ class FileActions:
             except OSError as error:
                 failed.append((path, error))
                 continue
-            self._follow(path, target)
+            follow_book(path, target)
             self._window.uimanager.recent.move_path(path, target)
             went = True
         if went:
@@ -1420,7 +1438,7 @@ class FileActions:
         since a rename is no way to write over a file.  The book being
         read is reopened under its new name; one that is not open is
         renamed where it lies.  Either way, what was recorded under the
-        old name follows it (_follow()).
+        old name follows it (follow_book()).
         """
         name = os.path.basename(path)
         # A RAR set is renamed whole (_rename_book_now()), so a name is
@@ -1515,7 +1533,7 @@ class FileActions:
         if is_open:
             self._book_moved(path, target)
         else:
-            self._follow(path, target)
+            follow_book(path, target)
             # Where it stood among the recent files, under its new name.
             self._window.uimanager.recent.move_path(path, target)
 
@@ -1537,7 +1555,7 @@ class FileActions:
         """
         in_archive = self._window.filehandler.archive_type is not None
         page = self._window.imagehandler.get_current_page()
-        self._follow(current_file, target)
+        follow_book(current_file, target)
         # The book is about to be opened where it landed, which records
         # that; the entry for where it was would open nothing.
         self._window.uimanager.recent.remove_path(current_file)
@@ -1551,22 +1569,6 @@ class FileActions:
         # Opening the book closed it first, which wrote the page being
         # read back under the path the file no longer has.
         self._window.filehandler.last_read_page.clear_page(current_file)
-
-    @staticmethod
-    def _follow(current_file: str, target: str) -> None:
-        """Bring forward what is recorded under <current_file>, which is
-        now <target>: the library's book, the bookmarks, and the store
-        of last read pages, which is the library's."""
-        backend.LibraryBackend().update_book_path(current_file, target)
-        bookmark_backend.BookmarksStore.update_path(current_file, target)
-        # The turns and the marks the reader gave its pages, and the
-        # direction the book was set to, are kept by its path as well,
-        # and so is the password typed for it this session.
-        old, new = os.path.abspath(current_file), os.path.abspath(target)
-        page_rotations.follow(old, new)
-        page_marks.follow(old, new)
-        reading_directions.follow(old, new)
-        archive_password.follow(old, new)
 
     def _move_failed(self, current_file: str, directory: str,
                      error: OSError,
