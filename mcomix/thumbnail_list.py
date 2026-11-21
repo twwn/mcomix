@@ -223,9 +223,8 @@ class _ThumbnailViewBase(widgets.Releasable):
         #: out of the archive, and made the same page up to ten times
         #: while a book was opened.
         self._coming: set[ThumbnailItem] = set()
-        #: The timer refresh_soon() started, or None while none is
-        #: pending.
-        self._refresh_source: int | None = None
+        #: The wait refresh_soon() started.
+        self._refresh_source = widgets.Timer(self._refresh_now)
         #: Every cell the factory has built, on screen or kept aside
         #: for rows to come; release() needs the ones kept aside too.
         self._cells: "weakref.WeakSet[_ThumbnailCell]" = weakref.WeakSet()
@@ -502,7 +501,7 @@ class _ThumbnailViewBase(widgets.Releasable):
     def stop_update(self) -> None:
         """Stop making thumbnails, and ignore the ones still coming."""
         self._updates_stopped = True
-        self._cancel_refresh()
+        self._refresh_source.stop()
         self._thread.stop()
 
     def retire(self) -> None:
@@ -514,7 +513,7 @@ class _ThumbnailViewBase(widgets.Releasable):
         reads: the read in flight ends on its own.
         """
         self._updates_stopped = True
-        self._cancel_refresh()
+        self._refresh_source.stop()
         self._thread.retire()
 
     def release(self) -> None:
@@ -565,19 +564,14 @@ class _ThumbnailViewBase(widgets.Releasable):
         for over a second opening a 200-page book.  stop_update() drops
         a refresh still to come.
         """
-        if self._refresh_source is None:
-            self._refresh_source = GLib.timeout_add(
-                self.REFRESH_DELAY, self._refresh_now)
+        # Unlike the other waits, a call while one is under way leaves
+        # it be: the refresh comes REFRESH_DELAY after the first page.
+        if not self._refresh_source.running:
+            self._refresh_source.start(self.REFRESH_DELAY)
 
-    def _refresh_now(self) -> bool:
-        self._refresh_source = None
+    def _refresh_now(self) -> None:
+        # Looked up when the wait is over, not when the timer was made.
         self.refresh()
-        return GLib.SOURCE_REMOVE
-
-    def _cancel_refresh(self) -> None:
-        if self._refresh_source is not None:
-            GLib.source_remove(self._refresh_source)
-            self._refresh_source = None
 
     def _ask_for(self, item: ThumbnailItem) -> None:
         if self.generate_thumbnail is None or self._updates_stopped:
