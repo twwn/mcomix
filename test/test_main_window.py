@@ -2592,6 +2592,12 @@ class MainWindowTest(MComixTest):
     def test_turning_down_deleting_permanently_keeps_the_file(self):
         source = self._movable_book()
         dialog = self._asked_to_delete_permanently(source)
+        self._cancelled_and_left_open(dialog, source)
+
+    def _cancelled_and_left_open(self, dialog, source):
+        """Answer Cancel to the deletion question <dialog> asked about
+        <source>, and see the book left as it was: its file kept and the
+        book still open."""
         dialog.get_widget_for_response(Response.CANCEL).emit('clicked')
         self._pump()
         self.assertTrue(os.path.isfile(source))
@@ -2643,11 +2649,7 @@ class MainWindowTest(MComixTest):
     def test_where_the_trash_refuses_no_leaves_the_book_open(self):
         source = self._movable_book()
         dialog = self._asked_where_the_trash_refuses(source)
-        dialog.get_widget_for_response(Response.CANCEL).emit('clicked')
-        self._pump()
-        self.assertTrue(os.path.isfile(source))
-        self.assertEqual(self.window.filehandler.get_path_to_base(), source,
-                         'the book was closed for nothing')
+        self._cancelled_and_left_open(dialog, source)
 
     def test_a_remembered_delete_still_asks_where_the_trash_refuses(self):
         """"Do not ask again" was said of moving to the trash."""
@@ -4802,24 +4804,15 @@ class MainWindowTest(MComixTest):
         """A file manager leaves the extension out of what it selects,
         so that typing replaces the name and keeps the kind."""
         self._ready()
-        self.window.popup_page = 1
         name = self.window.file_actions.page_name(1)
 
-        self.window.file_actions.rename_popup_page()
-        self._pump()
-
-        dialogs = prompts_over(self.window)
-        self.assertEqual(len(dialogs), 1, 'nothing asked for a name')
-        entries = [child
-                   for child in self._children(dialogs[0].get_content_area())
-                   if isinstance(child, Gtk.Entry)]
-        self.assertEqual(len(entries), 1)
-        self.assertEqual(entries[0].get_text(), name)
-        self.assertEqual(entries[0].get_selection_bounds(),
+        dialog = self._rename_dialog(1)
+        entry = self._entry_of(dialog)
+        self.assertEqual(entry.get_text(), name)
+        self.assertEqual(entry.get_selection_bounds(),
                          (0, len(os.path.splitext(name)[0])),
                          'the extension is selected as well')
-        for dialog in dialogs:
-            dialog.destroy()
+        dialog.destroy()
         self._pump()
 
     def test_renaming_a_loose_image_renames_the_file_on_disk(self):
@@ -4959,13 +4952,17 @@ class MainWindowTest(MComixTest):
         self.assertEqual(len(dialogs), 1, 'nothing asked for a name')
         return dialogs[0]
 
-    def _typed_in(self, dialog, name):
-        """Type <name> into the dialog's entry."""
+    def _entry_of(self, dialog):
+        """The one entry the rename dialog <dialog> holds."""
         entries = [child
                    for child in self._children(dialog.get_content_area())
                    if isinstance(child, Gtk.Entry)]
         self.assertEqual(len(entries), 1)
-        entries[0].set_text(name)
+        return entries[0]
+
+    def _typed_in(self, dialog, name):
+        """Type <name> into the dialog's entry."""
+        self._entry_of(dialog).set_text(name)
 
     @staticmethod
     def _warning_line(dialog):
