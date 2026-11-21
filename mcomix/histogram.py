@@ -8,13 +8,7 @@ import PIL.ImageOps as ImageOps
 
 from gi.repository import GdkPixbuf
 
-from typing import cast
-
 from mcomix import image_tools
-
-
-#: One pixel of an RGB image, as its pixel access hands it over.
-type Rgb = tuple[int, int, int]
 
 
 def draw_histogram(pixbuf: GdkPixbuf.Pixbuf, height: int = 170,
@@ -39,10 +33,6 @@ def draw_histogram(pixbuf: GdkPixbuf.Pixbuf, height: int = 170,
     r = [int(counts[n] * y_scale) for n in range(256)]
     g = [int(counts[n] * y_scale) for n in range(256, 512)]
     b = [int(counts[n] * y_scale) for n in range(512, 768)]
-    pixels = im.load()
-    # An image made in memory is loaded already, so there is always
-    # something to reach its pixels through.
-    assert pixels is not None
     # Draw the filling colours.  A column is one colour from the bottom
     # up to its lowest channel's height, another from there to the next
     # one's, and so on: three lines at most, each drawn at once rather
@@ -58,26 +48,25 @@ def draw_histogram(pixbuf: GdkPixbuf.Pixbuf, height: int = 170,
                             fill if top <= g[x] else 0,
                             fill if top <= b[x] else 0))
             bottom = top + 1
-    # Draw the outlines
-    for x in range(1, 256):
-        for y in list(range(r[x-1] + 1, r[x] + 1)) + [r[x]] * (r[x] != 0):
-            r_px, g_px, b_px = cast(Rgb, pixels[x + 1, height - 5 - y])
-            pixels[x + 1, height - 5 - y] = (255, g_px, b_px)
-        for y in range(r[x] + 1, r[x-1] + 1):
-            r_px, g_px, b_px = cast(Rgb, pixels[x, height - 5 - y])
-            pixels[x, height - 5 - y] = (255, g_px, b_px)
-        for y in list(range(g[x-1] + 1, g[x] + 1)) + [g[x]] * (g[x] != 0):
-            r_px, g_px, b_px = cast(Rgb, pixels[x + 1, height - 5 - y])
-            pixels[x + 1, height - 5 - y] = (r_px, 255, b_px)
-        for y in range(g[x] + 1, g[x-1] + 1):
-            r_px, g_px, b_px = cast(Rgb, pixels[x, height - 5 - y])
-            pixels[x, height - 5 - y] = (r_px, 255, b_px)
-        for y in list(range(b[x-1] + 1, b[x] + 1)) + [b[x]] * (b[x] != 0):
-            r_px, g_px, b_px = cast(Rgb, pixels[x + 1, height - 5 - y])
-            pixels[x + 1, height - 5 - y] = (r_px, g_px, 255)
-        for y in range(b[x] + 1, b[x-1] + 1):
-            r_px, g_px, b_px = cast(Rgb, pixels[x, height - 5 - y])
-            pixels[x, height - 5 - y] = (r_px, g_px, 255)
+    # Draw the outlines: a channel's outline is that channel at full
+    # intensity, whatever the filling or another outline left in the
+    # other two, so each is drawn into its own band.
+    bands = im.split()
+    for band, heights in zip(bands, (r, g, b)):
+        outline = ImageDraw.Draw(band)
+        for x in range(1, 256):
+            before, now = heights[x - 1], heights[x]
+            # Up a rise, in the column that rose, and the top of every
+            # bar, risen or not...
+            if now:
+                outline.line([(x + 1, height - 5 - now),
+                              (x + 1, height - 5 - min(before + 1, now))],
+                             fill=255)
+            # ...and down a fall, in the column before it.
+            if before > now:
+                outline.line([(x, height - 5 - before),
+                              (x, height - 5 - (now + 1))], fill=255)
+    im = Image.merge('RGB', bands)
     im = ImageOps.expand(im, 1, (80, 80, 80))
     im = ImageOps.expand(im, 1, (0, 0, 0))
     return image_tools.pil_to_pixbuf(im)
