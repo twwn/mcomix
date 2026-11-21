@@ -1,6 +1,7 @@
 """Continuous mode: the book as one strip, its pages one below the
 other without a gap (upstream feature requests 123 and 126)."""
 
+import contextlib
 import inspect
 import os
 import unittest.mock
@@ -87,6 +88,22 @@ class _StripTest(MainWindowLaterTest):
     def _redraw(self):
         self.window.draw_image()
         self._drawn()
+
+    @contextlib.contextmanager
+    def _not_there(self, *indices):
+        """Have the pages at <indices> (from 0), or every page but the
+        first with none named, not there yet for the length of the with
+        block, as while they are still being extracted; yields the set
+        of the pages that are there."""
+        there = self.window.imagehandler._available_images
+        gone = set(indices) if indices else {
+            index for index in there if index >= 1}
+        gone &= there
+        there.difference_update(gone)
+        try:
+            yield there
+        finally:
+            there.update(gone)
 
     def _drawn(self):
         """Wait for the strip asked for to be drawn."""
@@ -214,22 +231,12 @@ class GrowingStripTest(_StripTest):
     drawn with the ones that are, and grows as the rest arrive."""
 
     def test_only_pages_that_are_there_are_stacked(self):
-        handler = self.window.imagehandler
-        there = handler._available_images
-        gone = {index for index in there if index >= 1}
-        there.difference_update(gone)
-        try:
+        with self._not_there():
             self._redraw()
             self.assertEqual([((0, 0), (200, 600))], self._boxes())
-        finally:
-            there.update(gone)
 
     def test_a_page_that_arrives_goes_below_what_is_being_read(self):
-        handler = self.window.imagehandler
-        there = handler._available_images
-        gone = {index for index in there if index >= 1}
-        there.difference_update(gone)
-        try:
+        with self._not_there() as there:
             self._redraw()
             self.assertEqual(1, self.window.displayed_page_count())
             self.window.scroll(0, 150)
@@ -247,9 +254,6 @@ class GrowingStripTest(_StripTest):
                              self._boxes())
             self.assertEqual(
                 (0, 150), tuple(self.window.page_area.get_position()))
-        finally:
-            there.update(gone)
-
 
     def test_a_page_further_down_asks_for_nothing(self):
         self.window._page_available(len(self.PAGES))
@@ -601,13 +605,9 @@ class ScrollTest(_StripTest):
     def test_a_page_before_that_is_not_there_yet_is_not_waited_for(self):
         self.window.set_page(3)
         self._redraw()
-        there = self.window.imagehandler._available_images
-        there.discard(1)
-        try:
+        with self._not_there(1):
             self.assertFalse(self.window.scroll(0, -50))
             self.assertEqual(3, self._page())
-        finally:
-            there.add(1)
 
     def test_one_move_at_a_time(self):
         self.window.scroll(0, 700)
@@ -633,15 +633,13 @@ class ScrollTest(_StripTest):
     def test_a_page_before_that_is_not_there_is_not_the_previous_book(self):
         self.window.set_page(3)
         self._redraw()
-        there = self.window.imagehandler._available_images
-        there.discard(1)
-        try:
+        with self._not_there(1):
             with unittest.mock.patch.object(
                     self.window, 'previous_book') as opened:
                 self.window.flip_page(-1)
                 opened.assert_not_called()
-        finally:
-            there.add(1)
+            # Nor is it turned to: the strip stays where it was.
+            self.assertEqual(3, self._page())
 
     def test_a_scroll_bar_dragged_down_moves_the_strip_on_too(self):
         bar = self.window.page_area.get_vadjustment()
@@ -689,10 +687,7 @@ class ScrollTest(_StripTest):
             opened.assert_called_once_with()
 
     def test_the_end_of_a_strip_still_growing_is_not_the_books_end(self):
-        there = self.window.imagehandler._available_images
-        gone = {index for index in there if index >= 1}
-        there.difference_update(gone)
-        try:
+        with self._not_there():
             self._redraw()
             self.assertEqual(1, self.window.displayed_page_count())
             with unittest.mock.patch.object(
@@ -700,8 +695,6 @@ class ScrollTest(_StripTest):
                 self.window.flip_page(1)
                 self.window.flip_page(1)
                 opened.assert_not_called()
-        finally:
-            there.update(gone)
 
     def test_a_jump_of_several_pages_is_still_a_jump(self):
         self.window.scroll(0, 300)
@@ -1160,14 +1153,10 @@ class DetectTest(_StripTest):
 
     def test_a_book_is_looked_at_once_its_first_pages_are_there(self):
         self.window._forget_strip()
-        there = self.window.imagehandler._available_images
-        there.discard(3)
-        try:
+        with self._not_there(3):
             self.window._page_available(2)
             self.assertFalse(self.window._strip_looked)
             self.assertFalse(self.window.is_continuous)
-        finally:
-            there.add(3)
         self.window._page_available(4)
         self.assertTrue(self.window._strip_looked)
         self.assertTrue(self.window.is_continuous)
