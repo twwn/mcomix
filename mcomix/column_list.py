@@ -114,7 +114,9 @@ class _Cell:
         self.handler: int | None = None
         #: The list item this cell is the child of, which is what knows
         #: where it sits.  Set once, when the cell is built: a list item
-        #: keeps its child for as long as it has one.
+        #: keeps its child for as long as it has one.  Let go of when
+        #: the list item is torn down, which is all that breaks the cycle
+        #: the two make through C.
         self.list_item: Gtk.ListItem | None = None
 
     def drop_handler(self) -> None:
@@ -871,9 +873,22 @@ class ColumnListView(widgets.Selecting, Gtk.ColumnView, widgets.Releasable,
                 unbind(cell)
             cell.row = None
 
+        def on_teardown(_factory: Gtk.SignalListItemFactory,
+                        item: Gtk.ListItem) -> None:
+            # The list item holds the cell in C, and the cell held the
+            # list item in Python: a cycle the collector cannot see,
+            # which kept every cell, and through its row and callbacks
+            # the window that showed it, once the view was gone.
+            child = item.get_child()
+            if isinstance(child, Gtk.TreeExpander):
+                child = child.get_child()
+            if child is not None:
+                cast(_Cell, child).list_item = None
+
         factory.connect('setup', on_setup)
         factory.connect('bind', on_bind)
         factory.connect('unbind', on_unbind)
+        factory.connect('teardown', on_teardown)
 
         column = Gtk.ColumnViewColumn(title=title, factory=factory)
         column.set_expand(expand)

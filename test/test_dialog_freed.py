@@ -132,21 +132,22 @@ class MainWindowDialogsFreedTest(MComixTest):
         self.assertEqual(len(opened), 1, opened)
         return opened[0]
 
-    def assertFreedOnClose(self, activate):
+    def assertFreedOnClose(self, activate, parts=lambda opened: ()):
         """Open a dialog with <activate>, close it as the window manager
-        would, and check that nothing holds it afterwards."""
+        would, and check that nothing holds it afterwards, nor any of
+        the <parts> of it the function given the dialog returns."""
         opened = self._opened_by(activate)
-        name = type(opened).__name__
-        ref = weakref.ref(opened)
+        refs = [weakref.ref(held) for held in (opened, *parts(opened))]
         opened.close()
         del opened
         pump()
         gc.collect()
         pump()
         gc.collect()
-        if ref() is not None:
-            self.fail('the closed %s is still alive, held by %s'
-                      % (name, _holders(ref())))
+        for ref in refs:
+            if ref() is not None:
+                self.fail('the closed %s is still alive, held by %s'
+                          % (type(ref()).__name__, _holders(ref())))
 
     def _ui_action(self, name):
         return self.window.actiongroup.get_action(name).activate
@@ -161,7 +162,11 @@ class MainWindowDialogsFreedTest(MComixTest):
         self.assertFreedOnClose(self._ui_action('properties'))
 
     def test_preferences(self):
-        self.assertFreedOnClose(self._ui_action('preferences'))
+        """And its Shortcuts tab: each of its cells kept the list item
+        it sat in, which in C holds the cell, so neither was freed, nor
+        the editor its rebind callback leads back to."""
+        self.assertFreedOnClose(self._ui_action('preferences'),
+                                lambda dialog: (dialog.shortcuts,))
 
     def test_edit_archive(self):
         self.assertFreedOnClose(self._ui_action('edit_archive'))
