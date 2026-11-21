@@ -714,6 +714,30 @@ class FolderWatchTest(_LibraryWindowTest):
         self.assertEqual('Could not add 1 book to the library: bad.cbz',
                          dialog._statusbar.get_text().strip())
 
+    def test_a_book_that_cannot_be_added_is_passed_over_until_it_changes(self):
+        folder = self._watched()
+        damaged = os.path.join(folder, 'bad.cbz')
+        with open(damaged, 'wb') as book:
+            book.write(b'not a book')
+        dialog = self._open()
+        watchlist = dialog.backend.watchlist
+        watchlist.add_directory(folder)
+
+        def scanned():
+            dialog.set_status_message('')
+            watchlist.scan_for_new_files()
+            self.assertTrue(wait_for(
+                lambda: dialog._statusbar.get_text().strip(), seconds=10))
+            return dialog._statusbar.get_text().strip()
+
+        refused = 'Could not add 1 book to the library: bad.cbz'
+        self.assertEqual(refused, scanned())
+        self.assertEqual("No new books found in folder '%s'." % folder,
+                         scanned())
+        with open(damaged, 'ab') as book:
+            book.write(b'!')
+        self.assertEqual(refused, scanned())
+
     def test_a_batch_of_books_is_one_scan(self):
         folder = self._watched()
         dialog = self._open_watching((folder, False))
@@ -2243,6 +2267,8 @@ class NewBooksMessageTest(MComixTest):
 
     def _message(self, count):
         class _Library:
+            backend = unittest.mock.Mock()
+
             def add_books(self, paths, collection):
                 return len(paths), []
 

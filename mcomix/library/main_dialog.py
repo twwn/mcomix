@@ -223,6 +223,7 @@ class _LibraryDialog(Gtk.Window):
             collection = watchentry.collection
             added, not_added = self.add_books(
                 filelist, None if collection is None else collection.id)
+            self.backend.watchlist.refused(not_added)
             # A book that could not be added is new again at the next
             # scan, and was reported as added at every one of them.
             refused = frozenset(not_added)

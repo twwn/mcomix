@@ -93,7 +93,7 @@ While no book is open, the main window shows the covers of "Recent" itself, or o
 - "Watch list", at the bottom of the library window, names folders to look in for new books, each with its collection and whether subfolders are searched.
 - "Remove", or Delete, takes the selected folder off the list. Its books stay in the library.
 - "Scan now" searches at once; closing an edited list searches too.
-- The status bar says how many books were added, and names those that could not be, such as a damaged archive. Those are tried again at each search.
+- The status bar says how many books were added, and names those that could not be, such as a damaged archive. Later searches pass over those until the file changes or MComix starts again.
 - A book that has been read, and so is in "Recent" alone, is filed in the folder's collection by the next search. A folder watched into no collection leaves it as it is.
 - Each search also follows a book moved or renamed within the folder, found by its name and size, with its collections, cover, bookmarks and the page it was left at, and removes a book deleted from it.
   Books on a drive not connected are kept. A watched folder that is not there is left alone, for "Relocate..." to follow.

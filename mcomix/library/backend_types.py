@@ -22,7 +22,7 @@ from mcomix import log
 from mcomix import i18n
 from mcomix.i18n import _
 
-from collections.abc import Sequence
+from collections.abc import Iterable, Sequence
 from typing import Any, NamedTuple, TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -497,6 +497,27 @@ class _WatchList:
 
     def __init__(self, backend: '_LibraryBackend') -> None:
         self.backend = backend
+        #: The files of watched directories the library could not add,
+        #: by path, with the size and time of change each had then.
+        self._refused: dict[str, tuple[int, int]] = {}
+
+    def refused(self, paths: Iterable[str]) -> None:
+        """Note that the books at <paths>, found by a scan, could not be
+        added.  Later scans pass over each for as long as its file stays
+        as it was: a damaged archive was read again, and reported again,
+        at every scan, and the folder watcher scans whenever a book
+        arrives.  A file replaced or written to is tried again, and so
+        is every one once MComix starts again."""
+        for path in paths:
+            stamp = _stamp(path)
+            if stamp is not None:
+                self._refused[path] = stamp
+
+    def _still_refused(self, path: str) -> bool:
+        """Whether the file at <path> is one refused() was told of, as
+        it was then."""
+        stamp = self._refused.get(path)
+        return stamp is not None and stamp == _stamp(path)
 
     def add_directory(self, path: str,
                       collection: '_Collection' = DefaultCollection,
@@ -595,7 +616,8 @@ class _WatchList:
                 # a share that answers EACCES - is no reason to leave
                 # the directories after it unscanned.
                 try:
-                    new_files = entry.get_new_files(known)
+                    new_files = [path for path in entry.get_new_files(known)
+                                 if not self._still_refused(path)]
                 except OSError as error:
                     log.error(_('! Could not scan for new books: %s'), error)
                     continue
@@ -651,6 +673,16 @@ class _WatchList:
         reason new_files_found()'s does.
         """
         pass
+
+
+def _stamp(path: str) -> tuple[int, int] | None:
+    """The size and the time of change of the file at <path>, which
+    tell it from what replaced or changed it; None if it is not there."""
+    try:
+        status = os.stat(path)
+    except OSError:
+        return None
+    return status.st_size, status.st_mtime_ns
 
 
 class _WatchListEntry(_BackendObject):
