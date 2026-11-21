@@ -278,17 +278,22 @@ class _LibraryDialog(Gtk.Window):
                 (book, path, gone))
         followed: set[str] = set()
         removing: list[int] = []
-        for key, books in alike.items():
-            targets = found.get(key, [])
-            if len(books) == 1 and len(targets) == 1:
-                file_actions.follow_book(books[0][1], targets[0])
-                followed.add(targets[0])
-            else:
-                removing.extend(book for book, path, gone in books if gone)
+        # One transaction for the lot.  The connection commits every
+        # statement by itself otherwise, and a folder of books moved
+        # within the watched one follows a book at a time: 2,000 books
+        # took 16.9 s, nearly all of it in fsync, against 52 ms this way.
+        with self.backend.transaction():
+            for key, books in alike.items():
+                targets = found.get(key, [])
+                if len(books) == 1 and len(targets) == 1:
+                    file_actions.follow_book(books[0][1], targets[0])
+                    followed.add(targets[0])
+                else:
+                    removing.extend(book for book, path, gone in books
+                                    if gone)
+            for book in removing:
+                self.backend.remove_book(book)
         if removing:
-            with self.backend.transaction():
-                for book in removing:
-                    self.backend.remove_book(book)
             GLib.idle_add(self.book_area.display_covers,
                           self.collection_area.get_current_collection())
         return ([path for path in filelist if path not in followed],
