@@ -124,13 +124,28 @@ class _Volumes:
         self._of: dict[str, str] = {}
         self._devices: dict[str, int | None] = {}
         self._held: dict[str, bool] = {}
+        self._found: list[tuple[str, int, int]] = []
 
     def found(self, book: int, path: str, device: int) -> None:
-        """Record the volume of <book>, whose file was found at <path>
-        on <device>."""
-        self._library.execute(
-            'update Book set volume = ?, device = ? where id = ?',
-            (_volume_of(path, self._of), device, book))
+        """Note the volume of <book>, whose file was found at <path> on
+        <device>, for write() to record."""
+        self._found.append((_volume_of(path, self._of), device, book))
+
+    def write(self) -> None:
+        """Record the volumes found() was told of, in one transaction.
+
+        After the upgrade that added the columns every book is found
+        anew, and so is every book of a drive given a new device number:
+        one commit a book, an fsync each, took 140 s over 17,000 books.
+        """
+        if not self._found:
+            return
+        with self._library.transaction():
+            for row in self._found:
+                self._library.execute(
+                    'update Book set volume = ?, device = ? where id = ?',
+                    row)
+        self._found.clear()
 
     def there(self, volume: str, device: int | None) -> bool:
         """Whether the drive a book was last found on, at <volume> and
@@ -1097,6 +1112,7 @@ class _LibraryBackend:
                     missing.append((id, path, volume, device))
                 elif volume is None or found != device:
                     volumes.found(id, path, found)
+            volumes.write()
             for id, path, volume, device in missing:
                 if volume is not None:
                     gone = volumes.there(volume, device)
@@ -1150,6 +1166,9 @@ class _LibraryBackend:
                 missing.append((book, path, size, volume, device))
             elif volume is None or found != device:
                 volumes.found(book, path, found)
+        # Before the books missing are judged: there() reads the books
+        # recorded on a volume.
+        volumes.write()
         judged = []
         for book, path, size, volume, device in missing:
             if volume is not None:

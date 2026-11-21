@@ -1087,6 +1087,19 @@ class MissingBooksByVolumeTest(OpenLibraryTest):
             sorted((path, gone) for book, path, size, gone
                    in self.library.books_missing_from(folder, True)))
 
+    def test_the_volumes_a_scan_finds_are_recorded_in_one_transaction(self):
+        """As after the upgrade that added them, when every book is
+        found anew: one commit a book took 140 s over 17,000 books on
+        a real disk, where one for all of them takes 0.1 s."""
+        self.library.execute('update book set volume = null, device = null')
+        _, statements = self._counted(
+            lambda: self.library.books_missing_from(self.drive, True))
+        self.assertEqual(1, sum(statement.upper().startswith('BEGIN')
+                                for statement in statements), statements)
+        self.assertEqual(
+            {self.drive},
+            set(self.library._con.execute('select volume from book')))
+
     def test_a_volume_is_read_from_its_books_by_the_index(self):
         plan = self._plan(self.library._con,
                           'select path from Book where volume = ?',
