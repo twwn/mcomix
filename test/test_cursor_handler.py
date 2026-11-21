@@ -92,28 +92,28 @@ class CursorHandlerTest(unittest.TestCase):
             with self.subTest(delay=delay), \
                     unittest.mock.patch.dict(prefs,
                                              {'pointer hide delay': delay}), \
-                    unittest.mock.patch.object(cursor_handler.GLib,
+                    unittest.mock.patch.object(cursor_handler.widgets.GLib,
                                                'timeout_add') as add:
                 self.handler.auto_hide_on()
                 self.assertEqual(armed,
                                  [call.args[0] for call in add.call_args_list])
                 # The stand-in armed nothing GLib could remove.
-                self.handler._timer_id = None
+                self.handler._timer._source = None
                 self.handler.auto_hide_off()
 
     def test_a_new_delay_brings_back_a_hidden_pointer(self):
         """Set to 0 while the pointer is hidden, the pointer comes back
         and stays; another delay starts the wait again."""
         self.handler.auto_hide_on()
-        self.handler._kill_timer()
+        self.handler._timer.stop()
         self.handler._on_timeout()
         self.assertEqual('none', self.window.drawn[-1].get_name())
         with unittest.mock.patch.dict(prefs, {'pointer hide delay': 0}):
             self.handler.delay_changed()
             self.assertIsNone(self.window.drawn[-1])
-            self.assertIsNone(self.handler._timer_id)
+            self.assertFalse(self.handler._timer.running)
         self.handler.delay_changed()
-        self.assertIsNotNone(self.handler._timer_id)
+        self.assertTrue(self.handler._timer.running)
 
     def test_clearing_when_nothing_is_busy_does_nothing(self):
         """_close() clears unconditionally, including when no listing was
@@ -129,13 +129,13 @@ class CursorHandlerTest(unittest.TestCase):
         It must not hide while the program is working, or the reader is
         left with no cursor and no sign of progress."""
         self.handler.auto_hide_on()
-        self.assertIsNotNone(self.handler._timer_id,
+        self.assertTrue(self.handler._timer.running,
                              'the normal cursor did not arm the hide timer')
         self.handler.set_busy(True)
-        self.assertIsNone(self.handler._timer_id,
+        self.assertFalse(self.handler._timer.running,
                           'the wait cursor left the hide timer running')
         self.handler.set_busy(False)
-        self.assertIsNotNone(self.handler._timer_id,
+        self.assertTrue(self.handler._timer.running,
                              'the hide timer was not armed again')
 
 
@@ -178,14 +178,14 @@ class HandSetCursorTest(unittest.TestCase):
 
     def test_set_busy_keeps_the_timer_from_running_at_all(self):
         self.handler.set_busy(True)
-        self.assertIsNone(self.handler._timer_id,
+        self.assertFalse(self.handler._timer.running,
                           'the wait cursor left the hide timer armed')
         self.assertEqual('wait', self._names()[-1])
 
     def test_the_timer_is_armed_again_once_the_work_is_done(self):
         self.handler.set_busy(True)
         self.handler.set_busy(False)
-        self.assertIsNotNone(self.handler._timer_id)
+        self.assertTrue(self.handler._timer.running)
         self.assertIsNone(self._names()[-1], 'the normal cursor is not back')
 
 # vim: expandtab:sw=4:ts=4

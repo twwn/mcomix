@@ -1633,7 +1633,7 @@ class MainWindowTest(MComixTest):
         # Back in a window, by whatever way.
         offer.update()
         self.assertFalse(button.get_visible())
-        self.assertIsNone(offer._timeout_event, 'a timer left running')
+        self.assertFalse(offer._timer.running, 'a timer left running')
 
     def test_a_motion_without_a_move_leaves_the_pointer_hidden(self):
         """A motion can reach a pointer at rest, at the point it rests on,
@@ -1657,9 +1657,9 @@ class MainWindowTest(MComixTest):
             self.assertTrue(offer.widget.get_visible())
             self.assertFalse(hidden_pointer())
             # Both timers run out, as they would two seconds on.
-            offer._stop_timer()
+            offer._timer.stop()
             offer._hide()
-            cursor._kill_timer()
+            cursor._timer.stop()
             cursor._on_timeout()
             self.assertTrue(hidden_pointer())
             move(controller, 40.0, 30.0)
@@ -1667,7 +1667,7 @@ class MainWindowTest(MComixTest):
                              'the button came back with no move')
             self.assertTrue(hidden_pointer(),
                             'the pointer came back with no move')
-            self.assertIsNone(cursor._timer_id)
+            self.assertFalse(cursor._timer.running)
             # A move brings both back.
             move(controller, 41.0, 30.0)
             self.assertTrue(offer.widget.get_visible())
@@ -1684,10 +1684,10 @@ class MainWindowTest(MComixTest):
             prefs['pointer hide delay'] = 0
             offer.pointer_moved()
             self.assertTrue(offer.widget.get_visible())
-            self.assertIsNone(offer._timeout_event, 'a wait at 0')
+            self.assertFalse(offer._timer.running, 'a wait at 0')
             prefs['pointer hide delay'] = 1500
             offer.delay_changed()
-            self.assertIsNotNone(offer._timeout_event,
+            self.assertTrue(offer._timer.running,
                                  'a new delay left the button for good')
             offer.update()
 
@@ -1726,9 +1726,9 @@ class MainWindowTest(MComixTest):
         pages = self._counter_in_fullscreen(osd.PageCounter.AFTER_TURN)
         counter = self.window.page_counter
         self.assertEqual('3 / %d' % pages, counter.text())
-        self.assertIsNotNone(counter._timeout_event)
+        self.assertTrue(counter._timer.running)
 
-        counter._time_up()
+        counter._hide()
         self.assertNotIn('page counter', self.window.page_area._overlays)
         self.assertEqual('', counter.text())
 
@@ -1740,17 +1740,17 @@ class MainWindowTest(MComixTest):
             self.window.set_page(4)
             self._pump()
         self.assertEqual('4 / %d' % pages, counter.text())
-        self.assertIsNotNone(counter._timeout_event)
+        self.assertTrue(counter._timer.running)
 
     def test_the_page_number_stays_unless_it_is_to_go(self):
         self._counter_in_fullscreen(osd.PageCounter.ALWAYS)
-        self.assertIsNone(self.window.page_counter._timeout_event)
+        self.assertFalse(self.window.page_counter._timer.running)
 
     def test_leaving_fullscreen_stops_the_timer(self):
         """A timer left running would hold the window after it closed."""
         self._counter_in_fullscreen(osd.PageCounter.AFTER_TURN)
         self.window.page_counter.update()
-        self.assertIsNone(self.window.page_counter._timeout_event)
+        self.assertFalse(self.window.page_counter._timer.running)
 
     def test_the_animation_speed_steps_and_stops_at_its_ends(self):
         """] and [ (upstream feature request 11)."""

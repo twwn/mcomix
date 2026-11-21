@@ -10,7 +10,7 @@ import unittest.mock
 
 from gi.repository import Gdk, Gio, Gtk
 
-from . import MComixTest, children, pump
+from . import MComixTest, children, pump, wait_for
 
 from mcomix import widgets
 
@@ -295,3 +295,48 @@ class MenuKeyTest(MComixTest):
         self.assertTrue(widgets.menu_key(
             Gdk.KEY_F10,
             Gdk.ModifierType.SHIFT_MASK | Gdk.ModifierType.LOCK_MASK))
+
+
+class TimerTest(MComixTest):
+
+    """Timer, the one wait at a time that the delayed hides share."""
+
+    def setUp(self):
+        super().setUp()
+        self.done = []
+        self.timer = widgets.Timer(lambda: self.done.append(True))
+        self.addCleanup(self.timer.stop)
+
+    def _done_within(self, seconds):
+        """Whether the timer has done its work <seconds> from now:
+        pump() returns at once while a wait is not due yet."""
+        return wait_for(lambda: self.done, seconds)
+
+    def test_what_it_waits_for_is_done_once(self):
+        self.timer.start(10)
+        self.assertTrue(self.timer.running)
+        self.assertTrue(self._done_within(5))
+        self.assertFalse(self.timer.running)
+        self.done.clear()
+        self.assertFalse(self._done_within(0.1))
+
+    def test_starting_again_counts_from_then(self):
+        """The first wait is dropped, not left to run out beside the
+        second."""
+        self.timer.start(10)
+        self.timer.start(60000)
+        self.assertFalse(self._done_within(0.1))
+        self.assertTrue(self.timer.running)
+
+    def test_a_wait_stopped_does_nothing(self):
+        self.timer.start(10)
+        self.timer.stop()
+        self.assertFalse(self.timer.running)
+        self.assertFalse(self._done_within(0.1))
+
+    def test_no_delay_starts_no_wait(self):
+        """"pointer hide delay" at 0 keeps the pointer: nothing hides."""
+        self.timer.start(10)
+        self.timer.start(0)
+        self.assertFalse(self.timer.running)
+        self.assertFalse(self._done_within(0.1))

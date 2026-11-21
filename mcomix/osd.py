@@ -2,11 +2,12 @@
 
 import textwrap
 
-from gi.repository import GLib, Graphene, Gtk
+from gi.repository import Graphene, Gtk
 from gi.repository import Pango, PangoCairo
 
 from mcomix import image_tools
 from mcomix import status
+from mcomix import widgets
 from mcomix.i18n import _
 from mcomix.preferences import prefs
 
@@ -49,8 +50,8 @@ class OnScreenDisplay:
         self._window = window
         #: Stores the last rectangle that was used to render the OSD
         self._last_osd_rect: tuple[int, int, int, int] | None = None
-        #: Timeout event ID registered while waiting to hide the OSD
-        self._timeout_event: int | None = None
+        #: The wait before the OSD is cleared away.
+        self._timer = widgets.Timer(self.clear)
 
     def show(self, text: str) -> None:
         """ Shows the OSD on the lower portion of the image window. """
@@ -86,18 +87,12 @@ class OnScreenDisplay:
         self._draw_osd(layout, rect)
 
         self._last_osd_rect = rect
-        if self._timeout_event:
-            GLib.source_remove(self._timeout_event)
-        self._timeout_event = GLib.timeout_add_seconds(
-            OnScreenDisplay.TIMEOUT, self.clear)
+        self._timer.start(OnScreenDisplay.TIMEOUT * 1000)
 
-    def clear(self) -> bool:
+    def clear(self) -> None:
         """ Removes the OSD. """
-        if self._timeout_event:
-            GLib.source_remove(self._timeout_event)
-        self._timeout_event = None
+        self._timer.stop()
         self._clear_osd()
-        return GLib.SOURCE_REMOVE  # The timer that called this is done.
 
     def _wrap_text(self, text: str, width: int = 70) -> str:
         """Break <text> into lines of at most <width> characters.
@@ -191,7 +186,7 @@ class PageCounter:
         self._window = window
         self._text = ''
         self._shown = False
-        self._timeout_event: int | None = None
+        self._timer = widgets.Timer(self._hide)
 
     def update(self, again: bool = False) -> None:
         """Show the counter, or take it away, as the window now asks.
@@ -219,31 +214,21 @@ class PageCounter:
         window.page_area.set_overlay(
             self._OVERLAY, lambda snapshot: self._draw(snapshot, layout))
         self._shown = True
-        self._stop_timer()
         if prefs['page counter'] == self.AFTER_TURN:
-            self._timeout_event = GLib.timeout_add_seconds(
-                self.TIMEOUT, self._time_up)
+            self._timer.start(self.TIMEOUT * 1000)
+        else:
+            self._timer.stop()
 
     def text(self) -> str:
         """What the counter says, or nothing while it is not shown."""
         return self._text if self._shown else ''
 
-    def _time_up(self) -> bool:
-        self._timeout_event = None
-        self._hide()
-        return GLib.SOURCE_REMOVE  # The timer that called this is done.
-
     def _hide(self) -> None:
         """Take the counter off the page, keeping what it said, so that
         the same pages drawn again do not put it back."""
-        self._stop_timer()
+        self._timer.stop()
         self._shown = False
         self._window.page_area.set_overlay(self._OVERLAY, None)
-
-    def _stop_timer(self) -> None:
-        if self._timeout_event is not None:
-            GLib.source_remove(self._timeout_event)
-            self._timeout_event = None
 
     def _draw(self, snapshot: Gtk.Snapshot, layout: Pango.Layout) -> None:
         """Draw <layout>, white on a dark box, in the lower right corner
@@ -281,7 +266,7 @@ class LeaveFullscreenButton:
 
     def __init__(self, window: "main.MainWindow") -> None:
         self._window = window
-        self._timeout_event: int | None = None
+        self._timer = widgets.Timer(self._time_up)
         #: Whether the pointer is on the button, which keeps it there.
         self._inside = False
         button = Gtk.Button.new_from_icon_name('view-restore-symbolic')
@@ -311,10 +296,7 @@ class LeaveFullscreenButton:
         if not self._window.is_fullscreen():
             return
         self.widget.set_visible(True)
-        self._stop_timer()
-        delay = prefs['pointer hide delay']
-        if delay > 0:
-            self._timeout_event = GLib.timeout_add(delay, self._time_up)
+        self._timer.start(prefs['pointer hide delay'])
 
     def delay_changed(self) -> None:
         """Start the shown button's wait again under the new delay, so
@@ -330,7 +312,7 @@ class LeaveFullscreenButton:
 
     def release(self) -> None:
         """Stop the timer, for a window that is going."""
-        self._stop_timer()
+        self._timer.stop()
 
     def _clicked(self, button: Gtk.Button) -> None:
         self._hide()
@@ -346,20 +328,13 @@ class LeaveFullscreenButton:
         # only the first of the two would say so.
         self.pointer_moved()
 
-    def _time_up(self) -> bool:
-        self._timeout_event = None
+    def _time_up(self) -> None:
         if not self._inside:
             self._hide()
-        return GLib.SOURCE_REMOVE  # The timer that called this is done.
 
     def _hide(self) -> None:
-        self._stop_timer()
+        self._timer.stop()
         self._inside = False
         self.widget.set_visible(False)
-
-    def _stop_timer(self) -> None:
-        if self._timeout_event is not None:
-            GLib.source_remove(self._timeout_event)
-            self._timeout_event = None
 
 # vim: expandtab:sw=4:ts=4

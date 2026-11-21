@@ -381,6 +381,49 @@ def _released(root: Gtk.Widget) -> Iterator[Gtk.Widget]:
         child = child.get_next_sibling()
 
 
+class Timer:
+
+    """One wait on the main loop at a time, for what hides itself or
+    clears away a while after it was shown.
+
+    start() drops a wait still under way, so that the delay counts from
+    the last call, and <done> is called once it has gone by.  The wait
+    is over by then, and <done> may start another.  stop() drops it, as
+    a window that closes has to: GLib holds the wait, and through it
+    <done> and whoever made the timer.
+    """
+
+    def __init__(self, done: Callable[[], object]) -> None:
+        self._done = done
+        self._source: int | None = None
+
+    @property
+    def running(self) -> bool:
+        """Whether a wait is under way."""
+        return self._source is not None
+
+    def start(self, milliseconds: int) -> None:
+        """Call <done> <milliseconds> from now, and not before then.
+
+        A delay of 0 or less starts no wait at all: what it would have
+        ended stays, as "pointer hide delay" at 0 keeps the pointer.
+        """
+        self.stop()
+        if milliseconds > 0:
+            self._source = GLib.timeout_add(milliseconds, self._time_up)
+
+    def stop(self) -> None:
+        """Drop the wait under way, if there is one."""
+        if self._source is not None:
+            GLib.source_remove(self._source)
+            self._source = None
+
+    def _time_up(self) -> bool:
+        self._source = None
+        self._done()
+        return GLib.SOURCE_REMOVE
+
+
 class Releasable:
 
     """A widget that holds more than its handlers of whoever built it.

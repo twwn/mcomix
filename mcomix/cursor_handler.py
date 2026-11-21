@@ -1,8 +1,9 @@
 """cursor_handler.py - Cursor handler."""
 
-from gi.repository import Gdk, GLib
+from gi.repository import Gdk
 
 from mcomix import constants
+from mcomix import widgets
 from mcomix.preferences import prefs
 
 from typing import TYPE_CHECKING
@@ -27,7 +28,8 @@ class CursorHandler:
 
     def __init__(self, window: "main.MainWindow") -> None:
         self._window = window
-        self._timer_id: int | None = None
+        #: The wait before a pointer at rest hides.
+        self._timer = widgets.Timer(self._on_timeout)
         self._auto_hide = False
         self._current_cursor: "int | Gdk.Cursor" = constants.NORMAL_CURSOR
         #: What set_busy() goes back to when the work is done.
@@ -63,9 +65,9 @@ class CursorHandler:
         if self._auto_hide:
 
             if cursor == constants.NORMAL_CURSOR:
-                self._set_hide_timer()
+                self._timer.start(prefs['pointer hide delay'])
             else:
-                self._kill_timer()
+                self._timer.stop()
 
     def set_busy(self, busy: bool) -> None:
         """Show the wait cursor while the program is working, or stop.
@@ -93,12 +95,12 @@ class CursorHandler:
         self._auto_hide = True
 
         if self._current_cursor == constants.NORMAL_CURSOR:
-            self._set_hide_timer()
+            self._timer.start(prefs['pointer hide delay'])
 
     def auto_hide_off(self) -> None:
         """Signal that the cursor should *not* auto-hide from now on."""
         self._auto_hide = False
-        self._kill_timer()
+        self._timer.stop()
 
         if self._current_cursor == constants.NORMAL_CURSOR:
             self.set_cursor_type(constants.NORMAL_CURSOR)
@@ -110,34 +112,20 @@ class CursorHandler:
         if self._auto_hide:
             self.set_cursor_type(self._current_cursor)
 
-    def _on_timeout(self) -> bool:
-        mode = self._get_hidden_cursor()
-        self._window.set_layout_cursor(mode)
-        self._timer_id = None
-        return False
+    def _on_timeout(self) -> None:
+        self._window.set_layout_cursor(self._get_hidden_cursor())
 
     def delay_changed(self) -> None:
         """Show the pointer again, and hide it after the new delay, once
         the preference has changed."""
-        self._kill_timer()
+        self._timer.stop()
         if self._auto_hide and self._current_cursor == constants.NORMAL_CURSOR:
             self.set_cursor_type(constants.NORMAL_CURSOR)
-
-    def _set_hide_timer(self) -> None:
-        self._kill_timer()
-        delay = prefs['pointer hide delay']
-        if delay > 0:
-            self._timer_id = GLib.timeout_add(delay, self._on_timeout)
 
     def release(self) -> None:
         """Stop the timer that would hide the pointer, once the window
         has closed: GLib holds its callback, and with it the window."""
-        self._kill_timer()
-
-    def _kill_timer(self) -> None:
-        if self._timer_id is not None:
-            GLib.source_remove(self._timer_id)
-            self._timer_id = None
+        self._timer.stop()
 
     def _get_hidden_cursor(self) -> "Gdk.Cursor | None":
         # Cursors go by the name the theme knows them under, and 'none'
