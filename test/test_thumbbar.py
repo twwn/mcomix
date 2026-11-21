@@ -492,6 +492,34 @@ class ThumbnailSidebarTest(MComixTest):
             self.sidebar._menu_click(unittest.mock.Mock(), 1, 10, 20)
         shown.assert_not_called()
 
+    def test_pages_let_out_together_ask_the_list_once(self):
+        """Every refresh hands the worker threads an order for each
+        empty row on screen, nearly all for pages still in the archive;
+        one per page kept the main thread busy for over a second while
+        a 200-page book opened."""
+        self.sidebar.load_thumbnails()
+        pump()
+        with unittest.mock.patch.object(self.sidebar._list,
+                                        'refresh') as refresh:
+            for page in range(1, self._pages() + 1):
+                self.sidebar._on_page_available(page)
+            self.assertEqual(refresh.call_count, 0,
+                             'refreshed before the pages had all landed')
+            self.assertTrue(wait_for(lambda: refresh.call_count > 0))
+            # And nothing left to ask a second time.
+            self.assertIsNone(self.sidebar._refresh_source)
+        self.assertEqual(refresh.call_count, 1)
+
+    def test_a_refresh_pending_when_the_book_closes_is_dropped(self):
+        self.sidebar.load_thumbnails()
+        pump()
+        self.sidebar._on_page_available(1)
+        source = self.sidebar._refresh_source
+        self.assertIsNotNone(source)
+        self.sidebar.clear()
+        self.assertIsNone(self.sidebar._refresh_source)
+        self.assertIsNone(GLib.MainContext.default().find_source_by_id(source))
+
 
 class BookmarkBadgeTest(MComixTest):
 

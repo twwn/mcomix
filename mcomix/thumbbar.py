@@ -44,6 +44,10 @@ class ThumbnailSidebar(Gtk.ScrolledWindow, widgets.Releasable):
 
     """A thumbnail sidebar including scrollbar for the main window."""
 
+    #: Milliseconds from a page being let out of the archive to the
+    #: list asking for the rows still empty, see _on_page_available().
+    REFRESH_DELAY = 50
+
     def __init__(self, window: "main.MainWindow") -> None:
         super().__init__()
 
@@ -57,6 +61,9 @@ class ThumbnailSidebar(Gtk.ScrolledWindow, widgets.Releasable):
         #: The files behind the pages whose thumbnails would not load,
         #: which "skip broken pages" leaves out of the list
         self._broken: set[str] = set()
+        #: The timer that asks the list again for pages let out since
+        #: the last time, or None while none is pending.
+        self._refresh_source: int | None = None
 
         self.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.ALWAYS)
         # Setting step and page increments here has no effect: the
@@ -141,6 +148,7 @@ class ThumbnailSidebar(Gtk.ScrolledWindow, widgets.Releasable):
         store.replace_bookmark -= self._bookmarks_changed
         store.clear_bookmarks -= self._bookmarks_changed
         store.relocate -= self._bookmarks_changed
+        self._cancel_refresh()
         self.set_child(None)
 
     def toggle_page_numbers_visible(self) -> None:
@@ -181,6 +189,7 @@ class ThumbnailSidebar(Gtk.ScrolledWindow, widgets.Releasable):
         """Clear the ThumbnailSidebar of any loaded thumbnails."""
 
         self._loaded = False
+        self._cancel_refresh()
         self._list.clear()
         self._selected_page = 1
 
@@ -458,8 +467,27 @@ class ThumbnailSidebar(Gtk.ScrolledWindow, widgets.Releasable):
         self._select_page(page)
 
     def _on_page_available(self, page: int) -> None:
-        """ Called whenever a new page is ready for display. """
+        """Have the list ask again for the rows still empty, soon.
+
+        Soon rather than at once: an archive lets its pages out
+        hundreds a second, and every refresh hands the worker threads
+        an order for each empty row on screen, nearly all of them for
+        pages still in the archive.  One refresh per page kept the main
+        thread busy for over a second opening a 200-page book.
+        """
+        if self.get_visible() and self._refresh_source is None:
+            self._refresh_source = GLib.timeout_add(
+                self.REFRESH_DELAY, self._refresh_now)
+
+    def _refresh_now(self) -> bool:
+        self._refresh_source = None
         if self.get_visible():
             self._list.refresh()
+        return GLib.SOURCE_REMOVE
+
+    def _cancel_refresh(self) -> None:
+        if self._refresh_source is not None:
+            GLib.source_remove(self._refresh_source)
+            self._refresh_source = None
 
 # vim: expandtab:sw=4:ts=4
