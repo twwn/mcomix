@@ -111,10 +111,6 @@ class TarArchive(archive_base.NonUnicodeArchive):
             yield name
         self._contents_listed = True
 
-    def list_contents(self) -> list[str]:
-        """Every member's name, as iter_contents() yields them."""
-        return list(self.iter_contents())
-
     def extract(self, filename: str, destination_dir: str) -> None:
         """Write member <filename> into <destination_dir>.
 
