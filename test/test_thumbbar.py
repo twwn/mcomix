@@ -507,17 +507,17 @@ class ThumbnailSidebarTest(MComixTest):
                              'refreshed before the pages had all landed')
             self.assertTrue(wait_for(lambda: refresh.call_count > 0))
             # And nothing left to ask a second time.
-            self.assertIsNone(self.sidebar._refresh_source)
+            self.assertIsNone(self.sidebar._list._refresh_source)
         self.assertEqual(refresh.call_count, 1)
 
     def test_a_refresh_pending_when_the_book_closes_is_dropped(self):
         self.sidebar.load_thumbnails()
         pump()
         self.sidebar._on_page_available(1)
-        source = self.sidebar._refresh_source
+        source = self.sidebar._list._refresh_source
         self.assertIsNotNone(source)
         self.sidebar.clear()
-        self.assertIsNone(self.sidebar._refresh_source)
+        self.assertIsNone(self.sidebar._list._refresh_source)
         self.assertIsNone(GLib.MainContext.default().find_source_by_id(source))
 
 

@@ -10,7 +10,7 @@ import shutil
 import unittest.mock
 import zipfile
 
-from gi.repository import Gdk, Gtk
+from gi.repository import Gdk, GLib, Gtk
 
 from . import (MComixTest, MainWindowLaterTest, children, descendants,
                get_testfile_path, hold_open, prompts_over, pump,
@@ -297,6 +297,32 @@ class EditArchiveDialogTest(MComixTest):
 
         self.assertTrue(area._grid._updates_stopped,
                         'a closed editor was put back to work')
+
+    def test_pages_let_out_together_ask_the_editor_once(self):
+        """The sidebar's cost again: one refresh of every empty cell per
+        page let out, while the editor was open on a book still being
+        unpacked."""
+        area = self.dialog._image_area
+        pump()
+        with unittest.mock.patch.object(area._grid, 'refresh') as refresh:
+            for page in range(1, self.window.imagehandler.get_number_of_pages() + 1):
+                area._on_page_available(page)
+            self.assertEqual(refresh.call_count, 0)
+            self.assertTrue(wait_for(lambda: refresh.call_count > 0))
+            self.assertIsNone(area._grid._refresh_source)
+        self.assertEqual(refresh.call_count, 1)
+
+    def test_a_refresh_pending_when_the_editor_closes_is_dropped(self):
+        """Run after the close, it would clear the flag stop_update()
+        set, as a page arriving afterwards did."""
+        area = self.dialog._image_area
+        area._on_page_available(1)
+        source = area._grid._refresh_source
+        self.assertIsNotNone(source)
+        self.dialog.destroy()
+        pump()
+        self.assertIsNone(GLib.MainContext.default().find_source_by_id(source))
+        self.assertTrue(area._grid._updates_stopped)
 
     def test_a_failed_load_gives_the_window_its_cursor_back(self):
         """The wait cursor is set on the main window rather than on the

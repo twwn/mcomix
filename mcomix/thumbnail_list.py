@@ -171,6 +171,8 @@ class _ThumbnailViewBase(widgets.Releasable):
     CELL_ORIENTATION = Gtk.Orientation.HORIZONTAL
     #: The CSS class set_background() writes its rule against.
     CSS_CLASS = 'mcomix-thumbnail-view'
+    #: Milliseconds refresh_soon() waits before it refreshes.
+    REFRESH_DELAY = 50
 
     #: Built by the view classes below, which know which kind of
     #: selection they want.  <store> holds the entries; <model> is what
@@ -221,6 +223,9 @@ class _ThumbnailViewBase(widgets.Releasable):
         #: out of the archive, and made the same page up to ten times
         #: while a book was opened.
         self._coming: set[ThumbnailItem] = set()
+        #: The timer refresh_soon() started, or None while none is
+        #: pending.
+        self._refresh_source: int | None = None
         #: Every cell the factory has built, on screen or kept aside
         #: for rows to come; release() needs the ones kept aside too.
         self._cells: "weakref.WeakSet[_ThumbnailCell]" = weakref.WeakSet()
@@ -497,6 +502,7 @@ class _ThumbnailViewBase(widgets.Releasable):
     def stop_update(self) -> None:
         """Stop making thumbnails, and ignore the ones still coming."""
         self._updates_stopped = True
+        self._cancel_refresh()
         self._thread.stop()
 
     def retire(self) -> None:
@@ -508,6 +514,7 @@ class _ThumbnailViewBase(widgets.Releasable):
         reads: the read in flight ends on its own.
         """
         self._updates_stopped = True
+        self._cancel_refresh()
         self._thread.retire()
 
     def release(self) -> None:
@@ -546,6 +553,31 @@ class _ThumbnailViewBase(widgets.Releasable):
         for item in tuple(self._bound):
             if item.thumbnail is None and item not in self._coming:
                 self._ask_for(item)
+
+    def refresh_soon(self) -> None:
+        """refresh() in REFRESH_DELAY milliseconds, once however often
+        this is called meanwhile.
+
+        For a page let out of the archive: a book lets out hundreds a
+        second, and every refresh hands the worker threads an order for
+        each empty row on screen, nearly all of them for pages still in
+        the archive.  One refresh per page kept the main thread busy
+        for over a second opening a 200-page book.  stop_update() drops
+        a refresh still to come.
+        """
+        if self._refresh_source is None:
+            self._refresh_source = GLib.timeout_add(
+                self.REFRESH_DELAY, self._refresh_now)
+
+    def _refresh_now(self) -> bool:
+        self._refresh_source = None
+        self.refresh()
+        return GLib.SOURCE_REMOVE
+
+    def _cancel_refresh(self) -> None:
+        if self._refresh_source is not None:
+            GLib.source_remove(self._refresh_source)
+            self._refresh_source = None
 
     def _ask_for(self, item: ThumbnailItem) -> None:
         if self.generate_thumbnail is None or self._updates_stopped:

@@ -278,9 +278,10 @@ class _ImageArea(Gtk.ScrolledWindow, widgets.Releasable):
         the entries.
 
         A page extracted after the editor has closed would otherwise
-        reach _on_page_available(), whose refresh() clears the flag
+        reach _on_page_available(), whose refresh clears the flag
         stop_update() sets and puts the worker thread back to work for a
-        dialog that is gone.
+        dialog that is gone; a refresh still to come is dropped by the
+        grid's stop_update() itself.
 
         Nothing here goes by itself, because a closed editor is never
         collected: GTK 4 no longer disposes the widgets of a destroyed
@@ -295,6 +296,6 @@ class _ImageArea(Gtk.ScrolledWindow, widgets.Releasable):
 
     def _on_page_available(self, page: int) -> None:
         """ Called whenever a new page is ready for display. """
-        self._grid.refresh()
+        self._grid.refresh_soon()
 
 # vim: expandtab:sw=4:ts=4
