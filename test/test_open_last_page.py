@@ -57,6 +57,26 @@ class OpenLastPageBasicTest(OpenLibraryTest):
         self.lastread.set_page(self.archive1, 1)
         self.assertIsNone(self.lastread.get_page(self.archive1))
 
+    def test_a_page_stored_before_disabling_is_neither_read_nor_cleared(self):
+        self.lastread.set_page(self.archive1, 1)
+        self.lastread.set_enabled(False)
+        self.assertIsNone(self.lastread.get_page(self.archive1))
+        self.assertIsNone(self.lastread.get_member(self.archive1))
+        self.assertIsNone(self.lastread.get_date(self.archive1))
+        self.lastread.clear_page(self.archive1)
+        self.lastread.set_enabled(True)
+        self.assertEqual(1, self.lastread.get_page(self.archive1))
+
+    def test_a_book_read_to_its_last_page_starts_over(self):
+        self.lastread.set_page(self.archive1, 1)
+        pages = self.library.get_book_by_path(self.archive1).pages
+        self.assertGreater(pages, 1)
+        self.lastread.set_page(self.archive1, pages - 1)
+        self.assertEqual(pages - 1, self.lastread.get_page(self.archive1))
+        self.lastread.set_page(self.archive1, pages)
+        self.assertIsNone(self.lastread.get_page(self.archive1))
+        self.assertIsNotNone(self.lastread.get_date(self.archive1))
+
     def test_nonexistant_file(self):
         self.assertRaises(ValueError, self.lastread.set_page,
                           '/root/mcomix/file-that-should-not-exist-hopefully', 1)

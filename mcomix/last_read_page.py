@@ -31,6 +31,7 @@ from sqlite3 import dbapi2
 
 if TYPE_CHECKING:
     # Delayed: the library backend imports this module for the migration.
+    from mcomix.library import backend_types
     from mcomix.library.backend import _LibraryBackend
 
 
@@ -57,6 +58,13 @@ class LastReadPage:
     def set_enabled(self, enabled: bool) -> None:
         """ Follows the "store recent file info" preference. """
         self.enabled = enabled
+
+    def _book(self, path: str) -> 'backend_types._Book | None':
+        """The library's book at <path>, or None where it has none or
+        this is disabled: what each read of a stored page starts from."""
+        if not self.enabled:
+            return None
+        return self.backend.get_book_by_path(os.path.abspath(path))
 
     def _recent_collection_id(self) -> int:
         """ The id of the "Recent" collection.  Only the default
@@ -106,12 +114,7 @@ class LastReadPage:
         """ Forgets the page stored for the book at <path>.  The book
         keeps its row in the library and its place in the "Recent"
         collection; only the stored page goes. """
-        if not self.enabled:
-            return
-
-        full_path = os.path.abspath(path)
-        book = self.backend.get_book_by_path(full_path)
-
+        book = self._book(path)
         if book:
             book.set_last_read_page(None)
 
@@ -162,21 +165,12 @@ class LastReadPage:
         """ The page to carry on from in the book at <path>, or None
         when there is none: the book was never opened, or it was read to
         the end and starts over from the beginning. """
-        if not self.enabled:
+        book = self._book(path)
+        if not book:
             return None
-
-        full_path = os.path.abspath(path)
-        book = self.backend.get_book_by_path(full_path)
-        if book:
-            page = book.get_last_read_page()
-            if page is not None and page < book.pages:
-                return page
-            else:
-                # If the last read page was the last in the book,
-                # start from scratch.
-                return None
-        else:
-            return None
+        page = book.get_last_read_page()
+        # A book read to its last page starts from scratch.
+        return page if page is not None and page < book.pages else None
 
     def get_member(self, path: str) -> str | None:
         """ The name within its archive of the file of the page to carry
@@ -190,15 +184,8 @@ class LastReadPage:
     def get_date(self, path: str) -> datetime.datetime | None:
         """ When the stored page of the book at <path> was set, or None
         if no page is stored. """
-        if not self.enabled:
-            return None
-
-        full_path = os.path.abspath(path)
-        book = self.backend.get_book_by_path(full_path)
-        if book:
-            return book.get_last_read_date()
-        else:
-            return None
+        book = self._book(path)
+        return book.get_last_read_date() if book else None
 
     def migrate_database_to_library(self, recent_collection: int) -> None:
         """ Moves what the legacy lastreadpage.db holds into the
