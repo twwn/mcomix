@@ -52,6 +52,15 @@ def _name_order(name: str) -> tools.NaturalKey:
     return tools.natural_key(name)
 
 
+def _holds_anything(folder: str) -> bool:
+    """Whether <folder> is there and holds a file or a folder."""
+    try:
+        with os.scandir(folder) as entries:
+            return next(entries, None) is not None
+    except OSError:
+        return False
+
+
 class _LibraryBackend:
 
     """The library database, and the statements run against it.
@@ -948,22 +957,41 @@ class _LibraryBackend:
                     where collection = ? and book = ?''',
                              (position, collection, book))
 
-    def clean_collection(self, collection: int | None = None) -> int:
-        """ Removes files from <collection> that no longer exist. If <collection>
-        is None, all collections are cleaned. Returns the number of deleted books. """
+    def clean_collection(self,
+                         collection: int | None = None) -> tuple[int, int]:
+        """Remove the books of <collection>, or of the whole library when
+        it is None, whose files are gone from their folders.  Returns
+        how many were removed, and how many were kept because their
+        folder is not there.
+
+        A book whose folder is missing, or there but empty, is kept: it
+        is more likely on a drive or a share not connected, or in an
+        empty folder a drive is mounted on, than gone, and "Relocate..."
+        follows a folder moved away.  The books on a drive left
+        unplugged were all removed, with their collections, covers and
+        the pages they were left at.
+        """
         # The paths come back with the ids rather than being looked up
         # one at a time, which was a statement per book in the library.
         books = self.get_book_paths_in_collection(collection)
-        deleted = 0
+        reached: dict[str, bool] = {}
+        deleted = kept = 0
         # A sweep of a real library runs the two deletes remove_book()
         # makes thousands of times; take the lot as one transaction.
         with self.transaction():
             for id, path in books:
-                if path and not os.path.isfile(path):
+                if not path or os.path.isfile(path):
+                    continue
+                folder = os.path.dirname(path)
+                if folder not in reached:
+                    reached[folder] = _holds_anything(folder)
+                if reached[folder]:
                     self.remove_book(id)
                     deleted += 1
+                else:
+                    kept += 1
 
-        return deleted
+        return deleted, kept
 
     def remove_book(self, book: int) -> None:
         """Remove the <book> from the library."""

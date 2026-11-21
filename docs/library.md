@@ -22,7 +22,7 @@ While no book is open, the main window shows the covers of "Recent" itself, or o
 - "Add..." and books dropped from a file manager go into the collection on show; under "All books" or "Recent" they join no collection.
 - Right-clicking a collection offers "Add...", "New", "Rename", "Duplicate", "Clean up", "Relocate..." and "Remove".
   - "Duplicate" makes a copy beside it, holding every book it shows.
-  - "Clean up" drops books whose files are gone.
+  - "Clean up" drops books whose files are gone from their folders. A book whose folder is not there, or empty, is kept, as on a drive not connected; the status line says how many.
   - "Relocate..." follows a folder of books that was moved or renamed outside MComix; see below.
   - "Remove" keeps the books in the library, and moves the collections under it to the top.
   - F2 renames the selected collection; Delete removes it.

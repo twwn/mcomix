@@ -816,12 +816,18 @@ class CleanCollectionTransactionTest(OpenLibraryTest):
 
     def setUp(self):
         super().setUp()
+        # Books gone from a folder that is there: a folder that is not
+        # is kept, as a drive not connected.
+        self.folder = os.path.join(self.tmp_dir, 'books')
+        os.mkdir(self.folder)
+        open(os.path.join(self.folder, 'left.txt'), 'w').close()
         self.library.begin_transaction()
         for index in range(8):
             cursor = self.library._con.execute(
                 '''insert into book (name, path, pages, format, size)
                 values (?, ?, ?, ?, ?)''',
-                ('b%d' % index, '/does/not/exist/%d.cbz' % index, 1, 1, 1))
+                ('b%d' % index, os.path.join(self.folder, '%d.cbz' % index),
+                 1, 1, 1))
             self.library._con.execute(
                 'insert or ignore into contain (collection, book) values (?, ?)',
                 (1, cursor.lastrowid))
@@ -862,8 +868,9 @@ class CleanCollectionTransactionTest(OpenLibraryTest):
             inside.append(self.library._con.in_transaction)
 
         self.library.remove_book = watched
-        removed = self.library.clean_collection(1)
-        self.assertEqual(8, removed, 'the sweep removed the wrong books')
+        removed, kept = self.library.clean_collection(1)
+        self.assertEqual((8, 0), (removed, kept),
+                         'the sweep removed the wrong books')
         self.assertTrue(inside, 'nothing was removed, so nothing was measured')
         self.assertTrue(all(inside),
                         'removals committed one at a time: %r' % inside)
@@ -878,6 +885,41 @@ class CleanCollectionTransactionTest(OpenLibraryTest):
         self.assertTrue(self.library._con.in_transaction,
                         'the sweep committed a transaction it did not open')
         self.library.end_transaction()
+
+
+class CleanCollectionOutOfReachTest(OpenLibraryTest):
+
+    """Clean up removed every book whose file was not there, and so
+    every book on a drive or share not connected at the time: their
+    collections, covers and the pages they were left at went with
+    them.  A book is taken out only when its folder is there and holds
+    something; an empty folder is where a drive is mounted."""
+
+    def _add(self, path):
+        cursor = self.library._con.execute(
+            '''insert into book (name, path, pages, format, size)
+            values (?, ?, ?, ?, ?)''',
+            (os.path.basename(path), path, 1, 1, 1))
+        return cursor.lastrowid
+
+    def test_only_the_books_gone_from_a_folder_that_is_there_go(self):
+        there = os.path.join(self.tmp_dir, 'there')
+        os.mkdir(there)
+        shutil.copy(NORMAL_ZIP, os.path.join(there, 'kept.zip'))
+        empty = os.path.join(self.tmp_dir, 'mount')
+        os.mkdir(empty)
+        books = {name: self._add(path) for name, path in (
+            ('present', os.path.join(there, 'kept.zip')),
+            ('deleted', os.path.join(there, 'deleted.zip')),
+            ('unplugged', os.path.join(self.tmp_dir, 'drive', 'a', 'b.zip')),
+            ('unmounted', os.path.join(empty, 'c.zip')),
+            ('unmounted too', os.path.join(empty, 'd.zip')))}
+
+        self.assertEqual((1, 3), self.library.clean_collection())
+        left = {name for name, book in books.items()
+                if self.library.get_book_path(book) is not None}
+        self.assertEqual({'present', 'unplugged', 'unmounted',
+                          'unmounted too'}, left)
 
 
 class RemoveCollectionTest(OpenLibraryTest):

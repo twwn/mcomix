@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Comix 4.0.1\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-19 15:50+0100\n"
+"POT-Creation-Date: 2026-11-21 19:09+0100\n"
 "PO-Revision-Date: 2009-01-28 13:36+0800\n"
 "Last-Translator: Xie Yanbo <xieyanbo@gmail.com>\n"
 "Language-Team: Xie Yanbo <xieyanbo@gmail.com>\n"
@@ -45,31 +45,31 @@ msgstr "%s 采用 GNU/GPL 授权协议"
 msgid "A copy of this license can be obtained from %s"
 msgstr "该协议的副本可从 %s 获得"
 
-#: mcomix/archive_extractor.py:399 mcomix/archive_extractor.py:428
+#: mcomix/archive_extractor.py:415
 #, python-format
 msgid "! Extraction error: %s"
 msgstr "！ 解压缩错误：%s"
 
-#: mcomix/archive_extractor.py:454 mcomix/archive_tools.py:240
-#: mcomix/book_store.py:66 mcomix/image_tools.py:518
+#: mcomix/archive_extractor.py:460 mcomix/archive_tools.py:240
+#: mcomix/book_store.py:66 mcomix/image_tools.py:520
 #, python-format
 msgid "! Could not read %s"
 msgstr "！ 无法读取 %s"
 
 #
 # File: src/comment.py, line: 53
-#: mcomix/archive_packer.py:213 mcomix/file_actions.py:1262
-#: mcomix/library/book_area.py:1319
+#: mcomix/archive_packer.py:214 mcomix/file_actions.py:1252
+#: mcomix/library/book_area.py:1326
 #, python-format
 msgid "! Could not remove %(file)s: %(error)s"
 msgstr "! 无法删除 %(file)s：%(error)s"
 
-#: mcomix/archive_packer.py:677 mcomix/archive_packer.py:701
+#: mcomix/archive_packer.py:678 mcomix/archive_packer.py:702
 #, python-format
 msgid "! Could not create archive at path \"%s\""
 msgstr "！ 无法在 “%s” 路径下创建文件包"
 
-#: mcomix/archive_packer.py:691
+#: mcomix/archive_packer.py:692
 #, python-format
 msgid ""
 "! Could not add file %(sourcefile)s to archive %(archivefile)s, aborting..."
@@ -96,12 +96,12 @@ msgid "! Could not parse bookmarks file %s"
 msgstr "！ 无法解析书签文件 %s"
 
 #: mcomix/bookmark_backend.py:487 mcomix/book_store.py:83
-#: mcomix/file_actions.py:1020
+#: mcomix/file_actions.py:1014
 #, python-format
 msgid "! Could not save %(file)s to %(directory)s: %(error)s"
 msgstr "! 无法将 %(file)s 保存到 %(directory)s：%(error)s"
 
-#: mcomix/bookmark_backend.py:493 mcomix/file_actions.py:1030
+#: mcomix/bookmark_backend.py:493 mcomix/file_actions.py:1024
 #, python-format
 msgid "Could not save \"%(file)s\" to \"%(directory)s\""
 msgstr "无法将 \"%(file)s\" 保存到 \"%(directory)s\""
@@ -115,8 +115,8 @@ msgid "_No"
 msgstr "否(_N)"
 
 #: mcomix/bookmark_backend.py:510 mcomix/edit_dialog.py:65
-#: mcomix/file_actions.py:713 mcomix/file_actions.py:1071
-#: mcomix/file_actions.py:1244 mcomix/file_chooser_base_dialog.py:236
+#: mcomix/file_actions.py:713 mcomix/file_actions.py:1065
+#: mcomix/file_actions.py:1238 mcomix/file_chooser_base_dialog.py:236
 #: mcomix/file_chooser_base_dialog.py:241
 #: mcomix/file_chooser_library_dialog.py:42 mcomix/message_dialog.py:26
 #: mcomix/message_dialog.py:29 mcomix/pageselect.py:38
@@ -166,13 +166,13 @@ msgstr "编辑书签"
 msgid "C_lear bookmarks..."
 msgstr "清空书签(_L)..."
 
-#: mcomix/bookmark_dialog.py:33 mcomix/main.py:1559 mcomix/openwith.py:428
-#: mcomix/library/collection_area.py:150 mcomix/library/watchlist.py:69
+#: mcomix/bookmark_dialog.py:33 mcomix/main.py:1555 mcomix/openwith.py:429
+#: mcomix/library/collection_area.py:140 mcomix/library/watchlist.py:69
 msgid "_Remove"
 msgstr "删除(_R)"
 
 #: mcomix/bookmark_dialog.py:34 mcomix/comment_dialog.py:29
-#: mcomix/message_dialog.py:25 mcomix/preferences_dialog.py:74
+#: mcomix/message_dialog.py:25 mcomix/preferences_dialog.py:105
 #: mcomix/properties_dialog.py:38 mcomix/ui.py:501
 #: mcomix/library/book_properties.py:60 mcomix/library/watchlist.py:41
 msgid "_Close"
@@ -187,8 +187,8 @@ msgstr "输入"
 msgid "Name"
 msgstr "名称"
 
-#: mcomix/bookmark_dialog.py:65 mcomix/main.py:2747
-#: mcomix/library/book_properties.py:107 mcomix/library/control_area.py:169
+#: mcomix/bookmark_dialog.py:65 mcomix/main.py:2737
+#: mcomix/library/book_properties.py:107 mcomix/library/control_area.py:158
 msgid "Page"
 msgstr "页面"
 
@@ -223,7 +223,7 @@ msgstr "删除本书的书签(_R)..."
 msgid "_Edit bookmarks..."
 msgstr "编辑书签(_E)..."
 
-#: mcomix/bookmark_menu.py:204 mcomix/file_actions.py:1308
+#: mcomix/bookmark_menu.py:202 mcomix/file_actions.py:1298
 #, python-format
 msgid "Remove the bookmarks in \"%s\"?"
 msgstr "删除“%s”中的书签？"
@@ -310,7 +310,7 @@ msgstr "另存为(_A)"
 msgid "A_pply"
 msgstr "应用(_P)"
 
-#: mcomix/edit_dialog.py:111 mcomix/preferences_dialog.py:438
+#: mcomix/edit_dialog.py:111 mcomix/preferences_dialog.py:469
 msgid "Images"
 msgstr "图像文件"
 
@@ -320,16 +320,16 @@ msgstr "注释文件"
 
 #
 # File: src/library.py, line: 271
-#: mcomix/edit_dialog.py:261 mcomix/file_actions.py:779
+#: mcomix/edit_dialog.py:261 mcomix/file_actions.py:775
 #, python-format
 msgid "! Could not save the archive %(archivefile)s: %(error)s"
 msgstr "! 无法保存文件包 %(archivefile)s：%(error)s"
 
-#: mcomix/edit_dialog.py:274 mcomix/file_actions.py:784
+#: mcomix/edit_dialog.py:274 mcomix/file_actions.py:780
 msgid "The new archive could not be saved!"
 msgstr "无法保存新的文件包！"
 
-#: mcomix/edit_dialog.py:275 mcomix/file_actions.py:785
+#: mcomix/edit_dialog.py:275 mcomix/file_actions.py:781
 msgid "The original files have not been removed."
 msgstr "原始文件没有被删除。"
 
@@ -347,11 +347,11 @@ msgid ""
 "the book."
 msgstr "编辑器中有尚未应用也未保存的更改。它们会随书一起消失。"
 
-#: mcomix/edit_dialog.py:465
+#: mcomix/edit_dialog.py:467
 msgid "_Go on editing"
 msgstr "继续编辑(_G)"
 
-#: mcomix/edit_dialog.py:466
+#: mcomix/edit_dialog.py:468
 msgid "_Close the book"
 msgstr "关闭这本书(_C)"
 
@@ -385,7 +385,7 @@ msgstr "恢复到已保存的值。"
 
 #: mcomix/enhance_dialog.py:51 mcomix/file_actions.py:627
 #: mcomix/file_actions.py:685 mcomix/file_actions.py:714
-#: mcomix/file_chooser_base_dialog.py:242 mcomix/openwith.py:452
+#: mcomix/file_chooser_base_dialog.py:242 mcomix/openwith.py:453
 msgid "_Save"
 msgstr "保存(_S)"
 
@@ -446,8 +446,8 @@ msgstr "反转图像颜色(_I)"
 msgid "Invert (negate) image colors."
 msgstr "反转（求反）图像颜色。"
 
-#: mcomix/file_actions.py:323 mcomix/file_actions.py:1451
-#: mcomix/file_actions.py:1594
+#: mcomix/file_actions.py:323 mcomix/file_actions.py:1441
+#: mcomix/file_actions.py:1584
 msgid "A file of that name is there already."
 msgstr "那里已经有同名文件。"
 
@@ -512,107 +512,107 @@ msgstr ""
 "另一个程序写入了它。保存会用 MComix 中显示的书替换它，那个程序所做的更改将丢"
 "失。"
 
-#: mcomix/file_actions.py:912
+#: mcomix/file_actions.py:908
 #, python-format
 msgid "Could not show the folder: %s"
 msgstr "无法显示目录：%s"
 
-#: mcomix/file_actions.py:959 mcomix/keybindings.py:166
+#: mcomix/file_actions.py:955 mcomix/keybindings.py:166
 msgid "Save page as"
 msgstr "页面另存为"
 
-#: mcomix/file_actions.py:1024 mcomix/file_actions.py:1596
+#: mcomix/file_actions.py:1018 mcomix/file_actions.py:1586
 #, python-format
 msgid "There is not enough room there: the file is %s."
 msgstr "那里空间不足：文件大小为 %s。"
 
-#: mcomix/file_actions.py:1061
+#: mcomix/file_actions.py:1055
 msgid "There is no trash for this folder, so it cannot be restored."
 msgstr "此目录没有回收站，删除后无法恢复。"
 
-#: mcomix/file_actions.py:1069
+#: mcomix/file_actions.py:1063
 #, python-format
 msgid "Delete \"%s\"?"
 msgstr "确定删除 %s ？"
 
-#: mcomix/file_actions.py:1070
+#: mcomix/file_actions.py:1064
 msgid "The file is moved to the trash."
 msgstr "文件将被移动到回收站。"
 
-#: mcomix/file_actions.py:1072
+#: mcomix/file_actions.py:1066
 msgid "_Move to Trash"
 msgstr "移动到回收站(_M)"
 
-#: mcomix/file_actions.py:1102 mcomix/library/book_area.py:1256
+#: mcomix/file_actions.py:1096 mcomix/library/book_area.py:1263
 msgid "It does not go to the trash and cannot be restored."
 msgstr "文件不会移动到回收站，删除后无法恢复。"
 
-#: mcomix/file_actions.py:1110 mcomix/library/book_area.py:1248
+#: mcomix/file_actions.py:1104 mcomix/library/book_area.py:1255
 #, python-format
 msgid "Delete \"%s\" permanently?"
 msgstr "确定永久删除 %s ？"
 
-#: mcomix/file_actions.py:1217
+#: mcomix/file_actions.py:1211
 #, python-format
 msgid "Could not move \"%s\" to the trash"
 msgstr "无法将 \"%s\" 移动到回收站"
 
-#: mcomix/file_actions.py:1221 mcomix/library/book_area.py:1333
+#: mcomix/file_actions.py:1215 mcomix/library/book_area.py:1340
 #, python-format
 msgid "%d book could not be moved to the trash."
 msgid_plural "%d books could not be moved to the trash."
 msgstr[0] "无法将 %d 本书移动到回收站。"
 
-#: mcomix/file_actions.py:1225
+#: mcomix/file_actions.py:1219
 msgid "Delete it permanently instead? It cannot be restored."
 msgid_plural "Delete them permanently instead? They cannot be restored."
 msgstr[0] "改为永久删除吗？删除后无法恢复。"
 
-#: mcomix/file_actions.py:1245
+#: mcomix/file_actions.py:1239
 msgid "_Delete Permanently"
 msgstr "永久删除(_D)"
 
-#: mcomix/file_actions.py:1272
+#: mcomix/file_actions.py:1262
 #, python-format
 msgid "Could not delete \"%s\""
 msgstr "无法删除 \"%s\""
 
-#: mcomix/file_actions.py:1278
+#: mcomix/file_actions.py:1268
 #, python-format
 msgid "%d book could not be deleted."
 msgid_plural "%d books could not be deleted."
 msgstr[0] "无法删除 %d 本书。"
 
-#: mcomix/file_actions.py:1304
+#: mcomix/file_actions.py:1294
 #, python-format
 msgid "The file is gone, and its %d bookmark cannot be opened any more."
 msgid_plural ""
 "The file is gone, and its %d bookmarks cannot be opened any more."
 msgstr[0] "文件已删除，其中的 %d 个书签无法再打开。"
 
-#: mcomix/file_actions.py:1404 mcomix/file_actions.py:1590
-#: mcomix/thumbnail_tools.py:386
+#: mcomix/file_actions.py:1394 mcomix/file_actions.py:1580
+#: mcomix/thumbnail_tools.py:385
 #, python-format
 msgid "! Could not move %(file)s to %(directory)s: %(error)s"
 msgstr "! 无法将 %(file)s 移动到 %(directory)s：%(error)s"
 
-#: mcomix/file_actions.py:1455
+#: mcomix/file_actions.py:1445
 msgid "Rename archive?"
 msgstr "重命名文件包？"
 
-#: mcomix/file_actions.py:1456
+#: mcomix/file_actions.py:1446
 msgid "Please enter a new name for this archive."
 msgstr "请输入这个文件包的新名称。"
 
-#: mcomix/file_actions.py:1602
+#: mcomix/file_actions.py:1592
 #, python-format
 msgid "Could not move \"%(file)s\" to \"%(directory)s\""
 msgstr "无法将 \"%(file)s\" 移动到 \"%(directory)s\""
 
 #: mcomix/file_chooser_base_dialog.py:75 mcomix/file_chooser_base_dialog.py:885
 #: mcomix/properties_dialog.py:137 mcomix/library/book_properties.py:95
-#: mcomix/library/book_properties.py:158 mcomix/library/control_area.py:172
-#: mcomix/library/control_area.py:208
+#: mcomix/library/book_properties.py:158 mcomix/library/control_area.py:161
+#: mcomix/library/control_area.py:197
 #, python-format
 msgid "%d page"
 msgid_plural "%d pages"
@@ -622,7 +622,7 @@ msgstr[0] "共%d页"
 msgid "Open"
 msgstr "打开"
 
-#: mcomix/file_chooser_base_dialog.py:237 mcomix/library/book_area.py:293
+#: mcomix/file_chooser_base_dialog.py:237 mcomix/library/book_area.py:298
 msgid "_Open"
 msgstr "打开(_O)"
 
@@ -665,7 +665,7 @@ msgstr "覆盖它会覆写它的文件内容"
 msgid "Add books"
 msgstr "添加书"
 
-#: mcomix/file_chooser_library_dialog.py:43 mcomix/openwith.py:424
+#: mcomix/file_chooser_library_dialog.py:43 mcomix/openwith.py:425
 #: mcomix/library/watchlist.py:67
 msgid "_Add"
 msgstr "添加(_A)"
@@ -722,7 +722,7 @@ msgstr "！ 文件 %s 损坏，正在删除；上次阅读的文件将不会重�
 msgid "Invalid path: '%s'"
 msgstr "无效路径：%s"
 
-#: mcomix/image_tools.py:1517
+#: mcomix/image_tools.py:1689
 msgid "Unknown filetype"
 msgstr "未知的文件格式"
 
@@ -743,7 +743,7 @@ msgstr "上一页"
 #: mcomix/keybindings.py:61 mcomix/keybindings.py:62 mcomix/keybindings.py:64
 #: mcomix/keybindings.py:65 mcomix/keybindings.py:66 mcomix/keybindings.py:68
 #: mcomix/keybindings.py:69 mcomix/keybindings.py:70 mcomix/keybindings.py:71
-#: mcomix/preferences_dialog.py:98
+#: mcomix/preferences_dialog.py:129
 msgid "Navigation"
 msgstr "导航"
 
@@ -852,7 +852,7 @@ msgstr "滚动至底部左侧"
 #: mcomix/keybindings.py:82 mcomix/keybindings.py:83 mcomix/keybindings.py:84
 #: mcomix/keybindings.py:86 mcomix/keybindings.py:87 mcomix/keybindings.py:88
 #: mcomix/keybindings.py:89 mcomix/keybindings.py:91 mcomix/keybindings.py:92
-#: mcomix/keybindings.py:116 mcomix/preferences_dialog.py:265
+#: mcomix/keybindings.py:116 mcomix/preferences_dialog.py:296
 msgid "Scroll"
 msgstr "滚动"
 
@@ -974,7 +974,7 @@ msgstr "根据宽度自动旋转"
 msgid "Autorotate by height"
 msgstr "根据高度自动旋转"
 
-#: mcomix/keybindings.py:112 mcomix/preferences_dialog.py:391 mcomix/ui.py:546
+#: mcomix/keybindings.py:112 mcomix/preferences_dialog.py:422 mcomix/ui.py:546
 msgid "Double page mode"
 msgstr "双页模式"
 
@@ -995,7 +995,7 @@ msgstr "第一页单独显示"
 msgid "Manga mode"
 msgstr "漫画模式"
 
-#: mcomix/keybindings.py:115 mcomix/preferences_dialog.py:409 mcomix/ui.py:564
+#: mcomix/keybindings.py:115 mcomix/preferences_dialog.py:440 mcomix/ui.py:564
 msgid "Continuous mode"
 msgstr "连续模式"
 
@@ -1003,7 +1003,7 @@ msgstr "连续模式"
 msgid "Invert smart scroll"
 msgstr "反向智能滚动"
 
-#: mcomix/keybindings.py:118 mcomix/preferences_dialog.py:457 mcomix/ui.py:571
+#: mcomix/keybindings.py:118 mcomix/preferences_dialog.py:488 mcomix/ui.py:571
 msgid "Magnifying lens"
 msgstr "放大镜"
 
@@ -1035,7 +1035,7 @@ msgstr "适应尺寸模式"
 msgid "Manual zoom mode"
 msgstr "手动缩放模式"
 
-#: mcomix/keybindings.py:129 mcomix/osd.py:285 mcomix/ui.py:499
+#: mcomix/keybindings.py:129 mcomix/osd.py:273 mcomix/ui.py:499
 msgid "Leave fullscreen"
 msgstr "退出全屏模式"
 
@@ -1047,7 +1047,7 @@ msgstr "退出全屏模式"
 #: mcomix/keybindings.py:142 mcomix/keybindings.py:143
 #: mcomix/keybindings.py:144 mcomix/keybindings.py:145
 #: mcomix/keybindings.py:147 mcomix/keybindings.py:149
-#: mcomix/keybindings.py:151 mcomix/preferences_dialog.py:131
+#: mcomix/keybindings.py:151 mcomix/preferences_dialog.py:162
 msgid "User interface"
 msgstr "用户界面"
 
@@ -1067,7 +1067,7 @@ msgstr "手册"
 msgid "Keyboard shortcuts"
 msgstr "键盘快捷键"
 
-#: mcomix/keybindings.py:136 mcomix/preferences_dialog.py:187
+#: mcomix/keybindings.py:136 mcomix/preferences_dialog.py:218
 msgid "Fullscreen"
 msgstr "全屏"
 
@@ -1091,7 +1091,7 @@ msgstr "状态栏(A)"
 msgid "Scrollbars"
 msgstr "滚动条(C)"
 
-#: mcomix/keybindings.py:143 mcomix/preferences_dialog.py:161
+#: mcomix/keybindings.py:143 mcomix/preferences_dialog.py:192
 msgid "Thumbnails"
 msgstr "缩略图"
 
@@ -1130,7 +1130,7 @@ msgstr "删除"
 msgid "File"
 msgstr "文件"
 
-#: mcomix/keybindings.py:155 mcomix/ui.py:451 mcomix/library/book_area.py:312
+#: mcomix/keybindings.py:155 mcomix/ui.py:451 mcomix/library/book_area.py:317
 msgid "Delete permanently"
 msgstr "永久删除"
 
@@ -1185,12 +1185,12 @@ msgstr "文件包注释"
 msgid "Properties"
 msgstr "属性"
 
-#: mcomix/keybindings.py:170 mcomix/preferences_dialog.py:70
+#: mcomix/keybindings.py:170 mcomix/preferences_dialog.py:101
 msgid "Preferences"
 msgstr "首选项"
 
 #: mcomix/keybindings.py:173 mcomix/ui.py:453 mcomix/ui.py:456
-#: mcomix/library/book_area.py:316
+#: mcomix/library/book_area.py:321
 msgid "Open containing folder"
 msgstr "打开所在目录"
 
@@ -1220,7 +1220,7 @@ msgstr "书签"
 msgid "Edit bookmarks"
 msgstr "编辑书签"
 
-#: mcomix/keybindings.py:190 mcomix/openwith.py:654
+#: mcomix/keybindings.py:190 mcomix/openwith.py:655
 msgid "Command"
 msgstr "命令"
 
@@ -1238,18 +1238,18 @@ msgstr "“%(action)s”的快捷键将覆盖原有功能"
 msgid "Couldn't load keybindings: %s"
 msgstr "无法加载快捷键设置：%s"
 
-#: mcomix/last_read_page.py:254 mcomix/thumbnail_tools.py:358
+#: mcomix/last_read_page.py:241 mcomix/thumbnail_tools.py:359
 #, python-format
 msgid "! Could not remove file \"%s\""
 msgstr "！ 无法删除文件 %s"
 
-#: mcomix/main.py:1552
+#: mcomix/main.py:1546
 #, python-format
 msgid "Remove the page picked out of \"%s\"?"
 msgid_plural "Remove the pages picked out of \"%s\"?"
 msgstr[0] "从“%s”中移除选中的页面吗？"
 
-#: mcomix/main.py:1555
+#: mcomix/main.py:1549
 msgid ""
 "They are taken out of the archive on disk, which is written again at once. "
 "Leaving the book without removing them forgets which pages they were."
@@ -1257,16 +1257,16 @@ msgstr ""
 "它们会从磁盘上的压缩包中取出，压缩包随即重新写入。不移除就离开这本书，将忘记"
 "那是哪些页面。"
 
-#: mcomix/main.py:1558
+#: mcomix/main.py:1554
 msgid "_Keep them"
 msgstr "保留(_K)"
 
-#: mcomix/main.py:1782
+#: mcomix/main.py:1772
 #, python-format
 msgid "Animation speed: %s"
 msgstr "动画速度：%s"
 
-#: mcomix/main.py:2450
+#: mcomix/main.py:2440
 msgid "SLIDESHOW"
 msgstr "幻灯片播放"
 
@@ -1376,84 +1376,84 @@ msgstr "移动到目录"
 msgid "_Edit commands"
 msgstr "编辑命令(_E)"
 
-#: mcomix/openwith.py:163
+#: mcomix/openwith.py:164
 #, python-format
 msgid "'%s' is disabled for archives."
 msgstr "“%s”在文件包中被禁用。"
 
-#: mcomix/openwith.py:207
+#: mcomix/openwith.py:208
 #, python-format
 msgid "Could not run command %(cmdlabel)s: %(exception)s"
 msgstr "无法执行 %(cmdlabel)s 命令: %(exception)s"
 
-#: mcomix/openwith.py:258
+#: mcomix/openwith.py:259
 msgid "Command line is empty."
 msgstr "命令是空的。"
 
-#: mcomix/openwith.py:323
+#: mcomix/openwith.py:324
 msgid "Incomplete escape sequence. For a literal '%', use '%%'."
 msgstr "不完整的转义字符。如果要输入“%”，请使用“%%”。"
 
-#: mcomix/openwith.py:327
+#: mcomix/openwith.py:328
 msgid "Incomplete quote sequence. For a literal '\"', use '%\"'."
 msgstr "不完整的引用字符。如果要输入“\"”，其使用“%\"”。"
 
-#: mcomix/openwith.py:341 mcomix/openwith.py:354 mcomix/openwith.py:386
+#: mcomix/openwith.py:342 mcomix/openwith.py:355 mcomix/openwith.py:387
 msgid "File-related variables can only be used for files."
 msgstr "文件相关变量只能应用于文件。"
 
-#: mcomix/openwith.py:345
+#: mcomix/openwith.py:346
 msgid "Archive-related variables can only be used for archives."
 msgstr "文件包相关变量只能应用于文件包。"
 
-#: mcomix/openwith.py:404
+#: mcomix/openwith.py:405
 #, python-format
 msgid "Invalid escape sequence: %%%s"
 msgstr "错误的转义字符：%%%s"
 
-#: mcomix/openwith.py:415
+#: mcomix/openwith.py:416
 msgid "Edit external commands"
 msgstr "编辑外部命令"
 
-#: mcomix/openwith.py:426
+#: mcomix/openwith.py:427
 msgid "Add _separator"
 msgstr "添加分割符(_S)"
 
-#: mcomix/openwith.py:431
+#: mcomix/openwith.py:432
 msgid "_Up"
 msgstr "向上(_U)"
 
-#: mcomix/openwith.py:434
+#: mcomix/openwith.py:435
 msgid "_Down"
 msgstr "向下(_D)"
 
-#: mcomix/openwith.py:437
+#: mcomix/openwith.py:438
 msgid "Run _command"
 msgstr "执行命令(_C)"
 
-#: mcomix/openwith.py:519
+#: mcomix/openwith.py:520
 msgid "This is a separator pseudo-command."
 msgstr "这是一条用来表示分割符的伪命令。"
 
-#: mcomix/openwith.py:530
+#: mcomix/openwith.py:531
 #, python-format
 msgid "\"%s\" does not have a valid working directory."
 msgstr "\"%s\" 没有合法的工作路径。"
 
-#: mcomix/openwith.py:533
+#: mcomix/openwith.py:534
 #, python-format
 msgid "\"%s\" does not appear to have a valid executable."
 msgstr "\"%s\" 不是合法的可知性文件。"
 
-#: mcomix/openwith.py:542
+#: mcomix/openwith.py:543
 msgid "Command label"
 msgstr "命令名称"
 
-#: mcomix/openwith.py:632
+#: mcomix/openwith.py:633
 msgid "Preview:"
 msgstr "预览："
 
-#: mcomix/openwith.py:640
+#: mcomix/openwith.py:641
 #, python-format
 msgid ""
 "Please refer to the <a href=\"%s\">external command documentation</a> for a "
@@ -1462,23 +1462,23 @@ msgstr ""
 "请到 <a href=\"%s\">external command documentation</a> 查看可用的变量列表和其"
 "他说明。"
 
-#: mcomix/openwith.py:653
+#: mcomix/openwith.py:654
 msgid "Label"
 msgstr "名称"
 
-#: mcomix/openwith.py:655
+#: mcomix/openwith.py:656
 msgid "Working directory"
 msgstr "工作路径"
 
-#: mcomix/openwith.py:662
+#: mcomix/openwith.py:663
 msgid "Disabled in archives"
 msgstr "在文件包中禁用"
 
-#: mcomix/openwith.py:732
+#: mcomix/openwith.py:733
 msgid "Save changes to commands?"
 msgstr "是否保存命令变更？"
 
-#: mcomix/openwith.py:733
+#: mcomix/openwith.py:734
 msgid ""
 "You have made changes to the list of external commands that have not been "
 "saved yet. Press \"Yes\" to save all changes, or \"No\" to discard them."
@@ -1500,142 +1500,142 @@ msgstr "跳转(_G)"
 msgid " of %s"
 msgstr " / %s"
 
-#: mcomix/preferences_dialog.py:96
+#: mcomix/preferences_dialog.py:127
 msgid "Appearance"
 msgstr "外观"
 
-#: mcomix/preferences_dialog.py:97
+#: mcomix/preferences_dialog.py:128
 msgid "Behaviour"
 msgstr "行为"
 
-#: mcomix/preferences_dialog.py:99
+#: mcomix/preferences_dialog.py:130
 msgid "Display"
 msgstr "显示"
 
-#: mcomix/preferences_dialog.py:100
+#: mcomix/preferences_dialog.py:131
 msgid "Advanced"
 msgstr "高级"
 
-#: mcomix/preferences_dialog.py:117
+#: mcomix/preferences_dialog.py:148
 msgid "Shortcuts"
 msgstr "快捷键"
 
-#: mcomix/preferences_dialog.py:133
+#: mcomix/preferences_dialog.py:164
 msgid "Language (needs restart):"
 msgstr "语言 (需重启程序)："
 
-#: mcomix/preferences_dialog.py:136
+#: mcomix/preferences_dialog.py:167
 msgid "Theme:"
 msgstr "主题："
 
-#: mcomix/preferences_dialog.py:139
+#: mcomix/preferences_dialog.py:170
 msgid "Hide the pointer after (in seconds):"
 msgstr "隐藏指针前等待 (秒)："
 
-#: mcomix/preferences_dialog.py:143
+#: mcomix/preferences_dialog.py:174
 msgid ""
 "Once the mouse rests over the page. The Leave fullscreen button goes with "
 "it. 0 keeps both."
 msgstr "鼠标在页面上静止时。“退出全屏模式”按钮随之隐藏。0 则两者都保留。"
 
-#: mcomix/preferences_dialog.py:145
+#: mcomix/preferences_dialog.py:176
 msgid "Background"
 msgstr "背景"
 
-#: mcomix/preferences_dialog.py:148
+#: mcomix/preferences_dialog.py:179
 msgid "Use this colour as background:"
 msgstr "使用该颜色作为背景："
 
-#: mcomix/preferences_dialog.py:149
+#: mcomix/preferences_dialog.py:180
 msgid "Always use this selected colour as the background colour."
 msgstr "总是使用选中的该颜色作为背景色。"
 
-#: mcomix/preferences_dialog.py:150 mcomix/preferences_dialog.py:166
+#: mcomix/preferences_dialog.py:181 mcomix/preferences_dialog.py:197
 msgid "Use dynamic background colour"
 msgstr "使用动态背景色"
 
-#: mcomix/preferences_dialog.py:152
+#: mcomix/preferences_dialog.py:183
 msgid "Automatically pick a background colour that fits the viewed image."
 msgstr "自动选中适合观看中图片的背景色。"
 
-#: mcomix/preferences_dialog.py:157
+#: mcomix/preferences_dialog.py:188
 msgid "Use checkered background for transparent images"
 msgstr "使用棋盘格图像做透明图片的背景"
 
-#: mcomix/preferences_dialog.py:159
+#: mcomix/preferences_dialog.py:190
 msgid ""
 "Use a grey checkered background for transparent images. If this preference "
 "is unset, the background is plain white instead."
 msgstr ""
 "使用灰色跳棋格图案作为透明图像的背景。如果不设置该选项，则使用纯白背景。"
 
-#: mcomix/preferences_dialog.py:164
+#: mcomix/preferences_dialog.py:195
 msgid "Use this colour as the thumbnail background:"
 msgstr "使用该颜色作为缩略图背景色："
 
-#: mcomix/preferences_dialog.py:165
+#: mcomix/preferences_dialog.py:196
 msgid "Always use this selected colour as the thumbnail background colour."
 msgstr "总是使用选中的该颜色作为缩略图背景色。"
 
-#: mcomix/preferences_dialog.py:168
+#: mcomix/preferences_dialog.py:199
 msgid ""
 "Automatically use the colour that fits the viewed image for the thumbnail "
 "background."
 msgstr "自动使用与所查看图像相配的颜色作为缩略图背景。"
 
-#: mcomix/preferences_dialog.py:173
+#: mcomix/preferences_dialog.py:204
 msgid "Show page numbers on thumbnails"
 msgstr "在缩略图上显示页码"
 
-#: mcomix/preferences_dialog.py:176
+#: mcomix/preferences_dialog.py:207
 msgid "Thumbnail size (in pixels):"
 msgstr "缩略图大小 (像素)："
 
-#: mcomix/preferences_dialog.py:181
+#: mcomix/preferences_dialog.py:212
 msgid "Thumbnail border width (in pixels):"
 msgstr "缩略图边框宽度 (像素)："
 
-#: mcomix/preferences_dialog.py:185
+#: mcomix/preferences_dialog.py:216
 msgid ""
 "The frame round the thumbnails of pages, and round the covers of the "
 "library. 0 draws none."
 msgstr "页面缩略图和收藏库封面周围的边框。设为 0 则不绘制边框。"
 
-#: mcomix/preferences_dialog.py:190
+#: mcomix/preferences_dialog.py:221
 msgid "Start in fullscreen"
 msgstr "默认使用全屏模式"
 
-#: mcomix/preferences_dialog.py:194
+#: mcomix/preferences_dialog.py:225
 msgid "Automatically hide all toolbars in fullscreen"
 msgstr "全屏时自动隐藏所有工具条"
 
-#: mcomix/preferences_dialog.py:197
+#: mcomix/preferences_dialog.py:228
 msgid "Page number in fullscreen:"
 msgstr "全屏时的页码："
 
-#: mcomix/preferences_dialog.py:209
+#: mcomix/preferences_dialog.py:240
 msgid "Startup"
 msgstr "启动"
 
-#: mcomix/preferences_dialog.py:212
+#: mcomix/preferences_dialog.py:243
 msgid "Reopen the last book read"
 msgstr "启动时，自动打开最后查看过的文件"
 
-#: mcomix/preferences_dialog.py:214
+#: mcomix/preferences_dialog.py:245
 msgid ""
 "Automatically open, on startup, the file that was open when MComix was last "
 "closed."
 msgstr "启动时自动打开上次 MComix 关闭时正在查看的文件。"
 
-#: mcomix/preferences_dialog.py:217
+#: mcomix/preferences_dialog.py:248
 msgid "Open the library on startup"
 msgstr "启动时打开收藏库"
 
-#: mcomix/preferences_dialog.py:221
+#: mcomix/preferences_dialog.py:252
 msgid "Show the library while no book is open"
 msgstr "未打开书时显示收藏库"
 
-#: mcomix/preferences_dialog.py:223
+#: mcomix/preferences_dialog.py:254
 msgid ""
 "The window shows the covers of the books last read, or of every book in the "
 "library, where the pages would be. A double click on one opens it."
@@ -1643,11 +1643,11 @@ msgstr ""
 "窗口在页面的位置显示最近阅读的书的封面；若没有，则显示收藏库中所有书的封面。"
 "双击封面即可打开。"
 
-#: mcomix/preferences_dialog.py:226
+#: mcomix/preferences_dialog.py:257
 msgid "Open files in the window that is already open"
 msgstr "在已打开的窗口中打开文件"
 
-#: mcomix/preferences_dialog.py:228
+#: mcomix/preferences_dialog.py:259
 msgid ""
 "A book opened from a file manager or a command line goes to the MComix that "
 "is running, instead of starting another. Takes effect when MComix is next "
@@ -1656,33 +1656,33 @@ msgstr ""
 "从文件管理器或命令行打开的书会交给正在运行的 MComix，而不是再启动一个。下次启"
 "动 MComix 时生效。"
 
-#: mcomix/preferences_dialog.py:230
+#: mcomix/preferences_dialog.py:261
 msgid "Files"
 msgstr "文件"
 
-#: mcomix/preferences_dialog.py:233
+#: mcomix/preferences_dialog.py:264
 msgid "Remember recently opened files"
 msgstr "记住最近打开的文件"
 
-#: mcomix/preferences_dialog.py:235
+#: mcomix/preferences_dialog.py:266
 msgid ""
 "Add information about all files opened from within MComix to the shared "
 "recent files list."
 msgstr "把所有 MComix 打开过的文件信息添加到最近文件列表中。"
 
-#: mcomix/preferences_dialog.py:237
+#: mcomix/preferences_dialog.py:268
 msgid "Save page as opens at the last folder saved into"
 msgstr "“另存为”总是打开上次保存的目录"
 
-#: mcomix/preferences_dialog.py:239
+#: mcomix/preferences_dialog.py:270
 msgid "Open the save dialog at the folder the last page was saved into."
 msgstr "在上次保存文件所在的目录中打开“另存为”对话框。"
 
-#: mcomix/preferences_dialog.py:242
+#: mcomix/preferences_dialog.py:273
 msgid "Save an edited archive in the format it was opened in"
 msgstr "以打开时的格式保存已编辑的压缩包"
 
-#: mcomix/preferences_dialog.py:244
+#: mcomix/preferences_dialog.py:275
 msgid ""
 "Write an edited archive back as a ZIP, a tar, a 7z or a RAR, whichever it "
 "was read as. The last two need the 7z and rar programs, which MComix does "
@@ -1691,19 +1691,19 @@ msgstr ""
 "按读取时的格式将已编辑的压缩包写回为 ZIP、tar、7z 或 RAR。后两者需要 7z 和 "
 "rar 程序，而 MComix 不会安装它们；无法写入的格式将保存为 ZIP。"
 
-#: mcomix/preferences_dialog.py:246
+#: mcomix/preferences_dialog.py:277
 msgid "Comment file extensions:"
 msgstr "注释后缀："
 
-#: mcomix/preferences_dialog.py:249
+#: mcomix/preferences_dialog.py:280
 msgid "Prompts answered for good"
 msgstr "已一劳永逸回答的提问"
 
-#: mcomix/preferences_dialog.py:268
+#: mcomix/preferences_dialog.py:299
 msgid "Use smart scrolling"
 msgstr "使用智能滚动"
 
-#: mcomix/preferences_dialog.py:270
+#: mcomix/preferences_dialog.py:301
 msgid ""
 "With this preference set, the space key and mouse wheel do not only scroll "
 "down or up, but also sideways and so try to follow the natural reading order "
@@ -1712,41 +1712,41 @@ msgstr ""
 "设置该选项后，空格键和鼠标滚轮不仅可以向上滚动或向下滚动，同时可以向两侧滚"
 "动，以配合一般的漫画书阅读顺序。"
 
-#: mcomix/preferences_dialog.py:274
+#: mcomix/preferences_dialog.py:305
 msgid "Arrow key step (in pixels):"
 msgstr "方向键按动时滚动的像素："
 
-#: mcomix/preferences_dialog.py:278
+#: mcomix/preferences_dialog.py:309
 msgid "Set the number of pixels to scroll on a page when using the arrow keys."
 msgstr "设置使用方向键滚动时在页面上的滚动像素。"
 
-#: mcomix/preferences_dialog.py:280
+#: mcomix/preferences_dialog.py:311
 msgid "Mouse wheel step (in pixels):"
 msgstr "鼠标滚轮滚动的像素："
 
-#: mcomix/preferences_dialog.py:284
+#: mcomix/preferences_dialog.py:315
 msgid "Set the number of pixels to scroll on a page when using a mouse wheel."
 msgstr "设置使用鼠标滚轮滚动时在页面上的滚动像素。"
 
-#: mcomix/preferences_dialog.py:286
+#: mcomix/preferences_dialog.py:317
 msgid "Space key step (in percent of the page):"
 msgstr "空格键按动时页面滚动的百分比："
 
-#: mcomix/preferences_dialog.py:290
+#: mcomix/preferences_dialog.py:321
 msgid ""
 "Sets the percentage by which the page will be scrolled down or up when the "
 "space key is pressed."
 msgstr "设置使用空格键时页面滚动的百分比。"
 
-#: mcomix/preferences_dialog.py:293
+#: mcomix/preferences_dialog.py:324
 msgid "Page turning"
 msgstr "翻页"
 
-#: mcomix/preferences_dialog.py:296
+#: mcomix/preferences_dialog.py:327
 msgid "Turn the page when scrolling past its edge"
 msgstr "当滚动出页面边界时翻页"
 
-#: mcomix/preferences_dialog.py:298
+#: mcomix/preferences_dialog.py:329
 msgid ""
 "Flip pages when scrolling \"off the page\" with the scroll wheel or with the "
 "arrow keys. It takes n consecutive \"steps\" with the scroll wheel or the "
@@ -1755,11 +1755,11 @@ msgstr ""
 "当使用鼠标滚轮或者键盘方向键滚动出页面时翻页。在翻页之前，需要连续滚动滚轮或"
 "者按方向键数次。"
 
-#: mcomix/preferences_dialog.py:300
+#: mcomix/preferences_dialog.py:331
 msgid "Steps past the edge before the page turns:"
 msgstr "滚动超出页面时，需要再滚动几次才翻页："
 
-#: mcomix/preferences_dialog.py:304
+#: mcomix/preferences_dialog.py:335
 msgid ""
 "Set the number of \"steps\" needed to flip to the next or previous page.  "
 "Less steps will allow for very fast page turning but you might find yourself "
@@ -1768,58 +1768,58 @@ msgstr ""
 "设置需要再滚动几次才下翻一页或上翻一页，次数少可以快速翻页，不过容易引起意外"
 "翻页。"
 
-#: mcomix/preferences_dialog.py:307
+#: mcomix/preferences_dialog.py:338
 msgid "Count the steps also when the page fits"
 msgstr "页面适合窗口时也计算次数"
 
-#: mcomix/preferences_dialog.py:309
+#: mcomix/preferences_dialog.py:340
 msgid ""
 "A page that fits the window turns on the first step past it. With this, it "
 "takes as many steps as above."
 msgstr "适合窗口的页面在越过它的第一次就会翻页。开启后，需要上面设定的次数。"
 
-#: mcomix/preferences_dialog.py:311
+#: mcomix/preferences_dialog.py:342
 msgid "Wheel pause after a page turn (in milliseconds):"
 msgstr "滚轮翻页后忽略滚轮的毫秒数："
 
-#: mcomix/preferences_dialog.py:315
+#: mcomix/preferences_dialog.py:346
 msgid ""
 "Keeps a fast wheel from turning several pages at once. 0 ignores nothing."
 msgstr "防止快速滚动的滚轮一次翻过多页。0 表示不忽略。"
 
-#: mcomix/preferences_dialog.py:318
+#: mcomix/preferences_dialog.py:349
 msgid "Flip pages with a left click"
 msgstr "左键单击时翻页"
 
-#: mcomix/preferences_dialog.py:320
+#: mcomix/preferences_dialog.py:351
 msgid ""
 "A left click on the page turns to the next one. Clicks with SHIFT or ALT "
 "turn pages either way."
 msgstr "在页面上左键单击会翻到下一页。按住 SHIFT 或 ALT 单击时总会翻页。"
 
-#: mcomix/preferences_dialog.py:322
+#: mcomix/preferences_dialog.py:353
 msgid "Where a click lands:"
 msgstr "点击位置："
 
-#: mcomix/preferences_dialog.py:326
+#: mcomix/preferences_dialog.py:357
 msgid "Skip pages that cannot be shown"
 msgstr "跳过无法显示的页面"
 
-#: mcomix/preferences_dialog.py:328
+#: mcomix/preferences_dialog.py:359
 msgid ""
 "Turn past a page whose image is damaged or cannot be read, instead of "
 "showing the broken-image icon in its place."
 msgstr "跳过图像损坏或无法读取的页面，而不是在其位置显示损坏图像图标。"
 
-#: mcomix/preferences_dialog.py:330
+#: mcomix/preferences_dialog.py:361
 msgid "Between books"
 msgstr "书与书之间"
 
-#: mcomix/preferences_dialog.py:333
+#: mcomix/preferences_dialog.py:364
 msgid "Open the next book past the last page"
 msgstr "自动打开下一个文件包"
 
-#: mcomix/preferences_dialog.py:335
+#: mcomix/preferences_dialog.py:366
 msgid ""
 "Past the last page, open the next book in the folder; past the first page, "
 "the previous one."
@@ -1827,11 +1827,11 @@ msgstr ""
 "当翻过最后一页时，自动打开当前目录的下一个文件包；或翻过第一页时，自动打开上"
 "一个文件包。"
 
-#: mcomix/preferences_dialog.py:338
+#: mcomix/preferences_dialog.py:369
 msgid "Go on into the next folder"
 msgstr "自动打开下一个目录"
 
-#: mcomix/preferences_dialog.py:340
+#: mcomix/preferences_dialog.py:371
 msgid ""
 "Automatically open the first file in the next sibling directory when "
 "flipping past the last page of the last file in a directory, or the previous "
@@ -1840,27 +1840,27 @@ msgstr ""
 "当翻过所在目录下最后一个文件的最后一页时自动打开下一目录的第一个文件当翻过所"
 "在目录下第一个文件的第一页时自动打开上移目录。"
 
-#: mcomix/preferences_dialog.py:343
+#: mcomix/preferences_dialog.py:374
 msgid "Open the previous book at its first page"
 msgstr "打开上一个文件包的时候，打开第一个文件"
 
-#: mcomix/preferences_dialog.py:345
+#: mcomix/preferences_dialog.py:376
 msgid "Open the previous book at its first page rather than at its last."
 msgstr "转到上一个文件包时自动打开它的第一个文件，而不是最后一个文件。"
 
-#: mcomix/preferences_dialog.py:348
+#: mcomix/preferences_dialog.py:379
 msgid "Open the previous folder at its first page"
 msgstr "打开上一个目录的时候，打开第一个文件"
 
-#: mcomix/preferences_dialog.py:350
+#: mcomix/preferences_dialog.py:381
 msgid "Open the previous folder at its first page rather than at its last."
 msgstr "转到上一个目录时自动打开它的第一个文件，而不是最后一个文件。"
 
-#: mcomix/preferences_dialog.py:353
+#: mcomix/preferences_dialog.py:384
 msgid "Open a folder with the folders in it as one book"
 msgstr "将文件夹及其中的文件夹作为一本书打开"
 
-#: mcomix/preferences_dialog.py:355
+#: mcomix/preferences_dialog.py:386
 msgid ""
 "The files of the folders in a folder, two levels down, follow its own. The "
 "next directory is then the one beside it."
@@ -1868,31 +1868,31 @@ msgstr ""
 "文件夹中各文件夹的文件（向下两层）排在该文件夹自身的文件之后。下一个目录则是"
 "它旁边的目录。"
 
-#: mcomix/preferences_dialog.py:357
+#: mcomix/preferences_dialog.py:388
 msgid "File order"
 msgstr "文件顺序"
 
-#: mcomix/preferences_dialog.py:359
+#: mcomix/preferences_dialog.py:390
 msgid "Sort files in a folder by:"
 msgstr "文件和目录排序依据："
 
-#: mcomix/preferences_dialog.py:362
+#: mcomix/preferences_dialog.py:393
 msgid "Sort pages inside an archive by:"
 msgstr "文件包内页面排序依据："
 
-#: mcomix/preferences_dialog.py:365 mcomix/slideshow.py:26
+#: mcomix/preferences_dialog.py:396 mcomix/slideshow.py:26
 msgid "Slideshow"
 msgstr "幻灯片放映"
 
-#: mcomix/preferences_dialog.py:367
+#: mcomix/preferences_dialog.py:398
 msgid "Slideshow delay (in seconds):"
 msgstr "幻灯片延迟 (秒)："
 
-#: mcomix/preferences_dialog.py:372
+#: mcomix/preferences_dialog.py:403
 msgid "Slideshow step (in pixels):"
 msgstr "幻灯片移动量 (像素)："
 
-#: mcomix/preferences_dialog.py:376
+#: mcomix/preferences_dialog.py:407
 msgid ""
 "Specify the number of pixels to scroll while in slideshow mode. A positive "
 "value will scroll forward, a negative value will scroll backwards, and a "
@@ -1901,41 +1901,41 @@ msgstr ""
 "设置幻灯片模式下滚动的像素值。正数值向前滚动，负数值向后滚动，0则总是翻到新的"
 "一页。"
 
-#: mcomix/preferences_dialog.py:379
+#: mcomix/preferences_dialog.py:410
 msgid "Let the slideshow go on to the next book"
 msgstr "幻灯片模式下自动打开下一个文件包"
 
-#: mcomix/preferences_dialog.py:381
+#: mcomix/preferences_dialog.py:412
 msgid "Past the last page during a slideshow, open the next book."
 msgstr "幻灯片模式下允许自动打开下一个文件包。"
 
-#: mcomix/preferences_dialog.py:394
+#: mcomix/preferences_dialog.py:425
 msgid "Turn two pages at a time"
 msgstr "双页模式时一次翻两页"
 
 #
-#: mcomix/preferences_dialog.py:396
+#: mcomix/preferences_dialog.py:427
 msgid ""
 "Flip two pages, instead of one, each time we flip pages in double page mode."
 msgstr "在双页模式时，每次翻两页，而不是一页。"
 
-#: mcomix/preferences_dialog.py:398
+#: mcomix/preferences_dialog.py:429
 msgid "Show a page alone:"
 msgstr "在特殊情况下只显示一页："
 
-#: mcomix/preferences_dialog.py:401
+#: mcomix/preferences_dialog.py:432
 msgid "Page auto-resizing:"
 msgstr "页面自动缩放："
 
-#: mcomix/preferences_dialog.py:404
+#: mcomix/preferences_dialog.py:435
 msgid "Space between two pages (in pixels):"
 msgstr "两页之间的间距（像素）："
 
-#: mcomix/preferences_dialog.py:412
+#: mcomix/preferences_dialog.py:443
 msgid "Open long strips in continuous mode"
 msgstr "以连续模式打开长条漫画"
 
-#: mcomix/preferences_dialog.py:414
+#: mcomix/preferences_dialog.py:445
 msgid ""
 "A book most of whose first pages are at least twice as high as wide is shown "
 "in continuous mode. The View menu turns it off for that book."
@@ -1943,79 +1943,79 @@ msgstr ""
 "开头几页大多高度至少为宽度两倍的书会以连续模式显示。可在“查看”菜单中仅对该书"
 "关闭。"
 
-#: mcomix/preferences_dialog.py:416 mcomix/ui.py:584
+#: mcomix/preferences_dialog.py:447 mcomix/ui.py:584
 msgid "Fit to size mode"
 msgstr "适应大小模式"
 
-#: mcomix/preferences_dialog.py:418
+#: mcomix/preferences_dialog.py:449
 msgid "Fixed width for wide pages:"
 msgstr "宽页面的固定宽度："
 
-#: mcomix/preferences_dialog.py:423
+#: mcomix/preferences_dialog.py:454
 msgid "Fixed height for wide pages:"
 msgstr "宽页面的固定高度："
 
-#: mcomix/preferences_dialog.py:428
+#: mcomix/preferences_dialog.py:459
 msgid "Fixed width for other pages:"
 msgstr "其他页面的固定宽度："
 
-#: mcomix/preferences_dialog.py:433
+#: mcomix/preferences_dialog.py:464
 msgid "Fixed height for other pages:"
 msgstr "其他页面的固定高度："
 
-#: mcomix/preferences_dialog.py:441
+#: mcomix/preferences_dialog.py:472
 msgid "Automatically rotate images according to their metadata"
 msgstr "按照元数据描述自动旋转图像"
 
-#: mcomix/preferences_dialog.py:443
+#: mcomix/preferences_dialog.py:474
 msgid ""
 "Automatically rotate images when an orientation is specified in the image "
 "metadata, such as in an Exif tag."
 msgstr "如果图像文件中包含Exif等元数据，依照元数据的描述自动旋转图像。"
 
-#: mcomix/preferences_dialog.py:445
+#: mcomix/preferences_dialog.py:476
 msgid "Animation mode:"
 msgstr "动图模式："
 
-#: mcomix/preferences_dialog.py:448
+#: mcomix/preferences_dialog.py:479
 msgid "Scaling quality:"
 msgstr "缩放模式："
 
-#: mcomix/preferences_dialog.py:451
+#: mcomix/preferences_dialog.py:482
 msgid "Screen colour profile:"
 msgstr "屏幕色彩特性文件："
 
-#: mcomix/preferences_dialog.py:454
+#: mcomix/preferences_dialog.py:485
 msgid "Rendering intent:"
 msgstr "再现意图："
 
-#: mcomix/preferences_dialog.py:459
+#: mcomix/preferences_dialog.py:490
 msgid "Lens size (in pixels):"
 msgstr "放大镜大小 (像素)："
 
-#: mcomix/preferences_dialog.py:463
+#: mcomix/preferences_dialog.py:494
 msgid ""
 "Set the size of the magnifying lens. It is a square with a side of this many "
 "pixels."
 msgstr "设置放大镜的大小。将显示为指定像素数边长的正方形。"
 
-#: mcomix/preferences_dialog.py:465
+#: mcomix/preferences_dialog.py:496
 msgid "Magnification factor:"
 msgstr "放大倍数："
 
-#: mcomix/preferences_dialog.py:469
+#: mcomix/preferences_dialog.py:500
 msgid "Set the magnification factor of the magnifying lens."
 msgstr "设置放大镜的放大倍数。"
 
-#: mcomix/preferences_dialog.py:479
+#: mcomix/preferences_dialog.py:510
 msgid "Extraction and cache"
 msgstr "解压缩和缓存"
 
-#: mcomix/preferences_dialog.py:487
+#: mcomix/preferences_dialog.py:518
 msgid "Extraction threads:"
 msgstr "并发解压缩使用的最大线程数："
 
-#: mcomix/preferences_dialog.py:491
+#: mcomix/preferences_dialog.py:522
 msgid ""
 "Set the maximum number of concurrent threads for formats that support it. A "
 "value of 0 uses one thread for each processor. For PDFs, 0 also keeps within "
@@ -2024,11 +2024,11 @@ msgstr ""
 "设置支持并发的格式所使用的最大线程数。值为 0 时，每个处理器使用一个线程。对"
 "于 PDF，0 还会限制在内存的十六分之一以内。"
 
-#: mcomix/preferences_dialog.py:493
+#: mcomix/preferences_dialog.py:524
 msgid "Thumbnail threads:"
 msgstr "生成缩略图使用的最大线程数："
 
-#: mcomix/preferences_dialog.py:497
+#: mcomix/preferences_dialog.py:528
 msgid ""
 "Set the maximum number of concurrent threads used to generate thumbnails. A "
 "value of 0 uses one thread for each processor. Takes effect the next time "
@@ -2037,25 +2037,25 @@ msgstr ""
 "设置生成缩略图所使用的最大并发线程数。值为 0 时，每个处理器使用一个线程。下次"
 "启动 MComix 时生效。"
 
-#: mcomix/preferences_dialog.py:499
+#: mcomix/preferences_dialog.py:530
 msgid "Unpack books in:"
 msgstr "书籍解压到："
 
-#: mcomix/preferences_dialog.py:502
+#: mcomix/preferences_dialog.py:533
 msgid "Pages to keep in the cache:"
 msgstr "缓存中存储的最大页面数："
 
-#: mcomix/preferences_dialog.py:506
+#: mcomix/preferences_dialog.py:537
 msgid ""
 "Set the max number of pages to cache. A value of -1 will cache the entire "
 "archive."
 msgstr "设置要缓存的页面数最大值，-1将缓存整个文件包。"
 
-#: mcomix/preferences_dialog.py:509
+#: mcomix/preferences_dialog.py:540
 msgid "Store thumbnails for opened files"
 msgstr "存储已经打开过的文件的缩略图"
 
-#: mcomix/preferences_dialog.py:511
+#: mcomix/preferences_dialog.py:542
 msgid ""
 "Store thumbnails for opened files according to the freedesktop.org "
 "specification. These thumbnails are shared by many other applications, such "
@@ -2064,56 +2064,56 @@ msgstr ""
 "按照 freedesktop.org 规范，保存已经打开过的文件的缩略图。这些缩略图会与其他程"
 "序（例如大多数文件管理器）共享使用。"
 
-#: mcomix/preferences_dialog.py:531
+#: mcomix/preferences_dialog.py:562
 msgid "_Reset keys"
 msgstr "重置快捷键(_A)"
 
-#: mcomix/preferences_dialog.py:533
+#: mcomix/preferences_dialog.py:564
 msgid "Resets all keyboard shortcuts to their default values."
 msgstr "重置所有快捷键为默认值。"
 
-#: mcomix/preferences_dialog.py:536
+#: mcomix/preferences_dialog.py:567
 msgid "Clear _dialog choices"
 msgstr "清除对话框选项(_D)"
 
-#: mcomix/preferences_dialog.py:538
+#: mcomix/preferences_dialog.py:569
 msgid ""
 "Clears all dialog choices that you have previously chosen not to be asked "
 "again."
 msgstr "清除所有之前设置的对话框选项，不再询问。"
 
-#: mcomix/preferences_dialog.py:580
+#: mcomix/preferences_dialog.py:611
 msgid "Ask every time"
 msgstr "每次都询问"
 
-#: mcomix/preferences_dialog.py:585
+#: mcomix/preferences_dialog.py:616
 msgid ""
 "What MComix answers this prompt with instead of asking. This is what the "
 "prompt's \"Do not ask again\" box sets."
 msgstr ""
 "MComix 用来代替询问的回答。这正是提问上的“不再询问”复选框所设置的内容。"
 
-#: mcomix/preferences_dialog.py:607
+#: mcomix/preferences_dialog.py:638
 msgid "Auto-detect (Default)"
 msgstr "自动侦测(默认)"
 
-#: mcomix/preferences_dialog.py:649
+#: mcomix/preferences_dialog.py:680
 msgid "Follow the system"
 msgstr "跟随系统"
 
-#: mcomix/preferences_dialog.py:650
+#: mcomix/preferences_dialog.py:681
 msgid "Light"
 msgstr "亮色"
 
-#: mcomix/preferences_dialog.py:651
+#: mcomix/preferences_dialog.py:682
 msgid "Dark"
 msgstr "暗色"
 
-#: mcomix/preferences_dialog.py:652
+#: mcomix/preferences_dialog.py:683
 msgid "Pitch black"
 msgstr "纯黑"
 
-#: mcomix/preferences_dialog.py:658
+#: mcomix/preferences_dialog.py:689
 msgid ""
 "How MComix itself is painted, whatever the desktop asks for. Pitch black is "
 "the dark theme with black backgrounds, which a screen that lights its pixels "
@@ -2122,11 +2122,11 @@ msgstr ""
 "MComix 自身的绘制方式，无论桌面环境如何要求。纯黑是背景为黑色的暗色主题，逐个"
 "点亮像素的屏幕显示它时完全不发光。"
 
-#: mcomix/preferences_dialog.py:695
+#: mcomix/preferences_dialog.py:726
 msgid "Restart MComix in the language you picked?"
 msgstr "以所选语言重新启动 MComix？"
 
-#: mcomix/preferences_dialog.py:696
+#: mcomix/preferences_dialog.py:727
 msgid ""
 "MComix is translated as it starts, so most of the interface stays in the "
 "language it started in until it is started again. The book being read, its "
@@ -2135,94 +2135,84 @@ msgstr ""
 "MComix 在启动时载入翻译，因此在重新启动之前，界面的大部分仍保持启动时的语言。"
 "正在阅读的书籍、所在页面和窗口大小都会保留。"
 
-#: mcomix/preferences_dialog.py:710 mcomix/preferences_dialog.py:928
-#: mcomix/preferences_dialog.py:991 mcomix/ui.py:590
+#: mcomix/preferences_dialog.py:741 mcomix/preferences_dialog.py:914
+#: mcomix/preferences_dialog.py:969 mcomix/ui.py:590
 msgid "Never"
 msgstr "从不"
 
-#: mcomix/preferences_dialog.py:711
+#: mcomix/preferences_dialog.py:742
 msgid "Only for title pages"
 msgstr "仅限第一页"
 
-#: mcomix/preferences_dialog.py:712
+#: mcomix/preferences_dialog.py:743
 msgid "Only for wide images"
 msgstr "仅限较宽的图片"
 
-#: mcomix/preferences_dialog.py:713 mcomix/preferences_dialog.py:929
+#: mcomix/preferences_dialog.py:744 mcomix/preferences_dialog.py:915
 msgid "Always"
 msgstr "总是"
 
-#: mcomix/preferences_dialog.py:720
+#: mcomix/preferences_dialog.py:751
 msgid ""
 "When showing the first page of an archive, or an image's width exceeds its "
 "height, only a single page will be displayed."
 msgstr "当是文件包的第一页或图片较宽时只显示一页。"
 
-#: mcomix/preferences_dialog.py:738
+#: mcomix/preferences_dialog.py:769
 msgid "Prefer same scale"
 msgstr "比例优先"
 
-#: mcomix/preferences_dialog.py:739
+#: mcomix/preferences_dialog.py:770
 msgid "Prefer same size"
 msgstr "尺寸优先"
 
-#: mcomix/preferences_dialog.py:740
+#: mcomix/preferences_dialog.py:771
 msgid "Fit to same size"
 msgstr "适应至同样大小"
 
-#: mcomix/preferences_dialog.py:747
+#: mcomix/preferences_dialog.py:778
 msgid "Maintain relative size or fit to same size."
 msgstr "保持相对大小，或缩放到相同大小。"
 
-#: mcomix/preferences_dialog.py:761 mcomix/preferences_dialog.py:808
+#: mcomix/preferences_dialog.py:792 mcomix/preferences_dialog.py:804
 msgid "No sorting"
 msgstr "不排序"
 
-#: mcomix/preferences_dialog.py:762
+#: mcomix/preferences_dialog.py:793
 msgid "File name"
 msgstr "文件名"
 
-#: mcomix/preferences_dialog.py:763
+#: mcomix/preferences_dialog.py:794
 msgid "File name (GLib)"
 msgstr "文件名（GLib）"
 
-#: mcomix/preferences_dialog.py:764 mcomix/library/book_area.py:385
+#: mcomix/preferences_dialog.py:795 mcomix/library/book_area.py:387
 msgid "File size"
 msgstr "文件大小"
 
-#: mcomix/preferences_dialog.py:765
+#: mcomix/preferences_dialog.py:796
 msgid "Last modified"
 msgstr "最后修改时间"
 
-#: mcomix/preferences_dialog.py:771 mcomix/preferences_dialog.py:817
-#: mcomix/library/book_area.py:393
-msgid "Ascending"
-msgstr "递增"
-
-#: mcomix/preferences_dialog.py:772 mcomix/preferences_dialog.py:818
-#: mcomix/library/book_area.py:394
-msgid "Descending"
-msgstr "递减"
-
-#: mcomix/preferences_dialog.py:780
+#: mcomix/preferences_dialog.py:798
 msgid ""
 "Files will be opened and displayed according to the sort order specified "
 "here. This option does not affect ordering within archives."
 msgstr "文件将按指定的排序打开和显示，但不影响文件包内部原来的文件顺序。"
 
-#: mcomix/preferences_dialog.py:809
+#: mcomix/preferences_dialog.py:805
 msgid "Natural order"
 msgstr "自然数顺序"
 
-#: mcomix/preferences_dialog.py:810
+#: mcomix/preferences_dialog.py:806
 msgid "Literal order"
 msgstr "字符串顺序"
 
-#: mcomix/preferences_dialog.py:811
+#: mcomix/preferences_dialog.py:807
 msgid "GLib order"
 msgstr "GLib 顺序"
 
-#: mcomix/preferences_dialog.py:826
+#: mcomix/preferences_dialog.py:809
 msgid ""
 "Files within archives will be sorted according to the order specified here. "
 "Natural order will sort numbered files based on their natural order, i.e. 1, "
@@ -2234,55 +2224,63 @@ msgstr ""
 "件，即 1、2、……、10；字面顺序使用标准 C 排序，即 1、2、34、5。GLib 顺序使用 "
 "GLib/GTK 生成的排序键排列文件，许多其他 GTK 程序也使用它。"
 
-#: mcomix/preferences_dialog.py:870
+#: mcomix/preferences_dialog.py:826 mcomix/library/book_area.py:395
+msgid "Ascending"
+msgstr "递增"
+
+#: mcomix/preferences_dialog.py:827 mcomix/library/book_area.py:396
+msgid "Descending"
+msgstr "递减"
+
+#: mcomix/preferences_dialog.py:856
 msgid "Delete information about recently opened files?"
 msgstr "删除最近打开的文件的信息？"
 
-#: mcomix/preferences_dialog.py:871
+#: mcomix/preferences_dialog.py:857
 msgid ""
 "This will remove all entries from the \"Recent\" menu, and clear information "
 "about last read pages."
 msgstr "这将删除所有“最近打开的文件”目录下记录，并清除相应的最后阅读页信息。"
 
-#: mcomix/preferences_dialog.py:884
+#: mcomix/preferences_dialog.py:870
 msgid "Nearest (pixel art)"
 msgstr "最近邻 (像素画)"
 
-#: mcomix/preferences_dialog.py:885
+#: mcomix/preferences_dialog.py:871
 msgid "Normal (fast)"
 msgstr "正常 (快)"
 
-#: mcomix/preferences_dialog.py:886
+#: mcomix/preferences_dialog.py:872
 msgid "Bilinear"
 msgstr "双线性"
 
-#: mcomix/preferences_dialog.py:887
+#: mcomix/preferences_dialog.py:873
 msgid "Bicubic"
 msgstr "双三次"
 
-#: mcomix/preferences_dialog.py:888
+#: mcomix/preferences_dialog.py:874
 msgid "Lanczos (slow)"
 msgstr "Lanczos (慢)"
 
-#: mcomix/preferences_dialog.py:894
+#: mcomix/preferences_dialog.py:880
 msgid ""
 "Changes how images are scaled. Slower algorithms result in higher quality "
 "resizing, but longer page loading times."
 msgstr "图片缩放设置：较慢的算法带来更高质量的图片缩放但更长的加载时间。"
 
-#: mcomix/preferences_dialog.py:911
+#: mcomix/preferences_dialog.py:897
 msgid "Anywhere: the next page"
 msgstr "任意位置：下一页"
 
-#: mcomix/preferences_dialog.py:912
+#: mcomix/preferences_dialog.py:898
 msgid "Halves: back and forward"
 msgstr "两半：后退和前进"
 
-#: mcomix/preferences_dialog.py:913
+#: mcomix/preferences_dialog.py:899
 msgid "Thirds: back, fullscreen, forward"
 msgstr "三等分：后退、全屏、前进"
 
-#: mcomix/preferences_dialog.py:921
+#: mcomix/preferences_dialog.py:907
 msgid ""
 "With \"Flip pages with a left click\": the left half or third of the page "
 "turns back and the right one forward; the middle third enters or leaves "
@@ -2291,19 +2289,15 @@ msgstr ""
 "配合“左键单击翻页”：页面左半或左三分之一后退，右侧前进；中间三分之一进入或退"
 "出全屏。漫画模式下左右互换。"
 
-#: mcomix/preferences_dialog.py:930
+#: mcomix/preferences_dialog.py:916
 msgid "For a few seconds after a page turn"
 msgstr "翻页后显示几秒钟"
 
-#: mcomix/preferences_dialog.py:935
+#: mcomix/preferences_dialog.py:921
 msgid "The pages on screen and the number of pages, in the lower right corner."
 msgstr "在右下角显示屏幕上的页面和总页数。"
 
-#: mcomix/preferences_dialog.py:951
-msgid "None"
-msgstr "无"
-
-#: mcomix/preferences_dialog.py:953
+#: mcomix/preferences_dialog.py:942
 msgid ""
 "The ICC profile of the screen, such as one made by calibrating it. Pages are "
 "converted into it from sRGB. Leave it empty where the desktop already "
@@ -2312,23 +2306,27 @@ msgstr ""
 "屏幕的 ICC 特性文件，例如校准屏幕时生成的文件。页面会从 sRGB 转换到该文件。如"
 "果桌面环境已经为屏幕进行转换，请留空。"
 
-#: mcomix/preferences_dialog.py:971
+#: mcomix/preferences_dialog.py:943
+msgid "None"
+msgstr "无"
+
+#: mcomix/preferences_dialog.py:949
 msgid "Perceptual"
 msgstr "感知"
 
-#: mcomix/preferences_dialog.py:972
+#: mcomix/preferences_dialog.py:950
 msgid "Relative colorimetric"
 msgstr "相对色度"
 
-#: mcomix/preferences_dialog.py:973
+#: mcomix/preferences_dialog.py:951
 msgid "Saturation"
 msgstr "饱和度"
 
-#: mcomix/preferences_dialog.py:974
+#: mcomix/preferences_dialog.py:952
 msgid "Absolute colorimetric"
 msgstr "绝对色度"
 
-#: mcomix/preferences_dialog.py:985
+#: mcomix/preferences_dialog.py:963
 msgid ""
 "How colours the screen cannot show are brought within its range, when a "
 "screen colour profile is set. Perceptual keeps the colours in proportion; "
@@ -2337,19 +2335,15 @@ msgstr ""
 "设置了屏幕色彩特性文件时，屏幕无法显示的颜色如何纳入其范围。感知保持颜色之间"
 "的比例；相对色度准确保留屏幕能够显示的颜色。"
 
-#: mcomix/preferences_dialog.py:992 mcomix/library/book_area.py:401
+#: mcomix/preferences_dialog.py:970 mcomix/library/book_area.py:403
 msgid "Normal"
 msgstr "正常"
 
-#: mcomix/preferences_dialog.py:998
+#: mcomix/preferences_dialog.py:976
 msgid "Controls how animated images should be displayed."
 msgstr "控制动图如何显示。"
 
-#: mcomix/preferences_dialog.py:1038
-msgid "The temporary folder"
-msgstr "临时文件夹"
-
-#: mcomix/preferences_dialog.py:1040
+#: mcomix/preferences_dialog.py:1018
 msgid ""
 "The folder archives are unpacked into while they are read, such as a RAM "
 "disk. Empty, the system's temporary folder. Takes effect with the next book "
@@ -2358,7 +2352,11 @@ msgstr ""
 "阅读时解压归档的文件夹，例如内存盘。留空则用系统临时文件夹。从下一本打开的书"
 "开始生效。"
 
-#: mcomix/preferences_dialog.py:1061
+#: mcomix/preferences_dialog.py:1019
+msgid "The temporary folder"
+msgstr "临时文件夹"
+
+#: mcomix/preferences_dialog.py:1024
 msgid ""
 "Treat all files found within archives, that have one of these file endings, "
 "as comments."
@@ -2427,11 +2425,11 @@ msgstr "权限"
 msgid "Owner"
 msgstr "拥有者"
 
-#: mcomix/recent.py:153
+#: mcomix/recent.py:152
 msgid "No entries found"
 msgstr "未找到条目"
 
-#: mcomix/recent.py:160
+#: mcomix/recent.py:159
 msgid "_Clear List"
 msgstr "清除列表(_C)"
 
@@ -2783,12 +2781,12 @@ msgstr "图标设计"
 msgid "Vector icon"
 msgstr "矢量图标"
 
-#: mcomix/thumbnail_tools.py:707
+#: mcomix/thumbnail_tools.py:700
 #, python-format
 msgid "! Could not save thumbnail \"%(thumbpath)s\": %(error)s"
 msgstr "！ 无法保存缩略图 “%(thumbpath)s”：%(error)s"
 
-#: mcomix/ui.py:444 mcomix/library/book_area.py:315
+#: mcomix/ui.py:444 mcomix/library/book_area.py:320
 msgid "_Copy"
 msgstr "复制(_P)"
 
@@ -3225,7 +3223,7 @@ msgstr "该文件包有密码保护："
 msgid "Please enter the password to continue:"
 msgstr "请输入密码："
 
-#: mcomix/archive/sevenzip_external.py:321
+#: mcomix/archive/sevenzip_external.py:318
 #, python-format
 msgid "Extraction of %(archivefile)s might have failed: %(error)s"
 msgstr "%(archivefile)s 的解压缩可能失败了：%(error)s"
@@ -3240,84 +3238,84 @@ msgstr ""
 "%(filename)s 的大小为 %(actual_size)dB，但应该为 %(expected_size)dB。该文件包"
 "有可能已经损毁或是不支持的文件格式。"
 
-#: mcomix/library/add_progress_dialog.py:43
+#: mcomix/library/add_progress_dialog.py:41
 #, python-format
 msgid "Could not add %(count)d book to the library: %(names)s"
 msgid_plural "Could not add %(count)d books to the library: %(names)s"
 msgstr[0] "无法将 %(count)d 本书添加到收藏库：%(names)s"
 
-#: mcomix/library/add_progress_dialog.py:58
+#: mcomix/library/add_progress_dialog.py:56
 msgid "Adding books"
 msgstr "正在添加书籍"
 
-#: mcomix/library/add_progress_dialog.py:59
+#: mcomix/library/add_progress_dialog.py:57
 msgid "_Stop"
 msgstr "停止(_S)"
 
-#: mcomix/library/add_progress_dialog.py:80
+#: mcomix/library/add_progress_dialog.py:78
 msgid "Added books:"
 msgstr "已添加的书籍："
 
-#: mcomix/library/add_progress_dialog.py:123
+#: mcomix/library/add_progress_dialog.py:121
 #, python-format
 msgid "Adding '%s'..."
 msgstr "正在添加“%s”..."
 
-#: mcomix/library/backend.py:300
+#: mcomix/library/backend.py:309
 #, python-format
 msgid "! Non-existent book #%i"
 msgstr "！ #%i 不存在"
 
-#: mcomix/library/backend.py:364
+#: mcomix/library/backend.py:373
 #, python-format
 msgid "! Could not get cover for book \"%s\""
 msgstr "！ 无法获取“%s”的封页"
 
-#: mcomix/library/backend.py:468 mcomix/library/backend.py:485
-#: mcomix/library/backend.py:498 mcomix/library/backend.py:527
+#: mcomix/library/backend.py:477 mcomix/library/backend.py:494
+#: mcomix/library/backend.py:507 mcomix/library/backend.py:536
 msgid "Recent"
 msgstr "最近打开的"
 
-#: mcomix/library/backend.py:607 mcomix/library/backend.py:654
+#: mcomix/library/backend.py:616 mcomix/library/backend.py:663
 #, python-format
 msgid "! Could not add book \"%s\" to the library"
 msgstr "！ 无法将“%s”添加到收藏库"
 
-#: mcomix/library/backend.py:683 mcomix/library/backend.py:765
+#: mcomix/library/backend.py:692 mcomix/library/backend.py:774
 #, python-format
 msgid "! Could not move book \"%s\" in the library"
 msgstr "! 无法在库中移动书籍 \"%s\""
 
-#: mcomix/library/backend.py:815
+#: mcomix/library/backend.py:824
 #, python-format
 msgid "! Could not add collection \"%s\""
 msgstr "！ 无法添加收藏库“%s”"
 
-#: mcomix/library/backend.py:847
+#: mcomix/library/backend.py:856
 #, python-format
 msgid "! Could not add book %(book)s to collection %(collection)s"
 msgstr "！ 无法将“%(book)s”添加到“%(collection)s”收藏库"
 
-#: mcomix/library/backend.py:874
+#: mcomix/library/backend.py:883
 #, python-format
 msgid "! Could not rename collection to \"%s\""
 msgstr "！ 无法将收藏库重命名为“%s”"
 
-#: mcomix/library/backend.py:891 mcomix/library/backend.py:893
+#: mcomix/library/backend.py:900 mcomix/library/backend.py:902
 msgid "(Copy)"
 msgstr "(复制)"
 
-#: mcomix/library/backend.py:1192
+#: mcomix/library/backend.py:1220
 msgid "Could not determine library database version!"
 msgstr "无法确定收藏库的数据库版本！"
 
-#: mcomix/library/backend.py:1242
+#: mcomix/library/backend.py:1270
 #, python-format
 msgid "Upgrading library database version from %(from)d to %(to)d."
 msgstr "将收藏库数据库版本从 %(from)d 升级到 %(to)d 。"
 
-#: mcomix/library/backend_types.py:439 mcomix/library/collection_area.py:213
-#: mcomix/library/control_area.py:94
+#: mcomix/library/backend_types.py:439 mcomix/library/collection_area.py:201
+#: mcomix/library/control_area.py:95
 msgid "All books"
 msgstr "所有书籍"
 
@@ -3326,165 +3324,165 @@ msgstr "所有书籍"
 msgid "! Could not scan for new books: %s"
 msgstr "！ 无法扫描新书：%s"
 
-#: mcomix/library/book_area.py:294
+#: mcomix/library/book_area.py:299
 msgid "Open among its fol_der's books"
 msgstr "在所在目录的书中打开(_D)"
 
-#: mcomix/library/book_area.py:296
+#: mcomix/library/book_area.py:301
 msgid "Open _without closing library"
 msgstr "打开书但不关闭收藏库(_W)"
 
-#: mcomix/library/book_area.py:298
+#: mcomix/library/book_area.py:303
 msgid "Open in a new w_indow"
 msgstr "在新窗口中打开(_I)"
 
-#: mcomix/library/book_area.py:300
+#: mcomix/library/book_area.py:305
 msgid "_Mark as read"
 msgstr "标记为已读(_M)"
 
-#: mcomix/library/book_area.py:301
+#: mcomix/library/book_area.py:306
 msgid "Mark as u_nread"
 msgstr "标记为未读(_N)"
 
-#: mcomix/library/book_area.py:302 mcomix/library/collection_area.py:142
+#: mcomix/library/book_area.py:307 mcomix/library/collection_area.py:132
 msgid "_Add..."
 msgstr "添加(_A)..."
 
-#: mcomix/library/book_area.py:305
+#: mcomix/library/book_area.py:310
 msgid "Remove _from this collection"
 msgstr "从该收藏中删除(_C)"
 
-#: mcomix/library/book_area.py:307
+#: mcomix/library/book_area.py:312
 msgid "Remove from the _library"
 msgstr "从收藏库中删除(_L)"
 
-#: mcomix/library/book_area.py:309
+#: mcomix/library/book_area.py:314
 msgid "_Remove and move to the trash"
 msgstr "删除并移动到回收站(_R)"
 
-#: mcomix/library/book_area.py:314 mcomix/library/collection_area.py:148
+#: mcomix/library/book_area.py:319 mcomix/library/collection_area.py:138
 msgid "Clean _up"
 msgstr "清除(_U)"
 
-#: mcomix/library/book_area.py:319
+#: mcomix/library/book_area.py:324
 msgid "R_ename"
 msgstr "重命名(_E)"
 
 #
 # File: src/ui.py, line: 121
-#: mcomix/library/book_area.py:322
+#: mcomix/library/book_area.py:327
 msgid "_Properties"
 msgstr "属性(_T)"
 
-#: mcomix/library/book_area.py:358
+#: mcomix/library/book_area.py:362
 msgid "Library books"
 msgstr "收藏库书籍"
 
-#: mcomix/library/book_area.py:372
+#: mcomix/library/book_area.py:374
 msgid "Move _to"
 msgstr "移动到(_V)"
 
-#: mcomix/library/book_area.py:383
+#: mcomix/library/book_area.py:385
 msgid "Book name"
 msgstr "书名"
 
-#: mcomix/library/book_area.py:384
+#: mcomix/library/book_area.py:386
 msgid "Full path"
 msgstr "完整路径"
 
-#: mcomix/library/book_area.py:386
+#: mcomix/library/book_area.py:388
 msgid "Pages"
 msgstr "页数"
 
-#: mcomix/library/book_area.py:387 mcomix/library/book_properties.py:102
+#: mcomix/library/book_area.py:389 mcomix/library/book_properties.py:102
 msgid "Date added"
 msgstr "加入时间"
 
-#: mcomix/library/book_area.py:388
+#: mcomix/library/book_area.py:390
 msgid "Date modified"
 msgstr "修改日期"
 
-#: mcomix/library/book_area.py:389 mcomix/library/book_properties.py:106
+#: mcomix/library/book_area.py:391 mcomix/library/book_properties.py:106
 msgid "Last read"
 msgstr "上次阅读"
 
-#: mcomix/library/book_area.py:390
+#: mcomix/library/book_area.py:392
 msgid "By hand"
 msgstr "手动"
 
-#: mcomix/library/book_area.py:399
+#: mcomix/library/book_area.py:401
 msgid "Huge"
 msgstr "极大"
 
-#: mcomix/library/book_area.py:400
+#: mcomix/library/book_area.py:402
 msgid "Large"
 msgstr "较大"
 
-#: mcomix/library/book_area.py:402
+#: mcomix/library/book_area.py:404
 msgid "Small"
 msgstr "较小"
 
-#: mcomix/library/book_area.py:403
+#: mcomix/library/book_area.py:405
 msgid "Tiny"
 msgstr "极小"
 
-#: mcomix/library/book_area.py:407
+#: mcomix/library/book_area.py:409
 msgid "Custom..."
 msgstr "自定义..."
 
-#: mcomix/library/book_area.py:411
+#: mcomix/library/book_area.py:413
 msgid "_Sort"
 msgstr "排序(_S)"
 
-#: mcomix/library/book_area.py:412
+#: mcomix/library/book_area.py:414
 msgid "Cover si_ze"
 msgstr "封面大小(_Z)"
 
-#: mcomix/library/book_area.py:868
+#: mcomix/library/book_area.py:875
 msgid "Set library cover size"
 msgstr "设置收藏库封面大小"
 
-#: mcomix/library/book_area.py:1160
+#: mcomix/library/book_area.py:1167
 #, python-format
 msgid "Removed %(num)d book from '%(collection)s'."
 msgid_plural "Removed %(num)d books from '%(collection)s'."
 msgstr[0] "从“%(collection)s”中删除了%(num)d本书。"
 
-#: mcomix/library/book_area.py:1183 mcomix/library/collection_area.py:297
+#: mcomix/library/book_area.py:1190 mcomix/library/collection_area.py:287
 #, python-format
 msgid "Removed %d book from the library."
 msgid_plural "Removed %d books from the library."
 msgstr[0] "从该收藏库删除了 %d 本书。"
 
-#: mcomix/library/book_area.py:1205 mcomix/library/book_area.py:1226
+#: mcomix/library/book_area.py:1212 mcomix/library/book_area.py:1233
 msgid "Remove books from the library?"
 msgstr "是否要从该收藏库中删除这些书？"
 
-#: mcomix/library/book_area.py:1206
+#: mcomix/library/book_area.py:1213
 msgid ""
 "The selected books will be removed from the library. Any in a folder with no "
 "trash is deleted permanently and cannot be restored."
 msgstr ""
 "这些书将从该收藏库删除。位于没有回收站的目录中的书将被永久删除，无法恢复。"
 
-#: mcomix/library/book_area.py:1227
+#: mcomix/library/book_area.py:1234
 msgid ""
 "The selected books will be removed from the library and moved to the trash."
 msgstr "这些书将从该收藏库删除并移动到回收站。"
 
-#: mcomix/library/book_area.py:1252
+#: mcomix/library/book_area.py:1259
 #, python-format
 msgid "Delete %d book permanently?"
 msgid_plural "Delete %d books permanently?"
 msgstr[0] "确定永久删除 %d 本书？"
 
-#: mcomix/library/book_area.py:1384
+#: mcomix/library/book_area.py:1391
 #, python-format
 msgid "Remove the bookmarks in the deleted book?"
 msgid_plural "Remove the bookmarks in the %(count)d deleted books?"
 msgstr[0] "删除已删除的 %(count)d 本书中的书签？"
 
-#: mcomix/library/book_area.py:1584
+#: mcomix/library/book_area.py:1585
 msgid "Open with"
 msgstr "打开方式"
 
@@ -3492,150 +3490,157 @@ msgstr "打开方式"
 msgid "Collection"
 msgstr "收藏"
 
-#: mcomix/library/book_properties.py:146 mcomix/library/control_area.py:205
-#: mcomix/library/control_area.py:225
+#: mcomix/library/book_properties.py:146 mcomix/library/control_area.py:194
+#: mcomix/library/control_area.py:214
 #, python-format
 msgid "%d book"
 msgid_plural "%d books"
 msgstr[0] "%d 本书"
 
-#: mcomix/library/book_properties.py:152 mcomix/library/control_area.py:229
+#: mcomix/library/book_properties.py:152 mcomix/library/control_area.py:218
 #, python-format
 msgid "Pages read: %d"
 msgstr "已读页数: %d"
 
-#: mcomix/library/book_properties.py:154 mcomix/library/control_area.py:231
+#: mcomix/library/book_properties.py:154 mcomix/library/control_area.py:220
 #, python-format
 msgid "last read on %(date)s, %(time)s"
 msgstr "最近阅读于 %(date)s, %(time)s"
 
-#: mcomix/library/book_properties.py:160 mcomix/library/control_area.py:212
-#: mcomix/library/control_area.py:227
+#: mcomix/library/book_properties.py:160 mcomix/library/control_area.py:201
+#: mcomix/library/control_area.py:216
 #, python-format
 msgid "Started: %(started)d, finished: %(finished)d"
 msgstr "已开始: %(started)d, 已读完: %(finished)d"
 
-#: mcomix/library/collection_area.py:145
+#: mcomix/library/collection_area.py:135
 msgid "New"
 msgstr "新增"
 
-#: mcomix/library/collection_area.py:146
+#: mcomix/library/collection_area.py:136
 msgid "Re_name"
 msgstr "重命名(_N)"
 
-#: mcomix/library/collection_area.py:147
+#: mcomix/library/collection_area.py:137
 msgid "_Duplicate"
 msgstr "副本(_D)"
 
-#: mcomix/library/collection_area.py:149
+#: mcomix/library/collection_area.py:139
 msgid "Relocate..."
 msgstr "重新定位..."
 
-#: mcomix/library/collection_area.py:162
+#: mcomix/library/collection_area.py:152
 msgid "Library collections"
 msgstr "收藏库的收藏"
 
-#: mcomix/library/collection_area.py:249
+#: mcomix/library/collection_area.py:237
 msgid "Add new collection?"
 msgstr "添加新的收藏？"
 
-#: mcomix/library/collection_area.py:250
+#: mcomix/library/collection_area.py:238
 msgid "Please enter a name for the new collection."
 msgstr "请输入新收藏的名称。"
 
-#: mcomix/library/collection_area.py:280
+#: mcomix/library/collection_area.py:268
 #, python-format
 msgid "Could not add a new collection called '%s'."
 msgstr "无法添加名为“%s”的新收藏。"
 
-#: mcomix/library/collection_area.py:285 mcomix/library/collection_area.py:385
+#: mcomix/library/collection_area.py:273 mcomix/library/collection_area.py:382
 msgid "A collection by that name already exists."
 msgstr "已经存在使用该名称的收藏。"
 
-#: mcomix/library/collection_area.py:354
+#: mcomix/library/collection_area.py:292
+#, python-format
+msgid "Kept %d book whose folder is not there, as on a drive not connected."
+msgid_plural ""
+"Kept %d books whose folders are not there, as on a drive not connected."
+msgstr[0] "保留了 %d 本文件夹不存在的书（如未连接的驱动器）。"
+
+#: mcomix/library/collection_area.py:351
 msgid "Rename collection?"
 msgstr "重命名收藏？"
 
-#: mcomix/library/collection_area.py:355
+#: mcomix/library/collection_area.py:352
 msgid "Please enter a new name for the selected collection."
 msgstr "请输入选中的收藏的新名称。"
 
-#: mcomix/library/collection_area.py:381
+#: mcomix/library/collection_area.py:378
 #, python-format
 msgid "Could not change the name to '%s'."
 msgstr "无法修改名称为“%s”。"
 
-#: mcomix/library/collection_area.py:397
+#: mcomix/library/collection_area.py:394
 msgid "Could not duplicate collection."
 msgstr "无法创建收藏的副本。"
 
-#: mcomix/library/collection_area.py:616
+#: mcomix/library/collection_area.py:613
 msgid "Root"
 msgstr "根"
 
-#: mcomix/library/collection_area.py:619
+#: mcomix/library/collection_area.py:616
 #, python-format
 msgid ""
 "Put the collection '%(subcollection)s' in the collection "
 "'%(supercollection)s'."
 msgstr "把收藏“%(subcollection)s”放入收藏“%(supercollection)s”中。"
 
-#: mcomix/library/collection_area.py:635
+#: mcomix/library/collection_area.py:632
 #, python-format
 msgid "Add books to '%s'."
 msgstr "添加书到“%s”中。"
 
-#: mcomix/library/collection_area.py:638
+#: mcomix/library/collection_area.py:635
 #, python-format
 msgid ""
 "Copy books from '%(source collection)s' to '%(destination collection)s'."
 msgstr "把书从“%(source collection)s”复制到“%(destination collection)s”。"
 
-#: mcomix/library/collection_area.py:645
+#: mcomix/library/collection_area.py:642
 #, python-format
 msgid ""
 "Move books from '%(source collection)s' to '%(destination collection)s'."
 msgstr "把书从“%(source collection)s”移动到“%(destination collection)s”。"
 
-#: mcomix/library/control_area.py:77
+#: mcomix/library/control_area.py:78
 msgid "_Search:"
 msgstr "搜索(_S)："
 
-#: mcomix/library/control_area.py:86 mcomix/library/shelf.py:103
+#: mcomix/library/control_area.py:87 mcomix/library/shelf.py:103
 msgid ""
 "Display only those books that have the specified text string in their full "
 "path. The search is not case sensitive."
 msgstr "只显示在完整路径名中包含指定字符串的书。搜索不区分字母大小写。"
 
-#: mcomix/library/control_area.py:95
+#: mcomix/library/control_area.py:96
 msgid "Unread"
 msgstr "未读"
 
-#: mcomix/library/control_area.py:96
+#: mcomix/library/control_area.py:97
 msgid "Started"
 msgstr "已开始"
 
-#: mcomix/library/control_area.py:97
+#: mcomix/library/control_area.py:98
 msgid "Finished"
 msgstr "已读完"
 
-#: mcomix/library/control_area.py:106
+#: mcomix/library/control_area.py:107
 msgid "_Watch list"
 msgstr "观看清单(_W)"
 
-#: mcomix/library/control_area.py:110
+#: mcomix/library/control_area.py:111
 msgid "Open the watchlist management dialog."
 msgstr "打开观看清单管理对话框。"
 
-#: mcomix/library/control_area.py:113
+#: mcomix/library/control_area.py:114
 msgid "_Open list"
 msgstr "打开(_O)"
 
-#: mcomix/library/control_area.py:116
+#: mcomix/library/control_area.py:117
 msgid "Open the selected book."
 msgstr "打开选中的书。"
 
-#: mcomix/library/control_area.py:179
+#: mcomix/library/control_area.py:168
 #, python-format
 msgid "Finished reading on %(date)s, %(time)s"
 msgstr "已于 %(date)s, %(time)s 完成阅读"

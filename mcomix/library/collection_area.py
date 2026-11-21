@@ -275,17 +275,26 @@ class _CollectionArea(Gtk.ScrolledWindow, widgets.Releasable,
 
     def clean_collection(self, collection: int | None) -> None:
         """ Removes from the library every book in <collection> whose
-        file has gone away, or every such book there is when
+        file has gone from its folder, or every such book there is when
         <collection> is None, says in the status bar how many went and
-        redraws the covers of the collection on show. """
+        how many were kept, their folder not there, and redraws the
+        covers of the collection on show. """
 
-        removed = self._library.backend.clean_collection(collection)
+        removed, kept = self._library.backend.clean_collection(collection)
 
-        msg = i18n.get_translation().ngettext(
+        translation = i18n.get_translation()
+        msg = translation.ngettext(
             'Removed %d book from the library.',
             'Removed %d books from the library.',
-            removed)
-        self._library.set_status_message(msg % removed)
+            removed) % removed
+        if kept:
+            msg += ' ' + translation.ngettext(
+                'Kept %d book whose folder is not there, as on a drive'
+                ' not connected.',
+                'Kept %d books whose folders are not there, as on a drive'
+                ' not connected.',
+                kept) % kept
+        self._library.set_status_message(msg)
 
         if removed > 0:
             collection = self._library.collection_area.get_current_collection()

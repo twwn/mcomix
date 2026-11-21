@@ -2244,6 +2244,26 @@ class CollectionMenuTest(_LibraryWindowTest):
         pump()
         self.assertIsNone(dialog.backend.get_book_by_path(path))
 
+    def test_clean_up_keeps_the_books_of_a_drive_not_connected_and_says_so(
+            self):
+        dialog = self._open_all()
+        folder = os.path.join(self.tmp_dir, 'drive')
+        os.mkdir(folder)
+        path = os.path.join(folder, 'away.cbz')
+        shutil.copy(NORMAL_ZIP, path)
+        dialog.backend.add_book(path)
+        pump()
+        self._covers_drawn(dialog)
+        # The drive taken away: its folder goes with it.
+        shutil.rmtree(folder)
+        dialog.collection_area._clean_collection()
+        pump()
+        self.assertIsNotNone(dialog.backend.get_book_by_path(path))
+        self.assertEqual(
+            'Removed 0 books from the library. Kept 1 book whose folder'
+            ' is not there, as on a drive not connected.',
+            dialog._statusbar.get_tooltip_text())
+
     def test_renaming_takes_the_name_without_its_spaces(self):
         dialog = self._open()
         dialog.backend.add_collection('Box')
