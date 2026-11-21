@@ -130,6 +130,14 @@ class EditArchiveDialogTest(MComixTest):
         self.assertEqual(self._editors_listening(), 0,
                          'a closed editor would answer the next book too')
 
+    def _apply(self, listing=None):
+        """Press Apply, the editor's pages being <listing> where given,
+        and let the window take them."""
+        if listing is not None:
+            self.dialog._image_area.get_file_listing = lambda: listing
+        self.dialog._response(self.dialog, Response.APPLY)
+        pump()
+
     def _edited(self):
         """Take a page out in the editor, which nothing else knows of."""
         self._load()
@@ -204,16 +212,14 @@ class EditArchiveDialogTest(MComixTest):
 
     def test_a_listing_handed_to_the_window_is_no_longer_held(self):
         self._edited()
-        self.dialog._response(self.dialog, Response.APPLY)
-        pump()
+        self._apply()
         self.assertFalse(self.dialog.changes_not_applied(),
                          'the window has the listing, so the editor is not '
                          'the only place it lives')
 
     def test_a_change_made_after_applying_is_held_again(self):
         self._edited()
-        self.dialog._response(self.dialog, Response.APPLY)
-        pump()
+        self._apply()
         self.dialog._image_area._grid.select_only(0)
         self.dialog._image_area._remove_pages()
         self.assertTrue(self.dialog.changes_not_applied())
@@ -430,9 +436,7 @@ class EditArchiveDialogTest(MComixTest):
         stale = handler._get_pixbuf(0)
 
         reordered = list(reversed(listing))
-        self.dialog._image_area.get_file_listing = lambda: reordered
-        self.dialog._response(self.dialog, Response.APPLY)
-        pump()
+        self._apply(reordered)
 
         self.assertEqual(handler._image_files, reordered)
         self.assertEqual(handler.get_current_page(), 1)
@@ -452,9 +456,7 @@ class EditArchiveDialogTest(MComixTest):
                          'the book does not start where this test needs it')
 
         kept = listing[:-1]
-        self.dialog._image_area.get_file_listing = lambda: kept
-        self.dialog._response(self.dialog, Response.APPLY)
-        pump()
+        self._apply(kept)
 
         self.assertEqual(handler.get_number_of_pages(), len(kept))
         self.assertIn('/ %d]' % len(kept), self.window.get_title(),
@@ -466,9 +468,7 @@ class EditArchiveDialogTest(MComixTest):
         """There is no page to move to, and applying an edit was not
         asked to close the file."""
         self._load()
-        self.dialog._image_area.get_file_listing = list
-        self.dialog._response(self.dialog, Response.APPLY)
-        pump()
+        self._apply([])
         self.assertEqual(self.window.imagehandler.get_number_of_pages(), 0)
 
     # -- Taking a change back ---------------------------------------------
@@ -933,10 +933,7 @@ class EditArchiveDialogTest(MComixTest):
         it stood."""
         listing = self._three_pages_or_more()
         self.dialog._image_area._grid.select_positions([2])
-        reordered = list(reversed(listing))
-        self.dialog._image_area.get_file_listing = lambda: reordered
-        self.dialog._response(self.dialog, Response.APPLY)
-        pump()
+        self._apply(list(reversed(listing)))
         self.assertEqual(self.window.selected_page_paths(), [listing[2]])
 
     # -- Which format a save writes ---------------------------------------

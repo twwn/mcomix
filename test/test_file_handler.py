@@ -1044,7 +1044,20 @@ class APathThatCannotBeOpenedTest(_WindowTest):
         self._closed()
 
 
-class RememberedResumeAnswerTest(MainWindowLaterTest):
+class _RememberingTest(MainWindowLaterTest):
+
+    """A main window whose file handler remembers the page each book
+    was left at, as MComix does by default."""
+
+    def _open_remembering(self):
+        """Build the main window as self.window, its file handler as
+        self.handler, remembering last read pages."""
+        self.open_main_window()
+        self.handler = self.window.filehandler
+        self.handler.last_read_page.set_enabled(True)
+
+
+class RememberedResumeAnswerTest(_RememberingTest):
 
     """Opening a book the reader has stopped in before.
 
@@ -1059,9 +1072,7 @@ class RememberedResumeAnswerTest(MainWindowLaterTest):
         super().setUp()
         self.archive = os.path.join(self.tmp_dir, '01-ZIP-Normal.zip')
         shutil.copy(NORMAL_ZIP, self.archive)
-        self.open_main_window()
-        self.handler = self.window.filehandler
-        self.handler.last_read_page.set_enabled(True)
+        self._open_remembering()
         self.handler.last_read_page.set_page(self.archive, 3)
         pump()
 
@@ -1161,7 +1172,7 @@ class RememberedResumeAnswerTest(MainWindowLaterTest):
         self.assertEqual([], prompts_over(self.window))
 
 
-class ExtractionOrderTest(MainWindowLaterTest):
+class ExtractionOrderTest(_RememberingTest):
 
     """The order an archive's pages are unpacked in, opened at a page
     other than the first.
@@ -1187,9 +1198,7 @@ class ExtractionOrderTest(MainWindowLaterTest):
         prefs['default double page'] = False
         prefs['stored dialog choices']['resume-from-last-read-page'] = \
             int(Response.YES)
-        self.open_main_window()
-        self.handler = self.window.filehandler
-        self.handler.last_read_page.set_enabled(True)
+        self._open_remembering()
         pump()
 
         self.unpacked = []
@@ -1518,7 +1527,7 @@ class ABookOpenedAtItsEndInDoublePageTest(_WindowTest):
         self.assertEqual(2, self.window.displayed_page_count())
 
 
-class ABookWithNoPagesTest(MainWindowLaterTest):
+class ABookWithNoPagesTest(_RememberingTest):
 
     """Closing an archive that has no pictures in it.
 
@@ -1532,9 +1541,7 @@ class ABookWithNoPagesTest(MainWindowLaterTest):
         self.archive = os.path.join(self.tmp_dir, 'no-pictures.zip')
         with zipfile.ZipFile(self.archive, 'w') as archive:
             archive.writestr('readme.txt', 'Nothing to look at.')
-        self.open_main_window()
-        self.handler = self.window.filehandler
-        self.handler.last_read_page.set_enabled(True)
+        self._open_remembering()
         pump()
 
     def test_closing_it_does_not_file_it_as_read(self):
