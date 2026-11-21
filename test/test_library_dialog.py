@@ -94,6 +94,28 @@ class _LibraryWindowTest(MComixTest):
                                  for item in items)
         self.assertTrue(wait_for(drawn), 'the cover was never drawn')
 
+    def _held(self, dialog, *paths):
+        """Put the books at <paths> in the library, show "All books" and
+        wait until their covers are drawn: Windows refuses to delete or
+        move a file that is open, as one is while its cover is read
+        (WinError 32 on GitHub's runner)."""
+        for path in paths:
+            self.assertTrue(dialog.backend.add_book(path))
+        dialog.book_area.display_covers(constants.COLLECTION_ALL)
+        self._covers_drawn(dialog)
+
+    def _one_gone_from_all(self):
+        """The library open on "All books", holding a book whose file
+        has since been deleted; and that book's path."""
+        dialog = self._open_all()
+        path = os.path.join(self.tmp_dir, 'gone.cbz')
+        shutil.copy(NORMAL_ZIP, path)
+        self._held(dialog, path)
+        os.remove(path)
+        self.assertEqual(constants.COLLECTION_ALL,
+                         dialog.collection_area.get_current_collection())
+        return dialog, path
+
     def _watching(self, dialog):
         """Watch an empty directory, so that a scan has work to report."""
         directory = os.path.join(self.tmp_dir, 'watched')
@@ -601,15 +623,6 @@ class FolderWatchTest(_LibraryWindowTest):
             pump()
             self.assertEqual(3, len(dialog._watcher.folders))
             self.assertIn(folder, dialog._watcher.folders)
-
-    def _held(self, dialog, *paths):
-        """Put the books at <paths> in the library, and wait until their
-        covers are drawn: Windows refuses to delete or move a file that
-        is open, as one is while its cover is read."""
-        for path in paths:
-            self.assertTrue(dialog.backend.add_book(path))
-        dialog.book_area.display_covers(constants.COLLECTION_ALL)
-        self._covers_drawn(dialog)
 
     def test_a_book_deleted_from_a_watched_folder_is_removed(self):
         """Only books arriving were scanned for, and the library kept a
@@ -1559,18 +1572,7 @@ class MissingBooksTest(_LibraryWindowTest):
     them."""
 
     def test_clean_up_in_the_covers_menu_takes_out_the_books_gone(self):
-        dialog = self._open_all()
-        path = os.path.join(self.tmp_dir, 'gone.cbz')
-        shutil.copy(NORMAL_ZIP, path)
-        dialog.backend.add_book(path)
-        dialog.book_area.display_covers(constants.COLLECTION_ALL)
-        pump()
-        # Windows refuses to delete a file that is still open, as it is
-        # while its cover is read (WinError 32).
-        self._covers_drawn(dialog)
-        os.remove(path)
-        self.assertEqual(constants.COLLECTION_ALL,
-                         dialog.collection_area.get_current_collection())
+        dialog, path = self._one_gone_from_all()
         dialog.book_area._popup_book_menu()
         cleanup = widgets.simple_action(dialog.book_area._popup_actions,
                                         'cleanup')
@@ -2282,18 +2284,7 @@ class CollectionMenuTest(_LibraryWindowTest):
         return dialog.backend.get_collection_by_name(name).id
 
     def test_clean_up_of_all_books_takes_out_the_books_gone(self):
-        dialog = self._open_all()
-        path = os.path.join(self.tmp_dir, 'gone.cbz')
-        shutil.copy(NORMAL_ZIP, path)
-        dialog.backend.add_book(path)
-        pump()
-        # The covers on show take the new book in; Windows refuses to
-        # delete a file that is still open, as it is while its cover is
-        # read (WinError 32 on GitHub's runner).
-        self._covers_drawn(dialog)
-        os.remove(path)
-        self.assertEqual(constants.COLLECTION_ALL,
-                         dialog.collection_area.get_current_collection())
+        dialog, path = self._one_gone_from_all()
         dialog.collection_area._clean_collection()
         pump()
         self.assertIsNone(dialog.backend.get_book_by_path(path))
@@ -2305,9 +2296,7 @@ class CollectionMenuTest(_LibraryWindowTest):
         os.mkdir(folder)
         path = os.path.join(folder, 'away.cbz')
         shutil.copy(NORMAL_ZIP, path)
-        dialog.backend.add_book(path)
-        pump()
-        self._covers_drawn(dialog)
+        self._held(dialog, path)
         # The drive taken away: its folder goes with it.
         shutil.rmtree(folder)
         dialog.collection_area._clean_collection()
