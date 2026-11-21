@@ -2,6 +2,7 @@
 
 import functools
 import importlib
+import itertools
 import math
 import operator
 import os
@@ -776,17 +777,30 @@ _BORDER_TOLERANCE = 40
 #: is rather than enlarged to whatever is on it.
 _BORDER_MIN_SHARE = 0.5
 
+#: How far a scanner's edge reaches into a page, as a share of the
+#: page's side: what touches the edge there and is not of the margin's
+#: grey - the scanner's lid or bed, the paper's own edge, the shadow of
+#: a book's spine, a page scanned askew - is cut with the margin.  It
+#: is also the widest such a strip along one side may be and still be
+#: passed over by the walk in from the sides next to it.
+_BORDER_EDGE_SHARE = 0.1
+
+#: How much of a line of blocks may be unlike the margin and the line
+#: still be margin: dust, specks and a scanner's noise are cut with it,
+#: unless they touch the drawing.
+_BORDER_SPECK_SHARE = 0.01
+
 
 def border_box(pixbuf: GdkPixbuf.Pixbuf) -> tuple[int, int, int, int]:
     """The part of <pixbuf> inside its plain margins, as (left, top,
     right, bottom), or the whole of it where there are none to cut.
 
-    The margin is what is of one grey with the page's corners, the
-    middle two of the four taken: a corner the drawing reaches into is
-    outvoted.  The page is looked at in blocks of a few hundredths of
-    its side, which averages the noise of a scan away; the box keeps
-    one block more than it found on every side.  An axis that would
-    lose more than half of its length is left whole.
+    The page is looked at in blocks of a few hundredths of its side,
+    which averages the noise of a scan away, and each side is walked in
+    from the edge, a line of blocks at a time, until the drawing
+    (_margin_depth()).  The box keeps one block more than it found on
+    every side.  An axis that would lose more than half of its length
+    is left whole.
 
     Kept on the pixbuf, so that each page is looked at once.
     """
@@ -798,25 +812,30 @@ def border_box(pixbuf: GdkPixbuf.Pixbuf) -> tuple[int, int, int, int]:
     block = max(1, min(width, height) // 400)
     if min(width, height) >= 3 * block:
         grey = _grey_blocks(pixbuf, block)
-        last_x, last_y = grey.width - 1, grey.height - 1
-        corners = sorted(cast(int, grey.getpixel(corner)) for corner in (
-            (0, 0), (last_x, 0), (0, last_y), (last_x, last_y)))
-        margin = (corners[1] + corners[2]) // 2
-        found = grey.point(
-            lambda value: 255 if abs(value - margin) > _BORDER_TOLERANCE
-            else 0).getbbox()
-        if found is not None:
-            # One block more on each side: a block is unlike the margin
-            # once the drawing fills enough of it, and the drawing may
-            # begin part way into the block before.
-            left, top, right, bottom = (
-                min(side, max(0, (value + offset) * block))
-                for value, offset, side in zip(
-                    found, (-1, -1, 1, 1), (width, height, width, height)))
-            if right - left >= width * _BORDER_MIN_SHARE:
-                box = (left, box[1], right, box[3])
-            if bottom - top >= height * _BORDER_MIN_SHARE:
-                box = (box[0], top, box[2], bottom)
+        columns, rows = grey.size
+        margin = _margin_grey(grey)
+        values = grey.tobytes()
+        unlike, faint = (values.translate(bytes(
+            abs(value - margin) > tolerance for value in range(256)))
+            for tolerance in (_BORDER_TOLERANCE, _BORDER_TOLERANCE // 2))
+
+        def walk(line: "Callable[[bytes, int], bytes]", count: int) -> int:
+            return _margin_depth(functools.partial(line, unlike),
+                                 functools.partial(line, faint),
+                                 functools.partial(line, values), count)
+
+        left = walk(lambda data, x: data[x::columns], columns)
+        right = walk(lambda data, x: data[columns - 1 - x::columns], columns)
+        top = walk(lambda data, y: data[y * columns:(y + 1) * columns], rows)
+        bottom = walk(lambda data, y: data[(rows - 1 - y) * columns:
+                                           (rows - y) * columns], rows)
+        left, top = max(0, (left - 1) * block), max(0, (top - 1) * block)
+        right = min(width, (columns - right + 1) * block)
+        bottom = min(height, (rows - bottom + 1) * block)
+        if right - left >= width * _BORDER_MIN_SHARE:
+            box = (left, box[1], right, box[3])
+        if bottom - top >= height * _BORDER_MIN_SHARE:
+            box = (box[0], top, box[2], bottom)
     setattr(pixbuf, _BORDER_BOX, box)
     return box
 
@@ -839,6 +858,137 @@ def _grey_blocks(pixbuf: GdkPixbuf.Pixbuf, block: int) -> Image.Image:
         grey.paste(pixbuf_to_pil(band).reduce(block).convert('L'),
                    (0, top // block))
     return grey
+
+
+def _margin_grey(grey: Image.Image) -> int:
+    """The grey of the margins of <grey>, a page in blocks.
+
+    That is what is of one grey with the page's corners, the middle two
+    of the four taken: a corner the drawing reaches into is outvoted.
+    Where the corners split two and two - a scanner's dark edge or a
+    spine's shadow along one side - or where they agree on a darker grey
+    than most of the page's edges have - the scanner's bed or lid all
+    round - the most common grey along the edges is the margin's, which
+    is lighter.  A page the drawing fills to its edges keeps the
+    corners' vote, under which nothing is cut.
+    """
+    last_x, last_y = grey.width - 1, grey.height - 1
+    corners = sorted(cast(int, grey.getpixel(corner)) for corner in (
+        (0, 0), (last_x, 0), (0, last_y), (last_x, last_y)))
+    vote = (corners[1] + corners[2]) // 2
+    edges = _edge_grey(grey)
+    if corners[2] - corners[1] > _BORDER_TOLERANCE:
+        if any(abs(edges - corner) <= _BORDER_TOLERANCE
+               for corner in corners):
+            return edges
+    elif edges - vote > _BORDER_TOLERANCE:
+        return edges
+    return vote
+
+
+def _edge_grey(grey: Image.Image) -> int:
+    """The most common grey within _BORDER_EDGE_SHARE of the edges of
+    <grey>, give or take half the tolerance."""
+    inner = Image.new('L', grey.size, 255)
+    deep_x = int(grey.width * _BORDER_EDGE_SHARE)
+    deep_y = int(grey.height * _BORDER_EDGE_SHARE)
+    if 2 * deep_x < grey.width and 2 * deep_y < grey.height:
+        inner.paste(0, (deep_x, deep_y,
+                        grey.width - deep_x, grey.height - deep_y))
+    counts = grey.histogram(inner)
+    totals = [0, *itertools.accumulate(counts)]
+    half = _BORDER_TOLERANCE // 2
+
+    def window(value: int) -> range:
+        return range(max(0, value - half), min(256, value + half + 1))
+
+    peak = window(max(range(256), key=lambda value: (
+        totals[window(value).stop] - totals[window(value).start])))
+    return (sum(value * counts[value] for value in peak)
+            // max(1, totals[peak.stop] - totals[peak.start]))
+
+
+def _margin_depth(unlike: "Callable[[int], bytes]",
+                  faint: "Callable[[int], bytes]",
+                  values: "Callable[[int], bytes]", count: int) -> int:
+    """How many of the <count> lines one side of a page is walked in
+    from are margin.  <unlike>(i) is line i, counted from the edge, with
+    1 for a block unlike the margin's grey and 0 for one like it;
+    <faint>(i) the same at half the tolerance; <values>(i) the line's
+    greys.
+
+    What is unlike the margin and reaches a line's end is the edge of
+    the scan: the side's own edge while it lasts unbroken from the first
+    line and no deeper than _BORDER_EDGE_SHARE, and a strip along the
+    sides next to it up to that wide.  A line is margin while little
+    more than that is unlike it (_BORDER_SPECK_SHARE).  The walk then
+    goes back out over whatever touches the drawing it met, faint as it
+    may be, so a speck is cut and a stroke reaching out of the drawing
+    is not.  A drawing
+    that only shades off the margin, as a gradient does, has no margin
+    to cut.
+    """
+    length = len(unlike(0))
+    strip = int(length * _BORDER_EDGE_SHARE)
+    deep = int(count * _BORDER_EDGE_SHARE)
+    specks = int(length * _BORDER_SPECK_SHARE)
+    lead = trail = 0
+    for depth in range(count):
+        line = unlike(depth)
+        found = line.count(1)
+        if found == length:
+            if depth == 0 or (depth < deep and (lead or trail)):
+                lead = trail = length
+                continue
+            lead = trail = 0
+        else:
+            front = length - len(line.lstrip(b'\x01'))
+            back = length - len(line.rstrip(b'\x01'))
+            lead = front if front <= strip or (
+                depth < deep and (depth == 0 or lead)) else 0
+            trail = back if back <= strip or (
+                depth < deep and (depth == 0 or trail)) else 0
+        if found - lead - trail > specks:
+            if _shades_off(unlike, values, depth, lead, trail):
+                return 0
+            return _reach_back(unlike, faint, depth, lead, trail)
+    return count
+
+
+def _shades_off(unlike: "Callable[[int], bytes]",
+                values: "Callable[[int], bytes]",
+                depth: int, lead: int, trail: int) -> bool:
+    """Whether what is unlike the margin in line <depth>, between the
+    first <lead> blocks and the last <trail>, is on average within a
+    quarter of the tolerance of the line before it: a gradient rather
+    than a drawing that begins there."""
+    if depth == 0:
+        return False
+    line, here, before = unlike(depth), values(depth), values(depth - 1)
+    found = [index for index in range(lead, len(line) - trail)
+             if line[index]]
+    step = sum(abs(here[index] - before[index]) for index in found)
+    return step * 4 <= len(found) * _BORDER_TOLERANCE
+
+
+def _reach_back(unlike: "Callable[[int], bytes]",
+                faint: "Callable[[int], bytes]", depth: int,
+                lead: int, trail: int) -> int:
+    """The first of the lines before <depth> that what is unlike the
+    margin in that line, past the first <lead> blocks and the last
+    <trail>, reaches out to, line by line, through blocks <faint> marks
+    as unlike it."""
+    line = unlike(depth)
+    # One byte a block, so that a shift by 8 moves a block to the next.
+    reached = int.from_bytes(bytes(lead) + line[lead:len(line) - trail]
+                             + bytes(trail), 'big')
+    while depth > 0:
+        reached = int.from_bytes(faint(depth - 1), 'big') & (
+            reached | reached << 8 | reached >> 8)
+        if not reached:
+            break
+        depth -= 1
+    return depth
 
 
 def without_borders(pixbuf: GdkPixbuf.Pixbuf) -> GdkPixbuf.Pixbuf:

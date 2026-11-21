@@ -930,18 +930,39 @@ class BorderTest(MComixTest):
 
     """Cutting the plain margins off a page ("crop borders")."""
 
-    def _page(self, size=(1200, 1700), margin='white', art=(90, 120, 1110, 1580),
-              colour=(30, 30, 30), quality=75):
-        """A scanned page: <art> drawn on <margin>, saved as a JPEG."""
+    #: Where _drawing() draws, right and bottom past its last pixel.
+    DRAWN = (90, 120, 1111, 1581)
+
+    def _drawing(self, size=(1200, 1700), margin='white',
+                 art=(90, 120, 1110, 1580), colour=(30, 30, 30)):
+        """A page: <art> drawn on <margin>."""
         page = Image.new('RGB', size, margin)
         draw = ImageDraw.Draw(page)
         draw.rectangle(art, outline=colour, width=4)
         for line in range(art[1], art[3], 40):
             draw.line((art[0], line, art[2], min(art[3], line + 30)),
                       fill=colour, width=2)
+        return page
+
+    def _scanned(self, page, quality=75):
+        """<page> saved as a JPEG and read back."""
         data = BytesIO()
         page.save(data, 'JPEG', quality=quality)
         return image_tools.pil_to_pixbuf(Image.open(data).convert('RGB'))
+
+    def _page(self, quality=75, **drawing):
+        """A scanned page (_drawing())."""
+        return self._scanned(self._drawing(**drawing), quality)
+
+    def _assert_found(self, page, drawn=DRAWN, slack=6):
+        """border_box() of <page> scanned holds the <drawn> box and no
+        more than <slack> pixels of margin beyond it on any side."""
+        box = image_tools.border_box(self._scanned(page))
+        for found, edge, outwards in zip(box, drawn, (-1, -1, 1, 1)):
+            self.assertGreaterEqual((found - edge) * outwards, 0,
+                                    (box, drawn))
+            self.assertLessEqual((found - edge) * outwards, slack,
+                                 (box, drawn))
 
     def test_the_margins_of_a_scan_are_found_within_a_block(self):
         pixbuf = self._page()
@@ -997,6 +1018,58 @@ class BorderTest(MComixTest):
     def test_a_moving_page_is_not_cut(self):
         animation = image_tools.load_pixbuf(get_image_path('animated.gif'))
         self.assertIs(animation, image_tools.without_borders(animation))
+
+    def test_specks_are_cut_and_a_stroke_out_of_the_drawing_kept(self):
+        page = self._drawing()
+        draw = ImageDraw.Draw(page)
+        for x, y in ((40, 600), (600, 50), (1160, 900), (300, 1650),
+                     (1150, 60)):
+            draw.ellipse((x - 4, y - 4, x + 4, y + 4), fill=(30, 30, 30))
+        draw.line((600, 1580, 600, 1640), fill=(30, 30, 30), width=2)
+        self._assert_found(page, self.DRAWN[:3] + (1641,))
+
+    def test_a_scanner_s_edges_are_cut_with_the_margin(self):
+        bed, lid, edge = (12, 12, 12), (200, 200, 200), (110, 110, 110)
+
+        def shadow(draw):
+            # A book's spine, darkening the right side to its edge.
+            for x in range(80):
+                draw.line((1199 - x, 0, 1199 - x, 1699),
+                          fill=(110 + x * 145 // 80,) * 3)
+
+        for name, scan in (
+                ('bed along a side',
+                 lambda draw: draw.rectangle((0, 0, 50, 1699), fill=bed)),
+                ('bed in a corner', lambda draw: (
+                    draw.rectangle((0, 0, 1199, 40), fill=bed),
+                    draw.rectangle((0, 0, 35, 1699), fill=bed))),
+                ('lid and the paper\'s edge', lambda draw: (
+                    draw.rectangle((0, 0, 1199, 1699), outline=lid, width=30),
+                    draw.rectangle((30, 30, 1169, 1669), outline=edge,
+                                   width=3))),
+                ('spine', shadow)):
+            with self.subTest(name):
+                page = self._drawing()
+                scan(ImageDraw.Draw(page))
+                self._assert_found(page)
+
+    def test_a_page_scanned_askew(self):
+        page = self._drawing()
+        ink = page.convert('L').point(lambda value: 255 * (value < 128))
+        bed = Image.new('RGB', (1300, 1800), (15, 15, 15))
+        drawn = Image.new('L', bed.size)
+        for whole, turned in ((bed, page.rotate(
+                1.5, expand=True, fillcolor=(15, 15, 15))),
+                (drawn, ink.rotate(1.5, expand=True))):
+            whole.paste(turned, ((whole.width - turned.width) // 2,
+                                 (whole.height - turned.height) // 2))
+        self._assert_found(bed, drawn.getbbox(), slack=9)
+
+    def test_a_pale_panel_without_a_line_round_it(self):
+        page = Image.new('RGB', (1200, 1700), 'white')
+        ImageDraw.Draw(page).rectangle((90, 120, 1110, 1580),
+                                       fill=(205, 205, 205))
+        self._assert_found(page)
 
 
 class ThumbnailMoireTest(MComixTest):
