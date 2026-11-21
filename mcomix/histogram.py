@@ -3,6 +3,7 @@
 import math
 
 import PIL.Image as Image
+import PIL.ImageDraw as ImageDraw
 import PIL.ImageOps as ImageOps
 
 from gi.repository import GdkPixbuf
@@ -42,13 +43,21 @@ def draw_histogram(pixbuf: GdkPixbuf.Pixbuf, height: int = 170,
     # An image made in memory is loaded already, so there is always
     # something to reach its pixels through.
     assert pixels is not None
-    # Draw the filling colours
+    # Draw the filling colours.  A column is one colour from the bottom
+    # up to its lowest channel's height, another from there to the next
+    # one's, and so on: three lines at most, each drawn at once rather
+    # than pixel by pixel.
+    draw = ImageDraw.Draw(im)
     for x in range(256):
-        for y in range(1, max(r[x], g[x], b[x]) + 1):
-            r_px = y <= r[x] and fill or 0
-            g_px = y <= g[x] and fill or 0
-            b_px = y <= b[x] and fill or 0
-            pixels[x + 1, height - 5 - y] = (r_px, g_px, b_px)
+        bottom = 1
+        for top in sorted({r[x], g[x], b[x]}):
+            if top < bottom:
+                continue
+            draw.line([(x + 1, height - 5 - top), (x + 1, height - 5 - bottom)],
+                      fill=(fill if top <= r[x] else 0,
+                            fill if top <= g[x] else 0,
+                            fill if top <= b[x] else 0))
+            bottom = top + 1
     # Draw the outlines
     for x in range(1, 256):
         for y in list(range(r[x-1] + 1, r[x] + 1)) + [r[x]] * (r[x] != 0):
