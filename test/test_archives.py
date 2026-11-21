@@ -349,6 +349,14 @@ class ExtractionThreadMemoryTest(MComixTest):
             recursive._archive_list.append(costly)
             recursive._check_concurrent_extraction_support()
             self.assertEqual(7, recursive.extraction_thread_memory)
+            self.assertTrue(recursive.support_concurrent_extractions)
+            # One part that cannot extract alongside itself speaks for
+            # the whole nesting.
+            recursive._archive_list.append(unittest.mock.Mock(
+                support_concurrent_extractions=False,
+                extraction_thread_memory=0))
+            recursive._check_concurrent_extraction_support()
+            self.assertFalse(recursive.support_concurrent_extractions)
         finally:
             recursive.close()
 

@@ -119,13 +119,9 @@ class RecursiveArchive(archive_base.BaseArchive):
         of them allow it: the answer for the whole is the answer of the
         least capable part.
         """
-        supported = True
-        # We need all archives to support concurrent extractions.
-        for archive in self._archive_list:
-            if not archive.support_concurrent_extractions:
-                supported = False
-                break
-        self.support_concurrent_extractions = supported
+        self.support_concurrent_extractions = all(
+            archive.support_concurrent_extractions
+            for archive in self._archive_list)
         # What a thread costs is what the costliest part's threads do.
         self.extraction_thread_memory = max(
             (archive.extraction_thread_memory
