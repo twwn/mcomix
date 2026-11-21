@@ -998,10 +998,8 @@ class FileActions:
             portability.rename_once_closed(os.replace, partial, final)
         except OSError as error:
             if partial is not None:
-                try:
+                with contextlib.suppress(OSError):
                     os.unlink(partial)
-                except OSError:
-                    pass
             self._save_failed(file_path, target, error)
             return
 

@@ -662,10 +662,8 @@ def atomic_write(path: str, binary: bool = False) -> "Iterator[IO[Any]]":  # typ
         # A virus scanner looks at the file just written.
         portability.rename_once_closed(os.replace, temp_path, path)
     except BaseException:
-        try:
+        with contextlib.suppress(OSError):
             os.unlink(temp_path)
-        except OSError:
-            pass
         raise
 
 

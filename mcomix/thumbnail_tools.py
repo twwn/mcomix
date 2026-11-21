@@ -18,6 +18,7 @@ of its pixels, in a directory beside it or one the caller names.  See
 Thumbnailer.sized().
 """
 
+import contextlib
 import functools
 import io
 import os
@@ -360,10 +361,8 @@ class Thumbnailer:
         # After the thumbnail, never before: keep_sized() looks for the
         # thumbnail once it has written, and takes away what it wrote
         # where this has been.
-        try:
+        with contextlib.suppress(OSError):
             os.remove(self._path_to_sizedpath(filepath))
-        except OSError:
-            pass
 
     def follow(self, old_path: str, new_path: str) -> None:
         """Keep the thumbnail stored for <old_path> for <new_path>, where
@@ -398,10 +397,8 @@ class Thumbnailer:
             portability.rename_once_closed(
                 os.replace, sized, self._path_to_sizedpath(new_path))
         except OSError:
-            try:
+            with contextlib.suppress(OSError):
                 os.remove(sized)
-            except OSError:
-                pass
 
     def sized(self, filepath: str,
               made_for: Sequence[int]) -> "GdkPixbuf.Pixbuf | None":
@@ -480,10 +477,8 @@ class Thumbnailer:
             return
         if (4 * pixbuf.get_width() * pixbuf.get_height()
                 > made_of.get_width() * made_of.get_height()):
-            try:
+            with contextlib.suppress(OSError):
                 os.remove(self._path_to_sizedpath(filepath))
-            except OSError:
-                pass
             return
         pixels = pixbuf.read_pixel_bytes().get_data()
         numbers = (pixbuf.get_width(), pixbuf.get_height(),
@@ -516,10 +511,8 @@ class Thumbnailer:
                       filepath, error)
         finally:
             if temporary is not None:
-                try:
+                with contextlib.suppress(OSError):
                     os.unlink(temporary)
-                except OSError:
-                    pass
 
     def _stored_identity(self, filepath: str) -> tuple[int, int] | None:
         """The modification time, in nanoseconds, and the size of the
@@ -709,10 +702,8 @@ class Thumbnailer:
             return False
         finally:
             if temporary is not None:
-                try:
+                with contextlib.suppress(OSError):
                     os.unlink(temporary)
-                except OSError:
-                    pass
 
     def _stored_thumbnail(self, filepath: str) -> "GdkPixbuf.Pixbuf | None":
         """The thumbnail already on disk for <filepath>, if it can be used.
@@ -787,10 +778,8 @@ class Thumbnailer:
         store that is WebP now, once a WebP one is in its place: nothing
         looks at it while that one is there."""
         for older in self._stored_paths(filepath)[1:]:
-            try:
+            with contextlib.suppress(OSError):
                 os.remove(older)
-            except OSError:
-                pass
 
     def _source_is_unchanged(
             self, filepath: str,

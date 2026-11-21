@@ -1,5 +1,6 @@
 """archive_packer.py - Archive creation class."""
 
+import contextlib
 import errno
 import os
 import shutil
@@ -715,9 +716,7 @@ class Packer:
         if not self._packing_successful:
             # Half an archive is worse than none: the caller renames
             # whatever is there over the file being edited.
-            try:
+            with contextlib.suppress(OSError):
                 os.remove(self._archive_path)
-            except OSError:
-                pass
 
 # vim: expandtab:sw=4:ts=4
