@@ -356,7 +356,7 @@ def take_activation_from(test, window):
         other.set_transient_for(window)
         other.set_modal(True)
     other.present()
-    return wait_for(lambda: not window.is_active(), 5)
+    return wait_for(lambda: not window.is_active())
 
 
 # Use a custom testcase class:
