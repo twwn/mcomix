@@ -2,7 +2,7 @@
 
 import PIL.Image as Image
 
-from . import MComixTest
+from . import MComixTest, pixel
 
 from mcomix import histogram
 from mcomix import image_tools
@@ -34,9 +34,7 @@ class HistogramTest(MComixTest):
 
     def _at(self, column, y):
         """The pixel <y> up graph column <column>."""
-        x, row = column + 2, self.HEIGHT - 5 - y + 2
-        offset = row * self.drawn.get_rowstride() + x * 3
-        return tuple(self.drawn.get_pixels()[offset:offset + 3])
+        return pixel(self.drawn, column + 2, self.HEIGHT - 5 - y + 2)
 
     def test_it_is_262_wide_and_as_high_as_asked(self):
         self.assertEqual((262, self.HEIGHT),

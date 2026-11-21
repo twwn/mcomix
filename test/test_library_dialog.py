@@ -22,7 +22,7 @@ import PIL.Image
 from gi.repository import Gdk, GdkPixbuf, Gio, GLib, Gtk, Pango
 
 from . import (FolderDialogStub, MComixTest, NORMAL_ZIP, descendants,
-               get_testfile_path, pump, visible_prompts, wait_for)
+               get_testfile_path, pixel, pump, visible_prompts, wait_for)
 
 from mcomix import bookmark_backend
 from mcomix import bookmark_menu_item
@@ -1557,9 +1557,8 @@ class FinishedMarkTest(_OneBookTest):
         """The pixel inside the tick's lower right corner, on the cover."""
         uid = self.dialog.backend.get_book_by_path(self.path).id
         cover = self.dialog.book_area._get_pixbuf(uid)
-        x, y = cover.get_width() - 12, cover.get_height() - 12
-        offset = y * cover.get_rowstride() + x * cover.get_n_channels()
-        return tuple(cover.get_pixels()[offset:offset + 3])
+        return pixel(cover, cover.get_width() - 12,
+                     cover.get_height() - 12)[:3]
 
     def test_a_finished_book_carries_the_mark_and_an_unread_one_not(self):
         unread = self._corner()
@@ -1589,16 +1588,12 @@ class FinishedMarkTest(_OneBookTest):
         with unittest.mock.patch.object(icons, 'load_pixbuf',
                                         return_value=white):
             mark = self.dialog.book_area._finished_mark
-        pixels = mark.get_pixels()
 
-        def pixel(x, y):
-            offset = y * mark.get_rowstride() + x * mark.get_n_channels()
-            return tuple(pixels[offset:offset + 4])
-
-        self.assertLess(max(pixel(12, 12)[:3]), 64, 'the tick is not dark')
-        self.assertGreater(min(pixel(2, 12)[:3]), 200, 'the disc is not light')
-        self.assertGreater(pixel(2, 12)[3], 200, 'the disc is not opaque')
-        self.assertEqual(0, pixel(0, 0)[3], 'the mark is not round')
+        self.assertLess(max(pixel(mark, 12, 12)[:3]), 64, 'the tick is not dark')
+        self.assertGreater(min(pixel(mark, 2, 12)[:3]), 200,
+                           'the disc is not light')
+        self.assertGreater(pixel(mark, 2, 12)[3], 200, 'the disc is not opaque')
+        self.assertEqual(0, pixel(mark, 0, 0)[3], 'the mark is not round')
 
     def test_the_mark_is_loaded_once_for_every_cover(self):
         # Loading it is loading an SVG file, about 5 ms, and it was done

@@ -11,7 +11,7 @@ import unittest.mock
 from gi.repository import GdkPixbuf, GLib
 
 from . import (MComixTest, MainWindowLaterTest, MainWindowOpenTest, NORMAL_ZIP,
-               get_testfile_path, pump, wait_for)
+               get_testfile_path, pixel, pump, wait_for)
 from . import test_key_press
 
 from mcomix import constants
@@ -243,9 +243,8 @@ class LensFollowsThePagesTest(MainWindowLaterTest):
                          (twice.get_width(), twice.get_height()))
 
         def middle(pixbuf):
-            row = pixbuf.get_height() // 2 * pixbuf.get_rowstride()
-            column = pixbuf.get_width() // 2 * pixbuf.get_n_channels()
-            return pixbuf.get_pixels()[row + column:row + column + 3]
+            return pixel(pixbuf, pixbuf.get_width() // 2,
+                         pixbuf.get_height() // 2)[:3]
 
         # What is under the pointer, give or take the scaling.
         for one, two in zip(middle(once), middle(twice)):
