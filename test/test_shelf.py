@@ -183,8 +183,7 @@ class ShelfTest(_ShelfWindowTest):
         backend.LibraryBackend().add_book(self.books[0])
         self._window()
         area = self._shown().book_area
-        controllers = [controller for controller
-                       in area._covers.observe_controllers()]
+        controllers = list(area._covers.observe_controllers())
         self.assertEqual([], [
             controller for controller in controllers
             if isinstance(controller, (Gtk.DragSource, Gtk.DropTarget))])

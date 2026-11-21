@@ -1776,7 +1776,7 @@ class RelocatedShelfTest(OpenLibraryTest):
         self.assertEqual(
             sorted([self.new, os.path.join(self.new, 'sub'),
                     os.path.join(self.tmp_dir, 'shelf-old')]),
-            sorted(path for path in self.library._con.execute(
+            sorted(self.library._con.execute(
                 'select path from watchlist').fetchall()))
 
     def _draw_covers(self):

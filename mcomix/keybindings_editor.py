@@ -87,7 +87,7 @@ class KeybindingEditorWindow(Gtk.ScrolledWindow):
         action_rows: dict[str, column_list.Row] = {}
         self.action_rows = action_rows
         # Sort actions by action name
-        actions = sorted(list(keybindings.BINDING_INFO.items()),
+        actions = sorted(keybindings.BINDING_INFO.items(),
                          key=lambda item: item[1]['title'])
         for action_name, action_data in actions:
             old_bindings = self.keymanager.get_bindings_for_action(action_name)

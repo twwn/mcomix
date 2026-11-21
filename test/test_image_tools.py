@@ -144,7 +144,7 @@ def xhexdump(data, group_size=4):
 
 
 def hexdump(data, group_size=4):
-    return [line for line in xhexdump(data, group_size=group_size)]
+    return list(xhexdump(data, group_size=group_size))
 
 
 #: Ghostscript's copy of the Adobe RGB (1998) profile, where it is installed.
