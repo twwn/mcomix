@@ -92,7 +92,7 @@ class WorkerThread(Generic[Order]):
             self._threads.append(thread)
 
     def _order_uid(self, order: Order) -> object:
-        if isinstance(order, tuple) or isinstance(order, list):
+        if isinstance(order, (tuple, list)):
             return order[0]
         return order
 
