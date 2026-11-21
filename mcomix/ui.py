@@ -809,16 +809,12 @@ class MainUI:
                         'hidden-when', GLib.Variant('s', 'action-disabled'))
                 section.append_item(submenu)
                 continue
-            entry = Gio.MenuItem.new(self._actions.label(item), None)
             detailed, target = self._actions.detailed(item)
-            entry.set_action_and_target_value(detailed, target)
+            entry = widgets.menu_item(self._actions.label(item), detailed,
+                                      self._accelerators.get(item), target)
             if hide_disabled:
                 entry.set_attribute_value('hidden-when',
                                           GLib.Variant('s', 'action-disabled'))
-            accelerator = self._accelerators.get(item)
-            if accelerator:
-                entry.set_attribute_value('accel',
-                                          GLib.Variant('s', accelerator))
             section.append_item(entry)
         if section.get_n_items():
             model.append_section(None, section)

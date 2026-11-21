@@ -335,9 +335,8 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable, LibraryPart):
         def radio(menu: Gio.Menu, entries: "tuple[tuple[str, int], ...]",
                   action_name: str) -> None:
             for label, value in entries:
-                item = Gio.MenuItem.new(label, None)
-                item.set_action_and_target_value('books.' + action_name,
-                                                 GLib.Variant('i', value))
+                item = widgets.menu_item(label, 'books.' + action_name,
+                                         target=GLib.Variant('i', value))
                 menu.append_item(item)
 
         # The heading is the label of the first section, which a GTK 4
@@ -349,10 +348,8 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable, LibraryPart):
                                (None, entries[7:12]), (None, entries[12:16])):
             section = Gio.Menu()
             for name, label, _handler in group:
-                item = Gio.MenuItem.new(label, 'books.' + name)
-                if name in self._MENU_KEYS:
-                    item.set_attribute_value(
-                        'accel', GLib.Variant('s', self._MENU_KEYS[name]))
+                item = widgets.menu_item(label, 'books.' + name,
+                                         self._MENU_KEYS.get(name))
                 section.append_item(item)
                 if name == 'rename':
                     # The main window's, for the books selected; not

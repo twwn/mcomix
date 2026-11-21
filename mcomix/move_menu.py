@@ -123,10 +123,10 @@ class _MoveMenu:
                 if directory in seen or not self._is_destination(directory):
                     continue
                 seen.add(directory)
-                entry = Gio.MenuItem.new(self._label_for(directory), None)
-                entry.set_action_and_target_value(
-                    '%s.move' % self.ACTION_PREFIX,
-                    GLib.Variant.new_bytestring(os.fsencode(directory)))
+                entry = widgets.menu_item(
+                    self._label_for(directory), '%s.move' % self.ACTION_PREFIX,
+                    target=GLib.Variant.new_bytestring(
+                        os.fsencode(directory)))
                 section.append_item(entry)
                 if section.get_n_items() >= self.SECTION_LIMIT:
                     break

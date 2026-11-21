@@ -2,7 +2,7 @@
 
 import weakref
 
-from gi.repository import Gdk, Gio, GObject, Graphene, Gtk
+from gi.repository import Gdk, Gio, GLib, GObject, Graphene, Gtk
 
 from collections.abc import Callable, Iterable, Iterator
 from typing import cast
@@ -315,6 +315,19 @@ def menu_label(text: str) -> str:
     underscore, so nothing needed this before the menus became models.
     """
     return text.replace('_', '__')
+
+
+def menu_item(label: str, action: str, accelerator: str | None = None,
+              target: GLib.Variant | None = None) -> Gio.MenuItem:
+    """A Gio.MenuItem for <action>, with <target> as its parameter where
+    one is given, under <label>, showing <accelerator> beside it where one
+    is given.  The accel attribute only shows the key; what answers it is
+    the keybinding manager or a shortcut controller."""
+    item = Gio.MenuItem.new(label, None)
+    item.set_action_and_target_value(action, target)
+    if accelerator:
+        item.set_attribute_value('accel', GLib.Variant('s', accelerator))
+    return item
 
 
 class _MenuClickGesture(Gtk.GestureClick):

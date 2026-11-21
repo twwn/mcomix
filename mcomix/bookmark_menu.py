@@ -99,12 +99,11 @@ class BookmarksMenu:
 
         fixed = Gio.Menu()
         for name, label, binding in self.FIXED:
-            entry = Gio.MenuItem.new(label, '%s.%s' % (self.ACTION_PREFIX, name))
             # The key belongs to the keybinding manager, where the reader
             # may have changed it; the menu only shows it.
-            accelerator = self._ui.accelerator(binding) if binding else None
-            if accelerator:
-                entry.set_attribute_value('accel', GLib.Variant('s', accelerator))
+            entry = widgets.menu_item(
+                label, '%s.%s' % (self.ACTION_PREFIX, name),
+                self._ui.accelerator(binding) if binding else None)
             fixed.append_item(entry)
         self.model.append_section(None, fixed)
 
@@ -118,11 +117,10 @@ class BookmarksMenu:
             listed = Gio.Menu()
             folders = telling_folders(self._bookmarks)
             for position, bookmark in enumerate(self._bookmarks):
-                entry = Gio.MenuItem.new(
+                entry = widgets.menu_item(
                     widgets.menu_label(bookmark.get_label(folders[position])),
-                    None)
-                entry.set_action_and_target_value(
-                    '%s.open' % self.ACTION_PREFIX, GLib.Variant('i', position))
+                    '%s.open' % self.ACTION_PREFIX,
+                    target=GLib.Variant('i', position))
                 listed.append_item(entry)
             self.model.append_section(None, listed)
 

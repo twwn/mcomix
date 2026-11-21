@@ -137,11 +137,10 @@ class RecentFilesMenu:
 
         items = self._items()
         for info in items[:self._LIMIT]:
-            entry = Gio.MenuItem.new(
-                widgets.menu_label(info.get_display_name()), None)
-            entry.set_action_and_target_value(
+            entry = widgets.menu_item(
+                widgets.menu_label(info.get_display_name()),
                 '%s.%s' % (self.ACTION_PREFIX, self.OPEN_ACTION),
-                GLib.Variant('s', info.get_uri()))
+                target=GLib.Variant('s', info.get_uri()))
             self.model.append_item(entry)
 
         if not items:

@@ -153,10 +153,8 @@ class _CollectionArea(Gtk.ScrolledWindow, widgets.Releasable,
                                (None, entries[1:4]), (None, entries[4:])):
             section = Gio.Menu()
             for name, label, _handler in group:
-                item = Gio.MenuItem.new(label, 'collections.' + name)
-                if name in self._MENU_KEYS:
-                    item.set_attribute_value(
-                        'accel', GLib.Variant('s', self._MENU_KEYS[name]))
+                item = widgets.menu_item(label, 'collections.' + name,
+                                         self._MENU_KEYS.get(name))
                 section.append_item(item)
             model.append_section(heading, section)
 
