@@ -11,10 +11,10 @@ import zipfile
 
 import PIL.Image
 
-from gi.repository import Gdk, GdkPixbuf, Gio, GLib, Gtk
+from gi.repository import Gdk, Gio, GLib, Gtk
 
 from . import (MComixTest, NORMAL_ZIP, children, copy_rar_set,
-               get_testfile_path, hold_open, prompts_over, pump,
+               get_testfile_path, hold_open, prompts_over, pump, solid_pixbuf,
                take_activation_from, wait_for)
 from .test_theme import background_of
 
@@ -539,9 +539,7 @@ class UnreadableCoverTest(_CoverAreaTest):
         goes on a copy, which without a frame nothing else makes."""
         prefs['library cover size'] = constants.SIZE_NORMAL
         prefs['thumbnail border width'] = 0
-        cover = GdkPixbuf.Pixbuf.new(GdkPixbuf.Colorspace.RGB, True, 8,
-                                     100, 150)
-        cover.fill(0x336699FF)
+        cover = solid_pixbuf(100, 150, 0x336699FF, has_alpha=True)
         before = image_tools.pixbuf_to_pil(cover).tobytes()
         book = unittest.mock.Mock(pages=3)
         book.get_last_read_page.return_value = 3
@@ -1477,9 +1475,8 @@ class DragIconTest(MComixTest):
         for width, height in ((1, 1), (1, 300), (300, 1)):
             for books in (1, 3):
                 with self.subTest(width=width, height=height, books=books):
-                    thin = GdkPixbuf.Pixbuf.new(
-                        GdkPixbuf.Colorspace.RGB, True, 8, width, height)
-                    thin.fill(0x336699FF)
+                    thin = solid_pixbuf(width, height, 0x336699FF,
+                                        has_alpha=True)
                     with unittest.mock.patch.object(
                             _CoverlessBackend, 'get_book_cover',
                             return_value=thin):

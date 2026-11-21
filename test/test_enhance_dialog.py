@@ -40,10 +40,7 @@ class EnhanceDialogTest(MComixTest):
     def _histograms_drawn_turning_a_page(self):
         with mock.patch.object(histogram, 'draw_histogram',
                                wraps=histogram.draw_histogram) as drawn:
-            self.window.flip_page(+1)
-            self.assertTrue(wait_for(
-                self.window.imagehandler.page_is_available))
-            pump()
+            self.turn_page()
         return drawn.call_count
 
     def test_an_open_dialog_draws_the_page_turned_to(self):

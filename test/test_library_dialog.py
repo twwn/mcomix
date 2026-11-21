@@ -22,7 +22,8 @@ import PIL.Image
 from gi.repository import Gdk, GdkPixbuf, Gio, GLib, Gtk, Pango
 
 from . import (FolderDialogStub, MComixTest, NORMAL_ZIP, descendants,
-               get_testfile_path, pixel, pump, visible_prompts, wait_for)
+               get_testfile_path, pixel, pump, solid_pixbuf, visible_prompts,
+               wait_for)
 
 from mcomix import bookmark_backend
 from mcomix import bookmark_menu_item
@@ -1582,9 +1583,7 @@ class FinishedMarkTest(_OneBookTest):
         # dark grey vanished on a dark cover, and a theme that draws its
         # symbolic icons white would vanish on a light one.  The mark is
         # the icon's shape, dark on a light disc, for any theme.
-        white = GdkPixbuf.Pixbuf.new(GdkPixbuf.Colorspace.RGB, True, 8,
-                                     16, 16)
-        white.fill(0xFFFFFFFF)
+        white = solid_pixbuf(16, 16, 0xFFFFFFFF, has_alpha=True)
         with unittest.mock.patch.object(icons, 'load_pixbuf',
                                         return_value=white):
             mark = self.dialog.book_area._finished_mark

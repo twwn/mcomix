@@ -4,10 +4,10 @@ import threading
 import time
 import unittest.mock
 
-from gi.repository import Gdk, GdkPixbuf
+from gi.repository import Gdk
 from PIL import Image
 
-from . import MComixTest, get_testfile_path, pump, wait_for
+from . import MComixTest, get_testfile_path, pump, solid_pixbuf, wait_for
 
 from mcomix import animation
 from mcomix import image_tools
@@ -460,9 +460,7 @@ class _SlowFrames(animation.Frames):
         #: When each decode began and how long it took, in seconds.
         self.started = []
         self.costs = []
-        pixbuf = GdkPixbuf.Pixbuf.new(GdkPixbuf.Colorspace.RGB, False, 8, 4, 4)
-        pixbuf.fill(0)
-        self._texture = image_tools.pixbuf_to_texture(pixbuf)
+        self._texture = image_tools.pixbuf_to_texture(solid_pixbuf(4, 4, 0))
 
     def next(self):
         began = time.perf_counter()

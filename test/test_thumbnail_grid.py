@@ -7,9 +7,9 @@ and reordering by dragging, which is a drag source and a drop target on
 every cell.
 """
 
-from gi.repository import GdkPixbuf, Gtk
+from gi.repository import Gtk
 
-from . import MComixTest, pump, wait_for, wait_frames
+from . import MComixTest, pump, solid_pixbuf, wait_for, wait_frames
 
 from mcomix import thumbnail_list
 
@@ -42,10 +42,7 @@ class ThumbnailGridViewTest(MComixTest):
 
     def _generate(self, uid):
         self.asked.append(uid)
-        pixbuf = GdkPixbuf.Pixbuf.new(GdkPixbuf.Colorspace.RGB, True, 8,
-                                      32, 48)
-        pixbuf.fill(0x336699ff)
-        return pixbuf
+        return solid_pixbuf(32, 48, 0x336699ff, has_alpha=True)
 
     def _settle(self):
         for _ in range(20):

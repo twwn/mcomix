@@ -47,7 +47,9 @@ Class or helper | For
 `self.make_user_directories()` | The configuration, data and thumbnail folders, which `setUp()` names but does not make.
 `self.prepare_main_window()` | Those folders made and the icons loaded, for a test that builds the main window or an MComix dialog itself.
 `self.wait_for_pages(count)` | Wait for the book opened in `self.window` to have its pages listed: any, or `count` of them.
+`self.turn_page(step)` | Turn the page in `self.window` and wait until the new one can be drawn.
 `pump()`, `wait_for()`, `wait_frames()` | Let the main loop run; wait for a condition rather than a time.
+`collect_garbage()` | Collect, let the main loop run, and collect again: for a test that asserts an object was freed.
 `children()`, `descendants()` | The widgets inside a widget.
 `label_texts(widget)` | The text of every label inside a widget, depth first.
 `visible_prompts()`, `prompts_over(window)` | The message dialogs on screen, or standing over a window.
@@ -70,6 +72,7 @@ Class or helper | For
 `session_tmp_dir()` | A folder that lasts the whole run, for what goes on writing after its test.
 `sample_pages(count)` | Paths of up to three pictures to pack or open.
 `described_book(path, comicinfo)` | A CBZ of two of them, with a `ComicInfo.xml` where one is given.
+`solid_pixbuf(width, height, colour, has_alpha)` | A pixbuf all of one colour, `0xRRGGBBAA`.
 `pixel(pixbuf, x, y)` | One pixel's channels.
 `get_testfile_path(...)` | A file under `test/files/`.
 `NORMAL_ZIP` | `test/files/archives/01-ZIP-Normal.zip`, the book most tests open.

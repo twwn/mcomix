@@ -8,22 +8,12 @@ along the axis the view lays it out on, in the order it shows it.
 
 from types import SimpleNamespace
 
-from gi.repository import GdkPixbuf
-
-from . import MComixTest, pixel
+from . import MComixTest, pixel, solid_pixbuf
 
 from mcomix import box
 from mcomix import constants
 from mcomix.clipboard import Clipboard
 from mcomix.transform import Transform
-
-
-def _solid(width, height, colour):
-    """A page of one colour, as Pixbuf.fill() takes it."""
-    pixbuf = GdkPixbuf.Pixbuf.new(GdkPixbuf.Colorspace.RGB, False, 8,
-                                  width, height)
-    pixbuf.fill(colour)
-    return pixbuf
 
 
 def _corners(width, height):
@@ -32,11 +22,11 @@ def _corners(width, height):
     Turning or flipping it moves the colours about, which is what makes
     either of them visible in a single pixel.
     """
-    pixbuf = _solid(width, height, 0x000000FF)
+    pixbuf = solid_pixbuf(width, height, 0x000000FF)
     for x, y, colour in ((0, 0, 0xFF0000FF), (width // 2, 0, 0x00FF00FF),
                          (0, height // 2, 0x0000FFFF),
                          (width // 2, height // 2, 0xFFFF00FF)):
-        quadrant = _solid(width // 2, height // 2, colour)
+        quadrant = solid_pixbuf(width // 2, height // 2, colour)
         quadrant.copy_area(0, 0, width // 2, height // 2, pixbuf, x, y)
     return pixbuf
 
@@ -131,7 +121,7 @@ class ClipboardTest(MComixTest):
         self.assertEqual((255, 0, 0), pixel(pixbuf, 1, 1))
 
     def test_a_spread_is_copied_in_the_order_it_is_laid_out(self):
-        pages = [_solid(4, 6, self.RED), _solid(4, 6, self.GREEN)]
+        pages = [solid_pixbuf(4, 6, self.RED), solid_pixbuf(4, 6, self.GREEN)]
         _text, pixbuf = self._copied(pages, [Transform.ID] * 2)
         self.assertEqual((8, 6), (pixbuf.get_width(), pixbuf.get_height()))
         self.assertEqual((255, 0, 0), pixel(pixbuf, 1, 1))
@@ -140,7 +130,7 @@ class ClipboardTest(MComixTest):
     def test_a_manga_spread_puts_the_first_page_on_the_right(self):
         """The layout says so: it has already put the second page at the
         left edge."""
-        pages = [_solid(4, 6, self.RED), _solid(4, 6, self.GREEN)]
+        pages = [solid_pixbuf(4, 6, self.RED), solid_pixbuf(4, 6, self.GREEN)]
         _text, pixbuf = self._copied(
             pages, [Transform.ID] * 2,
             boxes=[box.Box((4, 6), (4, 0)), box.Box((4, 6), (0, 0))],
@@ -162,7 +152,7 @@ class ClipboardTest(MComixTest):
     def test_a_spread_with_no_layout_yet_falls_back_on_reading_order(self):
         """The window starts on a one-page dummy layout, which says
         nothing about where two pages would go."""
-        pages = [_solid(4, 6, self.RED), _solid(4, 6, self.GREEN)]
+        pages = [solid_pixbuf(4, 6, self.RED), solid_pixbuf(4, 6, self.GREEN)]
         dummy = [box.Box((1, 1), (0, 0))]
         for manga, left in ((False, (255, 0, 0)), (True, (0, 255, 0))):
             with self.subTest(is_manga_mode=manga):
@@ -173,20 +163,20 @@ class ClipboardTest(MComixTest):
     def test_two_pages_drawn_at_the_same_place_go_side_by_side(self):
         """A window with no size in it lays both boxes out at the origin,
         and neither axis is then the one they are distributed on."""
-        pages = [_solid(4, 6, self.RED), _solid(4, 6, self.GREEN)]
+        pages = [solid_pixbuf(4, 6, self.RED), solid_pixbuf(4, 6, self.GREEN)]
         _text, pixbuf = self._copied(
             pages, [Transform.ID] * 2,
             boxes=[box.Box((0, 0), (0, 0)), box.Box((0, 0), (0, 0))])
         self.assertEqual((8, 6), (pixbuf.get_width(), pixbuf.get_height()))
 
     def test_a_page_with_no_file_behind_it_copies_an_empty_path(self):
-        _text, _pixbuf = self._copied([_solid(4, 6, self.RED)],
+        _text, _pixbuf = self._copied([solid_pixbuf(4, 6, self.RED)],
                                       [Transform.ID], path=None)
         self.assertEqual('', self.copied[0])
 
     def test_nothing_is_copied_with_no_file_open(self):
         self.clipboard._window = self._window(
-            [_solid(4, 6, self.RED)], file_loaded=False)
+            [solid_pixbuf(4, 6, self.RED)], file_loaded=False)
         self.clipboard.copy_page()
         self.assertIsNone(self.copied)
 

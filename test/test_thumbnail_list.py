@@ -16,9 +16,9 @@ it lays out.
 import threading
 import time
 
-from gi.repository import GdkPixbuf, Gtk
+from gi.repository import Gtk
 
-from . import MComixTest, pump, wait_for
+from . import MComixTest, pump, solid_pixbuf, wait_for
 
 from mcomix import thumbnail_list
 from mcomix import properties_page
@@ -26,9 +26,7 @@ from mcomix import properties_page
 
 def _cover():
     """What a test's generate_thumbnail makes of every entry."""
-    pixbuf = GdkPixbuf.Pixbuf.new(GdkPixbuf.Colorspace.RGB, True, 8, 32, 48)
-    pixbuf.fill(0x336699ff)
-    return pixbuf
+    return solid_pixbuf(32, 48, 0x336699ff, has_alpha=True)
 
 
 class _ViewTest(MComixTest):

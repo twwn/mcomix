@@ -9,10 +9,10 @@ are now scaled to the screen's pixels and drawn into the layout's box.
 
 import unittest.mock
 
-from gi.repository import Gdk, GdkPixbuf, Gtk
+from gi.repository import Gdk, Gtk
 
 from . import (MComixTest, MainWindowLaterTest, MainWindowOpenTest,
-               get_testfile_path, pump, wait_for)
+               get_testfile_path, pump, solid_pixbuf, wait_for)
 
 from mcomix import edit_image_area
 from mcomix import image_tools
@@ -229,9 +229,7 @@ class PreviewScaleTest(MainWindowLaterTest):
 class ScaledTextureTest(MComixTest):
 
     def test_it_is_as_large_as_the_texture_over_the_scale(self):
-        pixbuf = GdkPixbuf.Pixbuf.new(GdkPixbuf.Colorspace.RGB, False, 8,
-                                      200, 100)
-        pixbuf.fill(0x336699ff)
+        pixbuf = solid_pixbuf(200, 100, 0x336699ff)
         texture = image_tools.pixbuf_to_texture(pixbuf)
         scaled = widgets.at_scale(texture, 2.0)
         self.assertEqual((100, 50), (scaled.get_intrinsic_width(),
@@ -239,9 +237,7 @@ class ScaledTextureTest(MComixTest):
         self.assertIs(texture, widgets.at_scale(texture, 1))
 
     def test_it_draws_the_whole_texture_into_the_box_it_is_given(self):
-        pixbuf = GdkPixbuf.Pixbuf.new(GdkPixbuf.Colorspace.RGB, False, 8,
-                                      200, 100)
-        pixbuf.fill(0x336699ff)
+        pixbuf = solid_pixbuf(200, 100, 0x336699ff)
         scaled = widgets.at_scale(image_tools.pixbuf_to_texture(pixbuf), 2.0)
         snapshot = Gtk.Snapshot()
         scaled.snapshot(snapshot, 100, 50)

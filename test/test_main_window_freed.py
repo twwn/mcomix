@@ -14,7 +14,8 @@ from unittest import mock
 
 from gi.repository import Gtk
 
-from . import MComixTest, NORMAL_ZIP, close_a_main_window, pump, wait_for
+from . import (MComixTest, NORMAL_ZIP, close_a_main_window, collect_garbage,
+               pump, wait_for)
 from .test_dialog_freed import _holders
 
 from mcomix import main
@@ -47,9 +48,7 @@ class MainWindowFreedTest(MComixTest):
         main.set_main_window(None)
         del window
         pump()
-        gc.collect()
-        pump()
-        gc.collect()
+        collect_garbage()
         if ref() is not None:
             self.fail('the closed main window is still alive, held by %s'
                       % sorted(set(_holders(ref()))))

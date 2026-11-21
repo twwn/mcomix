@@ -1,6 +1,5 @@
 """The library's covers in the main window, while no book is open."""
 
-import gc
 import os
 import shutil
 import unittest.mock
@@ -8,8 +7,8 @@ import weakref
 
 from gi.repository import Gdk, Gio, Graphene, Gtk
 
-from . import (MainWindowLaterTest, get_testfile_path, pump, wait_for,
-               wait_frames)
+from . import (MainWindowLaterTest, collect_garbage, get_testfile_path, pump,
+               wait_for, wait_frames)
 from .test_key_press import _Controller, bindings_recorded
 
 from mcomix import constants
@@ -227,9 +226,7 @@ class ShelfTest(_ShelfWindowTest):
         del window
         self.close_main_window()
         self.window = None
-        gc.collect()
-        pump()
-        gc.collect()
+        collect_garbage()
         self.assertIsNone(held())
 
 

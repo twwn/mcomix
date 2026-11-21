@@ -56,19 +56,13 @@ class PropertiesDialogTest(MComixTest):
         self._open(NORMAL_ZIP)
         with mock.patch.object(properties_dialog._PropertiesDialog,
                                '_update_image_page') as updated:
-            self.window.flip_page(+1)
-            self.assertTrue(wait_for(
-                self.window.imagehandler.page_is_available))
-            pump()
+            self.turn_page()
             self.assertTrue(updated.called, 'an open dialog did not follow')
             updated.reset_mock()
 
             self.dialog.destroy()
             pump()
-            self.window.flip_page(+1)
-            self.assertTrue(wait_for(
-                self.window.imagehandler.page_is_available))
-            pump()
+            self.turn_page()
         updated.assert_not_called()
 
     def _rows(self, page):

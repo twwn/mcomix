@@ -11,7 +11,7 @@ import unittest.mock
 from gi.repository import GdkPixbuf, GLib
 
 from . import (MComixTest, MainWindowLaterTest, MainWindowOpenTest, NORMAL_ZIP,
-               get_testfile_path, pixel, pump, wait_for)
+               get_testfile_path, pixel, pump, solid_pixbuf, wait_for)
 from . import test_key_press
 
 from mcomix import constants
@@ -58,9 +58,7 @@ class LensDrawingTest(MComixTest):
     def _drawn(self, rotation, flips, has_alpha):
         """The lens over a page turned by <rotation> and flipped by
         <flips>, as its pixels."""
-        target = GdkPixbuf.Pixbuf.new(GdkPixbuf.Colorspace.RGB, True, 8,
-                                      *self.LENS_SIZE)
-        target.fill(0x00000000)
+        target = solid_pixbuf(*self.LENS_SIZE, 0x00000000, has_alpha=True)
         self.lens._draw_lens_pixbuf(
             (20, 15), (200, 150), _source(has_alpha), rotation, flips,
             self.LENS_SIZE, (2, 2), target, GdkPixbuf.InterpType.NEAREST,
@@ -94,9 +92,7 @@ class LensDrawingTest(MComixTest):
                                 'rotating by %d changed nothing' % rotation)
 
     def test_a_page_of_no_size_is_not_drawn(self):
-        target = GdkPixbuf.Pixbuf.new(GdkPixbuf.Colorspace.RGB, True, 8,
-                                      *self.LENS_SIZE)
-        target.fill(0x00000000)
+        target = solid_pixbuf(*self.LENS_SIZE, 0x00000000, has_alpha=True)
         self.lens._draw_lens_pixbuf(
             (0, 0), (0, 0), _source(False), 0, (False, False),
             self.LENS_SIZE, (2, 2), target, GdkPixbuf.InterpType.NEAREST,

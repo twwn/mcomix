@@ -70,7 +70,7 @@ os.environ['TMPDIR'] = os.environ['TEMP'] = os.environ['TMP'] = _SESSION_TMPDIR
 tempfile.tempdir = _SESSION_TMPDIR
 atexit.register(shutil.rmtree, _SESSION_TMPDIR, True)
 
-from gi.repository import GLib, Gtk
+from gi.repository import GdkPixbuf, GLib, Gtk
 
 assert GLib.get_tmp_dir() == _SESSION_TMPDIR, GLib.get_tmp_dir()
 
@@ -213,6 +213,16 @@ def pump(rounds=4000, seconds=1.0):
             break
         context.iteration(False)
         turns += 1
+
+
+def collect_garbage():
+    """Free everything nothing holds any more: collect, let the main
+    loop run what letting go queued (GTK drops some references from an
+    idle), and collect what that let go in turn.  For a test that
+    asserts an object was freed."""
+    gc.collect()
+    pump()
+    gc.collect()
 
 
 def hold_open(popover):
@@ -544,6 +554,16 @@ def pixel(pixbuf, x, y):
     channels = pixbuf.get_n_channels()
     offset = y * pixbuf.get_rowstride() + x * channels
     return tuple(pixbuf.get_pixels()[offset:offset + channels])
+
+
+def solid_pixbuf(width, height, colour, has_alpha=False):
+    """A pixbuf of <width> by <height> pixels all of <colour>, as
+    Pixbuf.fill() takes it (0xRRGGBBAA).  Pixbuf.new() alone leaves its
+    memory as it found it."""
+    pixbuf = GdkPixbuf.Pixbuf.new(GdkPixbuf.Colorspace.RGB, has_alpha, 8,
+                                  width, height)
+    pixbuf.fill(colour)
+    return pixbuf
 
 
 def visible_prompts():
@@ -928,6 +948,14 @@ class MComixTest(unittest.TestCase):
                      if count is None else
                      self.window.imagehandler.get_number_of_pages() == count),
             seconds=20))
+
+    def turn_page(self, step=+1):
+        """Turn self.window <step> pages on, wait until the page it
+        turned to can be drawn, and let the main loop deliver what the
+        turn set off."""
+        self.window.flip_page(step)
+        self.assertTrue(wait_for(self.window.imagehandler.page_is_available))
+        pump()
 
     def open_main_window_on_a_book(self):
         """Open the main window on test/files' 01-ZIP-Normal.zip, as

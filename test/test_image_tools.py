@@ -16,7 +16,7 @@ from PIL import Image, ImageChops, ImageDraw
 from io import BytesIO
 from difflib import unified_diff
 
-from . import MComixTest, get_testfile_path, pixel
+from . import MComixTest, get_testfile_path, pixel, solid_pixbuf
 
 from mcomix import constants
 from mcomix import image_tools
@@ -93,14 +93,6 @@ def get_test_image(name):
 
 def get_image_path(basename):
     return get_testfile_path('images', basename)
-
-
-def new_pixbuf(size, with_alpha, fill_colour):
-    pixbuf = GdkPixbuf.Pixbuf.new(colorspace=GdkPixbuf.Colorspace.RGB,
-                                  has_alpha=with_alpha, bits_per_sample=8,
-                                  width=size[0], height=size[1])
-    pixbuf.fill(fill_colour)
-    return pixbuf
 
 
 # Example output:
@@ -454,8 +446,8 @@ class ImageToolsTest(MComixTest):
         # The colour preferences became Gdk.RGBA components, and this is
         # the one place still reading them as 16-bit integers: the lens
         # raised TypeError on every use.
-        pixbuf = GdkPixbuf.Pixbuf.new(GdkPixbuf.Colorspace.RGB, True, 8, 2, 2)
-        pixbuf.fill(image_tools.convert_rgba_to_rgba8int(prefs['bg colour']))
+        pixbuf = solid_pixbuf(2, 2, image_tools.convert_rgba_to_rgba8int(
+            prefs['bg colour']), has_alpha=True)
         self.assertEqual(pixbuf.get_pixels()[:4], bytes((0x13, 0x13, 0x13, 0xFF)))
 
     def test_pixbuf_to_pil(self):
@@ -479,9 +471,7 @@ class ImageToolsTest(MComixTest):
         large enough" while being scaled, and nothing was drawn."""
         for alpha in (True, False):
             with self.subTest(alpha=alpha):
-                whole = GdkPixbuf.Pixbuf.new(
-                    GdkPixbuf.Colorspace.RGB, alpha, 8, 10, 6)
-                whole.fill(0x336699ff)
+                whole = solid_pixbuf(10, 6, 0x336699ff, has_alpha=alpha)
                 part = whole.new_subpixbuf(2, 1, 5, 4)
                 self.assertLess(len(part.get_pixels()),
                                 part.get_rowstride() * part.get_height())
@@ -626,7 +616,7 @@ class ImageToolsTest(MComixTest):
         # A negative side means "as large as it likes in this
         # direction", bounded only by RENDER_SIZE_LIMIT, so the other
         # side is what decides the scale.
-        pixbuf = new_pixbuf((200, 400), False, 0)
+        pixbuf = solid_pixbuf(200, 400, 0)
         for width, height, expected in ((-1, 100, (50, 100)),
                                         (100, -1, (100, 200))):
             result = image_tools.fit_in_rectangle(pixbuf, width, height)
@@ -639,14 +629,14 @@ class ImageToolsTest(MComixTest):
         # There is no rectangle to fit in.  This used to bound the width
         # and leave the height negative, which the clamp below turned
         # into one pixel: a 200x400 page came back 1 pixel high.
-        pixbuf = new_pixbuf((200, 400), False, 0)
+        pixbuf = solid_pixbuf(200, 400, 0)
         self.assertRaises(ValueError,
                           image_tools.fit_in_rectangle, pixbuf, -1, -1)
 
     def test_fit_in_rectangle_a_side_of_zero_is_one_pixel(self):
         # load_pixbuf_size() relies on this: it clamps a zero side to one
         # itself, saying that fit_in_rectangle() would have anyway.
-        pixbuf = new_pixbuf((200, 400), False, 0)
+        pixbuf = solid_pixbuf(200, 400, 0)
         result = image_tools.fit_in_rectangle(pixbuf, 0, 0)
         self.assertEqual((result.get_width(), result.get_height()), (1, 1))
 
@@ -679,7 +669,7 @@ class ImageToolsTest(MComixTest):
                     input_size = input_size[1], input_size[0]
                     target_size = target_size[1], target_size[0]
                     expected_size = expected_size[1], expected_size[0]
-                pixbuf = new_pixbuf(input_size, False, 0)
+                pixbuf = solid_pixbuf(*input_size, 0)
                 result = image_tools.fit_in_rectangle(pixbuf,
                                                       target_size[0],
                                                       target_size[1],
@@ -725,7 +715,7 @@ class ImageToolsTest(MComixTest):
                 for _ in range(1, 1 + (rotation % 360) // 90):
                     expected_corners_colors.insert(0, expected_corners_colors.pop(-1))
                 result_corners_colors = []
-                corner = new_pixbuf((1, 1), False, 0x888888)
+                corner = solid_pixbuf(1, 1, 0x888888)
                 corners_positions = [0, 0, target_size[0] - 1, target_size[0] - 1]
                 for _ in range(4):
                     x, y = corners_positions[0:2]
@@ -1510,9 +1500,7 @@ class PixbufToTextureTest(MComixTest):
     def _drawn(self, has_alpha):
         """A small pixbuf with a different colour in each quarter."""
         channels = 4 if has_alpha else 3
-        pixbuf = GdkPixbuf.Pixbuf.new(GdkPixbuf.Colorspace.RGB, has_alpha,
-                                      8, 6, 4)
-        pixbuf.fill(0x102030ff)
+        pixbuf = solid_pixbuf(6, 4, 0x102030ff, has_alpha=has_alpha)
         pixbuf.new_subpixbuf(0, 0, 3, 2).fill(0xff8000ff)
         pixbuf.new_subpixbuf(3, 2, 3, 2).fill(0x0080ffff)
         self.assertEqual(pixbuf.get_n_channels(), channels)
@@ -1583,19 +1571,13 @@ class CombinePixbufsTest(MComixTest):
     height.
     """
 
-    def _solid(self, width, height, colour, has_alpha=False):
-        pixbuf = GdkPixbuf.Pixbuf.new(GdkPixbuf.Colorspace.RGB, has_alpha,
-                                      8, width, height)
-        pixbuf.fill(colour)
-        return pixbuf
-
     #: Opaque red and opaque green, as Pixbuf.fill() takes them.
     RED = 0xFF0000FF
     GREEN = 0x00FF00FF
 
     def test_the_first_page_goes_on_the_left(self):
         combined = image_tools.combine_pixbufs(
-            self._solid(4, 6, self.RED), self._solid(4, 6, self.GREEN))
+            solid_pixbuf(4, 6, self.RED), solid_pixbuf(4, 6, self.GREEN))
         self.assertEqual((8, 6),
                          (combined.get_width(), combined.get_height()))
         self.assertEqual((255, 0, 0), pixel(combined, 1, 1))
@@ -1605,7 +1587,7 @@ class CombinePixbufsTest(MComixTest):
         """A view turned by a quarter turn stacks the two pages, and asks
         for them stacked the same way."""
         combined = image_tools.combine_pixbufs(
-            self._solid(6, 4, self.RED), self._solid(6, 4, self.GREEN),
+            solid_pixbuf(6, 4, self.RED), solid_pixbuf(6, 4, self.GREEN),
             constants.PageAxis.HEIGHT)
         self.assertEqual((6, 8),
                          (combined.get_width(), combined.get_height()))
@@ -1619,7 +1601,7 @@ class CombinePixbufsTest(MComixTest):
         what was there was undefined - black on this machine, but not
         promised to be anything."""
         combined = image_tools.combine_pixbufs(
-            self._solid(4, 3, self.RED), self._solid(4, 6, self.GREEN))
+            solid_pixbuf(4, 3, self.RED), solid_pixbuf(4, 6, self.GREEN))
         self.assertEqual((8, 6),
                          (combined.get_width(), combined.get_height()))
         self.assertEqual((255, 0, 0), pixel(combined, 1, 1),
@@ -1630,7 +1612,7 @@ class CombinePixbufsTest(MComixTest):
     def test_what_neither_page_covers_is_filled_when_stacked(self):
         """The same gap, on the axis the pages are not distributed on."""
         combined = image_tools.combine_pixbufs(
-            self._solid(3, 4, self.RED), self._solid(6, 4, self.GREEN),
+            solid_pixbuf(3, 4, self.RED), solid_pixbuf(6, 4, self.GREEN),
             constants.PageAxis.HEIGHT)
         self.assertEqual((6, 8),
                          (combined.get_width(), combined.get_height()))
@@ -1644,15 +1626,15 @@ class CombinePixbufsTest(MComixTest):
         somewhere to put it, and then the gap can be transparent rather
         than a colour the pages never had."""
         combined = image_tools.combine_pixbufs(
-            self._solid(4, 3, self.RED, has_alpha=True),
-            self._solid(4, 6, self.GREEN, has_alpha=True))
+            solid_pixbuf(4, 3, self.RED, has_alpha=True),
+            solid_pixbuf(4, 6, self.GREEN, has_alpha=True))
         self.assertTrue(combined.get_has_alpha())
         self.assertEqual((255, 255, 255, 0), pixel(combined, 1, 5))
 
     def test_one_page_with_an_alpha_channel_is_enough_to_keep_it(self):
         combined = image_tools.combine_pixbufs(
-            self._solid(4, 6, self.RED, has_alpha=True),
-            self._solid(4, 6, self.GREEN))
+            solid_pixbuf(4, 6, self.RED, has_alpha=True),
+            solid_pixbuf(4, 6, self.GREEN))
         self.assertTrue(combined.get_has_alpha(),
                         'the transparency of the first page was dropped')
 

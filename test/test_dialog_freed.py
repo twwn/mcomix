@@ -16,7 +16,8 @@ import weakref
 
 from gi.repository import Gtk
 
-from . import MComixTest, NORMAL_ZIP, get_testfile_path, pump, wait_for
+from . import (MComixTest, NORMAL_ZIP, collect_garbage, get_testfile_path,
+               pump, wait_for)
 
 from mcomix import constants
 from mcomix import dialog
@@ -84,9 +85,7 @@ class DialogFreedTest(MComixTest):
         pump()
         ref = weakref.ref(built)
         del built
-        gc.collect()
-        pump()
-        gc.collect()
+        collect_garbage()
         if ref() is not None:
             self.fail('a closed dialog is still alive, held by %s'
                       % _holders(ref()))
@@ -141,9 +140,7 @@ class MainWindowDialogsFreedTest(MComixTest):
         opened.close()
         del opened
         pump()
-        gc.collect()
-        pump()
-        gc.collect()
+        collect_garbage()
         for ref in refs:
             if ref() is not None:
                 self.fail('the closed %s is still alive, held by %s'
