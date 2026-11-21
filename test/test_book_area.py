@@ -26,11 +26,25 @@ from mcomix import message_dialog
 from mcomix import process
 from mcomix import image_tools
 from mcomix import preview
+from mcomix import thumbnail_list
 from mcomix import thumbnail_tools
 from mcomix.dialog import Response
 from mcomix.library import backend, backend_types
 from mcomix.library import book_area
 from mcomix.preferences import prefs
+
+
+def _contrast_with_black(colour):
+    """How far <colour>, laid over black, stands out from it: the WCAG
+    contrast ratio of the two, from 1 to 21."""
+    def linear(channel):
+        channel *= colour.alpha
+        if channel <= 0.04045:
+            return channel / 12.92
+        return ((channel + 0.055) / 1.055) ** 2.4
+    luminance = (0.2126 * linear(colour.red) + 0.7152 * linear(colour.green)
+                 + 0.0722 * linear(colour.blue))
+    return (luminance + 0.05) / 0.05
 
 
 class _Event:
@@ -190,6 +204,41 @@ class BlackBackgroundTest(MComixTest):
         self.window.present()
         self.assertTrue(wait_for(lambda: self.area._covers.get_width() > 0))
         self.assertEqual('rgb(0,0,0)', background_of(self.area._covers))
+
+    def test_a_selected_cover_stands_out_from_the_black(self):
+        """The theme marks a selected cell with a quarter of its accent
+        colour, which is meant for the light or grey ground of a list:
+        on black it was rgb(13,33,57), 1.3 to 1 against it, and the book
+        picked out was hard to find.  A part of the interface wants 3 to
+        1 (WCAG 2.1, 1.4.11)."""
+        # libadwaita's rule, which the suite's plain GTK does not load:
+        # plain GTK marks the cell in the solid accent colour.
+        libadwaita = Gtk.CssProvider()
+        libadwaita.load_from_string('gridview > child:selected'
+                                    ' { background-color:'
+                                    ' rgba(53, 132, 228, 0.25); }')
+        display = self.window.get_display()
+        Gtk.StyleContext.add_provider_for_display(
+            display, libadwaita, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+        self.addCleanup(Gtk.StyleContext.remove_provider_for_display,
+                        display, libadwaita)
+        # The rule the area gave the display, on a view of the covers'
+        # class with no library behind it to tell about the selection.
+        covers = thumbnail_list.ThumbnailGridView()
+        self.addCleanup(covers.stop_update)
+        covers.add_css_class(book_area._BookArea._BLACK_CSS_CLASS)
+        covers.set_thumbnail_size(64)
+        covers.generate_thumbnail = lambda uid: None
+        self.window.set_child(covers)
+        covers.set_items([thumbnail_list.ThumbnailItem(1)])
+        self.window.present()
+        self.assertTrue(wait_for(
+            lambda: next(covers._each_cell(), None) is not None))
+        covers.select_positions([0])
+        painted = background_of(next(covers._each_cell()).get_parent())
+        colour = Gdk.RGBA()
+        self.assertTrue(colour.parse(painted or ''), painted)
+        self.assertGreaterEqual(_contrast_with_black(colour), 3, painted)
 
     def test_the_view_carries_the_class_the_rule_is_written_against(self):
         self.assertTrue(self.area._covers.has_css_class(

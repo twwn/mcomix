@@ -57,9 +57,25 @@ def _paint_black(display: Gdk.Display, css_class: str) -> None:
     The provider stays with the display for as long as the display
     lasts, and every library window opened after the first finds it
     there; one per window would pile up, closed windows' and all.
+
+    A selected cover is marked in three quarters of the accent colour.
+    libadwaita marks a selected cell in a quarter of it, which is meant
+    for a light or grey list: on black that is rgb(13, 33, 57), 1.3 to
+    1 against it, where a part of the interface wants 3 to 1 (WCAG 2.1,
+    1.4.11).  Three quarters of the default blue is 3.5 to 1.  Stated
+    twice, as theme.py states the page marks: a theme without an
+    accent colour leaves the second declaration unparsed.
     """
     provider = Gtk.CssProvider()
-    provider.load_from_string('.%s { background-color: black; }' % css_class)
+    provider.load_from_string(
+        '.%(name)s { background-color: black; }'
+        '.%(name)s > child:selected {'
+        ' background-color: rgba(53, 132, 228, 0.75);'
+        ' background-color: alpha(@accent_bg_color, 0.75); }'
+        '.%(name)s > child:selected:hover {'
+        ' background-color: rgba(53, 132, 228, 0.85);'
+        ' background-color: alpha(@accent_bg_color, 0.85); }'
+        % {'name': css_class})
     Gtk.StyleContext.add_provider_for_display(
         display, provider, theme.VIEW_COLOUR_PRIORITY)
 
