@@ -418,6 +418,60 @@ class MissingProgramTest(MComixTest):
         self.assertFalse(pdf_multi.DisabledFitzArchive.is_available())
 
 
+class _Listed(Exception):
+    """Raised by a listing a test stands in for, to show it was asked."""
+
+
+class _Started(Exception):
+    """Raised by a program a test stands in for, to show it was run."""
+
+
+class ExtractBeforeListingTest(MComixTest):
+
+    """An archive read with a program, asked for a page before its
+    listing.  The listing is what maps a name handed out back to the
+    one the archive holds, so the archive is listed first; once it has
+    been, it is not listed again.  The inherited iter_extract() reads a
+    listing as it goes, so only the handlers with their own are asked
+    for it."""
+
+    HANDLERS = ((zip_external.ZipArchive, 'extract'),
+                (lha_external.LhaArchive, 'extract'),
+                (rar_external.RarArchive, 'extract'),
+                (rar_external.RarArchive, 'iter_extract'),
+                (sevenzip_external.SevenZipArchive, 'extract'),
+                (sevenzip_external.SevenZipArchive, 'iter_extract'))
+
+    def _extract(self, archive, extract):
+        """Ask <archive> for one page by its method named <extract>."""
+        destination = os.path.join(self.tmp_dir, 'out')
+        if extract == 'iter_extract':
+            list(archive.iter_extract(['a.jpg'], destination))
+        else:
+            archive.extract('a.jpg', destination)
+
+    def test_an_extract_before_any_listing_lists_first(self):
+        for handler, extract in self.HANDLERS:
+            with self.subTest(handler=handler.__name__, extract=extract), \
+                    unittest.mock.patch.object(
+                        handler, '_get_executable', return_value='tool'), \
+                    unittest.mock.patch.object(
+                        handler, 'list_contents', side_effect=_Listed):
+                archive = handler(NORMAL_ZIP)
+                with self.assertRaises(_Listed):
+                    self._extract(archive, extract)
+                # Listed: what runs next is the program, stood in for by
+                # one that cannot be started.
+                archive.filenames_initialized = True
+                with unittest.mock.patch.object(
+                        process, 'popen', side_effect=_Started), \
+                        unittest.mock.patch.object(
+                            sevenzip_external.subprocess, 'run',
+                            side_effect=_Started), \
+                        self.assertRaises(_Started):
+                    self._extract(archive, extract)
+
+
 class TarCompressionTest(MComixTest):
 
     #: What every SolidFlat archive holds, whatever it is compressed with.

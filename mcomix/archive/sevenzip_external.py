@@ -285,11 +285,8 @@ class SevenZipArchive(archive_base.ExternalExecutableArchive):
         assert isinstance(filename, str) and \
                isinstance(destination_dir, str)
 
-        if not self._get_executable():
+        if not self._ready_to_extract():
             return
-
-        if not self.filenames_initialized:
-            self.list_contents()
 
         tmplistfile = tempfile.NamedTemporaryFile(prefix='mcomix.7z.', delete=False)
         try:
@@ -335,11 +332,8 @@ class SevenZipArchive(archive_base.ExternalExecutableArchive):
         rather than once per file.  Unwanted files are still read, since
         the only way past a file in the stream is through it.
         """
-        if not self._get_executable():
+        if not self._ready_to_extract():
             return
-
-        if not self.filenames_initialized:
-            self.list_contents()
 
         proc = process.popen(self._get_extract_arguments())
         assert proc.stdout is not None

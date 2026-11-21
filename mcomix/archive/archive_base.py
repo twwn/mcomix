@@ -641,16 +641,23 @@ class ExternalExecutableArchive(NonUnicodeArchive):
 
         self.filenames_initialized = True
 
+    def _ready_to_extract(self) -> bool:
+        """Whether there is a program to extract with, listing the
+        archive first where that has not been done: the listing is what
+        maps the names handed out back to the ones the archive holds."""
+        if not self._get_executable():
+            return False
+        if not self.filenames_initialized:
+            self.list_contents()
+        return True
+
     def extract(self, filename: str, destination_dir: str) -> None:
         """ Extract <filename> from the archive to <destination_dir>. """
         assert isinstance(filename, str) \
             and isinstance(destination_dir, str)
 
-        if not self._get_executable():
+        if not self._ready_to_extract():
             return
-
-        if not self.filenames_initialized:
-            self.list_contents()
 
         self._write_output_of(
             [self._executable] + self._get_extract_arguments()
