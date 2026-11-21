@@ -353,11 +353,18 @@ class ThumbnailsOnScreenFirstTest(_ViewTest):
 
     def _on_screen(self):
         """The positions of the cells in view.  An entry's uid is its
-        position here."""
+        position here.
+
+        A cell is in view where any of its list item is, the padding the
+        theme gives that included: the grid binds and asks for the cells
+        of a row whose padding alone shows.  Where a grid's children were
+        padded by 15 pixels, as on the CI's runners, the cell above the
+        first in view was asked for first.
+        """
         height = self.scroller.get_height()
         seen = set()
         for cell in self.view._each_cell():
-            found, bounds = cell.compute_bounds(self.scroller)
+            found, bounds = cell.get_parent().compute_bounds(self.scroller)
             if found and cell.get_mapped() and bounds.get_y() < height \
                     and bounds.get_y() + bounds.get_height() > 0:
                 seen.add(cell.position)
@@ -373,8 +380,6 @@ class ThumbnailsOnScreenFirstTest(_ViewTest):
         self.assertGreater(len(seen), 6)
         self.assertGreater(len(self.asked), 4 * len(seen),
                            'the grid bound little more than it shows')
-        # What the grid showed and bound, should it fail: the CI has
-        # seen the first asked for one entry before the first in view.
         self.assertIn(self.asked[0], seen,
                       (sorted(seen), self.asked[:8], self._cell_heights()))
         # The scroll bar says which rows are in view to within one.
@@ -608,10 +613,14 @@ class ThumbnailGridViewTest(_ViewTest):
         self.view.set_items(items)
         self._settle()
         across, down = self._pitches()
-        # Nothing drawn yet: each cell keeps the whole box.
+        # Nothing drawn yet: each cell keeps the whole box.  What parts
+        # the rows besides is the theme's padding: 3 pixels a side here,
+        # 15 on the CI's runners.
+        self.assertEqual([96], sorted({cell.get_height() for cell in
+                                       self.view._each_cell()
+                                       if cell.get_width() > 0}),
+                         self._cell_heights())
         padding = down - 96
-        # The CI has seen 30 here: say which cells made a row taller.
-        self.assertLess(padding, 16, self._cell_heights())
         cover = image_tools.pixbuf_to_texture(
             solid_pixbuf(64, 80, 0x336699ff, has_alpha=True))
         for item in items:
