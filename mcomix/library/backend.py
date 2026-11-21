@@ -737,6 +737,12 @@ class _LibraryBackend:
             if mime is not None:
                 info = (mime, 0, os.stat(path).st_size)
         if info is None:
+            # Not a format MComix reads, or one no installed program
+            # does: said nowhere before, so the status bar's "Could not
+            # add" named books the log did not.
+            log.warning('%s %s', _('! Could not add book "%s" to the '
+                                   'library') % i18n.to_display_string(path),
+                        archive_tools.cannot_open(path))
             return False
         format, pages, size = info
 

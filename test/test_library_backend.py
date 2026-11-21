@@ -19,6 +19,7 @@ import PIL.Image
 from . import (NORMAL_ZIP, copy_rar_set, get_testfile_path, mounted_at,
                posix_byte_names, refuse_passwords, skip_unless_rar_reads)
 
+from mcomix import archive_tools
 from mcomix import constants
 from mcomix import thumbnail_tools
 from mcomix import tools
@@ -313,6 +314,39 @@ class RarSetTest(LibraryDatabaseTest):
         self.assertTrue(self.library.add_book(self.volumes[0]))
         self.assertEqual(4, self.library.get_book_by_path(
             self.volumes[0]).pages)
+
+
+class RefusedBookTest(LibraryDatabaseTest):
+
+    """A book the library cannot add is named in the log with its path
+    and the reason, as the status bar names it."""
+
+    def setUp(self):
+        super().setUp()
+        self.library = backend.LibraryBackend()
+        self.addCleanup(self.library.close)
+
+    def _refused(self, path):
+        with self.assertLogs('mcomix', level='WARNING') as logged:
+            self.assertFalse(self.library.add_book(path))
+        self.assertIsNone(self.library.get_book_by_path(path))
+        return '\n'.join(logged.output)
+
+    def test_a_file_of_no_format_it_reads(self):
+        path = os.path.join(self.tmp_dir, 'bad.cbz')
+        with open(path, 'wb') as book:
+            book.write(b'not a book')
+        logged = self._refused(path)
+        self.assertIn(path, logged)
+        self.assertIn('Non-supported archive format: bad.cbz', logged)
+
+    def test_a_format_no_installed_program_reads(self):
+        path = copy_rar_set(self.tmp_dir, 'Multivolume')[0]
+        with unittest.mock.patch.object(archive_tools, '_get_handler',
+                                        return_value=None):
+            logged = self._refused(path)
+        self.assertIn(path, logged)
+        self.assertIn('it needs', logged)
 
 
 class NothingThereTest(OpenLibraryTest):
