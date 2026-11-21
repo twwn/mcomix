@@ -6,6 +6,7 @@ import itertools
 import math
 import operator
 import os
+import weakref
 from gi.repository import GLib, GdkPixbuf, Gdk, Gtk
 import PIL
 from PIL import features
@@ -761,8 +762,8 @@ def is_missing_image(pixbuf: GdkPixbuf.Pixbuf) -> bool:
 
 
 #: Where border_box() keeps what it found on the pixbuf it looked at,
-#: and without_borders() what it cut out of it, and on the cut page
-#: the size of the whole one.
+#: and without_borders() a weak reference to what it cut out of it, and
+#: on the cut page the size of the whole one.
 _BORDER_BOX = 'mcomix_border_box'
 _WITHOUT_BORDERS = 'mcomix_without_borders'
 _WHOLE_SIZE = 'mcomix_whole_size'
@@ -996,14 +997,17 @@ def without_borders(pixbuf: GdkPixbuf.Pixbuf) -> GdkPixbuf.Pixbuf:
     its pixels.  A moving page and one that would not load stay as they
     are; the cut page keeps the Exif turn of the whole one.
 
-    The same page asked again answers with the same pixbuf, which is
-    what MainWindow keeps a strip's scaled pages by.
+    The same page asked again answers with the same pixbuf while that
+    is held anywhere, which is what MainWindow keeps a strip's scaled
+    pages by.  The page holds its cut only weakly: the cut holds the
+    page in C, and a strong reference back made a cycle through C that
+    Python's collector never frees, so every page cut stayed in memory.
     """
     if is_animation(pixbuf) or is_missing_image(pixbuf):
         return pixbuf
     known = getattr(pixbuf, _WITHOUT_BORDERS, None)
-    if known is not None:
-        return cast(GdkPixbuf.Pixbuf, known)
+    if known is not None and (cut := known()) is not None:
+        return cast(GdkPixbuf.Pixbuf, cut)
     left, top, right, bottom = border_box(pixbuf)
     cropped = pixbuf
     if (left, top, right, bottom) != (0, 0, pixbuf.get_width(),
@@ -1018,7 +1022,7 @@ def without_borders(pixbuf: GdkPixbuf.Pixbuf) -> GdkPixbuf.Pixbuf:
                 orientation
                 for orientation, angle in _IMPLIED_ROTATION.items()
                 if angle == rotation))
-    setattr(pixbuf, _WITHOUT_BORDERS, cropped)
+    setattr(pixbuf, _WITHOUT_BORDERS, weakref.ref(cropped))
     return cropped
 
 

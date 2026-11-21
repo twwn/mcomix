@@ -202,9 +202,10 @@ class ViewActionsTest(MainWindowOpenTest):
         # The page after the one shown is read ahead, on the thread.
         self.assertTrue(wait_for(lambda: 1 in handler._raw_pixbufs))
         ahead = handler._raw_pixbufs[1]
-        cut = getattr(ahead, image_tools._WITHOUT_BORDERS, None)
-        self.assertIsNotNone(cut)
-        self.assertLess(cut.get_width(), 800)
+        box = getattr(ahead, image_tools._BORDER_BOX, None)
+        self.assertIsNotNone(box)
+        left, _top, right, _bottom = box
+        self.assertLess(right - left, 800)
 
     def test_zooming_in_and_out_and_back_to_the_original_size(self):
         self._open('blue.png')

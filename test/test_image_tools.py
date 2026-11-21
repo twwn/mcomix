@@ -1,4 +1,5 @@
 import binascii
+import gc
 import os
 import math
 import shutil
@@ -6,6 +7,7 @@ import struct
 import tempfile
 import unittest
 import unittest.mock
+import weakref
 
 from gi.repository import Gdk, GdkPixbuf, GLib
 
@@ -979,6 +981,20 @@ class BorderTest(MComixTest):
         self.assertEqual((right - left, bottom - top),
                          (cropped.get_width(), cropped.get_height()))
         self.assertIs(cropped, image_tools.without_borders(pixbuf))
+
+    def test_a_page_cut_is_freed_with_its_cut(self):
+        """The cut shares the page's pixels and so holds the page in C,
+        where Python's collector does not look: the page holding its cut
+        made a cycle nothing freed, and every page "crop borders" had
+        looked at stayed in memory, gigabytes of scans after a few
+        books."""
+        pixbuf = self._page()
+        page = weakref.ref(pixbuf)
+        cut = weakref.ref(image_tools.without_borders(pixbuf))
+        del pixbuf
+        gc.collect()
+        self.assertIsNone(cut())
+        self.assertIsNone(page())
 
     def test_black_margins_and_a_corner_the_drawing_reaches(self):
         pixbuf = self._page(margin='black', colour=(240, 240, 240))
