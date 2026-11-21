@@ -15,7 +15,6 @@ import stat
 import sys
 import tempfile
 import types
-from functools import reduce
 from collections.abc import Collection, Iterable, Iterator, Mapping, Sequence
 from typing import Any, IO, Protocol, TypeVar
 
@@ -398,7 +397,7 @@ def div(a: Numeric, b: Numeric) -> float:
 
 
 def volume(t: Sequence[float]) -> float:
-    return reduce(operator.mul, t, 1)
+    return math.prod(t)
 
 
 def relerr(approx: Numeric, ideal: Numeric) -> float:

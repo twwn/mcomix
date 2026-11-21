@@ -474,8 +474,7 @@ def _union_size(image_sizes: Sequence[Sequence[float]],
     """
     if not image_sizes:
         return []
-    n = len(image_sizes[0])
-    union_size = [reduce(max, [x[i] for x in image_sizes]) for i in range(n)]
+    union_size = [max(sizes) for sizes in zip(*image_sizes)]
     union_size[distribution_axis] = sum(x[distribution_axis] for x in image_sizes)
     return union_size
 
