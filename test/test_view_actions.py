@@ -26,10 +26,21 @@ class ViewActionsTest(MainWindowOpenTest):
         self.window.filehandler.open_file(get_testfile_path('images', name))
         self.assertTrue(wait_for(
             lambda: self.window.imagehandler.get_number_of_pages() > 1))
-        pump()
+        self._drawn()
 
     def _activate(self, name):
         self.window.actiongroup.get_action(name).activate()
+        self._drawn()
+
+    def _drawn(self):
+        """Wait for the redraw the window has asked for to be made.
+
+        pump() alone gives up after a second, and on a loaded machine
+        one turn of the main loop took that long: the transform was read
+        before the page was drawn with it.
+        """
+        self.assertTrue(wait_for(
+            lambda: not self.window._waiting_for_redraw))
         pump()
 
     def _transform(self):
@@ -139,7 +150,7 @@ class ViewActionsTest(MainWindowOpenTest):
         prefs['fit to size height other'] = 400
         self.window.filehandler.open_file(os.path.join(book, '1.png'))
         self.wait_for_pages(2)
-        pump()
+        self._drawn()
         self._activate('fit_size_mode')
         self.assertEqual((400, 400), self._shown_size())
         self._activate('crop_borders')
@@ -168,7 +179,7 @@ class ViewActionsTest(MainWindowOpenTest):
         prefs['crop borders'] = True
         self.window.filehandler.open_file(os.path.join(book, '1.png'))
         self.wait_for_pages(2)
-        pump()
+        self._drawn()
         self.assertTrue(self.window.statusbar._resolution.startswith(
             '600x800 ('), self.window.statusbar._resolution)
         self._activate('rotate_90')
