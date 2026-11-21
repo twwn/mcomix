@@ -407,6 +407,13 @@ class SortFilesTest(MComixTest):
             book.write(b'x' * size)
         os.utime(path, (mtime, mtime))
 
+    def _written_by_mcomix(self, path: str, size: int, mtime: int) -> None:
+        """Write <path> over as MComix saves a book: <size> bytes,
+        modified at <mtime>, and file_provider told of it."""
+        before = self._stamp(path)
+        self._write(path, size, mtime)
+        file_provider.written_over(path, before, self._stamp(path))
+
     def _orders(self) -> dict[int, list[str]]:
         """The books' names in the order each key sorts them in."""
         orders = {}
@@ -425,9 +432,7 @@ class SortFilesTest(MComixTest):
         archive led on from where it landed: past the books between,
         or out of the folder."""
         books = self._books()
-        before = self._stamp(books[1])
-        self._write(books[1], 100, 1_000_000_100)
-        file_provider.written_over(books[1], before, self._stamp(books[1]))
+        self._written_by_mcomix(books[1], 100, 1_000_000_100)
         self.assertEqual({
             constants.SORT_LAST_MODIFIED: ['Book 3.cbz', 'Book 2.cbz',
                                            'Book 1.cbz'],
@@ -436,21 +441,15 @@ class SortFilesTest(MComixTest):
 
     def test_a_book_mcomix_wrote_twice_keeps_its_first_place(self) -> None:
         books = self._books()
-        before = self._stamp(books[1])
         for time in (1_000_000_100, 1_000_000_200):
-            self._write(books[1], 100, time)
-            after = self._stamp(books[1])
-            file_provider.written_over(books[1], before, after)
-            before = after
+            self._written_by_mcomix(books[1], 100, time)
         self.assertEqual(['Book 1.cbz', 'Book 2.cbz', 'Book 3.cbz'],
                          self._orders()[constants.SORT_SIZE])
 
     def test_a_book_another_program_wrote_after_sorts_by_what_it_is(
             self) -> None:
         books = self._books()
-        before = self._stamp(books[1])
-        self._write(books[1], 100, 1_000_000_100)
-        file_provider.written_over(books[1], before, self._stamp(books[1]))
+        self._written_by_mcomix(books[1], 100, 1_000_000_100)
         self._write(books[1], 200, 1_000_000_200)
         self.assertEqual({
             constants.SORT_LAST_MODIFIED: ['Book 2.cbz', 'Book 3.cbz',

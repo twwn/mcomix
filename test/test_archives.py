@@ -700,12 +700,16 @@ class ZipLegacyNameTest(MComixTest):
     under names like "\u2229\u00ba\u00ba".
     """
 
+    # How _legacy_zip() compresses its members.
+    COMPRESSION = zipfile.ZIP_STORED
+
     def _legacy_zip(self, names, encoding):
         """A zip holding one tiny file per name in <names>, the names
         written in <encoding> with the UTF-8 flag left off."""
         path = os.path.join(self.tmp_dir, 'legacy.zip')
         placeholders = []
-        with zipfile.ZipFile(path, 'w') as archive:
+        with zipfile.ZipFile(path, 'w',
+                             compression=self.COMPRESSION) as archive:
             for number, name in enumerate(names):
                 length = len(name.encode(encoding))
                 # One letter repeated, so that no placeholder is found
@@ -842,24 +846,7 @@ class SevenZipLegacyNameTest(ZipLegacyNameTest):
     not be opened at all.
     """
 
-    def _legacy_zip(self, names, encoding):
-        path = os.path.join(self.tmp_dir, 'legacy.zip')
-        placeholders = []
-        with zipfile.ZipFile(path, 'w',
-                             compression=zipfile.ZIP_BZIP2) as archive:
-            for number, name in enumerate(names):
-                placeholder = chr(ord('A') + number) * len(
-                    name.encode(encoding))
-                placeholders.append(placeholder)
-                archive.writestr(placeholder, b'x')
-        with open(path, 'rb') as fp:
-            data = fp.read()
-        for number, name in enumerate(names):
-            data = data.replace(placeholders[number].encode('ascii'),
-                                name.encode(encoding))
-        with open(path, 'wb') as fp:
-            fp.write(data)
-        return path
+    COMPRESSION = zipfile.ZIP_BZIP2
 
     def _handler(self, path):
         return sevenzip_external.SevenZipArchive(path)

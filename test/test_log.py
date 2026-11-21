@@ -82,11 +82,16 @@ class LogFileTest(unittest.TestCase):
         self.assertRegex(self._written(),
                          r'^\d\d:\d\d:\d\d\.\d{3} \[MainThread\] DEBUG: Started$')
 
-    def test_what_nothing_caught_is_logged_with_its_traceback(self):
+    def _logging_uncaught(self):
+        """Log to self.path what nothing catches, in any thread, until
+        the test ends."""
         self.addCleanup(setattr, sys, 'excepthook', sys.excepthook)
         self.addCleanup(setattr, threading, 'excepthook', threading.excepthook)
         mcomix.log.log_to_file(self.path)
         mcomix.log.log_uncaught_exceptions()
+
+    def test_what_nothing_caught_is_logged_with_its_traceback(self):
+        self._logging_uncaught()
         try:
             raise TypeError("Couldn't find foreign struct converter")
         except TypeError as error:
@@ -106,10 +111,7 @@ class LogFileTest(unittest.TestCase):
         self.assertIn('ValueError: in a worker', written)
 
     def test_an_interrupt_and_a_thread_that_exits_are_not_logged(self):
-        self.addCleanup(setattr, sys, 'excepthook', sys.excepthook)
-        self.addCleanup(setattr, threading, 'excepthook', threading.excepthook)
-        mcomix.log.log_to_file(self.path)
-        mcomix.log.log_uncaught_exceptions()
+        self._logging_uncaught()
         # Ctrl+C goes where Python sends it: a line on standard error.
         with unittest.mock.patch.object(sys, '__excepthook__') as python:
             sys.excepthook(KeyboardInterrupt, KeyboardInterrupt(), None)
