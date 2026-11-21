@@ -12,7 +12,7 @@ import unittest.mock
 from gi.repository import Gdk, Graphene, Gtk, Pango
 
 from . import (MComixTest, children, descendants, focused_row,
-               keep_focus_within, pump)
+               keep_focus_within, label_texts, pump)
 
 from mcomix import column_list
 
@@ -66,8 +66,7 @@ class ColumnListViewTest(MComixTest):
 
     def _cells(self):
         """The text of every cell that is on screen, whatever column."""
-        return [widget.get_text() for widget in descendants(self.view)
-                if isinstance(widget, Gtk.Label)]
+        return label_texts(self.view)
 
     # -- What is in it ----------------------------------------------------
 

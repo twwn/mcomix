@@ -525,6 +525,12 @@ def children(widget):
         child = child.get_next_sibling()
 
 
+def label_texts(widget):
+    """Every label's text under <widget>, depth first."""
+    return [child.get_text() for child in descendants(widget)
+            if isinstance(child, Gtk.Label)]
+
+
 def descendants(widget):
     """Every widget under <widget>, depth first in the order GTK keeps
     them, <widget> itself left out."""
@@ -876,6 +882,14 @@ class MComixTest(unittest.TestCase):
                           constants.THUMBNAIL_PATH):
             os.makedirs(directory, exist_ok=True)
 
+    def prepare_main_window(self):
+        """Make the user's directories and load the icons, as MComix
+        does before it builds its main window; for a test that builds
+        one itself, or a dialog that shows MComix' icons."""
+        from mcomix import icons
+        self.make_user_directories()
+        icons.load_icons()
+
     def window_holding(self, child, size=None):
         """Present a window of the test's own holding <child>, <size>
         (width, height) by default, and return it once the main loop has
@@ -920,9 +934,7 @@ class MComixTest(unittest.TestCase):
         MComix started with it, over the user's directories made and the
         icons loaded; return once the archive's pages are listed, which
         a worker thread does after the window is built."""
-        from mcomix import icons
-        self.make_user_directories()
-        icons.load_icons()
+        self.prepare_main_window()
         self.open_main_window(open_path=NORMAL_ZIP)
         self.wait_for_pages()
 
@@ -1038,9 +1050,7 @@ class MainWindowLaterTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        from mcomix import icons
-        self.make_user_directories()
-        icons.load_icons()
+        self.prepare_main_window()
         self.window = None
 
     def tearDown(self):

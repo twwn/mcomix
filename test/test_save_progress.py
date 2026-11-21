@@ -18,7 +18,6 @@ from . import (MComixTest, NORMAL_ZIP, fresh_bookmarks_store, pump,
                visible_prompts, wait_for)
 
 from mcomix import archive_packer
-from mcomix import icons
 from mcomix import save_progress
 from mcomix import edit_dialog
 from mcomix.dialog import Response
@@ -34,8 +33,7 @@ class LongSaveTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        self.make_user_directories()
-        icons.load_icons()
+        self.prepare_main_window()
         fresh_bookmarks_store()
         self.shelf = os.path.join(self.tmp_dir, 'shelf')
         os.makedirs(self.shelf)

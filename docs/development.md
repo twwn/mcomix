@@ -45,9 +45,11 @@ Class or helper | For
 `open_main_window_on_a_book()` | The main window opened on a four-page ZIP, once its pages are listed.
 `self.window_holding(child, size)` | A window of the test's own holding a widget, on screen, destroyed after the test.
 `self.make_user_directories()` | The configuration, data and thumbnail folders, which `setUp()` names but does not make.
+`self.prepare_main_window()` | Those folders made and the icons loaded, for a test that builds the main window or an MComix dialog itself.
 `self.wait_for_pages(count)` | Wait for the book opened in `self.window` to have its pages listed: any, or `count` of them.
 `pump()`, `wait_for()`, `wait_frames()` | Let the main loop run; wait for a condition rather than a time.
 `children()`, `descendants()` | The widgets inside a widget.
+`label_texts(widget)` | The text of every label inside a widget, depth first.
 `visible_prompts()`, `prompts_over(window)` | The message dialogs on screen, or standing over a window.
 `notebook_tabs(notebook)` | The labels of a notebook's tabs.
 `simple_file_chooser()` | The `SimpleFileChooserDialog` on screen, if any.

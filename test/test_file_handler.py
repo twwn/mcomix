@@ -25,7 +25,6 @@ from mcomix import archive_extractor
 from mcomix import constants
 from mcomix import file_handler
 from mcomix import file_provider
-from mcomix import icons
 from mcomix import main
 from mcomix import tools
 from mcomix import run
@@ -579,8 +578,7 @@ class ResumedWindowTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        self.make_user_directories()
-        icons.load_icons()
+        self.prepare_main_window()
         self.books = {}
         for name in ('a.cbz', 'b.cbz', 'c.cbz'):
             self.books[name[0]] = os.path.join(self.tmp_dir, name)

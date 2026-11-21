@@ -11,7 +11,6 @@ from . import MComixTest, close_a_main_window
 
 from mcomix import constants
 from mcomix import portability
-from mcomix import icons
 from mcomix import main
 
 
@@ -299,8 +298,7 @@ class DescribeDesktopTest(MComixTest):
                         .startswith('GdkOtherDisplay'))
 
     def test_the_main_window_logs_it(self):
-        self.make_user_directories()
-        icons.load_icons()
+        self.prepare_main_window()
         with self.assertLogs('mcomix', 'INFO') as logs:
             window = main.MainWindow()
             main.set_main_window(window)

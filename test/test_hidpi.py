@@ -15,7 +15,6 @@ from . import (MComixTest, MainWindowLaterTest, MainWindowOpenTest,
                get_testfile_path, pump, wait_for)
 
 from mcomix import edit_image_area
-from mcomix import icons
 from mcomix import image_tools
 from mcomix import main
 from mcomix import pageselect
@@ -93,9 +92,8 @@ class ThumbnailScaleTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        self.make_user_directories()
+        self.prepare_main_window()
         prefs['show thumbnails'] = True
-        icons.load_icons()
         self.open_main_window(
             open_path=get_testfile_path(
                 'pepper-and-carrot',

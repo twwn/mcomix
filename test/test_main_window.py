@@ -36,7 +36,6 @@ from mcomix import reading_directions
 from mcomix import dialog as dialog_module
 from mcomix import edit_dialog
 from mcomix import file_chooser_simple_dialog as simple_chooser
-from mcomix import icons
 from mcomix import image_tools
 from mcomix import keybindings
 from mcomix import layout
@@ -88,10 +87,9 @@ class MainWindowTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        self.make_user_directories()
+        self.prepare_main_window()
         prefs['show toolbar'] = True
         prefs['show menubar'] = True
-        icons.load_icons()
         self.open_main_window(open_path=NORMAL_ZIP)
         self._pump()
 
@@ -5836,9 +5834,7 @@ class StartLogTest(MComixTest):
     the archive handlers and "Started", where nothing was logged."""
 
     def test_showing_the_window_and_measuring_the_bar_are_logged(self):
-        for directory in (constants.CONFIG_DIR, constants.DATA_DIR):
-            os.makedirs(directory, exist_ok=True)
-        icons.load_icons()
+        self.prepare_main_window()
         with self.assertLogs('mcomix', 'DEBUG') as logged:
             window = main.MainWindow()
             main.set_main_window(window)
@@ -5865,9 +5861,7 @@ class RestartTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        for directory in (constants.CONFIG_DIR, constants.DATA_DIR):
-            os.makedirs(directory, exist_ok=True)
-        icons.load_icons()
+        self.prepare_main_window()
         self.open_main_window()
         # What restart_program() has to get right is the order: the path
         # and the page are read while the file is still open, because
@@ -5999,8 +5993,7 @@ class RestartOnABookTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        self.make_user_directories()
-        icons.load_icons()
+        self.prepare_main_window()
         self.window = None
 
     def tearDown(self):
@@ -6074,8 +6067,7 @@ class WhatAPageCarriesThroughASaveTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        self.make_user_directories()
-        icons.load_icons()
+        self.prepare_main_window()
         fresh_bookmarks_store()
         self.book = os.path.join(self.tmp_dir, 'book.zip')
         shutil.copyfile(NORMAL_ZIP, self.book)
@@ -6246,8 +6238,7 @@ class ResumeAfterSaveAndQuitTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        self.make_user_directories()
-        icons.load_icons()
+        self.prepare_main_window()
 
     def _window(self, path=None):
         window = main.MainWindow(open_path=path)
@@ -6374,8 +6365,7 @@ class StartUpOptionsTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        self.make_user_directories()
-        icons.load_icons()
+        self.prepare_main_window()
 
     def _start(self, **options):
         self.open_main_window(**options)

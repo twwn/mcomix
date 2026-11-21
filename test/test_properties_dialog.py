@@ -16,9 +16,9 @@ from unittest import mock
 from gi.repository import Gtk
 
 from . import (MComixTest, NORMAL_ZIP, children, described_book, descendants,
-               get_testfile_path, notebook_tabs, pump, wait_for, wait_frames)
+               get_testfile_path, label_texts, notebook_tabs, pump, wait_for,
+               wait_frames)
 
-from mcomix import icons
 from mcomix import main
 from mcomix import properties_dialog
 
@@ -27,8 +27,7 @@ class PropertiesDialogTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        self.make_user_directories()
-        icons.load_icons()
+        self.prepare_main_window()
 
     def tearDown(self):
         # The dialogs only: close_main_window(), a cleanup and so run after this,
@@ -153,12 +152,6 @@ class PropertiesDialogTest(MComixTest):
         return described_book(os.path.join(self.tmp_dir, 'Described.cbz'),
                               comicinfo)
 
-    @staticmethod
-    def _texts(widget):
-        """Every label's text under <widget>, depth first."""
-        return [child.get_text() for child in descendants(widget)
-                if isinstance(child, Gtk.Label)]
-
     def test_the_archive_page_says_what_its_comicinfo_says(self):
         dialog = self._open(self._book(
             '<?xml version="1.0" encoding="utf-8"?>'
@@ -169,9 +162,9 @@ class PropertiesDialogTest(MComixTest):
             '</ComicInfo>'))
         page = dialog._archive_page
         self.assertTrue(
-            wait_for(lambda: 'Night Watch' in self._texts(page), seconds=10),
-            'the series never appeared: %r' % self._texts(page))
-        texts = self._texts(page)
+            wait_for(lambda: 'Night Watch' in label_texts(page), seconds=10),
+            'the series never appeared: %r' % label_texts(page))
+        texts = label_texts(page)
         for label, value in (('Series:', 'Night Watch'), ('Number:', '3'),
                              ('Title:', 'The Long Night'),
                              ('Writer:', 'A. Writer'), ('Volume:', '2'),
@@ -194,7 +187,7 @@ class PropertiesDialogTest(MComixTest):
                            ) as asked:
             dialog = self._open(book)
             page = dialog._archive_page
-            self.assertNotIn('Night Watch', self._texts(page))
+            self.assertNotIn('Night Watch', label_texts(page))
         awaited = dialog._awaited_comicinfo
         self.assertIsNotNone(awaited)
         self.assertIn(mock.call([awaited]), asked.call_args_list)
@@ -203,26 +196,26 @@ class PropertiesDialogTest(MComixTest):
             seconds=10))
         self.window.filehandler.file_available([awaited])
         pump()
-        self.assertIn('Night Watch', self._texts(page))
+        self.assertIn('Night Watch', label_texts(page))
         self.assertIsNone(dialog._awaited_comicinfo)
 
     def test_an_archive_without_comicinfo_names_no_series(self):
         dialog = self._open(self._book())
         page = dialog._archive_page
-        self.assertTrue(wait_for(lambda: 'Location:' in self._texts(page),
+        self.assertTrue(wait_for(lambda: 'Location:' in label_texts(page),
                                  seconds=10))
         pump()
-        self.assertNotIn('Series:', self._texts(page))
+        self.assertNotIn('Series:', label_texts(page))
 
     def test_a_comicinfo_that_does_not_parse_leaves_the_page_as_it_was(self):
         dialog = self._open(self._book('<ComicInfo><Series>Broken'))
         page = dialog._archive_page
         # Described once more when the ComicInfo.xml is out, and then
         # waiting for nothing.
-        self.assertTrue(wait_for(lambda: 'Location:' in self._texts(page)
+        self.assertTrue(wait_for(lambda: 'Location:' in label_texts(page)
                                  and dialog._awaited_comicinfo is None,
                                  seconds=10))
-        self.assertNotIn('Series:', self._texts(page))
+        self.assertNotIn('Series:', label_texts(page))
 
     @unittest.skipIf(sys.platform == 'win32',
                      'Windows keeps no permission bits but read-only')
@@ -232,10 +225,10 @@ class PropertiesDialogTest(MComixTest):
         shutil.copy(get_testfile_path('images', 'blue.png'), picture)
         os.chmod(picture, 0o640)
         page = self._open(picture)._image_page
-        self.assertTrue(wait_for(lambda: 'Permissions:' in self._texts(page),
+        self.assertTrue(wait_for(lambda: 'Permissions:' in label_texts(page),
                                  seconds=10))
-        self.assertIn('-rw-r-----', self._texts(page))
-        self.assertNotIn('0o640', self._texts(page))
+        self.assertIn('-rw-r-----', label_texts(page))
+        self.assertNotIn('0o640', label_texts(page))
 
     def test_windows_is_not_said_to_keep_an_owner_or_permissions(self):
         """os.stat() on Windows gives every file the owner 0 and the
@@ -247,11 +240,11 @@ class PropertiesDialogTest(MComixTest):
         with unittest.mock.patch.object(properties_dialog, 'sys', windows,
                                         create=True):
             page = self._open(picture)._image_page
-            self.assertTrue(wait_for(lambda: 'Size:' in self._texts(page),
+            self.assertTrue(wait_for(lambda: 'Size:' in label_texts(page),
                                      seconds=10))
-        self.assertNotIn('Owner:', self._texts(page))
-        self.assertNotIn('Permissions:', self._texts(page))
-        self.assertIn('Modified:', self._texts(page))
+        self.assertNotIn('Owner:', label_texts(page))
+        self.assertNotIn('Permissions:', label_texts(page))
+        self.assertIn('Modified:', label_texts(page))
 
     def test_a_file_whose_owner_has_no_name_here_is_described(self):
         """A file from another system - a USB stick, an unpacked
@@ -268,10 +261,10 @@ class PropertiesDialogTest(MComixTest):
             dialog = self._open(get_testfile_path('images', 'blue.png'))
             page = dialog._image_page
             self.assertTrue(
-                wait_for(lambda: 'Owner:' in self._texts(page), seconds=10),
-                'the page was left without its file: %r' % self._texts(page))
+                wait_for(lambda: 'Owner:' in label_texts(page), seconds=10),
+                'the page was left without its file: %r' % label_texts(page))
         uid = str(os.stat(get_testfile_path('images', 'blue.png')).st_uid)
-        self.assertIn(uid, self._texts(page))
+        self.assertIn(uid, label_texts(page))
 
 
 

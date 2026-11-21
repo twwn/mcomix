@@ -13,7 +13,6 @@ from gi.repository import Gdk, Gtk
 
 from . import MComixTest, NORMAL_ZIP, children, pump, wait_for
 
-from mcomix import icons
 from mcomix import main
 from mcomix import pageselect
 from mcomix.dialog import Response
@@ -200,8 +199,7 @@ class ChapterTest(_WindowTest):
                     book.writestr(name, source.read(name))
             if comicinfo_xml is not None:
                 book.writestr('ComicInfo.xml', comicinfo_xml)
-        self.make_user_directories()
-        icons.load_icons()
+        self.prepare_main_window()
         self.open_main_window(open_path=path)
         self.wait_for_pages(4)
         self.assertTrue(wait_for(
@@ -285,8 +283,7 @@ class NoBookTest(_WindowTest):
 
     def setUp(self):
         super().setUp()
-        self.make_user_directories()
-        icons.load_icons()
+        self.prepare_main_window()
         self.open_main_window()
         pump()
 

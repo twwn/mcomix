@@ -17,7 +17,6 @@ from gi.repository import Gtk
 from . import MComixTest, NORMAL_ZIP, close_a_main_window, pump, wait_for
 from .test_dialog_freed import _holders
 
-from mcomix import icons
 from mcomix import main
 
 
@@ -25,8 +24,7 @@ class MainWindowFreedTest(MComixTest):
 
     def setUp(self):
         super().setUp()
-        self.make_user_directories()
-        icons.load_icons()
+        self.prepare_main_window()
 
     def assertFreedOnClose(self, open_path=None):
         """Build a main window on <open_path>, close it as the tests and

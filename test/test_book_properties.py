@@ -8,20 +8,14 @@ import unittest.mock
 
 from gi.repository import Gdk, Gtk
 
-from . import (MComixTest, NORMAL_ZIP, described_book, descendants, pump,
-               wait_for)
+from . import (MComixTest, NORMAL_ZIP, described_book, descendants,
+               label_texts, pump, wait_for)
 from .test_book_area import (_MarkingLibrary, _OneBookAreaTest,
                              assert_offered_once_a_book_is_selected)
 
 from mcomix import image_tools
 from mcomix.archive import password as archive_password
 from mcomix.library import book_properties
-
-
-def _texts(widget):
-    """Every label's text under <widget>, depth first."""
-    return [child.get_text() for child in descendants(widget)
-            if isinstance(child, Gtk.Label)]
 
 
 class BookPropertiesTest(MComixTest):
@@ -83,7 +77,7 @@ class BookPropertiesTest(MComixTest):
             book.id, self.backend.get_collection_by_name('Westerns').id)
         book.set_last_read_page(2, datetime.datetime(2026, 3, 4, 5, 6, 7))
 
-        texts = _texts(self._open([book]).page)
+        texts = label_texts(self._open([book]).page)
 
         self.assertIn('First.cbz', texts)
         self.assertIn('%d pages' % book.pages, texts)
@@ -96,13 +90,13 @@ class BookPropertiesTest(MComixTest):
         self.assertIn('Westerns', texts)
 
     def test_a_book_never_read_and_filed_nowhere_says_neither(self):
-        texts = _texts(self._open([self.books[0]]).page)
+        texts = label_texts(self._open([self.books[0]]).page)
         self.assertNotIn('Last read:', texts)
         self.assertNotIn('Collection:', texts)
 
     def test_a_book_whose_file_is_gone_keeps_the_size_recorded(self):
         os.remove(self.paths[0])
-        texts = _texts(self._open([self.books[0]]).page)
+        texts = label_texts(self._open([self.books[0]]).page)
         self.assertIn('Size:', texts)
         self.assertNotIn('Modified:', texts)
 
@@ -117,7 +111,7 @@ class BookPropertiesTest(MComixTest):
     def test_several_books_are_summed_up(self):
         first, second = self.books
         first.set_last_read_page(first.pages)
-        texts = _texts(self._open(self.books).page)
+        texts = label_texts(self._open(self.books).page)
         self.assertIn('2 books', texts)
         self.assertIn('%d pages' % (first.pages + second.pages), texts)
         self.assertIn('Started: 0, finished: 1', texts)
@@ -132,7 +126,7 @@ class BookPropertiesTest(MComixTest):
         self.assertTrue(self.backend.update_book_path(self.paths[1], moved))
         books = [self.backend.get_book_by_path(self.paths[0]),
                  self.backend.get_book_by_path(moved)]
-        texts = _texts(self._open(books).page)
+        texts = label_texts(self._open(books).page)
         self.assertNotIn('Location:', texts)
 
     # -- What the book's ComicInfo.xml says ---------------------------------
@@ -148,10 +142,10 @@ class BookPropertiesTest(MComixTest):
         # Read off the main thread: the dialog is up before it is.
         self.assertIsNotNone(dialog.reading)
         self.assertTrue(
-            wait_for(lambda: 'Night Watch' in _texts(dialog.page),
+            wait_for(lambda: 'Night Watch' in label_texts(dialog.page),
                      seconds=10),
-            'the series never appeared: %r' % _texts(dialog.page))
-        texts = _texts(dialog.page)
+            'the series never appeared: %r' % label_texts(dialog.page))
+        texts = label_texts(dialog.page)
         for label, value in (('Series:', 'Night Watch'), ('Number:', '3'),
                              ('Title:', 'The Long Night'),
                              ('Artist:', 'B. Artist')):
@@ -164,7 +158,7 @@ class BookPropertiesTest(MComixTest):
         dialog = self._open([self.books[0]])
         dialog.reading.join(10)
         pump()
-        texts = _texts(dialog.page)
+        texts = label_texts(dialog.page)
         self.assertNotIn('Series:', texts)
         self.assertIn('Location:', texts)
 
@@ -176,7 +170,7 @@ class BookPropertiesTest(MComixTest):
         dialog.destroy()
         dialog.reading.join(10)
         pump()
-        self.assertNotIn('Night Watch', _texts(page))
+        self.assertNotIn('Night Watch', label_texts(page))
 
     def test_no_password_is_asked_for(self):
         """The library never asks for a password: the archive is opened
