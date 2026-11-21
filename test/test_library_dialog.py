@@ -692,6 +692,28 @@ class FolderWatchTest(_LibraryWindowTest):
         self.assertEqual(1, sum(statement.startswith('BEGIN')
                                 for statement in statements))
 
+    def test_a_book_that_cannot_be_added_is_not_reported_as_added(self):
+        """It is new again at every scan, and "Scan now" said "Added 21
+        new books" at every click over 21 such books."""
+        folder = self._watched()
+        good = self._arrive(folder, 'good.cbz')
+        damaged = os.path.join(folder, 'bad.cbz')
+        with open(damaged, 'wb') as book:
+            book.write(b'not a book')
+        dialog = self._open()
+        dialog.backend.watchlist.add_directory(folder)
+        entry = dialog.backend.watchlist.get_watchlist_entry(folder)
+        dialog._new_files_found([damaged, good], entry)
+        pump()
+        self.assertEqual(
+            "Added new book 'good.cbz' from folder '%s'. Could not add 1 "
+            "book to the library: bad.cbz" % folder,
+            dialog._statusbar.get_text().strip())
+        dialog._new_files_found([damaged], entry)
+        pump()
+        self.assertEqual('Could not add 1 book to the library: bad.cbz',
+                         dialog._statusbar.get_text().strip())
+
     def test_a_batch_of_books_is_one_scan(self):
         folder = self._watched()
         dialog = self._open_watching((folder, False))
@@ -2222,7 +2244,7 @@ class NewBooksMessageTest(MComixTest):
     def _message(self, count):
         class _Library:
             def add_books(self, paths, collection):
-                pass
+                return len(paths), []
 
             def set_status_message(self, message):
                 self.message = message

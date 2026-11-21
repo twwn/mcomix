@@ -214,16 +214,23 @@ class _LibraryDialog(Gtk.Window):
         """
 
         filelist, removed = self._follow_and_remove(filelist, watchentry)
+        parts = []
         if filelist:
             # A watch list entry that has been removed keeps its
             # directory but no longer names a collection, and one that
             # files its books in none names the default collection,
             # whose id is None.
             collection = watchentry.collection
-            self.add_books(filelist,
-                           None if collection is None else collection.id)
-
-            if len(filelist) == 1:
+            added, not_added = self.add_books(
+                filelist, None if collection is None else collection.id)
+            # A book that could not be added is new again at the next
+            # scan, and was reported as added at every one of them.
+            refused = frozenset(not_added)
+            filelist = [path for path in filelist if path not in refused]
+        else:
+            added, not_added = 0, []
+        if added:
+            if added == 1:
                 message = _("Added new book '%(bookname)s' "
                             "from folder '%(directory)s'.")
             else:
@@ -233,19 +240,22 @@ class _LibraryDialog(Gtk.Window):
                 message = i18n.get_translation().ngettext(
                     "Added %(count)d new book from folder '%(directory)s'.",
                     "Added %(count)d new books from folder '%(directory)s'.",
-                    len(filelist))
-            message %= {'directory': watchentry.directory,
-                        'count': len(filelist),
-                        'bookname': os.path.basename(filelist[0])}
-        else:
-            message = _("No new books found in folder '%s'.") \
-                % watchentry.directory
+                    added)
+            parts.append(message % {
+                'directory': watchentry.directory, 'count': added,
+                'bookname': os.path.basename(filelist[0])})
+        if not_added:
+            parts.append(library_add_progress_dialog.not_added_message(
+                not_added))
+        if not parts:
+            parts.append(_("No new books found in folder '%s'.")
+                         % watchentry.directory)
         if removed:
-            message += ' ' + i18n.get_translation().ngettext(
+            parts.append(i18n.get_translation().ngettext(
                 'Removed %d book from the library.',
                 'Removed %d books from the library.',
-                removed) % removed
-        self.set_status_message(message)
+                removed) % removed)
+        self.set_status_message(' '.join(parts))
 
     def _follow_and_remove(
             self, filelist: Sequence[str],
@@ -320,9 +330,10 @@ class _LibraryDialog(Gtk.Window):
         _close_dialog()
 
     def add_books(self, paths: Sequence[str],
-                  collection: int | None = None) -> None:
+                  collection: int | None = None) -> tuple[int, list[str]]:
         """Add the books at <paths> to the library, and file them in
-        <collection>.
+        <collection>.  Say how many were added, and which of <paths>
+        could not be.
 
         None files them in no collection, and so do the two collections
         a book is not filed in: "All books", which holds every book
@@ -332,8 +343,9 @@ class _LibraryDialog(Gtk.Window):
         if collection in (constants.COLLECTION_ALL,
                           constants.COLLECTION_RECENT):
             collection = None
-        library_add_progress_dialog._AddLibraryProgressDialog(
+        adding = library_add_progress_dialog._AddLibraryProgressDialog(
             self, paths, collection)
+        return adding.added, adding.not_added
 
     def relocate_books(self, old_folder: str, new_folder: str) -> int:
         """Follow the books of <old_folder>, which was moved or renamed

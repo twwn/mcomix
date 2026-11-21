@@ -29,7 +29,7 @@ if TYPE_CHECKING:
 _NAMES_SHOWN = 3
 
 
-def _not_added_message(paths: Sequence[str]) -> str:
+def not_added_message(paths: Sequence[str]) -> str:
     """What the status bar says about the books at <paths>, which were
     not added: the reader is told, not only the log, and by name, since
     the book itself is what they have to look at."""
@@ -97,6 +97,11 @@ class _AddLibraryProgressDialog(Dialog):
 
         total_paths = len(paths)
         total_added = 0
+        #: How many of the books were added, and which could not be:
+        #: what the caller says about the batch has to agree with the
+        #: status bar's account of it.
+        self.added = 0
+        self.not_added: list[str] = []
 
         # One transaction for the whole batch. The connection commits
         # every statement by itself otherwise, and add_book() makes
@@ -111,6 +116,7 @@ class _AddLibraryProgressDialog(Dialog):
 
                 if library.backend.add_book(path, collection):
                     total_added += 1
+                    self.added = total_added
 
                     number_label.set_text('%d / %d' % (total_added, total_paths))
                 elif not archive_tools.is_later_volume(path):
@@ -131,8 +137,9 @@ class _AddLibraryProgressDialog(Dialog):
                 if self._destroy:
                     break
 
+        self.not_added = not_added
         if not_added:
-            library.set_status_message(_not_added_message(not_added))
+            library.set_status_message(not_added_message(not_added))
         if not self._destroy:
             self._response()
 
