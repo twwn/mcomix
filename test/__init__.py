@@ -70,9 +70,19 @@ os.environ['TMPDIR'] = os.environ['TEMP'] = os.environ['TMP'] = _SESSION_TMPDIR
 tempfile.tempdir = _SESSION_TMPDIR
 atexit.register(shutil.rmtree, _SESSION_TMPDIR, True)
 
+# Keep the user's own GTK settings and stylesheet out of the suite.  GTK
+# reads settings.ini and gtk.css from GLib's user config directory, which
+# GLib caches the first time anything asks, before a test can point the
+# environment at a home of its own.  A gtk.css that defined
+# accent_bg_color let a test pass here that failed on every runner,
+# whose GTK defines no such colour.
+os.environ['XDG_CONFIG_HOME'] = os.path.join(_SESSION_TMPDIR, 'config')
+
 from gi.repository import GdkPixbuf, GLib, Gtk
 
 assert GLib.get_tmp_dir() == _SESSION_TMPDIR, GLib.get_tmp_dir()
+assert GLib.get_user_config_dir() == os.environ['XDG_CONFIG_HOME'], \
+    GLib.get_user_config_dir()
 
 if sys.platform == 'win32':
     # A Desktop that lasts as long as the process.  GTK's places sidebar
