@@ -922,7 +922,7 @@ class CleanCollectionOutOfReachTest(OpenLibraryTest):
                           'unmounted too'}, left)
 
 
-class BooksGoneFromTest(OpenLibraryTest):
+class BooksMissingFromTest(OpenLibraryTest):
 
     """What a scan of a watched folder takes out of the library: the
     books deleted from it, not those of a drive not connected."""
