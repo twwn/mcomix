@@ -78,6 +78,15 @@ class _ViewTest(MComixTest):
         return wait_for(lambda: all(item.thumbnail is not None
                                     for item in self.view._bound), seconds=10)
 
+    def _cell_heights(self):
+        """The height of each cell laid out, of its picture and of its
+        label, with whether it shows one: what decides a row's height."""
+        return sorted({(cell.get_parent().get_height(),
+                        cell.picture.get_height(),
+                        cell.label.get_visible(), cell.label.get_height())
+                       for cell in self.view._each_cell()
+                       if cell.get_width() > 0})
+
 
 class ThumbnailListViewTest(_ViewTest):
 
@@ -364,7 +373,10 @@ class ThumbnailsOnScreenFirstTest(_ViewTest):
         self.assertGreater(len(seen), 6)
         self.assertGreater(len(self.asked), 4 * len(seen),
                            'the grid bound little more than it shows')
-        self.assertIn(self.asked[0], seen)
+        # What the grid showed and bound, should it fail: the CI has
+        # seen the first asked for one entry before the first in view.
+        self.assertIn(self.asked[0], seen,
+                      (sorted(seen), self.asked[:8], self._cell_heights()))
         # The scroll bar says which rows are in view to within one.
         columns = self.view.get_max_columns()
         self.assertLess(max(self.asked.index(uid) for uid in seen),
@@ -598,7 +610,8 @@ class ThumbnailGridViewTest(_ViewTest):
         across, down = self._pitches()
         # Nothing drawn yet: each cell keeps the whole box.
         padding = down - 96
-        self.assertLess(padding, 16)
+        # The CI has seen 30 here: say which cells made a row taller.
+        self.assertLess(padding, 16, self._cell_heights())
         cover = image_tools.pixbuf_to_texture(
             solid_pixbuf(64, 80, 0x336699ff, has_alpha=True))
         for item in items:
