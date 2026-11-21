@@ -6,13 +6,11 @@ canvas the box is drawn on, so both can be exercised without one.
 """
 
 import types
-import unittest
 
-import gi
 from gi.repository import Gdk, Graphene, Gsk, Gtk
 from gi.repository import Pango
 
-from . import MComixTest
+from . import MComixTest, skip_without_render_nodes
 
 from mcomix.osd import OnScreenDisplay, PageCounter
 
@@ -85,14 +83,7 @@ class DrawTest(MComixTest):
     def _render(self, draw, size):
         """Render what <draw> puts on a snapshot over a <size> field of
         grey, and answer with the rendered texture."""
-        if gi.version_info < (3, 48):
-            # Rendering takes the snapshot's render node, a fundamental
-            # type, which PyGObject hands to Python only from 3.48 on:
-            # 3.46, the floor, raises "No means to translate argument or
-            # return value for 'GskContainerNode'" (test_statusbar.py
-            # skips for the same reason).
-            raise unittest.SkipTest('PyGObject %s cannot read render nodes'
-                                    % gi.__version__)
+        skip_without_render_nodes()
         snapshot = Gtk.Snapshot()
         field = Graphene.Rect().init(0, 0, *size)
         grey = Gdk.RGBA()

@@ -60,6 +60,9 @@ Class or helper | For
 `StubFileHandler` | A window's file handler with no book and the `file_opened` and `file_closed` signals, for a menu's tests.
 `windows_refusal(name)` | `os.remove` or `os.unlink` refusing a read-only file, as on Windows.
 `replace_held_once()` | `os.replace` refusing once, as on Windows while another process holds the file.
+`held_by_another_process()` | The error Windows raises for a file another process holds open (winerror 32), for a stand-in of your own.
+`skip_without_render_nodes()` | Skip where PyGObject cannot hand a render node to Python (before 3.48).
+`skip_unless_rar_reads(test)` | Skip where neither libunrar nor an unrar program is installed.
 `fresh_bookmarks_store()` | The bookmarks store read again from the test's home. `setUp()` does it already.
 `session_tmp_dir()` | A folder that lasts the whole run, for what goes on writing after its test.
 `sample_pages(count)` | Paths of up to three pictures to pack or open.

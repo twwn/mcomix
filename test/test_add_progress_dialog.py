@@ -11,11 +11,10 @@ import shutil
 
 from gi.repository import Gtk
 
-from . import MComixTest, NORMAL_ZIP, descendants, get_testfile_path, pump
+from . import (MComixTest, NORMAL_ZIP, descendants, get_testfile_path, pump,
+               skip_unless_rar_reads)
 
 from mcomix import constants
-from mcomix.archive import rar
-from mcomix.archive import rar_external
 from mcomix.dialog import Response
 from mcomix.library import add_progress_dialog
 from mcomix.library import backend as backend_module
@@ -187,9 +186,7 @@ class AddProgressDialogTest(MComixTest):
     def test_the_later_volumes_of_a_set_are_not_missed(self):
         """They are left out on purpose, and the set is there through
         its first volume."""
-        if not (rar.RarArchive.is_available()
-                or rar_external.RarArchive.is_available()):
-            self.skipTest('nothing here reads RAR')
+        skip_unless_rar_reads(self)
         paths = []
         for part in (1, 2, 3):
             name = 'Multivolume.part%d.rar' % part

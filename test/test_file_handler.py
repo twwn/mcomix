@@ -18,7 +18,8 @@ from gi.repository import Gtk
 from PIL import Image
 
 from . import (MComixTest, MainWindowLaterTest, MainWindowOpenTest, NORMAL_ZIP,
-               close_a_main_window, get_testfile_path, prompts_over, pump, wait_for)
+               close_a_main_window, get_testfile_path, prompts_over, pump,
+               skip_unless_rar_reads, wait_for)
 
 from mcomix import archive_extractor
 from mcomix import constants
@@ -30,8 +31,6 @@ from mcomix import tools
 from mcomix import run
 from mcomix.dialog import Response
 from mcomix.preferences import prefs
-from mcomix.archive import rar
-from mcomix.archive import rar_external
 
 from .test_main_window import _descriptors_on
 
@@ -369,9 +368,7 @@ class DirectoryWalkTest(MainWindowLaterTest):
     def _put_rar_set(self, directory):
         """Copy the RAR set packed in three volumes into <directory>, and
         return the path of its first volume."""
-        if not (rar.RarArchive.is_available()
-                or rar_external.RarArchive.is_available()):
-            self.skipTest('nothing here reads RAR')
+        skip_unless_rar_reads(self)
         for part in (1, 2, 3):
             name = 'Multivolume.part%d.rar' % part
             shutil.copy(get_testfile_path('archives', name),

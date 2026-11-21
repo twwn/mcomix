@@ -7,7 +7,7 @@ import shutil
 import types
 import unittest.mock
 
-from . import MComixTest, get_testfile_path
+from . import MComixTest, get_testfile_path, held_by_another_process
 
 from mcomix import file_mover
 
@@ -64,9 +64,7 @@ class FileMoverTest(MComixTest):
         reading, as the thumbnail bar reads a loose page.  shutil.move()
         took a refused rename for a move across file systems: it copied
         the book, failed to remove the original, and left it in both."""
-        held = PermissionError(13, 'The process cannot access the file '
-                               'because it is being used by another process')
-        held.winerror = 32
+        held = held_by_another_process()
         rename, unlink = os.rename, os.unlink
         refusals = {'rename': [held], 'unlink': [held]}
 

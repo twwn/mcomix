@@ -17,7 +17,7 @@ import unittest.mock
 import gi
 from gi.repository import Gdk, Gio, GLib, Gsk, Gtk
 
-from . import MComixTest, wait_for, wait_frames
+from . import MComixTest, skip_without_render_nodes, wait_for, wait_frames
 
 from mcomix import theme
 from mcomix import image_tools
@@ -36,14 +36,7 @@ def _painted(window, kind, done):
     the frame clock may not have run within one under load, and a window
     that has not been allocated snapshots to nothing at all.
     """
-    if gi.version_info < (3, 48):
-        # A render node is a fundamental type, and PyGObject hands those
-        # to Python only from 3.48 on: 3.46 raises "No means to translate
-        # argument or return value for 'GskColorNode'".  MComix itself
-        # never reads a render node, so only this way of looking at what
-        # was painted is out of reach there.
-        raise unittest.SkipTest('PyGObject %s cannot read render nodes'
-                                % gi.__version__)
+    skip_without_render_nodes()
     if not wait_for(lambda: window.get_width() > 0
                     and window.get_height() > 0):
         raise AssertionError('the window was never allocated')

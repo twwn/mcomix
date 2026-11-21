@@ -6,12 +6,9 @@ whole line back.  It then was one label joining the fields with "|",
 and now is a label per field.  These pin what the labels carry.
 """
 
-import unittest
-
-import gi
 from gi.repository import Gdk, Gsk, Gtk
 
-from . import MComixTest, wait_for
+from . import MComixTest, skip_without_render_nodes, wait_for
 
 from mcomix import constants
 from mcomix import status
@@ -21,13 +18,7 @@ from mcomix.preferences import prefs
 
 def drawn(widget):
     """The render node <widget> is drawn as, at its allocated size."""
-    if gi.version_info < (3, 48):
-        # A render node is a fundamental type, and PyGObject hands those
-        # to Python only from 3.48 on: 3.46 raises "No means to translate
-        # argument or return value for 'GskTextNode'" (test_theme.py
-        # skips for the same reason).
-        raise unittest.SkipTest('PyGObject %s cannot read render nodes'
-                                % gi.__version__)
+    skip_without_render_nodes()
     snapshot = Gtk.Snapshot()
     Gtk.WidgetPaintable(widget=widget).snapshot(
         snapshot, widget.get_width(), widget.get_height())

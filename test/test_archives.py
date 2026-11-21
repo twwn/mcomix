@@ -19,7 +19,8 @@ import warnings
 import zipfile
 import zlib
 
-from . import MComixTest, NORMAL_ZIP, get_testfile_path, posix_byte_names
+from . import (MComixTest, NORMAL_ZIP, get_testfile_path,
+               held_by_another_process, posix_byte_names)
 
 try:
     import chardet
@@ -1056,8 +1057,7 @@ class RecursiveArchiveNestingTest(MComixTest):
         """Windows refuses to move a file something has open, and a
         virus scanner reads an archive the moment it is written: the
         inner archive was then given up on."""
-        refusal = PermissionError(13, 'used by another process')
-        refusal.winerror = 32
+        refusal = held_by_another_process()
         rename = os.rename
         answers = [refusal]
 

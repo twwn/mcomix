@@ -21,9 +21,10 @@ import warnings
 from gi.repository import Gdk, GdkPixbuf, Gio, GLib, Gtk
 
 from . import (MComixTest, MainWindowLaterTest, NORMAL_ZIP, children,
-               close_a_main_window, descendants, fresh_bookmarks_store, get_testfile_path,
-               hold_open, prompts_over, pump, sample_pages, visible_prompts,
-               wait_for, windows_refusal)
+               close_a_main_window, descendants, fresh_bookmarks_store,
+               get_testfile_path, held_by_another_process, hold_open,
+               prompts_over, pump, sample_pages, visible_prompts, wait_for,
+               windows_refusal)
 
 from mcomix import archive_packer
 from mcomix import bookmark_backend
@@ -5212,10 +5213,7 @@ class MainWindowTest(MComixTest):
         """A stand-in for os.<name> that Windows' answer to a file
         something has open refuses once, before it renames."""
         real = getattr(os, name)
-        held = PermissionError(13, 'The process cannot access the file '
-                               'because it is being used by another process')
-        held.winerror = 32
-        answers = [held]
+        answers = [held_by_another_process()]
 
         def rename(source, target):
             if answers:
@@ -5400,8 +5398,7 @@ class MainWindowTest(MComixTest):
         target = os.path.join(self.tmp_dir, 'page.png')
         with open(target, 'wb') as old:
             old.write(b'old')
-        refusal = PermissionError(13, 'used by another process')
-        refusal.winerror = 32
+        refusal = held_by_another_process()
         replace = os.replace
         answers = [refusal]
 

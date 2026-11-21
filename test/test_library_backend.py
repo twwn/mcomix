@@ -16,7 +16,8 @@ from sqlite3 import dbapi2
 
 import PIL.Image
 
-from . import NORMAL_ZIP, get_testfile_path, posix_byte_names, refuse_passwords
+from . import (NORMAL_ZIP, get_testfile_path, posix_byte_names,
+               refuse_passwords, skip_unless_rar_reads)
 
 from mcomix import constants
 from mcomix import thumbnail_tools
@@ -26,8 +27,6 @@ from mcomix import last_read_page
 from mcomix.library import backend
 from mcomix.library import backend_types
 from mcomix.library import pixbuf_cache
-from mcomix.archive import rar
-from mcomix.archive import rar_external
 
 
 #: The one book of the libraries the upgrade tests write, as add_book()
@@ -312,9 +311,7 @@ class RarSetTest(LibraryDatabaseTest):
                 self.assertIsNone(self.library.get_book_by_path(path))
 
     def test_the_first_volume_is_added_as_the_book(self):
-        if not (rar.RarArchive.is_available()
-                or rar_external.RarArchive.is_available()):
-            self.skipTest('nothing here reads RAR')
+        skip_unless_rar_reads(self)
         self.assertTrue(self.library.add_book(self.volumes[0]))
         self.assertEqual(4, self.library.get_book_by_path(
             self.volumes[0]).pages)

@@ -608,6 +608,37 @@ class StubFileHandler:
         pass
 
 
+def held_by_another_process():
+    """The error Windows raises for a file another process holds open:
+    a sharing violation, winerror 32."""
+    held = PermissionError(13, 'The process cannot access the file '
+                           'because it is being used by another process')
+    held.winerror = 32
+    return held
+
+
+def skip_without_render_nodes():
+    """Skip the test where PyGObject cannot hand a render node to Python.
+
+    A render node is a fundamental type, and PyGObject hands those to
+    Python only from 3.48 on: 3.46, the floor, raises "No means to
+    translate argument or return value for 'GskTextNode'".  MComix
+    itself never reads a render node, so only this way of looking at
+    what was painted is out of reach there.
+    """
+    if gi.version_info < (3, 48):
+        raise unittest.SkipTest('PyGObject %s cannot read render nodes'
+                                % gi.__version__)
+
+
+def skip_unless_rar_reads(test):
+    """Skip <test> where neither libunrar nor an unrar program is here."""
+    from mcomix.archive import rar, rar_external
+    if not (rar.RarArchive.is_available()
+            or rar_external.RarArchive.is_available()):
+        test.skipTest('nothing here reads RAR')
+
+
 @contextlib.contextmanager
 def replace_held_once():
     """Patch os.replace to refuse once as Windows does while another
@@ -615,11 +646,8 @@ def replace_held_once():
     replace after; yields the refusals still to come, empty once that
     one was raised."""
     from unittest import mock
-    held = PermissionError(13, 'The process cannot access the file '
-                           'because it is being used by another process')
-    held.winerror = 32
     replace = os.replace
-    refusals = [held]
+    refusals = [held_by_another_process()]
 
     def refused_once(*args, **kwargs):
         if refusals:
