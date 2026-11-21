@@ -18,8 +18,8 @@ from gi.repository import Gtk
 from PIL import Image
 
 from . import (MComixTest, MainWindowLaterTest, MainWindowOpenTest, NORMAL_ZIP,
-               close_a_main_window, get_testfile_path, prompts_over, pump,
-               skip_unless_rar_reads, wait_for)
+               close_a_main_window, copy_rar_set, get_testfile_path,
+               prompts_over, pump, skip_unless_rar_reads, wait_for)
 
 from mcomix import archive_extractor
 from mcomix import constants
@@ -369,11 +369,8 @@ class DirectoryWalkTest(MainWindowLaterTest):
         """Copy the RAR set packed in three volumes into <directory>, and
         return the path of its first volume."""
         skip_unless_rar_reads(self)
-        for part in (1, 2, 3):
-            name = 'Multivolume.part%d.rar' % part
-            shutil.copy(get_testfile_path('archives', name),
-                        os.path.join(self.root, directory, name))
-        return os.path.join(self.root, directory, 'Multivolume.part1.rar')
+        return copy_rar_set(os.path.join(self.root, directory),
+                            'Multivolume')[0]
 
     def _rar_set_and_an_archive(self):
         """The RAR set in b, and z.cbz after it there; both paths."""

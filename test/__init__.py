@@ -639,6 +639,21 @@ def skip_unless_rar_reads(test):
         test.skipTest('nothing here reads RAR')
 
 
+def copy_rar_set(directory, stem='Set', width=1, parts=(1, 2, 3)):
+    """Copy the volumes <parts> of test/files' RAR set packed in three
+    into <directory>, made if missing, as <stem>.partN.rar with N
+    padded to <width>; answer their paths in that order."""
+    os.makedirs(directory, exist_ok=True)
+    names = []
+    for part in parts:
+        name = os.path.join(directory,
+                            '%s.part%s.rar' % (stem, str(part).zfill(width)))
+        shutil.copy(get_testfile_path(
+            'archives', 'Multivolume.part%d.rar' % part), name)
+        names.append(name)
+    return names
+
+
 @contextlib.contextmanager
 def replace_held_once():
     """Patch os.replace to refuse once as Windows does while another

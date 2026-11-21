@@ -5,7 +5,7 @@ import tempfile
 import shutil
 import os
 
-from . import NORMAL_ZIP, get_testfile_path, posix_byte_names
+from . import NORMAL_ZIP, copy_rar_set, get_testfile_path, posix_byte_names
 from .test_library_backend import OpenLibraryTest
 
 from mcomix import constants
@@ -366,11 +366,7 @@ class WatchListEntryTest(unittest.TestCase):
     def test_the_later_volumes_of_a_rar_set_are_nothing_new(self):
         tmpdir = os.path.abspath(tempfile.mkdtemp(prefix='library_types.'))
         try:
-            for part in (1, 2, 3):
-                name = 'Multivolume.part%d.rar' % part
-                shutil.copy(get_testfile_path('archives', name),
-                            os.path.join(tmpdir, name))
-            first = os.path.join(tmpdir, 'Multivolume.part1.rar')
+            first = copy_rar_set(tmpdir, 'Multivolume')[0]
             for recursive in (False, True):
                 with self.subTest(recursive=recursive):
                     entry = backend_types._WatchListEntry(

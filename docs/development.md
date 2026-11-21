@@ -63,6 +63,7 @@ Class or helper | For
 `held_by_another_process()` | The error Windows raises for a file another process holds open (winerror 32), for a stand-in of your own.
 `skip_without_render_nodes()` | Skip where PyGObject cannot hand a render node to Python (before 3.48).
 `skip_unless_rar_reads(test)` | Skip where neither libunrar nor an unrar program is installed.
+`copy_rar_set(directory, stem)` | The RAR set packed in three volumes, copied as `<stem>.partN.rar`; their paths.
 `fresh_bookmarks_store()` | The bookmarks store read again from the test's home. `setUp()` does it already.
 `session_tmp_dir()` | A folder that lasts the whole run, for what goes on writing after its test.
 `sample_pages(count)` | Paths of up to three pictures to pack or open.

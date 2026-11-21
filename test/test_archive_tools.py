@@ -10,7 +10,7 @@ import time
 import unittest.mock
 import zipfile
 
-from . import MComixTest, get_testfile_path
+from . import MComixTest, copy_rar_set, get_testfile_path
 
 from mcomix import archive_tools
 from mcomix import constants
@@ -92,37 +92,19 @@ class ArchiveToolsTest(MComixTest):
     def test_a_later_volume_leads_to_the_first_one_beside_it(self):
         for width in (1, 2):
             with self.subTest(width=width):
-                directory = os.path.join(self.tmp_dir, 'width%d' % width)
-                os.makedirs(directory)
-                names = []
-                for part in (1, 2, 3):
-                    name = 'Set.part%s.rar' % str(part).zfill(width)
-                    shutil.copy(get_testfile_path(
-                        'archives', 'Multivolume.part%d.rar' % part),
-                        os.path.join(directory, name))
-                    names.append(os.path.join(directory, name))
-                first, second, third = names
+                first, second, third = copy_rar_set(
+                    os.path.join(self.tmp_dir, 'width%d' % width),
+                    width=width)
                 self.assertEqual(first, archive_tools.first_volume(second))
                 self.assertEqual(first, archive_tools.first_volume(third))
                 self.assertIsNone(archive_tools.first_volume(first))
                 os.remove(first)
                 self.assertIsNone(archive_tools.first_volume(second))
 
-    def _copy_set(self, directory, width=1, parts=(1, 2, 3)):
-        os.makedirs(directory, exist_ok=True)
-        names = []
-        for part in parts:
-            name = os.path.join(directory,
-                                'Set.part%s.rar' % str(part).zfill(width))
-            shutil.copy(get_testfile_path(
-                'archives', 'Multivolume.part%d.rar' % part), name)
-            names.append(name)
-        return names
-
     def test_the_first_volume_of_a_set_has_the_rest_with_it(self):
         for width in (1, 2):
             with self.subTest(width=width):
-                names = self._copy_set(
+                names = copy_rar_set(
                     os.path.join(self.tmp_dir, 'width%d' % width), width)
                 self.assertEqual(names, archive_tools.volume_set(names[0]))
                 # A later volume is not a book: it has no set of its own.
@@ -130,12 +112,12 @@ class ArchiveToolsTest(MComixTest):
                                  archive_tools.volume_set(names[1]))
 
     def test_a_set_ends_at_the_first_volume_missing(self):
-        first, _second, third = self._copy_set(self.tmp_dir)
+        first, _second, third = copy_rar_set(self.tmp_dir)
         os.remove(_second)
         self.assertEqual([first], archive_tools.volume_set(first))
 
     def test_a_file_named_as_a_later_volume_that_is_none_is_left(self):
-        first = self._copy_set(self.tmp_dir, parts=(1,))[0]
+        first = copy_rar_set(self.tmp_dir, parts=(1,))[0]
         shutil.copy(get_testfile_path('archives', 'RAR5.rar'),
                     os.path.join(self.tmp_dir, 'Set.part2.rar'))
         self.assertEqual([first], archive_tools.volume_set(first))

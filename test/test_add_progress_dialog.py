@@ -11,8 +11,8 @@ import shutil
 
 from gi.repository import Gtk
 
-from . import (MComixTest, NORMAL_ZIP, descendants, get_testfile_path, pump,
-               skip_unless_rar_reads)
+from . import (MComixTest, NORMAL_ZIP, copy_rar_set, descendants,
+               get_testfile_path, pump, skip_unless_rar_reads)
 
 from mcomix import constants
 from mcomix.dialog import Response
@@ -187,11 +187,7 @@ class AddProgressDialogTest(MComixTest):
         """They are left out on purpose, and the set is there through
         its first volume."""
         skip_unless_rar_reads(self)
-        paths = []
-        for part in (1, 2, 3):
-            name = 'Multivolume.part%d.rar' % part
-            paths.append(os.path.join(self.tmp_dir, name))
-            shutil.copy(get_testfile_path('archives', name), paths[-1])
+        paths = copy_rar_set(self.tmp_dir, 'Multivolume')
 
         self._add(paths)
 

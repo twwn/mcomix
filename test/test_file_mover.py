@@ -3,11 +3,10 @@
 import contextlib
 import errno
 import os
-import shutil
 import types
 import unittest.mock
 
-from . import MComixTest, get_testfile_path, held_by_another_process
+from . import MComixTest, copy_rar_set, held_by_another_process
 
 from mcomix import file_mover
 
@@ -110,13 +109,7 @@ class FileMoverTest(MComixTest):
 
     def _volume_set(self):
         """The three volumes of Multivolume.rar in the source folder."""
-        volumes = []
-        for part in (1, 2, 3):
-            volume = os.path.join(self.source, 'Set.part%d.rar' % part)
-            shutil.copy(get_testfile_path(
-                'archives', 'Multivolume.part%d.rar' % part), volume)
-            volumes.append(volume)
-        return volumes
+        return copy_rar_set(self.source)
 
     def test_a_rar_set_moves_whole(self):
         """Its first volume is the book; the rest, left behind, were

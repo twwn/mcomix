@@ -3,7 +3,6 @@
 import contextlib
 import datetime
 import os
-import shutil
 import sqlite3
 import types
 import unittest.mock
@@ -14,8 +13,9 @@ import PIL.Image
 
 from gi.repository import Gdk, GdkPixbuf, Gio, GLib, Gtk
 
-from . import (MComixTest, NORMAL_ZIP, children, get_testfile_path, hold_open,
-               prompts_over, pump, take_activation_from, wait_for)
+from . import (MComixTest, NORMAL_ZIP, children, copy_rar_set,
+               get_testfile_path, hold_open, prompts_over, pump,
+               take_activation_from, wait_for)
 from .test_theme import background_of
 
 from mcomix import bookmark_backend
@@ -1208,13 +1208,8 @@ class DeleteFromDiskTest(MComixTest):
         """The three volumes of Multivolume.rar in a folder of their
         own, the first selected as the book; the folder."""
         folder = os.path.join(self.tmp_dir, 'set')
-        os.makedirs(folder)
-        for part in (1, 2, 3):
-            shutil.copy(get_testfile_path(
-                'archives', 'Multivolume.part%d.rar' % part),
-                os.path.join(folder, 'Set.part%d.rar' % part))
-        self.area._covers.set_items([book_area._BookItem(
-            _Book(1, os.path.join(folder, 'Set.part1.rar')))])
+        first = copy_rar_set(folder)[0]
+        self.area._covers.set_items([book_area._BookItem(_Book(1, first))])
         self.area._covers.selection.select_all()
         return folder
 

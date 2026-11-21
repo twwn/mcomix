@@ -21,10 +21,10 @@ import warnings
 from gi.repository import Gdk, GdkPixbuf, Gio, GLib, Gtk
 
 from . import (MComixTest, MainWindowLaterTest, NORMAL_ZIP, children,
-               close_a_main_window, descendants, fresh_bookmarks_store,
-               get_testfile_path, held_by_another_process, hold_open,
-               prompts_over, pump, sample_pages, visible_prompts, wait_for,
-               windows_refusal)
+               close_a_main_window, copy_rar_set, descendants,
+               fresh_bookmarks_store, get_testfile_path,
+               held_by_another_process, hold_open, prompts_over, pump,
+               sample_pages, visible_prompts, wait_for, windows_refusal)
 
 from mcomix import archive_packer
 from mcomix import bookmark_backend
@@ -2523,13 +2523,7 @@ class MainWindowTest(MComixTest):
         """A copy of the three volumes of Multivolume.rar in a folder of
         their own, opened at the first; the folder and the volumes."""
         folder = os.path.join(self.tmp_dir, 'set')
-        os.makedirs(folder)
-        volumes = []
-        for part in (1, 2, 3):
-            volume = os.path.join(folder, 'Set.part%d.rar' % part)
-            shutil.copy(get_testfile_path(
-                'archives', 'Multivolume.part%d.rar' % part), volume)
-            volumes.append(volume)
+        volumes = copy_rar_set(folder)
         self.window.filehandler.open_file(volumes[0])
         self._ready()
         return folder, volumes
@@ -2564,14 +2558,9 @@ class MainWindowTest(MComixTest):
         it."""
         folder = os.path.join(self.tmp_dir, 'shelf')
         destination = os.path.join(self.tmp_dir, 'destination')
-        os.makedirs(folder)
         os.makedirs(destination)
-        for part in (1, 2, 3):
-            shutil.copy(get_testfile_path(
-                'archives', 'Multivolume.part%d.rar' % part),
-                os.path.join(folder, 'Set.part%d.rar' % part))
         self.window.file_actions.move_books(
-            [os.path.join(folder, 'Set.part1.rar')], destination,
+            copy_rar_set(folder)[:1], destination,
             self.window)
         self._pump()
         self.assertEqual([], os.listdir(folder))

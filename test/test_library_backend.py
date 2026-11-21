@@ -16,7 +16,7 @@ from sqlite3 import dbapi2
 
 import PIL.Image
 
-from . import (NORMAL_ZIP, get_testfile_path, posix_byte_names,
+from . import (NORMAL_ZIP, copy_rar_set, get_testfile_path, posix_byte_names,
                refuse_passwords, skip_unless_rar_reads)
 
 from mcomix import constants
@@ -295,12 +295,7 @@ class RarSetTest(LibraryDatabaseTest):
 
     def setUp(self):
         super().setUp()
-        self.volumes = []
-        for part in (1, 2, 3):
-            name = 'Multivolume.part%d.rar' % part
-            path = os.path.join(self.tmp_dir, name)
-            shutil.copy(get_testfile_path('archives', name), path)
-            self.volumes.append(path)
+        self.volumes = copy_rar_set(self.tmp_dir, 'Multivolume')
         self.library = backend.LibraryBackend()
         self.addCleanup(self.library.close)
 
