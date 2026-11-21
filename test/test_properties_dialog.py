@@ -15,7 +15,7 @@ from unittest import mock
 
 from gi.repository import Gtk
 
-from . import (MComixTest, NORMAL_ZIP, children, descendants,
+from . import (MComixTest, NORMAL_ZIP, children, described_book, descendants,
                get_testfile_path, notebook_tabs, pump, wait_for, wait_frames)
 
 from mcomix import icons
@@ -150,13 +150,8 @@ class PropertiesDialogTest(MComixTest):
     def _book(self, comicinfo=None):
         """Two of the test pages zipped up, with <comicinfo> as the
         archive's ComicInfo.xml where one is given."""
-        path = os.path.join(self.tmp_dir, 'Described.cbz')
-        with zipfile.ZipFile(path, 'w') as book:
-            for name in ('01-JPG-Indexed.jpg', '02-JPG-RGB.jpg'):
-                book.write(get_testfile_path('images', name), name)
-            if comicinfo is not None:
-                book.writestr('ComicInfo.xml', comicinfo)
-        return path
+        return described_book(os.path.join(self.tmp_dir, 'Described.cbz'),
+                              comicinfo)
 
     @staticmethod
     def _texts(widget):

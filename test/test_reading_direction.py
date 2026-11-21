@@ -15,10 +15,9 @@ to, and reads so when it is opened again.
 import json
 import os
 import shutil
-import zipfile
 
-from . import (MComixTest, MainWindowLaterTest, get_testfile_path, pump,
-               wait_for)
+from . import (MComixTest, MainWindowLaterTest, described_book, pump,
+               sample_pages, wait_for)
 
 from mcomix import comicinfo
 from mcomix import constants
@@ -119,13 +118,8 @@ class WindowDirectionTest(MainWindowLaterTest):
         prefs['default manga mode'] = False
 
     def _book(self, name, manga=None):
-        path = os.path.join(self.tmp_dir, name)
-        with zipfile.ZipFile(path, 'w') as book:
-            for page in ('01-JPG-Indexed.jpg', '02-JPG-RGB.jpg'):
-                book.write(get_testfile_path('images', page), page)
-            if manga is not None:
-                book.writestr('ComicInfo.xml', _comicinfo(manga))
-        return path
+        return described_book(os.path.join(self.tmp_dir, name),
+                              None if manga is None else _comicinfo(manga))
 
     def _open(self, path):
         self.open_main_window(open_path=path)
@@ -266,8 +260,8 @@ class WindowDirectionTest(MainWindowLaterTest):
     def test_a_folder_of_pictures_keeps_its_direction(self):
         folder = os.path.join(self.tmp_dir, 'Folder')
         os.makedirs(folder)
-        for page in ('01-JPG-Indexed.jpg', '02-JPG-RGB.jpg'):
-            shutil.copy(get_testfile_path('images', page), folder)
+        for page in sample_pages(2):
+            shutil.copy(page, folder)
         western = self._book('Western.cbz')
         window = self._open(folder)
         pump()

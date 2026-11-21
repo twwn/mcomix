@@ -5,11 +5,10 @@ import os
 import shutil
 import tempfile
 import unittest.mock
-import zipfile
 
 from gi.repository import Gdk, Gtk
 
-from . import (MComixTest, NORMAL_ZIP, descendants, get_testfile_path, pump,
+from . import (MComixTest, NORMAL_ZIP, described_book, descendants, pump,
                wait_for)
 from .test_book_area import (_MarkingLibrary, _OneBookAreaTest,
                              assert_offered_once_a_book_is_selected)
@@ -52,11 +51,8 @@ class BookPropertiesTest(MComixTest):
 
     def _described_book(self, comicinfo):
         """A book of the library whose ComicInfo.xml is <comicinfo>."""
-        path = os.path.join(self.tmp_dir, 'Described.cbz')
-        with zipfile.ZipFile(path, 'w') as book:
-            for name in ('01-JPG-Indexed.jpg', '02-JPG-RGB.jpg'):
-                book.write(get_testfile_path('images', name), name)
-            book.writestr('ComicInfo.xml', comicinfo)
+        path = described_book(os.path.join(self.tmp_dir, 'Described.cbz'),
+                              comicinfo)
         self.assertTrue(self.backend.add_book(path))
         return self.backend.get_book_by_path(path)
 

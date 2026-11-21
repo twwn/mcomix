@@ -67,6 +67,7 @@ Class or helper | For
 `fresh_bookmarks_store()` | The bookmarks store read again from the test's home. `setUp()` does it already.
 `session_tmp_dir()` | A folder that lasts the whole run, for what goes on writing after its test.
 `sample_pages(count)` | Paths of up to three pictures to pack or open.
+`described_book(path, comicinfo)` | A CBZ of two of them, with a `ComicInfo.xml` where one is given.
 `pixel(pixbuf, x, y)` | One pixel's channels.
 `get_testfile_path(...)` | A file under `test/files/`.
 `NORMAL_ZIP` | `test/files/archives/01-ZIP-Normal.zip`, the book most tests open.

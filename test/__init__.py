@@ -1082,6 +1082,19 @@ def sample_pages(count=3):
                          '03-PNG-RGB.png')[:count]]
 
 
+def described_book(path, comicinfo=None):
+    """Zip the first two of sample_pages() into <path> under their own
+    names, with <comicinfo> as the book's ComicInfo.xml where one is
+    given; answer <path>."""
+    import zipfile
+    with zipfile.ZipFile(path, 'w') as book:
+        for page in sample_pages(2):
+            book.write(page, os.path.basename(page))
+        if comicinfo is not None:
+            book.writestr('ComicInfo.xml', comicinfo)
+    return path
+
+
 def get_testfile_path(*components):
     return str(os.path.join(os.path.dirname(__file__), 'files', *components))
 
