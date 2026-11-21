@@ -1255,11 +1255,7 @@ class ColumnListView(Gtk.ColumnView, widgets.Releasable,
 
     def get_selected_positions(self) -> list[int]:
         """Where the selected rows are shown, in order."""
-        selected = self.selection.get_selection()
-        positions = []
-        for index in range(selected.get_size()):
-            positions.append(selected.get_nth(index))
-        return positions
+        return widgets.selected_positions(self.selection)
 
     def select_only(self, position: int) -> None:
         """Select the row at <position> and nothing else."""

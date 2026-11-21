@@ -261,6 +261,13 @@ def focus_where_scrolled(view: Gtk.Widget) -> None:
         view.grab_focus()
 
 
+def selected_positions(selection: Gtk.SelectionModel) -> list[int]:
+    """Where the items <selection> has selected are, lowest first, as
+    its bitset holds them."""
+    selected = selection.get_selection()
+    return [selected.get_nth(index) for index in range(selected.get_size())]
+
+
 def list_item_position(list_item: Gtk.ListItem | None) -> int:
     """Where <list_item> sits in its list now, or -1 while it sits
     nowhere: not yet bound, or unbound."""

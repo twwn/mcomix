@@ -267,10 +267,8 @@ class ArchiveFormatTest:
 
     def test_iter_contents(self):
         self.archive = self.handler(self.archive_path)
-        contents = []
-        for name in self.archive.iter_contents():
-            contents.append(name)
-        self.assertCountEqual(contents, list(self.archive_contents.keys()))
+        self.assertCountEqual(list(self.archive.iter_contents()),
+                              list(self.archive_contents.keys()))
 
     def test_is_solid(self):
         self.archive = self.handler(self.archive_path)

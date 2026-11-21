@@ -903,9 +903,7 @@ class ThumbnailGridView(Gtk.GridView, _ThumbnailViewBase,
 
     def get_selected_positions(self) -> list[int]:
         """Every selected position, lowest first."""
-        selected = self.selection.get_selection()
-        return [selected.get_nth(index)
-                for index in range(selected.get_size())]
+        return widgets.selected_positions(self.selection)
 
     def get_selected_items(self) -> list[ThumbnailItem]:
         """Every selected entry, in the order they are shown."""

@@ -143,10 +143,8 @@ class ImageHandler:
         """
         if self._current_image_index is None:
             return []
-        result = []
-        for i in range(number_of_bufs):
-            result.append(self._get_pixbuf(self._current_image_index + i))
-        return result
+        return [self._get_pixbuf(self._current_image_index + i)
+                for i in range(number_of_bufs)]
 
     def get_shown_pixbufs(self, number_of_bufs: int
                           ) -> list[GdkPixbuf.Pixbuf]:
