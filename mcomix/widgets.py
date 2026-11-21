@@ -261,13 +261,6 @@ def focus_where_scrolled(view: Gtk.Widget) -> None:
         view.grab_focus()
 
 
-def selected_positions(selection: Gtk.SelectionModel) -> list[int]:
-    """Where the items <selection> has selected are, lowest first, as
-    its bitset holds them."""
-    selected = selection.get_selection()
-    return [selected.get_nth(index) for index in range(selected.get_size())]
-
-
 def list_item_position(list_item: Gtk.ListItem | None) -> int:
     """Where <list_item> sits in its list now, or -1 while it sits
     nowhere: not yet bound, or unbound."""
@@ -399,6 +392,24 @@ class Releasable:
 
     def release(self) -> None:
         """Let go of everything that would keep the closed window alive."""
+
+
+class Selecting:
+
+    """A list, grid or column view whose items are picked out through
+    <selection>, the selection model it shows."""
+
+    selection: Gtk.SelectionModel
+
+    def get_selected_positions(self) -> list[int]:
+        """Where the selected items are shown, lowest first."""
+        selected = self.selection.get_selection()
+        return [selected.get_nth(index)
+                for index in range(selected.get_size())]
+
+    def select_only(self, position: int) -> None:
+        """Select the item at <position> and nothing else."""
+        self.selection.select_item(position, True)
 
 
 class DragReorderable:

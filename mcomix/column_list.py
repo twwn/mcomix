@@ -484,7 +484,7 @@ class _AccelCell(Gtk.Button, _Cell):
     accelerator = ''
 
 
-class ColumnListView(Gtk.ColumnView, widgets.Releasable,
+class ColumnListView(Gtk.ColumnView, widgets.Releasable, widgets.Selecting,
                      widgets.DragReorderable):
 
     """A list of rows under titled columns.
@@ -1252,14 +1252,6 @@ class ColumnListView(Gtk.ColumnView, widgets.Releasable,
         """Every selected row, in the order they are shown."""
         return [cast(Row, self._row_of(self.model.get_item(position)))
                 for position in self.get_selected_positions()]
-
-    def get_selected_positions(self) -> list[int]:
-        """Where the selected rows are shown, in order."""
-        return widgets.selected_positions(self.selection)
-
-    def select_only(self, position: int) -> None:
-        """Select the row at <position> and nothing else."""
-        self.selection.select_item(position, True)
 
     def select_and_focus(self, position: int) -> None:
         """Select the row at <position> alone, scroll to it and give it

@@ -746,7 +746,7 @@ class ThumbnailListView(Gtk.ListView, _ThumbnailViewBase):
 _MOST_COLUMNS = 64
 
 
-class ThumbnailGridView(Gtk.GridView, _ThumbnailViewBase,
+class ThumbnailGridView(Gtk.GridView, _ThumbnailViewBase, widgets.Selecting,
                         widgets.DragReorderable):
 
     """A grid of thumbnails, as the library and the archive editor show.
@@ -901,18 +901,10 @@ class ThumbnailGridView(Gtk.GridView, _ThumbnailViewBase,
 
     # -- Selection --------------------------------------------------------
 
-    def get_selected_positions(self) -> list[int]:
-        """Every selected position, lowest first."""
-        return widgets.selected_positions(self.selection)
-
     def get_selected_items(self) -> list[ThumbnailItem]:
         """Every selected entry, in the order they are shown."""
         return [cast(ThumbnailItem, self.model.get_item(position))
                 for position in self.get_selected_positions()]
-
-    def select_only(self, position: int) -> None:
-        """Make <position> the one selected entry."""
-        self.selection.select_item(position, True)
 
     def select_and_focus(self, position: int) -> None:
         """Make <position> the one selected entry and give it the
