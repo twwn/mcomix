@@ -416,14 +416,6 @@ class _Collection(_BackendObject):
 
         return [_Collection(*row) for row in rows]
 
-    def add_collection(self, subcollection: '_Collection') -> None:
-        """Make <subcollection> a child of this collection."""
-
-        self.get_backend().execute('''UPDATE collection
-                SET supercollection = ?
-                WHERE id = ?''', (self.id, subcollection.id))
-        subcollection.supercollection = self.id
-
 
 class _DefaultCollection(_Collection):
     """The library as a whole, in the shape of a collection.
@@ -461,17 +453,6 @@ class _DefaultCollection(_Collection):
         rows = self.get_backend().fetchall(sql, sql_args)
 
         return [_Book(*cols) for cols in rows]
-
-    def add_collection(self, subcollection: '_Collection') -> None:
-        """Move <subcollection> to the root of the tree, out of whatever
-        collection it was under."""
-
-        assert subcollection is not DefaultCollection, "Cannot change DefaultCollection"
-
-        self.get_backend().execute('''UPDATE collection
-                SET supercollection = NULL
-                WHERE id = ?''', (subcollection.id,))
-        subcollection.supercollection = None
 
     def get_collections(self) -> list['_Collection']:
         """ Returns a list of all root collections. """

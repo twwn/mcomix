@@ -22,7 +22,7 @@ class CollectionTest(OpenLibraryTest):
         self.library.add_collection("Subtest")
         test_col = self.library.get_collection_by_name("Test")
         sub_col = self.library.get_collection_by_name("Subtest")
-        test_col.add_collection(sub_col)
+        self.library.add_collection_to_collection(sub_col.id, test_col.id)
         # There is also a collection Recent that is added by default!
 
         # Add first two archives to no collection, remaining two
@@ -252,7 +252,8 @@ class CollectionTest(OpenLibraryTest):
 
         self.library.add_collection("New test")
         new_col = self.library.get_collection_by_name("New test")
-        test_col.add_collection(new_col)
+        self.library.add_collection_to_collection(new_col.id, test_col.id)
+        new_col = self.library.get_collection_by_name("New test")
 
         self.assertIsNone(test_col.supercollection, None)
         self.assertEqual(new_col.supercollection, test_col.id)
@@ -287,7 +288,7 @@ class CollectionTest(OpenLibraryTest):
         subcol = self.library.get_collection_by_name("Subtest")
         self.library.add_collection("New test")
         new_col = self.library.get_collection_by_name("New test")
-        subcol.add_collection(new_col)
+        self.library.add_collection_to_collection(new_col.id, subcol.id)
 
         self.assertEqual(len(backend_types.DefaultCollection.get_all_collections()), 4)
         self.assertEqual(len(col.get_all_collections()), 2)
