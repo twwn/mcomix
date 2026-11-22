@@ -166,20 +166,7 @@ class WorkerThread(Generic[Order]):
 
     def append_order(self, order: Order) -> None:
         """Append work order to the thread orders queue."""
-        with self._condition:
-            if self._retired:
-                return
-            if self._unique_orders:
-                order_uid = self._order_uid(order)
-                if order_uid in self._orders_set:
-                    # Duplicate order.
-                    return
-                self._orders_set.add(order_uid)
-            self._orders_queue.append(order)
-            if self._sort_orders:
-                self._orders_queue.sort()
-            self._condition.notify_all()
-            self._start()
+        self.extend_orders((order,))
 
     def extend_orders(self, orders_list: Iterable[Order]) -> None:
         """Append work orders to the thread orders queue."""
