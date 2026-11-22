@@ -80,10 +80,21 @@ class WorkerThread(Generic[Order]):
                  traceback: TracebackType | None) -> None:
         self._condition.__exit__(exc_type, exc_value, traceback)
 
-    def _start(self, nb_threads: int = 1) -> None:
-        for n in range(nb_threads):
-            if len(self._threads) == self._max_threads:
-                break
+    def _start(self) -> None:
+        """Start the threads the orders waiting can be worked on by now,
+        beyond those already free to take them; called with the lock
+        held.
+
+        Not a thread per order added: the threads of a pool that works
+        on two orders at once until one proves slow would then all have
+        been started, to wait, and every order added woke all of them.
+        """
+        if self._stop:
+            return
+        free = len(self._threads) - self._in_hand
+        wanted = min(len(self._orders_queue), self._at_once - self._in_hand)
+        for unused in range(min(wanted - free,
+                                self._max_threads - len(self._threads))):
             thread = threading.Thread(target=self._run)
             if self._name is not None:
                 thread.name += '-' + self._name
@@ -127,6 +138,7 @@ class WorkerThread(Generic[Order]):
                 if slow and self._at_once < self._max_threads:
                     self._at_once = self._max_threads
                     self._condition.notify_all()
+                    self._start()
                 elif not self._orders_queue and not self._in_hand:
                     self._at_once = self._first_at_once
                 elif self._orders_queue:
@@ -193,7 +205,7 @@ class WorkerThread(Generic[Order]):
             if self._sort_orders:
                 self._orders_queue.sort()
             self._condition.notify_all()
-            self._start(nb_threads=nb_added)
+            self._start()
 
     def stop(self) -> None:
         """Stop the worker threads and flush the orders queue."""

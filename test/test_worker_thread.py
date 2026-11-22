@@ -125,6 +125,19 @@ class OrdersAtOnceTest(unittest.TestCase):
             self.go_on.set()
             self._wait_done(30)
 
+    def test_a_pool_starts_only_the_threads_it_works_with(self):
+        """It started a thread per order added, up to all of them, to
+        wait while two worked; and woke every one at each order."""
+        pool = self._pool(narrow_first=True)
+        with unittest.mock.patch.object(worker_thread, 'SLOW_ORDER', 60):
+            pool.extend_orders(range(10))
+            for number in range(10, 20):
+                pool.append_order(number)
+            self._settled_in_hand(pool)
+            self.assertEqual(worker_thread.FIRST_AT_ONCE, len(pool._threads))
+            self.go_on.set()
+            self._wait_done(20)
+
     def test_orders_one_at_a_time_are_worked_on_two_at_once(self):
         """What a view does as it binds its cells: one order each."""
         pool = self._pool(narrow_first=True)
