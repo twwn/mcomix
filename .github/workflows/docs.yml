@@ -72,4 +72,4 @@ jobs:
       - name: pytest
         run: >-
           xvfb-run -a python -m pytest test/test_wiki.py test/test_keybindings.py
-          test/test_openwith_command.py::DocumentedVariablesTest -q -n auto -rs
+          test/test_openwith_command.py::DocumentedVariablesTest -q -n auto
