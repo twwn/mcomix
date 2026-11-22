@@ -442,6 +442,28 @@ class MovedBookTest(_StoreTest):
         self.assertEqual(written, [])
 
 
+class WindowAfterWindowTest(_StoreTest):
+
+    """The store is one for the process, and outlives the window that
+    closes: its bookmarks open in the window opened next."""
+
+    def test_a_bookmark_opens_in_the_next_window(self):
+        first, second = mock.Mock(), mock.Mock()
+        self.store.initialize(first)
+        self.store.add_bookmark_by_values(
+            'a.cbz', os.path.abspath('/books/a.cbz'), 2, 4, None,
+            datetime.datetime(2026, 1, 1))
+        self.store.forget(first)
+        self.store.initialize(second)
+        bookmark, = self.store.get_bookmarks()
+        with mock.patch.object(bookmark, 'page_in_open_book',
+                               return_value=None):
+            bookmark.load()
+        first.filehandler.open_file.assert_not_called()
+        second.filehandler.open_file.assert_called_once_with(
+            os.path.abspath('/books/a.cbz'), 2, start_member=None)
+
+
 class StoreBetweenTestsTest(MComixTest):
 
     """The store is one for the process: what a test left in it, and
