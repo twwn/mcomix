@@ -532,9 +532,9 @@ class AbsentBookTest(_CoverAreaTest):
     @staticmethod
     def _coloured(pixbuf):
         """How many pixels of <pixbuf> are not grey."""
-        return sum(1 for red, green, blue, alpha
-                   in image_tools.pixbuf_to_pil(pixbuf).convert(
-                       'RGBA').getdata()
+        data = image_tools.pixbuf_to_pil(pixbuf).convert('RGB').tobytes()
+        return sum(1 for red, green, blue
+                   in zip(data[0::3], data[1::3], data[2::3])
                    if not red == green == blue)
 
     def test_the_cover_of_a_book_not_there_is_grey_and_faded(self):
