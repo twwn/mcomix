@@ -278,10 +278,6 @@ class FiniteLayout:  # 2D only
         """The Box the window is looking through."""
         return self.viewport_box
 
-    def get_orientation(self) -> Sequence[int]:
-        """Which way each axis of this layout runs."""
-        return self.orientation
-
     def set_orientation(self, orientation: Sequence[int]) -> None:
         """Set which way each axis runs, 1 forwards and -1 backwards.
 

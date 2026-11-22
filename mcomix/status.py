@@ -238,10 +238,6 @@ class Statusbar(Gtk.Box, widgets.Releasable):
         else:
             self._file_info = self._file_widest = ''
 
-    def get_file_number(self) -> str:
-        """ Returns the bar's file information."""
-        return self._file_info
-
     def set_resolution(
             self,
             dimensions: Sequence[Sequence[float]]) -> None:  # 2D only
