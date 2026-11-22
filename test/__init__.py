@@ -62,6 +62,7 @@ import tempfile
 import threading
 import time
 import traceback
+import weakref
 
 _TMP_ROOT = os.path.join(os.path.dirname(__file__), 'tmp')
 os.makedirs(_TMP_ROOT, exist_ok=True)
@@ -191,11 +192,19 @@ class PumpNeverIdle(UserWarning):
     """
 
 
+#: The main windows close_a_main_window() has closed, so that a second
+#: close, the cleanup open_main_window() registers, does nothing.
+_closed_windows = weakref.WeakSet()
+
+
 def close_a_main_window(window, rounds=4000):
     """Close <window>, a main window, as MComix does when it quits, and
     let what that queued run, for up to <rounds> rounds of the main
-    loop."""
+    loop.  A window closed already is left as it is."""
     from mcomix import main
+    if window in _closed_windows:
+        return
+    _closed_windows.add(window)
     window.terminate_program()
     window.destroy()
     main.set_main_window(None)
@@ -1004,10 +1013,26 @@ class MComixTest(unittest.TestCase):
         """Build the main window as self.window, with <options> as
         MainWindow takes them, and name it the one main.main_window()
         answers with, as run.py does. close_main_window() undoes both.
+
+        A cleanup closes the window too, where nothing closed it before:
+        unittest skips tearDown() when setUp() fails, and a window built
+        there was left with its worker threads running.  They are not
+        daemons, so the next test's close, which waits for every such
+        thread, waited for them for good: the Windows CI hung at 42 %
+        after a few setUp() errors.  The cleanup holds the window weakly,
+        for the tests that watch it freed.
         """
         from mcomix import main
         self.window = main.MainWindow(**options)
         main.set_main_window(self.window)
+        held = weakref.ref(self.window)
+
+        def close():
+            window = held()
+            if window is not None:
+                close_a_main_window(window)
+
+        self.addCleanup(close)
         return self.window
 
     def wait_for_pages(self, count=None):

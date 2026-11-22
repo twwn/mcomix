@@ -12,6 +12,7 @@ information into the reader's data directory.
 
 import os
 import tempfile
+import threading
 
 from gi.repository import GLib, Gtk
 
@@ -94,5 +95,26 @@ class RedirectionTest(MComixTest):
         self.assertTrue(
             tempfile.gettempdir().startswith(self.tmp_dir),
             'tempfile hands out %s' % tempfile.gettempdir())
+
+
+class MainWindowClosedTest(MComixTest):
+
+    """The main window a test opens is closed after it, even where
+    nothing in the test closes it."""
+
+    def test_a_window_no_tear_down_closes_still_stops_its_threads(self):
+        """As where setUp() fails after it opened the window: unittest
+        then skips tearDown(), which is what closes it, but still runs
+        the cleanups.  Left running, the window's worker threads, which
+        are not daemons, kept the next test's close waiting for good."""
+        before = set(threading.enumerate())
+        # Registered first, so it runs after the window's own cleanup.
+        self.addCleanup(self._no_worker_thread_left, before)
+        self.open_main_window_on_a_book()
+
+    def _no_worker_thread_left(self, before):
+        self.assertEqual(
+            [thread.name for thread in threading.enumerate()
+             if thread not in before and not thread.daemon], [])
 
 # vim: expandtab:sw=4:ts=4
