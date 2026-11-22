@@ -334,7 +334,13 @@ class ThumbnailsOnScreenFirstTest(_ViewTest):
         if self.parking:
             self.entered.set()
             self.go_on.wait(10)
-        return _cover()
+        # As tall as the box, so that a row is as high with its covers as
+        # without them.  A shorter cover shrinks its row once it comes,
+        # GTK's guess at the height of the rows it has not laid out
+        # shifts with it, and the scroll bar, which the view reads the
+        # rows on screen from, put the first of them a row off: under
+        # eight workers, the row above the screen was asked for first.
+        return solid_pixbuf(64, 64, 0x336699ff, has_alpha=True)
 
     def _park_making(self, item):
         """Have <item>'s thumbnail made again, and wait until the worker
