@@ -7,7 +7,7 @@ import unittest.mock
 
 from gi.repository import Gio, GLib
 
-from . import MComixTest, close_a_main_window
+from . import MComixTest, close_a_main_window, process_name
 
 from mcomix import constants
 from mcomix import portability
@@ -149,6 +149,30 @@ class ProcessAgeTest(MComixTest):
     def test_elsewhere_it_is_not_known(self):
         with unittest.mock.patch('sys.platform', 'linux'):
             self.assertIsNone(portability.seconds_since_process_start())
+
+
+class ProcessNameTest(MComixTest):
+
+    """The name the kernel knows MComix by."""
+
+    @unittest.skipUnless(sys.platform.startswith('linux'), 'Linux only')
+    def test_the_process_takes_the_name(self):
+        name = process_name(self)
+        portability.name_process('mcomix-named')
+        self.assertEqual('mcomix-named', name())
+
+    def test_elsewhere_the_name_is_left_alone(self):
+        with unittest.mock.patch('sys.platform', 'win32'), \
+                unittest.mock.patch('builtins.open') as opened:
+            portability.name_process('mcomix')
+        opened.assert_not_called()
+
+    def test_a_proc_that_cannot_be_written_is_no_error(self):
+        with unittest.mock.patch('sys.platform', 'linux'), \
+                unittest.mock.patch('builtins.open',
+                                    side_effect=PermissionError):
+            portability.name_process('mcomix')
+
 
 class RenameOnceClosedTest(MComixTest):
 

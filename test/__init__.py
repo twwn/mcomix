@@ -737,6 +737,21 @@ def replace_held_once():
         yield refusals
 
 
+def process_name(test):
+    """This process's name as the kernel keeps it (Linux only), given
+    back after <test> for a test that lets MComix rename it."""
+    def read():
+        with open('/proc/self/comm', encoding='utf-8') as comm:
+            return comm.read().rstrip('\n')
+    name = read()
+
+    def restore():
+        with open('/proc/self/comm', 'w', encoding='utf-8') as comm:
+            comm.write(name)
+    test.addCleanup(restore)
+    return read
+
+
 @contextlib.contextmanager
 def mounted_at(*folders):
     """os.path.ismount() answering that a drive is mounted at each of

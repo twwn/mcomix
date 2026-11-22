@@ -12,7 +12,7 @@ import gi
 # is first imported, so it has to be in before the tests patch that.
 import PIL.Image
 
-from . import MComixTest, NORMAL_ZIP
+from . import MComixTest, NORMAL_ZIP, process_name
 
 from mcomix import run
 from mcomix import constants
@@ -102,6 +102,26 @@ class WaitAndExitTest(MComixTest):
                 self.assertRaises(SystemExit) as exited:
             run.wait_and_exit()
         self.assertEqual(1, exited.exception.code)
+
+
+class ProcessNameTest(MComixTest):
+
+    @unittest.skipUnless(sys.platform.startswith('linux'), 'Linux only')
+    def test_every_mcomix_goes_by_the_same_name(self):
+        """One started as "python3 <script> --new-window", as a new
+        window is, was named python3, and "pkill mcomix" missed it."""
+        name = process_name(self)
+        with unittest.mock.patch.object(
+                run.preferences, 'read_preferences_file',
+                side_effect=_StoppedHere), \
+                self.assertRaises(_StoppedHere):
+            run.run()
+        self.assertEqual('mcomix', name())
+
+
+class _StoppedHere(Exception):
+
+    """Ends run() at its first step after the name."""
 
 
 class ArgumentTest(MComixTest):

@@ -92,6 +92,25 @@ def get_default_locale() -> str:
     return "C"
 
 
+def name_process(name: str) -> None:
+    """Give this process the name ps, top and pkill know it by, on Linux.
+
+    The kernel names a process after the file it executes: "mcomix" for
+    the script a launcher or a shell runs, but "python3" for an MComix
+    started as the interpreter given the script or the package, as
+    process.launch_mcomix() starts the one a new window opens in.  The
+    kernel keeps the first 15 bytes.  Elsewhere, and where /proc cannot
+    be written, the name stays as it is.
+    """
+    if not sys.platform.startswith('linux'):
+        return
+    try:
+        with open('/proc/self/comm', 'w', encoding='utf-8') as comm:
+            comm.write(name)
+    except OSError:
+        pass
+
+
 def seconds_since_process_start() -> float | None:
     """How long ago, by the system's clock, this process was created.
 

@@ -259,6 +259,11 @@ def make_directories() -> None:
 def run() -> None:
     """Run the program."""
 
+    # Before any thread starts, which would keep the old name: every
+    # MComix goes by the same name, however it was started, so that
+    # "pkill mcomix" finds the ones "Open in a new window" started too.
+    portability.name_process('mcomix')
+
     # Load configuration and setup localisation.
     preferences.read_preferences_file()
     from mcomix import i18n
