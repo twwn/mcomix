@@ -68,7 +68,10 @@ jobs:
       # The packages release.yml builds with, pytest, and jxrlib, whose
       # JxrEncApp and JxrDecApp the tests of a KFX book's JPEG XR
       # pictures write and read them with; pefile, for the test that
-      # reads real DLLs' imports as the release build's check does.
+      # reads real DLLs' imports as the release build's check does;
+      # djvulibre, whose programs are the only way MComix reads a DjVu
+      # book, on Windows as elsewhere: a user who wants DjVu books puts
+      # them on the path, and the tests make their DjVu books with them.
       - uses: msys2/setup-msys2@ec48f7c5447b3140e2b088413ae3a55687bccb6e # v2.33.0
         if: steps.msys2-cache.outputs.cache-hit != 'true'
         with:
@@ -78,6 +81,7 @@ jobs:
           install: >-
             mingw-w64-ucrt-x86_64-gtk4
             mingw-w64-ucrt-x86_64-adwaita-icon-theme
+            mingw-w64-ucrt-x86_64-djvulibre
             mingw-w64-ucrt-x86_64-libadwaita
             mingw-w64-ucrt-x86_64-libjxl
             mingw-w64-ucrt-x86_64-jxrlib
