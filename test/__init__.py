@@ -669,6 +669,18 @@ def held_by_another_process():
     return held
 
 
+def remove_own_styles():
+    """Take MComix' own stylesheet (theme.show_own_styles()) off the
+    display again: it is shared by every test that runs after this one
+    in the same worker."""
+    from gi.repository import Gdk, Gtk
+    from mcomix import theme
+    if theme._own_styles is not None:
+        Gtk.StyleContext.remove_provider_for_display(
+            Gdk.Display.get_default(), theme._own_styles)
+        theme._own_styles = None
+
+
 def skip_without_render_nodes():
     """Skip the test where PyGObject cannot hand a render node to Python.
 

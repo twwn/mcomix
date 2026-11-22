@@ -6,9 +6,10 @@ whole line back.  It then was one label joining the fields with "|",
 and now is a label per field.  These pin what the labels carry.
 """
 
-from gi.repository import Gdk, Gsk, Gtk
+from gi.repository import Gsk, Gtk
 
-from . import MComixTest, skip_without_render_nodes, wait_for
+from . import (MComixTest, remove_own_styles, skip_without_render_nodes,
+               wait_for)
 
 from mcomix import constants
 from mcomix import status
@@ -277,7 +278,7 @@ class StatusbarLayoutTest(MComixTest):
         which in a dark theme left nothing visible between the fields;
         half shows in light, dark and black."""
         theme.show_own_styles()
-        self.addCleanup(self._remove_own_styles)
+        self.addCleanup(remove_own_styles)
         self._show([1], 'page.jpg')
         separator = next(separator
                          for separator in self.bar._separators.values()
@@ -289,10 +290,3 @@ class StatusbarLayoutTest(MComixTest):
         self.assertEqual((text.red, text.green, text.blue),
                          (colour.red, colour.green, colour.blue))
         self.assertAlmostEqual(text.alpha / 2, colour.alpha, places=2)
-
-    @staticmethod
-    def _remove_own_styles():
-        if theme._own_styles is not None:
-            Gtk.StyleContext.remove_provider_for_display(
-                Gdk.Display.get_default(), theme._own_styles)
-            theme._own_styles = None

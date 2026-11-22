@@ -25,6 +25,7 @@ from mcomix import thumbnail_tools
 from mcomix import message_dialog
 from mcomix import file_provider
 from mcomix import tools
+from mcomix import theme
 from mcomix import i18n
 from mcomix.archive import password as archive_password
 from mcomix.i18n import _
@@ -266,6 +267,7 @@ class _BaseFileChooserDialog(Dialog):
         # The preview sits beside the list rather than inside it, so the
         # dialog wants more height than width.
         self.filechooser.set_size_request(640, 560)
+        self.filechooser.add_css_class(theme.EMBEDDED_CHOOSER_CLASS)
         # GTK4 has no set_preview_widget(): the chooser holds nothing of
         # ours, so the preview goes beside it.
         chooser_row = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 10)
@@ -470,6 +472,12 @@ class _BaseFileChooserDialog(Dialog):
                 button.add_css_class('suggested-action')
                 self.set_default_widget(button)
         bar.set_revealed(True)
+        # The dialog's own row of buttons, below what it holds, is left
+        # empty, and an empty row still took the spacing above it: the
+        # room under the chooser was half as high again as above it.
+        row = self.get_content_area().get_next_sibling()
+        if isinstance(row, Gtk.Box) and row.get_first_child() is None:
+            row.set_visible(False)
 
     def _button_clicked(self, _button: Gtk.Button, response: int) -> None:
         self.response(response)

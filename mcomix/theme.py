@@ -147,6 +147,19 @@ separator.mcomix-status-separator {
 }
 '''
 
+#: libadwaita draws a line under a file chooser, where the dialog GTK
+#: wraps one in ends.  MComix' Open and Save dialogs set the chooser in
+#: a dialog of their own, with room round it, so the line came out a
+#: pixel below the row of buttons, a line under nothing.
+_EMBEDDED_CHOOSER = '''
+filechooser.mcomix-file-chooser {
+    box-shadow: none;
+}
+'''
+
+#: The style class that rule is for.
+EMBEDDED_CHOOSER_CLASS = 'mcomix-file-chooser'
+
 #: How MComix may be painted.  "System" is whatever the desktop says;
 #: the rest override it, and black is a dark theme whose backgrounds are
 #: no light at all, which is what an OLED screen shows them as.
@@ -203,7 +216,7 @@ _provider = None
 #: The provider that states a scheme's colours, while one is stated.
 _stated: "Gtk.CssProvider | None" = None
 #: The provider of MComix' own rules: the outline round marked pages,
-#: the status bar's separators.
+#: the status bar's separators, the embedded file chooser.
 _own_styles: "Gtk.CssProvider | None" = None
 #: Whether libadwaita is running, which decides who answers for the
 #: light and the dark.
@@ -227,8 +240,9 @@ def follow_theme() -> None:
 
 
 def show_own_styles(display: "Gdk.Display | None" = None) -> None:
-    """Draw the outline round pages picked out or marked to swap, and
-    the lines between the status bar's fields.
+    """Draw the outline round pages picked out or marked to swap and
+    the lines between the status bar's fields, and no line under the
+    file chooser in MComix' own dialogs.
 
     At application priority, as the palette is, so that a user's own
     stylesheet can still draw them differently.  Once per display.
@@ -240,7 +254,8 @@ def show_own_styles(display: "Gdk.Display | None" = None) -> None:
         return
     define_fallback_colours(display)
     _own_styles = Gtk.CssProvider()
-    _own_styles.load_from_string(_PAGE_MARKS + _STATUS_SEPARATORS)
+    _own_styles.load_from_string(_PAGE_MARKS + _STATUS_SEPARATORS
+                                 + _EMBEDDED_CHOOSER)
     Gtk.StyleContext.add_provider_for_display(
         display, _own_styles, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 

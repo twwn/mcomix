@@ -8,11 +8,12 @@ import threading
 import types
 import unittest.mock
 
-from gi.repository import Gdk, Gio, GLib, Graphene, Gtk
+from gi.repository import Gdk, Gio, GLib, Graphene, Gsk, Gtk
 
 from . import (MComixTest, MainWindowLaterTest, MainWindowOpenTest, NORMAL_ZIP,
                descendants, get_testfile_path, pump, refuse_passwords,
-               wait_for, wait_for_deletions)
+               remove_own_styles, skip_without_render_nodes, wait_for,
+               wait_for_deletions, wait_frames)
 
 from mcomix import archive_tools
 from mcomix import constants
@@ -22,6 +23,7 @@ from mcomix import widgets
 from mcomix import file_chooser_library_dialog
 from mcomix import file_chooser_simple_dialog
 from mcomix import preview
+from mcomix import theme
 from mcomix.dialog import Response
 from mcomix.preferences import prefs
 
@@ -39,6 +41,52 @@ class FileChooserTest(MainWindowOpenTest):
     def tearDown(self):
         self._module._close_main_filechooser_dialog()
         super().tearDown()
+
+    # -- What is drawn round the chooser ----------------------------------
+
+    def test_no_line_is_drawn_under_the_chooser(self):
+        """libadwaita draws one along a file chooser's bottom edge, where
+        the dialog GTK wraps it in ends.  This dialog has room round the
+        chooser, and the line came out a pixel under the buttons."""
+        skip_without_render_nodes()
+        theme.follow_theme()
+        self.addCleanup(remove_own_styles)
+        chooser = self.dialog.filechooser
+        wait_frames(chooser)
+        snapshot = Gtk.Snapshot()
+        Gtk.WidgetPaintable(widget=chooser).snapshot(
+            snapshot, chooser.get_width(), chooser.get_height())
+        size = (chooser.get_width(), chooser.get_height())
+        self.assertNotIn(size, [
+            (shadow.width, shadow.height)
+            for shadow in self._shadows(snapshot.to_node())])
+
+    def test_there_is_as_much_room_under_the_chooser_as_left_of_it(self):
+        """The dialog's own row of buttons is left empty, the buttons
+        being beside the chooser's filter, and still took room.  Not
+        against the room above it, which takes in the title bar where
+        the window draws its own (on Windows)."""
+        self.assertTrue(wait_for(lambda: self.dialog.get_height() > 0))
+        ok, bounds = self.dialog.filechooser.compute_bounds(self.dialog)
+        self.assertTrue(ok)
+        below = (self.dialog.get_height()
+                 - bounds.get_y() - bounds.get_height())
+        self.assertEqual(below, bounds.get_x())
+
+    @classmethod
+    def _shadows(cls, node):
+        """The outlines of the shadows <node> draws outside a box."""
+        if node is None:
+            return []
+        kind = node.get_node_type()
+        if kind == Gsk.RenderNodeType.OUTSET_SHADOW_NODE:
+            return [node.get_outline().bounds.size]
+        if kind == Gsk.RenderNodeType.CONTAINER_NODE:
+            return [found for index in range(node.get_n_children())
+                    for found in cls._shadows(node.get_child(index))]
+        if hasattr(node, 'get_child'):
+            return cls._shadows(node.get_child())
+        return []
 
     # -- Walking from the search box into what it found -------------------
 
