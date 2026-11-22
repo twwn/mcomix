@@ -424,11 +424,6 @@ class MainUI:
         #: Whether the right-click menu's model is the one the keys
         #: shown now would build.
         self._popup_built = False
-        #: Accelerators that are not MComix' own keybindings hang here.
-        #: A shortcut controller triggers the actions by name.
-        self.shortcuts = Gtk.ShortcutController()
-        self.shortcuts.set_scope(Gtk.ShortcutScope.GLOBAL)
-        window.add_controller(self.shortcuts)
 
         def _action_lambda(fn: Callable[..., object],  # type: ignore[explicit-any]  # the function it wraps takes whatever it takes
                            *args: object) -> _PlainCallback:
@@ -744,12 +739,6 @@ class MainUI:
     def _leave_fullscreen(self) -> None:
         """Turn the fullscreen toggle off, which leaves fullscreen."""
         self._actions.get_action('fullscreen').set_active(False)
-
-    def add_shortcut(self, accelerator: str, action: str) -> None:
-        """Make <accelerator> trigger the named <action>."""
-        self.shortcuts.add_shortcut(Gtk.Shortcut.new(
-            Gtk.ShortcutTrigger.parse_string(accelerator),
-            Gtk.NamedAction.new(action)))
 
     #: The submenus of the right-click menu that act on the open book.
     _NEEDS_A_BOOK = ('menu_move_to_popup', 'menu_open_with_popup')
