@@ -232,7 +232,8 @@ class Shelf(Gtk.Box):
     def clean_collection(self, collection: int | None) -> None:
         """Take the books of <collection> whose files have gone out of
         the library, every such book where it is None."""
-        if self.backend.clean_collection(collection):
+        removed, _kept = self.backend.clean_collection(collection)
+        if removed:
             GLib.idle_add(self.show_books)
 
     def update_info(self, selected: Sequence[int]) -> None:

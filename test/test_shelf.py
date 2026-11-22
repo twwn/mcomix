@@ -364,6 +364,21 @@ class ShelfDrawnAgainTest(_ShelfWindowTest):
         self.assertIn(first, self._entries()[1:])
         self.assertEqual(0, adjustment.get_value())
 
+    def test_a_clean_up_that_removes_nothing_does_not_draw_them_again(self):
+        """Drawn again, they were shown from the top: the clean-up
+        answers how many books it removed and how many it kept, and
+        the pair read as true even when both were 0."""
+        with unittest.mock.patch.object(self._shown(), 'show_books',
+                                        return_value=None) as shown:
+            self.area._clean_up()
+            pump()
+        shown.assert_not_called()
+
+    def test_a_clean_up_takes_out_a_book_whose_file_is_gone(self):
+        os.remove(self.books[0])
+        self.area._clean_up()
+        self.assertTrue(wait_for(lambda: len(self._entries()) == 1))
+
     def test_nothing_stays_selected(self):
         self.area._covers.select_all()
         self._again()
