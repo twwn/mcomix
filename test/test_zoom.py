@@ -88,6 +88,13 @@ class ZoomDistributionTest(MComixTest):
         self.assertEqual(scales[0], IDENTITY_ZOOM)
         self.assertLess(scales[1], IDENTITY_ZOOM)
 
+    def test_the_pixel_too_many_comes_off_the_page_it_costs_least(self):
+        """87.5 and 17.5 pixels round to 88 and 18, one more than the
+        105 there are. Taken from the wide page, the pixel is a
+        hundredth of it; taken from the narrow one, a seventeenth."""
+        _scales, widths = self._widths([[100, 500], [20, 500]], 105)
+        self.assertEqual([87, 18], widths)
+
     def test_a_wide_page_beside_narrow_ones_still_fits(self):
         """A page that rounds to a single pixel cannot be made smaller,
         so the wide one beside it has to give up more than the one pixel

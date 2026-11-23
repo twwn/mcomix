@@ -484,6 +484,34 @@ class TestPhysicalMemory(unittest.TestCase):
         self.assertIsNone(self._windows(0, 16 * 2**30))
 
 
+class TestFormatsToRegex(unittest.TestCase):
+
+    """The archive and image extensions are matched by a pattern built
+    once, when archive_tools and image_tools are imported, so a test of
+    those modules never builds it again."""
+
+    FORMATS = {'ZIP': (('application/zip',), ('cbz', 'zip')),
+               'RAR': (('application/x-rar',), ('cbr', 'r.ar'))}
+
+    def test_an_extension_at_the_end_of_a_name_matches_in_any_case(self):
+        pattern = tools.formats_to_regex(self.FORMATS)
+        for name, extension in (('book.cbz', 'cbz'), ('Book.CBR', 'CBR'),
+                                ('a.b.zip', 'zip'), ('x.r.ar', 'r.ar')):
+            with self.subTest(name=name):
+                match = pattern.search(name)
+                self.assertIsNotNone(match)
+                self.assertEqual(extension, match.group(1))
+
+    def test_nothing_else_matches(self):
+        """Not a MIME type, not an extension inside the name or without
+        its dot, and not a dot in an extension taken as any character."""
+        pattern = tools.formats_to_regex(self.FORMATS)
+        for name in ('book.application/zip', 'book.cbz.txt', 'bookcbz',
+                     'x.rxar', 'book.cb'):
+            with self.subTest(name=name):
+                self.assertIsNone(pattern.search(name))
+
+
 class TestNumberOfDigits(unittest.TestCase):
 
     def test_zero_has_one_digit(self):
