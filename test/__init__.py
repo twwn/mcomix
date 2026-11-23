@@ -512,17 +512,21 @@ def _make_writable_and_retry(function, path, error):
 
 
 def wait_for_deletions():
-    """Let the threads that remove a temporary directory of their own finish.
+    """Let the threads that write into or remove from the test's own
+    directory finish.
 
     Closing a book removes its temporary directory, which lies in the
     test's own, from a thread FileHandler.thread_delete() started, and a
     file chooser's preview of a book does the same with what it unpacked
     the book into.  Python 3.12's shutil.rmtree() raises FileNotFoundError
     for an entry such a thread removed first, so the test's removal and
-    theirs may not overlap.
+    theirs may not overlap.  A preview of a folder stores the thumbnail of
+    its first picture, and one stored while the test's directory is being
+    removed leaves a folder rmtree() cannot remove.
     """
     for thread in threading.enumerate():
-        if thread.name.endswith(('-delete', '-preview-details', '-thumbnailer')):
+        if thread.name.endswith(('-delete', '-preview-details',
+                                 '-preview-folder', '-thumbnailer')):
             thread.join(10)
 
 
@@ -1127,6 +1131,9 @@ class MComixTest(unittest.TestCase):
         # Nothing this test changed is worth writing after it, and the
         # directory it would be written into is about to be gone.
         preferences.cancel_scheduled_write()
+        # Before the paths go back to the reader's own: a thumbnail a
+        # thread stores afterwards would go into their thumbnail store.
+        wait_for_deletions()
         # Restore the global state setUp() changed. Leaving tempfile.tempdir
         # pointing into the temporary directory removed below would break
         # every later test that creates a temporary file of its own.
@@ -1141,7 +1148,6 @@ class MComixTest(unittest.TestCase):
         # Leave the temporary directory behind for post-mortem analysis
         # when the test did not pass.
         if not self._test_failed():
-            wait_for_deletions()
             shutil.rmtree(self.tmp_dir, onexc=_make_writable_and_retry)
 
     def _test_failed(self):
