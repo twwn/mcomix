@@ -2218,6 +2218,15 @@ class MainWindowTest(MComixTest):
             self.assertTrue(self.window.file_actions.delete_page())
         self._pump()
         self.assertEqual(self._pages(), [before[1]] + before[3:])
+        # The book stands where the first page that went was, or on the
+        # last page where the book now ends before it.
+        self.assertEqual(self.window.imagehandler.get_current_page(), 1)
+        last = len(self._pages())
+        with self._quietly():
+            self.assertTrue(self.window.file_actions.delete_page(last))
+        self._pump()
+        self.assertEqual(self.window.imagehandler.get_current_page(),
+                         last - 1)
 
     def test_the_pages_still_picked_out_move_up_with_the_book(self):
         """Removing a page moves every page after it up, and a number
