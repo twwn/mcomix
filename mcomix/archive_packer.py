@@ -61,16 +61,29 @@ def webp_instead(path: str, directory: str, name: str) -> "str | None":
     from PIL import Image, features
 
     header = _png_header(path)
-    if header is None or not features.check('webp'):
+    if header is None:
         return None
     width, height, depth = header
-    if depth > 8 or max(width, height) > _WEBP_MAX_SIDE:
+    if not features.check('webp'):
+        why = 'this Pillow writes no WebP'
+    elif depth > 8:
+        why = 'it has %d bits a channel, a WebP 8' % depth
+    elif max(width, height) > _WEBP_MAX_SIDE:
+        why = 'it is %dx%d pixels, a WebP at most %d either way' % (
+            width, height, _WEBP_MAX_SIDE)
+    else:
+        why = None
+    if why is not None:
+        _kept_a_png(path, why)
         return None
     with Image.open(path) as picture:
-        if getattr(picture, 'is_animated', False):
-            return None
         gamma = picture.info.get('gamma')
-        if gamma is not None and abs(float(gamma) - 1 / 2.2) > 0.001:
+        if getattr(picture, 'is_animated', False):
+            why = 'it is animated'
+        elif gamma is not None and abs(float(gamma) - 1 / 2.2) > 0.001:
+            why = "its gamma, %s, is not sRGB's" % gamma
+        if why is not None:
+            _kept_a_png(path, why)
             return None
         picture.load()
         mode = 'RGBA' if picture.has_transparency_data else 'RGB'
@@ -92,10 +105,16 @@ def webp_instead(path: str, directory: str, name: str) -> "str | None":
             if written.convert(mode).tobytes() != pixels.tobytes():
                 raise ValueError('not the same pixels')
     except ValueError as reason:
-        log.debug('Kept "%s" as a PNG: the WebP was %s', path, reason)
         os.remove(target)
+        _kept_a_png(path, 'the WebP was %s' % reason)
         return None
     return target
+
+
+def _kept_a_png(path: str, reason: str) -> None:
+    """Say at debug level why the PNG at <path> stays one, for a reader
+    who asked for WebP pages and finds PNGs in the archive."""
+    log.debug('Kept "%s" as a PNG: %s', path, reason)
 
 
 def webp_threads(paths: Iterable[str]) -> int:

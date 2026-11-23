@@ -20,6 +20,7 @@ from . import MComixTest, replace_held_once, sample_pages
 
 from mcomix import archive_packer
 from mcomix import constants
+from mcomix import log
 
 
 class PackerTest(MComixTest):
@@ -767,10 +768,27 @@ class WebpPagesTest(_PackingTest):
         frames[0].save(animated, save_all=True, append_images=frames[1:])
         jpeg = os.path.join(self.tmp_dir, 'page.jpg')
         Image.new('RGB', (32, 32), 'white').save(jpeg)
-        for path in (deep, gamma, animated, jpeg):
-            with self.subTest(os.path.basename(path)):
+        tall = os.path.join(self.tmp_dir, 'tall.png')
+        Image.new('L', (8, 16384), 255).save(tall)
+        # Each says why, for a reader who asked for WebP pages and
+        # found PNGs; a page that is no PNG is not one asked about.
+        for path, reason in ((deep, '16 bits a channel'),
+                             (gamma, "gamma, 1.0, is not sRGB's"),
+                             (animated, 'it is animated'),
+                             (tall, '8x16384 pixels'),
+                             (jpeg, None)):
+            with self.subTest(os.path.basename(path)), \
+                    self.assertLogs('mcomix', 'DEBUG') as logs:
+                log.debug('-')
                 self.assertIsNone(archive_packer.webp_instead(
                     path, self.work, 'page.webp'))
+            said = [line for line in logs.output[1:] if 'Kept' in line]
+            if reason is None:
+                self.assertEqual([], said)
+            else:
+                self.assertEqual(1, len(said), logs.output)
+                self.assertIn(path, said[0])
+                self.assertIn(reason, said[0])
         self.assertEqual([], os.listdir(self.work))
 
     def test_a_webp_no_smaller_or_not_the_same_is_not_kept(self):
