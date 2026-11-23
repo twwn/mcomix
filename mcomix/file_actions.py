@@ -592,7 +592,7 @@ class FileActions:
         self._window.selected_pages = {
             number - sum(1 for gone in going if gone < number)
             for number in self._window.selected_pages - going}
-        self._show_pages(listing, min(min(going), len(listing)))
+        self._show_pages(listing, min(*going, len(listing)))
         return True
 
     def swap_pages(self, first: int, second: int) -> bool:

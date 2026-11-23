@@ -334,8 +334,8 @@ class FiniteLayout:  # 2D only
                          for each in wrapper_boxes]
         union_box = union_box.translate_opposite(origin)
         if orientation[distribution_axis] == -1:
-            content_boxes = list(reversed(content_boxes))
-            wrapper_boxes = list(reversed(wrapper_boxes))
+            content_boxes.reverse()
+            wrapper_boxes.reverse()
         self.content_boxes = content_boxes
         self.content_distorted = content_distorted
         self.wrapper_boxes = wrapper_boxes

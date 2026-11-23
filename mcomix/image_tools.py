@@ -31,8 +31,9 @@ if TYPE_CHECKING:
 
 PIL_VERSION = ('Pillow', PIL.__version__)
 
-# Unfortunately gdk_pixbuf_version is not exported, so show the GTK+ version instead.
-log.info(f'GDK version: {GdkPixbuf.PIXBUF_VERSION}, GTK+: {Gtk.get_major_version()}.{Gtk.get_minor_version()}, GLib: {GLib.MAJOR_VERSION}.{GLib.MINOR_VERSION}')
+log.info('GdkPixbuf version: %s, GTK: %d.%d, GLib: %d.%d',
+         GdkPixbuf.PIXBUF_VERSION, Gtk.get_major_version(),
+         Gtk.get_minor_version(), GLib.MAJOR_VERSION, GLib.MINOR_VERSION)
 log.info('PIL version: %s [%s]', PIL_VERSION[0], PIL_VERSION[1])
 
 #: The attribute that marks a pixbuf as missing_image_icon()'s.
