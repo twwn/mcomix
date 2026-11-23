@@ -56,6 +56,7 @@ import atexit
 import contextlib
 import copy
 import gc
+import json
 import shutil
 import stat
 import tempfile
@@ -1200,6 +1201,75 @@ class MainWindowOpenTest(MainWindowLaterTest):
         super().setUp()
         self.open_main_window()
         pump()
+
+
+class PageStoreCases:
+
+    """What every store of things kept for single pages does: mixed
+    into an MComixTest whose <store> is the module (page_marks,
+    page_rotations), with _keep(book, page) keeping something for a
+    page and _kept(book, page) saying whether something is kept."""
+
+    store = None
+
+    def _keep(self, book, page):
+        raise NotImplementedError
+
+    def _kept(self, book, page):
+        raise NotImplementedError
+
+    def _stored(self):
+        """What the store's file holds, read again from the disk."""
+        with open(self.store._store.path(), encoding='utf-8') as fd:
+            return json.load(fd)
+
+    def _read_again(self):
+        self.store._store.forget()
+
+    def test_it_is_read_back_from_the_file(self):
+        self._keep('/books/a.cbz', 'p02.jpg')
+        self._read_again()
+        self.assertTrue(self._kept('/books/a.cbz', 'p02.jpg'))
+
+    def test_it_follows_a_book_that_is_moved(self):
+        self._keep('/books/a.cbz', 'p02.jpg')
+        self.store.follow('/books/a.cbz', '/shelf/a.cbz')
+        self._read_again()
+        self.assertTrue(self._kept('/shelf/a.cbz', 'p02.jpg'))
+        self.assertFalse(self._kept('/books/a.cbz', 'p02.jpg'))
+        # A book nothing was said of leaves the file as it is.
+        self.store.follow('/books/b.cbz', '/shelf/b.cbz')
+        self.assertEqual(['/shelf/a.cbz'], list(self._stored()))
+
+    def test_it_follows_a_folder_of_books_that_is_moved(self):
+        old = os.path.abspath(os.path.join(os.sep, 'books'))
+        new = os.path.abspath(os.path.join(os.sep, 'shelf'))
+        inside = os.path.join(old, 'sub', 'a.cbz')
+        outside = os.path.abspath(os.path.join(os.sep, 'books-old', 'b.cbz'))
+        self._keep(inside, 'p02.jpg')
+        self._keep(outside, 'p02.jpg')
+        self.assertEqual(1, self.store.relocate(old, new))
+        self._read_again()
+        self.assertTrue(self._kept(os.path.join(new, 'sub', 'a.cbz'), 'p02.jpg'))
+        self.assertFalse(self._kept(inside, 'p02.jpg'))
+        self.assertTrue(self._kept(outside, 'p02.jpg'))
+        self.assertEqual(0, self.store.relocate(old, new))
+
+    def test_it_follows_pages_renamed_by_a_book_written_again(self):
+        """The pages swap names at once; what is kept for a page the
+        book no longer holds goes, and a book left with nothing leaves
+        the file."""
+        self._keep('/books/a.cbz', 'p01.jpg')
+        self._keep('/books/a.cbz', 'p03.jpg')
+        self.store.rename_pages(
+            '/books/a.cbz', {'p01.jpg': 'p02.jpg', 'p02.jpg': 'p01.jpg'},
+            ['p01.jpg', 'p02.jpg'])
+        self._read_again()
+        self.assertFalse(self._kept('/books/a.cbz', 'p01.jpg'))
+        self.assertTrue(self._kept('/books/a.cbz', 'p02.jpg'))
+        self.assertFalse(self._kept('/books/a.cbz', 'p03.jpg'))
+        self.store.rename_pages('/books/a.cbz', {}, ['p04.jpg'])
+        self.assertEqual({}, self._stored())
 
 
 def session_tmp_dir():

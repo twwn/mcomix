@@ -72,6 +72,7 @@ Class or helper | For
 `skip_unless_rar_reads(test)` | Skip where neither libunrar nor an unrar program is installed.
 `copy_rar_set(directory, stem)` | The RAR set packed in three volumes, copied as `<stem>.partN.rar`; their paths.
 `fresh_bookmarks_store()` | The bookmarks store read again from the test's home. `setUp()` does it already.
+`PageStoreCases` | The cases every store of what is kept per page shares (moved books, moved folders, renamed pages): mix it into the test of such a store and give it `store`, `_keep()` and `_kept()`.
 `session_tmp_dir()` | A folder that lasts the whole run, for what goes on writing after its test.
 `sample_pages(count)` | Paths of up to three pictures to pack or open.
 `described_book(path, comicinfo)` | A CBZ of two of them, with a `ComicInfo.xml` where one is given.

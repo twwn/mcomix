@@ -3,16 +3,24 @@
 import json
 import os
 
-from . import MComixTest
+from . import MComixTest, PageStoreCases
 
 from mcomix import constants
 from mcomix import page_marks
 
 
-class PageMarksTest(MComixTest):
+class PageMarksTest(PageStoreCases, MComixTest):
+
+    store = page_marks
 
     def _file(self):
         return os.path.join(constants.DATA_DIR, 'page_marks.json')
+
+    def _keep(self, book, page):
+        page_marks.mark(book, page, page_marks.SKIP, True)
+
+    def _kept(self, book, page):
+        return page_marks.marked(book, page, page_marks.SKIP)
 
     def test_a_mark_is_kept_for_its_page_and_its_book_alone(self):
         page_marks.mark('/books/a.cbz', 'p02.jpg', page_marks.SKIP, True)
@@ -33,39 +41,6 @@ class PageMarksTest(MComixTest):
             page_marks.marked('/books/a.cbz', 'p02.jpg', page_marks.SKIP))
         self.assertTrue(
             page_marks.marked('/books/a.cbz', 'p02.jpg', page_marks.ALONE))
-
-    def test_it_follows_a_book_that_is_moved(self):
-        page_marks.mark('/books/a.cbz', 'p02.jpg', page_marks.SKIP, True)
-        page_marks.follow('/books/a.cbz', '/shelf/a.cbz')
-        page_marks._store.forget()
-        self.assertTrue(
-            page_marks.marked('/shelf/a.cbz', 'p02.jpg', page_marks.SKIP))
-        self.assertFalse(
-            page_marks.marked('/books/a.cbz', 'p02.jpg', page_marks.SKIP))
-        # A book nothing was said of leaves the file as it is.
-        page_marks.follow('/books/b.cbz', '/shelf/b.cbz')
-        with open(self._file(), encoding='utf-8') as fd:
-            self.assertEqual(['/shelf/a.cbz'], list(json.load(fd)))
-
-    def test_it_follows_a_folder_of_books_that_is_moved(self):
-        old = os.path.abspath(os.path.join(os.sep, 'books'))
-        new = os.path.abspath(os.path.join(os.sep, 'shelf'))
-        inside = os.path.join(old, 'sub', 'a.cbz')
-        outside = os.path.abspath(os.path.join(os.sep, 'books-old', 'b.cbz'))
-        page_marks.mark(inside, 'p02.jpg', page_marks.SKIP, True)
-        page_marks.mark(outside, 'p02.jpg', page_marks.SKIP, True)
-        self.assertEqual(1, page_marks.relocate(old, new))
-        page_marks._store.forget()
-        self.assertTrue(page_marks.marked(os.path.join(new, 'sub', 'a.cbz'), 'p02.jpg', page_marks.SKIP))
-        self.assertFalse(page_marks.marked(inside, 'p02.jpg', page_marks.SKIP))
-        self.assertTrue(page_marks.marked(outside, 'p02.jpg', page_marks.SKIP))
-        self.assertEqual(0, page_marks.relocate(old, new))
-
-    def test_it_is_read_back_from_the_file(self):
-        page_marks.mark('/books/a.cbz', 'p02.jpg', page_marks.SKIP, True)
-        page_marks._store.forget()
-        self.assertTrue(
-            page_marks.marked('/books/a.cbz', 'p02.jpg', page_marks.SKIP))
 
     def test_a_mark_taken_off_leaves_nothing_behind(self):
         page_marks.mark('/books/a.cbz', 'p02.jpg', page_marks.SKIP, True)
