@@ -955,24 +955,25 @@ class FileActions:
 
     def undo(self, *args: object) -> bool:
         """Put the pages back as they were before the last change."""
-        if not self._undone:
-            return False
-        self._redone.append(self._window.imagehandler.get_image_files())
-        # The pages an undo brings back were never picked out, and every
-        # number after them has moved: there is nothing to carry over.
-        self._window.selected_pages = set()
-        listing = self._undone.pop()
-        self._show_pages(listing, min(self._window.imagehandler.get_current_page(),
-                                      len(listing)))
-        return True
+        return self._go_back_to(self._undone, self._redone)
 
     def redo(self, *args: object) -> bool:
         """Make the last undone change again."""
-        if not self._redone:
+        return self._go_back_to(self._redone, self._undone)
+
+    def _go_back_to(self, taking: list[list[str]],
+                    keeping: list[list[str]]) -> bool:
+        """Show the pages as the listing last put on <taking> has them,
+        and put the pages shown now on <keeping>, to go back to; False
+        when <taking> holds nothing."""
+        if not taking:
             return False
-        self._undone.append(self._window.imagehandler.get_image_files())
+        keeping.append(self._window.imagehandler.get_image_files())
+        # The pages an undo or a redo brings back were never picked out,
+        # and every number after them has moved: there is nothing to
+        # carry over.
         self._window.selected_pages = set()
-        listing = self._redone.pop()
+        listing = taking.pop()
         self._show_pages(listing, min(self._window.imagehandler.get_current_page(),
                                       len(listing)))
         return True

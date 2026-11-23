@@ -1566,34 +1566,32 @@ class MainWindow(Gtk.Window):
             then()
 
     def _open_next_book(self) -> None:
+        self._open_neighbouring_book(self.filehandler.open_next_archive,
+                                     self.filehandler.open_next_directory)
+
+    def _open_previous_book(self) -> None:
+        self._open_neighbouring_book(self.filehandler.open_previous_archive,
+                                     self.filehandler.open_previous_directory)
+
+    def _open_neighbouring_book(self, open_archive: "Callable[[], bool]",
+                                open_directory: "Callable[[], bool]"
+                                ) -> None:
+        """Open the archive beside the book, by <open_archive>, where
+        the preferences let a page turn go on to it, or else the book in
+        the folder beside it, by <open_directory>."""
         archive_open = self.filehandler.archive_type is not None
-        next_archive_opened = False
+        archive_opened = False
         if (self.slideshow.is_running() and
             prefs['slideshow can go to next archive']) or \
            prefs['auto open next archive']:
-            next_archive_opened = self.filehandler.open_next_archive()
+            archive_opened = open_archive()
 
-        # If "Auto open next archive" is disabled, do not go to the next
-        # directory if current file was an archive.
-        if not next_archive_opened and \
+        # If "Auto open next archive" is disabled, do not go on to the
+        # neighbouring directory if the current file was an archive.
+        if not archive_opened and \
            prefs['auto open next directory'] and \
            (not archive_open or prefs['auto open next archive']):
-            self.filehandler.open_next_directory()
-
-    def _open_previous_book(self) -> None:
-        archive_open = self.filehandler.archive_type is not None
-        previous_archive_opened = False
-        if (self.slideshow.is_running() and
-                prefs['slideshow can go to next archive']) or \
-                prefs['auto open next archive']:
-            previous_archive_opened = self.filehandler.open_previous_archive()
-
-        # If "Auto open next archive" is disabled, do not go to the previous
-        # directory if current file was an archive.
-        if not previous_archive_opened and \
-                prefs['auto open next directory'] and \
-                (not archive_open or prefs['auto open next archive']):
-            self.filehandler.open_previous_directory()
+            open_directory()
 
     def flip_page(self, step: int, single_step: bool = False) -> None:
         """Turn <step> pages, and open the next or previous book at the ends.
