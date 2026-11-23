@@ -635,11 +635,7 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable, LibraryPart):
         if not book:
             return False
 
-        for item in self._each_item():
-            if item.uid == book.id:
-                return True
-
-        return False
+        return any(item.uid == book.id for item in self._each_item())
 
     def _item_at(self, position: int) -> _BookItem | None:
         """The cover shown at <position>, or None if none is.

@@ -181,10 +181,7 @@ class ZipArchive(archive_base.NonUnicodeArchive):
     def _has_encryption(self) -> bool:
         """ Checks all files in the archive for encryption.
         Returns True if at least one encrypted file was found. """
-        for zipinfo in self.zip.infolist():
-            if zipinfo.flag_bits & 0x1:  # File is encrypted
-                return True
-
-        return False
+        # Bit 0 of the general purpose flags marks an encrypted member.
+        return any(zipinfo.flag_bits & 0x1 for zipinfo in self.zip.infolist())
 
 # vim: expandtab:sw=4:ts=4

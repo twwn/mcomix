@@ -214,10 +214,7 @@ class RecursiveArchive(archive_base.BaseArchive):
         """
         if not self._contents_listed:
             self.list_contents()
-        for archive in self._archive_list:
-            if archive.is_solid():
-                return True
-        return False
+        return any(archive.is_solid() for archive in self._archive_list)
 
     def forget_password(self) -> None:
         for archive in self._archive_list:
