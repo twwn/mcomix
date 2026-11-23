@@ -215,7 +215,7 @@ class MagnifyingLens:
         many more pixels in it.
         """
         def up(vector: Sequence[float]) -> list[int]:
-            return [int(round(side * scale)) for side in vector]
+            return [round(side * scale) for side in vector]
 
         cb = self._window.layout.get_content_boxes()
         source_pixbufs = self._window.imagehandler.get_shown_pixbufs(len(cb))
@@ -249,7 +249,7 @@ class MagnifyingLens:
 
         canvas = self._window.enhancer.enhance(canvas)
 
-        return image_tools.add_border(canvas, int(round(border_size * scale)))
+        return image_tools.add_border(canvas, round(border_size * scale))
 
     def _draw_lens_pixbuf(self, ref_pos: Sequence[int], csize: Sequence[int],
                           srcbuf: GdkPixbuf.Pixbuf, rotation: int,
@@ -270,8 +270,8 @@ class MagnifyingLens:
             source_ref_pos = ref_pos / page_scale
             combined_source_scale = page_scale * lens_scale
             mapped_ref_pos = source_ref_pos * combined_source_scale
-            mapped_ref_pos_int = int(round(mapped_ref_pos * 2)) // 2
-            mapped_size = int(round(src_pixbuf_size * combined_source_scale))
+            mapped_ref_pos_int = round(mapped_ref_pos * 2) // 2
+            mapped_size = round(src_pixbuf_size * combined_source_scale)
             # take rounding errors into account
             applied_source_scale = mapped_size / src_pixbuf_size
             # calculate data for clamping

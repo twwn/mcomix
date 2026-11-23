@@ -58,7 +58,7 @@ class _Page(Gtk.ScrolledWindow):
     def set_thumbnail(self, pixbuf: GdkPixbuf.Pixbuf, scale: float = 1) -> None:
         """Show <pixbuf>, made with <scale> of the screen's pixels to each
         of the window's, at the size it stands for."""
-        pixbuf = image_tools.add_border(pixbuf, int(round(scale)))
+        pixbuf = image_tools.add_border(pixbuf, round(scale))
         self._thumb.set_paintable(widgets.at_scale(
             image_tools.pixbuf_to_texture(pixbuf), scale))
 

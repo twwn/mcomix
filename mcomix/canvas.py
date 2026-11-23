@@ -207,8 +207,8 @@ class PageCanvas(Gtk.Widget):
                             None if wanted is None else wanted[1])
         finally:
             self._allocating = False
-        x_offset = int(round(self._hadjustment.get_value()))
-        y_offset = int(round(self._vadjustment.get_value()))
+        x_offset = round(self._hadjustment.get_value())
+        y_offset = round(self._vadjustment.get_value())
         allocation = Gdk.Rectangle()
         for child, x, y in self._children:
             request = child.get_preferred_size()[1]

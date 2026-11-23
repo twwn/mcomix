@@ -33,4 +33,4 @@ def screen_factor(widget: "Gtk.Widget | None") -> float:
 
 def scaled(size: int, widget: "Gtk.Widget | None") -> int:
     """<size>, as large as this screen wants a preview to be."""
-    return int(round(size * screen_factor(widget)))
+    return round(size * screen_factor(widget))

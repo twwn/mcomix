@@ -188,7 +188,7 @@ class _PropertiesDialog(Dialog):
             return
         # 128 of the window's pixels, made with the screen's.
         scale = self._window.device_scale()
-        side = int(round(128 * scale))
+        side = round(128 * scale)
         thumb = self._window.imagehandler.get_thumbnail(page_number,
                                                         width=side, height=side)
         if thumb is None:

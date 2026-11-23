@@ -461,7 +461,7 @@ def _round_nonempty(t: Sequence[float]) -> list[int]:
     A page scaled far enough down rounds to nothing on one axis or
     both, and a page of no width is a page that cannot be seen at all.
     """
-    return [max(int(round(value)), 1) for value in t]
+    return [max(round(value), 1) for value in t]
 
 
 def _union_size(image_sizes: Sequence[Sequence[float]],

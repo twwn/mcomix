@@ -272,8 +272,8 @@ class Pageselector(Dialog):
         # The picture's size in the screen's pixels, which is what the
         # preview is made with.
         scale = self._window.device_scale()
-        width = int(round(self._image_preview.get_width() * scale))
-        height = int(round(self._image_preview.get_height() * scale))
+        width = round(self._image_preview.get_width() * scale)
+        height = round(self._image_preview.get_height() * scale)
         self._thumbnail_page = page
         self._thread.clear_orders()
         self._thread.append_order((page, width, height, scale))

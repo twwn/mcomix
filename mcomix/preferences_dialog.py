@@ -1181,7 +1181,7 @@ class _PreferencesDialog(Dialog):
         if preference == 'lens magnification':
             preferences.set_by_name(preference, value)
         elif preference in ('slideshow delay', 'pointer hide delay'):
-            preferences.set_by_name(preference, int(round(value * 1000)))
+            preferences.set_by_name(preference, round(value * 1000))
         elif preference == 'smart scroll percentage':
             preferences.set_by_name(preference, value / 100.0)
         else:

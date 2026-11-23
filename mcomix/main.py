@@ -2268,7 +2268,7 @@ class MainWindow(Gtk.Window):
         step.
         """
         x, y = self.page_area.get_position()
-        self.layout.set_viewport_position((int(round(x)), int(round(y))))
+        self.layout.set_viewport_position((round(x), round(y)))
 
     def clear(self) -> None:
         """Clear the currently displayed data (i.e. "close" the file)."""

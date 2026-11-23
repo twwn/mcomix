@@ -86,7 +86,7 @@ class BookPropertiesDialog(Dialog):
         library and the file system know of it."""
         page = self.page
         if cover is not None:
-            side = int(round(128 * scale))
+            side = round(128 * scale)
             page.set_thumbnail(image_tools.fit_in_rectangle(
                 cover, side, side), scale)
         page.set_filename(book.name)

@@ -169,7 +169,7 @@ class PageImage(Gtk.Picture):
             # file it came out of.
             if size is None:
                 size = (pixbuf.get_width(), pixbuf.get_height())
-            width, height = (max(1, int(round(side))) for side in size)
+            width, height = (max(1, round(side)) for side in size)
             self._animation = _AnimationPaintable(width, height)
             self._animation.set_texture(image_tools.pixbuf_to_texture(pixbuf))
             # Nothing GTK4 ships animates a pixbuf.  The frames are
@@ -183,7 +183,7 @@ class PageImage(Gtk.Picture):
             return
         texture = image_tools.pixbuf_to_texture(pixbuf)
         if size is not None:
-            width, height = (max(1, int(round(side))) for side in size)
+            width, height = (max(1, round(side)) for side in size)
             if (width, height) != (pixbuf.get_width(), pixbuf.get_height()):
                 # Scaled to a screen with more pixels than the window,
                 # and drawn at the size the window laid it out at.

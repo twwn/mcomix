@@ -1620,7 +1620,7 @@ def convert_rgba_to_rgba8int(colour: Sequence[float]) -> int:
     A shorter one is taken to be opaque.
     """
     def component(value: float) -> int:
-        return min(255, max(0, int(round(value * 255))))
+        return min(255, max(0, round(value * 255)))
     red, green, blue = (component(value) for value in colour[:3])
     alpha = component(colour[3]) if len(colour) > 3 else 255
     return (red << 24) | (green << 16) | (blue << 8) | alpha
