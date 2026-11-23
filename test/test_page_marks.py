@@ -59,13 +59,15 @@ class PageMarksTest(PageStoreCases, MComixTest):
         page_marks._store.forget()
         self.assertFalse(
             page_marks.marked('/books/a.cbz', 'p01.jpg', page_marks.SKIP))
-        # What is not a mark is dropped, and what is one is kept.
+        # What is not a mark is dropped, and what is one is kept: a page
+        # whose list holds anything but names loses all of it, and a book
+        # that is not one is passed over, not the end of the reading.
         with open(self._file(), 'w', encoding='utf-8') as fd:
-            json.dump({'/books/a.cbz': {'p01.jpg': ['skip', 'sideways'],
+            json.dump({'/books/b.cbz': ['skip'], 'x': 3,
+                       '/books/a.cbz': {'p01.jpg': ['skip', 'sideways'],
                                         'p02.jpg': 'skip',
                                         'p03.jpg': ['sideways'],
-                                        'p04.jpg': [3]},
-                       '/books/b.cbz': ['skip'], 'x': 3}, fd)
+                                        'p04.jpg': [3, 'skip']}}, fd)
         page_marks._store.forget()
         self.assertTrue(
             page_marks.marked('/books/a.cbz', 'p01.jpg', page_marks.SKIP))

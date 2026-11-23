@@ -29,6 +29,9 @@ class PageRotationsTest(PageStoreCases, MComixTest):
         self.assertEqual(0, page_rotations.rotation('/books/b.cbz', 'p02.jpg'))
 
     def test_upright_again_is_forgotten(self):
+        # Writing a page's turn into its file forgets the turn, which
+        # the page need not have had: forgetting none is no error.
+        page_rotations.remember('/books/a.cbz', 'p01.jpg', 0)
         page_rotations.remember('/books/a.cbz', 'p02.jpg', 90)
         page_rotations.remember('/books/a.cbz', 'p02.jpg', 0)
         with open(self._file(), encoding='utf-8') as fd:
@@ -41,10 +44,12 @@ class PageRotationsTest(PageStoreCases, MComixTest):
         page_rotations._store.forget()
         self.assertEqual(0, page_rotations.rotation('/books/a.cbz', 'p02.jpg'))
         with open(self._file(), 'w', encoding='utf-8') as fd:
-            json.dump({'/books/a.cbz': {'p01.jpg': 45, 'p02.jpg': 180},
+            json.dump({'/books/a.cbz': {'p01.jpg': 45, 'p02.jpg': 180,
+                                        'p03.jpg': 270},
                        'x': 3}, fd)
         page_rotations._store.forget()
         self.assertEqual(0, page_rotations.rotation('/books/a.cbz', 'p01.jpg'))
         self.assertEqual(180, page_rotations.rotation('/books/a.cbz', 'p02.jpg'))
+        self.assertEqual(270, page_rotations.rotation('/books/a.cbz', 'p03.jpg'))
 
 # vim: expandtab:sw=4:ts=4
