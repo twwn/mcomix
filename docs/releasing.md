@@ -156,6 +156,8 @@ Folder | Files | From
 
 `JxrDecApp.exe`, which shows the pictures a KFX book keeps in JPEG XR, comes from MSYS2's jxrlib with its two DLLs, and goes beside `MComix.exe`; its licence is `win32/jxrlib-license.txt`, since the package carries none.
 
+`jpegtran.exe`, which turns a JPEG page's file without loss, comes from MSYS2's libjpeg-turbo with `libjpeg-8.dll`, and goes beside `MComix.exe` too: a program MComix starts does not find the copy in `_internal`.
+
 There is no `mutool`: PyMuPDF carries its own MuPDF, and a second one would add 47 MB.
 
 In a UCRT64 shell in the checkout, build `dist/MComix`, `dist/mcomix-win64-<version>.zip` and its SBOM, `dist/sbom-win64-<version>.spdx.json`:

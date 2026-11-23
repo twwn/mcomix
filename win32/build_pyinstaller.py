@@ -137,6 +137,12 @@ def win32_newline(source: str, dest: str) -> None:
 #: libraries it is linked against.
 JXRLIB_FILES = ('JxrDecApp.exe', 'libjxrglue.dll', 'libjpegxr.dll')
 
+#: The files of MSYS2's libjpeg-turbo the bundle carries beside MComix.exe:
+#: jpegtran, which turns a JPEG page without loss, and the one library it
+#: is linked against.  GTK's JPEG loader brings that library into
+#: _internal already, but a program MComix starts does not look there.
+JPEGTRAN_FILES = ('jpegtran.exe', 'libjpeg-8.dll')
+
 
 def copy_other_files() -> None:
     """ Copy other relevant files into dist directory. """
@@ -162,6 +168,12 @@ def copy_other_files() -> None:
         for name in JXRLIB_FILES:
             shutil.copy(os.path.join(msys2_bin, name), os.path.join('dist/MComix', name))
         win32_newline('win32/jxrlib-license.txt', 'dist/MComix/licenses/jxrlib/LICENSE.txt')
+
+    # jpegtran the same way.  Its package's licence is among those copied
+    # below, since GTK's JPEG loader comes from the same package.
+    if os.path.isfile(os.path.join(msys2_bin, 'jpegtran.exe')):
+        for name in JPEGTRAN_FILES:
+            shutil.copy(os.path.join(msys2_bin, name), os.path.join('dist/MComix', name))
 
     # Where MSYS2's packages keep their licences: beside the Python
     # running this, whichever MSYS2 environment it is.

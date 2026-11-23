@@ -441,10 +441,11 @@ class OtherFilesTest(MComixTest):
 
     """What the build adds to dist/MComix beside what PyInstaller froze."""
 
-    def test_jxrlib_s_decoder_goes_beside_mcomix_exe(self):
+    def test_the_helper_programs_go_beside_mcomix_exe(self):
         """MComix looks for programs in its own folder, and Windows for
-        the DLLs a program loads in the program's: the decoder and its
-        two libraries go there, with jxrlib's licence."""
+        the DLLs a program loads in the program's: jxrlib's decoder and
+        its two libraries go there, with jxrlib's licence, and so do
+        jpegtran and its library."""
         checkout = pathlib.Path(self.tmp_dir) / 'checkout'
         for name in ('ChangeLog.md', 'README.md', 'COPYING',
                      'win32/jxrlib-license.txt'):
@@ -453,7 +454,9 @@ class OtherFilesTest(MComixTest):
                         checkout / name)
         prefix = pathlib.Path(self.tmp_dir) / 'msys64' / 'ucrt64'
         (prefix / 'bin').mkdir(parents=True)
-        for name in build_pyinstaller.JXRLIB_FILES + ('JxrEncApp.exe',):
+        for name in (build_pyinstaller.JXRLIB_FILES
+                     + build_pyinstaller.JPEGTRAN_FILES
+                     + ('JxrEncApp.exe', 'cjpeg.exe')):
             (prefix / 'bin' / name).write_bytes(name.encode())
         (checkout / 'dist' / 'MComix' / '_internal').mkdir(parents=True)
         cwd = os.getcwd()
@@ -465,9 +468,12 @@ class OtherFilesTest(MComixTest):
             os.chdir(cwd)
         bundle = checkout / 'dist' / 'MComix'
         self.assertEqual(
-            ['JxrDecApp.exe', 'libjpegxr.dll', 'libjxrglue.dll'],
+            ['JxrDecApp.exe', 'jpegtran.exe', 'libjpeg-8.dll',
+             'libjpegxr.dll', 'libjxrglue.dll'],
             sorted(path.name for path in bundle.iterdir()
-                   if path.name.startswith(('Jxr', 'libj'))))
+                   if path.name.startswith(('Jxr', 'libj', 'jpeg', 'cjpeg'))))
+        self.assertEqual(b'libjpeg-8.dll',
+                         (bundle / 'libjpeg-8.dll').read_bytes())
         self.assertEqual(b'libjxrglue.dll',
                          (bundle / 'libjxrglue.dll').read_bytes())
         self.assertIn('Copyright © Microsoft Corp.', (
@@ -489,8 +495,8 @@ class OtherFilesTest(MComixTest):
                 build_pyinstaller.copy_other_files()
         finally:
             os.chdir(cwd)
-        self.assertFalse((checkout / 'dist' / 'MComix'
-                          / 'JxrDecApp.exe').exists())
+        for name in ('JxrDecApp.exe', 'jpegtran.exe'):
+            self.assertFalse((checkout / 'dist' / 'MComix' / name).exists())
         self.assertFalse((checkout / 'dist' / 'MComix' / 'licenses'
                           / 'jxrlib').exists())
 

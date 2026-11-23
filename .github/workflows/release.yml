@@ -260,7 +260,7 @@ jobs:
           APPDATA: ${{ runner.temp }}\appdata
         run: |
           $bundle = Resolve-Path dist/MComix
-          foreach ($path in 'MComix.exe', 'UnRAR64.dll', '7z.exe', 'JxrDecApp.exe',
+          foreach ($path in 'MComix.exe', 'UnRAR64.dll', '7z.exe', 'JxrDecApp.exe', 'jpegtran.exe',
                             '_internal/share/icons/Adwaita/index.theme',
                             '_internal/share/locale/de/LC_MESSAGES/gtk40.mo',
                             '_internal/cairo') {
