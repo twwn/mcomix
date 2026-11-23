@@ -419,6 +419,16 @@ class FileHandler:
             name = path
         return name.replace(os.sep, '/')
 
+    def stand_for(self, path: str, original: str) -> None:
+        """Have the file at <path> stand for the member of the open
+        archive the file at <original> holds: a changed copy of that
+        page, which keeps its bookmarks, its marks and its place, and is
+        as unpacked as that member is."""
+        self._member_names[path] = self.member_of(original)
+        listed = self._name_table.get(original)
+        if listed is not None:
+            self._name_table[path] = listed
+
     def members_written(self, names: "Mapping[str, str]") -> None:
         """The open archive was written again with each page under the
         name <names> gives the path of its file."""

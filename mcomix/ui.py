@@ -380,7 +380,8 @@ _POPUP = (
     # The menu is opened on a page, so what is done to that page leads
     # (upstream feature requests 98 and 105).
     'copy_page_popup', 'extract_page_popup',
-    'rename_page_popup', 'delete_page_popup', 'skip_page_popup',
+    'rename_page_popup', 'write_turn_popup', 'delete_page_popup',
+    'skip_page_popup',
     'page_alone_popup', 'library_cover_popup', 'remove_bookmark_popup',
     'unpick_pages',
     None,
@@ -454,6 +455,9 @@ class MainUI:
             _Entry('rename_page_popup', 'document-edit', _('Re_name page...'),
                    _('Renames the page the menu was opened over.'),
                    window.file_actions.rename_popup_page),
+            _Entry('write_turn_popup', 'mcomix-rotate-90', _('Save rotation to _file'),
+                   _('Turns the picture in its file as the page is shown turned, without loss. JPEG pictures only. In an archive, the change is written when the archive is saved.'),
+                   window.file_actions.write_turn_popup),
             _Entry('rename_book', 'document-edit', _('Rename arc_hive...'), None,
                    window.file_actions.rename_book),
             _Entry('delete_page_popup', 'edit-delete', _('_Delete page'),

@@ -14,6 +14,10 @@ The archive on disk is untouched until the changes are written.
   - On Windows, a character Windows refuses in a file name (`: * ? " < > |`) becomes `_`, as in the names of an opened archive.
   - Renaming can change the book's order next time it opens, since an archive is ordered by name.
   - In a folder of images the file is renamed at once; a name a file that is not a page already has is refused.
+- "Save rotation to file", in the page's menu, turns a JPEG picture in its file as the page is shown turned by hand, without loss, and the page then shows upright by itself in any viewer.
+  - Where the picture's size lets them, its compressed blocks are turned with `jpegtran`, which has to be installed. Otherwise only its Exif orientation tag is turned; with "Automatically rotate images according to their metadata" off MComix would not show that turn, so it refuses and says why.
+  - In a folder of images the file is written at once. In an archive the page is turned for the next save, and "Edit → Undo" gives back the page and its turn.
+  - Not offered for other formats, in an archive MComix cannot write, with "Keep transformation" on, or in continuous mode.
 - A name another page holds is flagged in the dialog, with two choices:
   - "Swap the names": that page gets this page's old name.
   - "Replace": this page gets the name, and the other page leaves the book. In a folder of images its file is written over.

@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-21 19:09+0100\n"
+"POT-Creation-Date: 2026-11-23 19:28+0100\n"
 "PO-Revision-Date: 2006-10-15 21:30+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -51,8 +51,8 @@ msgid "! Could not read %s"
 msgstr "! Kon %s niet lezen"
 
 #
-#: mcomix/archive_packer.py:214 mcomix/file_actions.py:1252
-#: mcomix/library/book_area.py:1326
+#: mcomix/archive_packer.py:214 mcomix/file_actions.py:1387
+#: mcomix/library/book_area.py:1389
 #, python-format
 msgid "! Could not remove %(file)s: %(error)s"
 msgstr "! Kon %(file)s niet verwijderen: %(error)s"
@@ -91,12 +91,12 @@ msgid "! Could not parse bookmarks file %s"
 msgstr "! Kon bladwijzerbestand %s niet verwerken"
 
 #: mcomix/bookmark_backend.py:487 mcomix/book_store.py:83
-#: mcomix/file_actions.py:1014
+#: mcomix/file_actions.py:1149
 #, python-format
 msgid "! Could not save %(file)s to %(directory)s: %(error)s"
 msgstr "! Kon %(file)s niet opslaan in %(directory)s: %(error)s"
 
-#: mcomix/bookmark_backend.py:493 mcomix/file_actions.py:1024
+#: mcomix/bookmark_backend.py:493 mcomix/file_actions.py:1159
 #, python-format
 msgid "Could not save \"%(file)s\" to \"%(directory)s\""
 msgstr "Kon \"%(file)s\" niet opslaan in \"%(directory)s\""
@@ -111,9 +111,9 @@ msgid "_No"
 msgstr "_Nee"
 
 #: mcomix/bookmark_backend.py:510 mcomix/edit_dialog.py:65
-#: mcomix/file_actions.py:713 mcomix/file_actions.py:1065
-#: mcomix/file_actions.py:1238 mcomix/file_chooser_base_dialog.py:236
-#: mcomix/file_chooser_base_dialog.py:241
+#: mcomix/file_actions.py:845 mcomix/file_actions.py:1200
+#: mcomix/file_actions.py:1373 mcomix/file_chooser_base_dialog.py:237
+#: mcomix/file_chooser_base_dialog.py:242
 #: mcomix/file_chooser_library_dialog.py:42 mcomix/message_dialog.py:26
 #: mcomix/message_dialog.py:29 mcomix/pageselect.py:38
 #: mcomix/save_progress.py:119
@@ -174,7 +174,7 @@ msgstr "_Verwijderen"
 # File: src/ui.py, line: 48
 #: mcomix/bookmark_dialog.py:34 mcomix/comment_dialog.py:29
 #: mcomix/message_dialog.py:25 mcomix/preferences_dialog.py:105
-#: mcomix/properties_dialog.py:38 mcomix/ui.py:501
+#: mcomix/properties_dialog.py:38 mcomix/ui.py:500
 #: mcomix/library/book_properties.py:60 mcomix/library/watchlist.py:41
 msgid "_Close"
 msgstr "_Sluiten"
@@ -193,7 +193,7 @@ msgstr "Naam"
 
 #
 # File: src/bookmark.py, line: 256
-#: mcomix/bookmark_dialog.py:65 mcomix/main.py:2737
+#: mcomix/bookmark_dialog.py:65 mcomix/main.py:2739
 #: mcomix/library/book_properties.py:107 mcomix/library/control_area.py:158
 msgid "Page"
 msgstr "Pagina"
@@ -230,7 +230,7 @@ msgstr "Bladwijzers van dit boek _verwijderen..."
 msgid "_Edit bookmarks..."
 msgstr "Bladwijzers be_werken..."
 
-#: mcomix/bookmark_menu.py:202 mcomix/file_actions.py:1298
+#: mcomix/bookmark_menu.py:202 mcomix/file_actions.py:1433
 #, python-format
 msgid "Remove the bookmarks in \"%s\"?"
 msgstr "De bladwijzers in \"%s\" verwijderen?"
@@ -253,8 +253,8 @@ msgstr "Commentaar"
 
 #
 # File: src/comment.py, line: 53
-#: mcomix/comment_dialog.py:132 mcomix/file_handler.py:571
-#: mcomix/file_handler.py:1114
+#: mcomix/comment_dialog.py:132 mcomix/file_handler.py:581
+#: mcomix/file_handler.py:1124
 #, python-format
 msgid "Could not read %s"
 msgstr "Kon %s niet lezen"
@@ -286,12 +286,12 @@ msgid "Remove from archive"
 msgstr "Uit archief verwijderen"
 
 #: mcomix/edit_comment_area.py:119 mcomix/edit_image_area.py:120
-#: mcomix/ui.py:473
+#: mcomix/ui.py:472
 msgid "_Undo"
 msgstr "_Ongedaan maken"
 
 #: mcomix/edit_comment_area.py:120 mcomix/edit_image_area.py:121
-#: mcomix/ui.py:476
+#: mcomix/ui.py:475
 msgid "_Redo"
 msgstr "Op_nieuw"
 
@@ -343,20 +343,20 @@ msgid "Comment files"
 msgstr "Commentaarbestanden"
 
 #
-#: mcomix/edit_dialog.py:261 mcomix/file_actions.py:775
+#: mcomix/edit_dialog.py:261 mcomix/file_actions.py:910
 #, python-format
 msgid "! Could not save the archive %(archivefile)s: %(error)s"
 msgstr "! Kon archief %(archivefile)s niet opslaan: %(error)s"
 
 #
 # File: src/edit.py, line: 99
-#: mcomix/edit_dialog.py:274 mcomix/file_actions.py:780
+#: mcomix/edit_dialog.py:274 mcomix/file_actions.py:915
 msgid "The new archive could not be saved!"
 msgstr "Het nieuwe archief kon niet worden opgeslagen!"
 
 #
 # File: src/edit.py, line: 101
-#: mcomix/edit_dialog.py:275 mcomix/file_actions.py:781
+#: mcomix/edit_dialog.py:275 mcomix/file_actions.py:916
 msgid "The original files have not been removed."
 msgstr "De oorspronkelijke bestanden zijn niet verwijderd."
 
@@ -386,7 +386,7 @@ msgstr "_Verder bewerken"
 msgid "_Close the book"
 msgstr "Boek _sluiten"
 
-#: mcomix/edit_image_area.py:115 mcomix/ui.py:459
+#: mcomix/edit_image_area.py:115 mcomix/ui.py:455
 msgid "Re_name page..."
 msgstr "Pagina _hernoemen..."
 
@@ -416,9 +416,9 @@ msgstr "_Terugdraaien"
 msgid "Go back to the saved values."
 msgstr "Terug naar de opgeslagen waarden."
 
-#: mcomix/enhance_dialog.py:51 mcomix/file_actions.py:627
-#: mcomix/file_actions.py:685 mcomix/file_actions.py:714
-#: mcomix/file_chooser_base_dialog.py:242 mcomix/openwith.py:453
+#: mcomix/enhance_dialog.py:51 mcomix/file_actions.py:759
+#: mcomix/file_actions.py:817 mcomix/file_actions.py:846
+#: mcomix/file_chooser_base_dialog.py:243 mcomix/openwith.py:453
 msgid "_Save"
 msgstr "Op_slaan"
 
@@ -486,7 +486,7 @@ msgstr ""
 "Past het contrast (zowel licht als donker) automatisch aan, apart voor elk "
 "kleurkanaal."
 
-#: mcomix/enhance_dialog.py:123 mcomix/ui.py:576
+#: mcomix/enhance_dialog.py:123 mcomix/ui.py:575
 msgid "_Invert image colors"
 msgstr "Afbeeldings_kleuren omkeren"
 
@@ -494,35 +494,55 @@ msgstr "Afbeeldings_kleuren omkeren"
 msgid "Invert (negate) image colors."
 msgstr "Keert de kleuren van de afbeelding om."
 
-#: mcomix/file_actions.py:323 mcomix/file_actions.py:1441
-#: mcomix/file_actions.py:1584
+#: mcomix/file_actions.py:348 mcomix/file_actions.py:1576
+#: mcomix/file_actions.py:1703
 msgid "A file of that name is there already."
 msgstr "Er staat daar al een bestand met die naam."
 
-#: mcomix/file_actions.py:349
+#: mcomix/file_actions.py:374
 #, python-format
 msgid "Could not rename \"%s\""
 msgstr "Kon de naam van \"%s\" niet wijzigen"
 
-#: mcomix/file_actions.py:400
+#: mcomix/file_actions.py:425
 #, python-format
 msgid "Page %(number)d is called \"%(name)s\" already."
 msgstr "Pagina %(number)d heet al \"%(name)s\"."
 
-#: mcomix/file_actions.py:405
+#: mcomix/file_actions.py:430
 msgid "Rename page?"
 msgstr "Pagina hernoemen?"
 
-#: mcomix/file_actions.py:406
+#: mcomix/file_actions.py:431
 msgid "Please enter a new name for this page."
 msgstr "Voer een nieuwe naam in voor deze pagina."
 
-#: mcomix/file_actions.py:623
+#: mcomix/file_actions.py:533
+#, python-format
+msgid ""
+"At its size, its pixels cannot be turned without loss. Only its Exif "
+"orientation could be turned, which MComix does not follow while \"%s\" is "
+"off."
+msgstr ""
+"Bij deze afmetingen kunnen de pixels niet zonder verlies worden gedraaid. "
+"Alleen de Exif-oriëntatie zou kunnen worden gedraaid, en die volgt MComix "
+"niet zolang \"%s\" uit staat."
+
+#: mcomix/file_actions.py:536 mcomix/preferences_dialog.py:472
+msgid "Automatically rotate images according to their metadata"
+msgstr "Afbeeldingen automatisch draaien volgens hun metagegevens"
+
+#: mcomix/file_actions.py:561
+#, python-format
+msgid "Could not turn \"%s\""
+msgstr "Kon \"%s\" niet draaien"
+
+#: mcomix/file_actions.py:755
 #, python-format
 msgid "Write \"%s\" again before closing it?"
 msgstr "\"%s\" opnieuw schrijven voor het sluiten?"
 
-#: mcomix/file_actions.py:624
+#: mcomix/file_actions.py:756
 msgid ""
 "The book has changes that the archive on disk does not hold. They are lost "
 "when it closes."
@@ -530,16 +550,16 @@ msgstr ""
 "Het boek heeft wijzigingen die het archief op schijf niet bevat. Ze gaan "
 "verloren bij het sluiten."
 
-#: mcomix/file_actions.py:626
+#: mcomix/file_actions.py:758
 msgid "_Close without saving"
 msgstr "_Sluiten zonder opslaan"
 
-#: mcomix/file_actions.py:680
+#: mcomix/file_actions.py:812
 #, python-format
 msgid "Write \"%s\" again now?"
 msgstr "\"%s\" nu opnieuw schrijven?"
 
-#: mcomix/file_actions.py:681
+#: mcomix/file_actions.py:813
 msgid ""
 "The archive on disk will be replaced by the book as it stands: the pages it "
 "holds now, in the order and under the names it shows."
@@ -547,16 +567,16 @@ msgstr ""
 "Het archief op schijf wordt vervangen door het boek zoals het nu is: de "
 "pagina’s die het nu heeft, in de volgorde en onder de namen die het toont."
 
-#: mcomix/file_actions.py:684
+#: mcomix/file_actions.py:816
 msgid "_Not now"
 msgstr "_Niet nu"
 
-#: mcomix/file_actions.py:709
+#: mcomix/file_actions.py:841
 #, python-format
 msgid "\"%s\" has changed since it was opened"
 msgstr "\"%s\" is gewijzigd sinds het werd geopend"
 
-#: mcomix/file_actions.py:710
+#: mcomix/file_actions.py:842
 msgid ""
 "Another program has written it. Saving replaces it with the book as MComix "
 "shows it, and what that program changed is lost."
@@ -564,59 +584,59 @@ msgstr ""
 "Een ander programma heeft het geschreven. Opslaan vervangt het door het boek "
 "zoals MComix het toont, en wat dat programma heeft gewijzigd gaat verloren."
 
-#: mcomix/file_actions.py:908
+#: mcomix/file_actions.py:1043
 #, python-format
 msgid "Could not show the folder: %s"
 msgstr "Kon de map niet tonen: %s"
 
-#: mcomix/file_actions.py:955 mcomix/keybindings.py:166
+#: mcomix/file_actions.py:1090 mcomix/keybindings.py:166
 msgid "Save page as"
 msgstr "Pagina opslaan als"
 
-#: mcomix/file_actions.py:1018 mcomix/file_actions.py:1586
+#: mcomix/file_actions.py:1153 mcomix/file_actions.py:1705
 #, python-format
 msgid "There is not enough room there: the file is %s."
 msgstr "Daar is niet genoeg ruimte: het bestand is %s."
 
-#: mcomix/file_actions.py:1055
+#: mcomix/file_actions.py:1190
 msgid "There is no trash for this folder, so it cannot be restored."
 msgstr "Deze map heeft geen prullenbak, dus het kan niet worden hersteld."
 
-#: mcomix/file_actions.py:1063
+#: mcomix/file_actions.py:1198
 #, python-format
 msgid "Delete \"%s\"?"
 msgstr "\"%s\" verwijderen?"
 
-#: mcomix/file_actions.py:1064
+#: mcomix/file_actions.py:1199
 msgid "The file is moved to the trash."
 msgstr "Het bestand wordt naar de prullenbak verplaatst."
 
-#: mcomix/file_actions.py:1066
+#: mcomix/file_actions.py:1201
 msgid "_Move to Trash"
 msgstr "Naar prullenbak _verplaatsen"
 
-#: mcomix/file_actions.py:1096 mcomix/library/book_area.py:1263
+#: mcomix/file_actions.py:1231 mcomix/library/book_area.py:1326
 msgid "It does not go to the trash and cannot be restored."
 msgstr "Het gaat niet naar de prullenbak en kan niet worden hersteld."
 
-#: mcomix/file_actions.py:1104 mcomix/library/book_area.py:1255
+#: mcomix/file_actions.py:1239 mcomix/library/book_area.py:1318
 #, python-format
 msgid "Delete \"%s\" permanently?"
 msgstr "\"%s\" definitief verwijderen?"
 
-#: mcomix/file_actions.py:1211
+#: mcomix/file_actions.py:1346
 #, python-format
 msgid "Could not move \"%s\" to the trash"
 msgstr "Kon \"%s\" niet naar de prullenbak verplaatsen"
 
-#: mcomix/file_actions.py:1215 mcomix/library/book_area.py:1340
+#: mcomix/file_actions.py:1350 mcomix/library/book_area.py:1403
 #, python-format
 msgid "%d book could not be moved to the trash."
 msgid_plural "%d books could not be moved to the trash."
 msgstr[0] "%d boek kon niet naar de prullenbak worden verplaatst."
 msgstr[1] "%d boeken konden niet naar de prullenbak worden verplaatst."
 
-#: mcomix/file_actions.py:1219
+#: mcomix/file_actions.py:1354
 msgid "Delete it permanently instead? It cannot be restored."
 msgid_plural "Delete them permanently instead? They cannot be restored."
 msgstr[0] ""
@@ -624,23 +644,23 @@ msgstr[0] ""
 msgstr[1] ""
 "In plaats daarvan definitief verwijderen? Ze kunnen niet worden hersteld."
 
-#: mcomix/file_actions.py:1239
+#: mcomix/file_actions.py:1374
 msgid "_Delete Permanently"
 msgstr "_Definitief verwijderen"
 
-#: mcomix/file_actions.py:1262
+#: mcomix/file_actions.py:1397
 #, python-format
 msgid "Could not delete \"%s\""
 msgstr "Kon \"%s\" niet verwijderen"
 
-#: mcomix/file_actions.py:1268
+#: mcomix/file_actions.py:1403
 #, python-format
 msgid "%d book could not be deleted."
 msgid_plural "%d books could not be deleted."
 msgstr[0] "%d boek kon niet worden verwijderd."
 msgstr[1] "%d boeken konden niet worden verwijderd."
 
-#: mcomix/file_actions.py:1294
+#: mcomix/file_actions.py:1429
 #, python-format
 msgid "The file is gone, and its %d bookmark cannot be opened any more."
 msgid_plural ""
@@ -650,26 +670,26 @@ msgstr[0] ""
 msgstr[1] ""
 "Het bestand is weg en de %d bladwijzers erin kunnen niet meer worden geopend."
 
-#: mcomix/file_actions.py:1394 mcomix/file_actions.py:1580
+#: mcomix/file_actions.py:1529 mcomix/file_actions.py:1699
 #: mcomix/thumbnail_tools.py:385
 #, python-format
 msgid "! Could not move %(file)s to %(directory)s: %(error)s"
 msgstr "! Kon %(file)s niet naar %(directory)s verplaatsen: %(error)s"
 
-#: mcomix/file_actions.py:1445
+#: mcomix/file_actions.py:1580
 msgid "Rename archive?"
 msgstr "Archief hernoemen?"
 
-#: mcomix/file_actions.py:1446
+#: mcomix/file_actions.py:1581
 msgid "Please enter a new name for this archive."
 msgstr "Voer een nieuwe naam in voor dit archief."
 
-#: mcomix/file_actions.py:1592
+#: mcomix/file_actions.py:1711
 #, python-format
 msgid "Could not move \"%(file)s\" to \"%(directory)s\""
 msgstr "Kon \"%(file)s\" niet naar \"%(directory)s\" verplaatsen"
 
-#: mcomix/file_chooser_base_dialog.py:75 mcomix/file_chooser_base_dialog.py:885
+#: mcomix/file_chooser_base_dialog.py:76 mcomix/file_chooser_base_dialog.py:893
 #: mcomix/properties_dialog.py:137 mcomix/library/book_properties.py:95
 #: mcomix/library/book_properties.py:158 mcomix/library/control_area.py:161
 #: mcomix/library/control_area.py:197
@@ -682,33 +702,33 @@ msgstr[1] "%d pagina's"
 #
 # File: src/filechooser.py, line: 35
 # File: src/library.py, line: 489
-#: mcomix/file_chooser_base_dialog.py:235 mcomix/keybindings.py:174
+#: mcomix/file_chooser_base_dialog.py:236 mcomix/keybindings.py:174
 msgid "Open"
 msgstr "Openen"
 
-#: mcomix/file_chooser_base_dialog.py:237 mcomix/library/book_area.py:298
+#: mcomix/file_chooser_base_dialog.py:238 mcomix/library/book_area.py:318
 msgid "_Open"
 msgstr "_Openen"
 
 #
 # File: src/filechooser.py, line: 39
-#: mcomix/file_chooser_base_dialog.py:240
+#: mcomix/file_chooser_base_dialog.py:241
 msgid "Save"
 msgstr "Opslaan"
 
 #
 # File: src/filechooser.py, line: 75
-#: mcomix/file_chooser_base_dialog.py:308
+#: mcomix/file_chooser_base_dialog.py:310
 msgid "All files"
 msgstr "Alle bestanden"
 
 #
-#: mcomix/file_chooser_base_dialog.py:619
+#: mcomix/file_chooser_base_dialog.py:627
 msgid "All archives"
 msgstr "Alle archieven"
 
 #
-#: mcomix/file_chooser_base_dialog.py:619
+#: mcomix/file_chooser_base_dialog.py:627
 #, python-format
 msgid "%s archives"
 msgstr "%s-archieven"
@@ -716,28 +736,28 @@ msgstr "%s-archieven"
 #
 # File: src/filechooser.py, line: 171
 # File: src/filechooser.py, line: 249
-#: mcomix/file_chooser_base_dialog.py:625
+#: mcomix/file_chooser_base_dialog.py:633
 msgid "All images"
 msgstr "Alle afbeeldingen"
 
 #
 # File: src/filechooser.py, line: 171
 # File: src/filechooser.py, line: 249
-#: mcomix/file_chooser_base_dialog.py:625
+#: mcomix/file_chooser_base_dialog.py:633
 #, python-format
 msgid "%s images"
 msgstr "%s-afbeeldingen"
 
 #
 # File: src/filechooser.py, line: 125
-#: mcomix/file_chooser_base_dialog.py:782
+#: mcomix/file_chooser_base_dialog.py:790
 #, python-format
 msgid "A file named '%s' already exists. Do you want to replace it?"
 msgstr "Er bestaat al een bestand met de naam \"%s\". Wilt u het vervangen?"
 
 #
 # File: src/filechooser.py, line: 128
-#: mcomix/file_chooser_base_dialog.py:784
+#: mcomix/file_chooser_base_dialog.py:792
 msgid "Replacing it will overwrite its contents."
 msgstr "Bij vervangen wordt de inhoud overschreven."
 
@@ -757,37 +777,37 @@ msgstr "! Kon niet uitpakken in %s; de tijdelijke map wordt gebruikt."
 
 #
 # File: src/filehandler.py, line: 285
-#: mcomix/file_handler.py:620
+#: mcomix/file_handler.py:630
 #, python-format
 msgid "No images in '%s'"
 msgstr "Geen afbeeldingen in \"%s\""
 
 #
 # File: src/filehandler.py, line: 213
-#: mcomix/file_handler.py:906
+#: mcomix/file_handler.py:916
 #, python-format
 msgid "Could not open %s: No such file."
 msgstr "Kon %s niet openen: bestand bestaat niet."
 
 #
 # File: src/filehandler.py, line: 217
-#: mcomix/file_handler.py:909 mcomix/file_provider.py:300
+#: mcomix/file_handler.py:919 mcomix/file_provider.py:300
 #: mcomix/file_provider.py:401
 #, python-format
 msgid "Could not open %s: Permission denied."
 msgstr "Kon %s niet openen: toegang geweigerd."
 
-#: mcomix/file_handler.py:1128
+#: mcomix/file_handler.py:1138
 #, python-format
 msgid "There is no room left to unpack the pages in %s."
 msgstr "Er is geen ruimte meer om de pagina's uit te pakken in %s."
 
-#: mcomix/file_handler.py:1217
+#: mcomix/file_handler.py:1227
 #, python-format
 msgid "Continue reading from page %d?"
 msgstr "Verder lezen vanaf pagina %d?"
 
-#: mcomix/file_handler.py:1218
+#: mcomix/file_handler.py:1228
 #, python-format
 msgid ""
 "You stopped reading here on %(date)s, %(time)s. If you choose \"Yes\", "
@@ -798,7 +818,7 @@ msgstr ""
 "gaat het lezen verder op pagina %(page)d. Anders wordt de eerste pagina "
 "geladen."
 
-#: mcomix/file_handler.py:1799
+#: mcomix/file_handler.py:1809
 #, python-format
 msgid ""
 "! Corrupt file \"%s\", deleting it; the last file read will not be reopened."
@@ -824,7 +844,7 @@ msgstr "Toets %d"
 
 #
 # File: src/ui.py, line: 284
-#: mcomix/keybindings.py:45 mcomix/ui.py:480
+#: mcomix/keybindings.py:45 mcomix/ui.py:479
 msgid "Previous page"
 msgstr "Vorige pagina"
 
@@ -842,7 +862,7 @@ msgstr "Navigatie"
 
 #
 # File: src/ui.py, line: 285
-#: mcomix/keybindings.py:46 mcomix/ui.py:479
+#: mcomix/keybindings.py:46 mcomix/ui.py:478
 msgid "Next page"
 msgstr "Volgende pagina"
 
@@ -897,13 +917,13 @@ msgstr "Losse pagina rechts"
 
 #
 # File: src/ui.py, line: 282
-#: mcomix/keybindings.py:58 mcomix/ui.py:481
+#: mcomix/keybindings.py:58 mcomix/ui.py:480
 msgid "First page"
 msgstr "Eerste pagina"
 
 #
 # File: src/ui.py, line: 286
-#: mcomix/keybindings.py:59 mcomix/ui.py:482
+#: mcomix/keybindings.py:59 mcomix/ui.py:481
 msgid "Last page"
 msgstr "Laatste pagina"
 
@@ -914,21 +934,21 @@ msgstr "Ga naar pagina"
 
 #. TRANSLATORS: Go back to the page a jump (Home, End, Go to
 #. page, a thumbnail, a bookmark) left, as a browser goes back.
-#: mcomix/keybindings.py:61 mcomix/ui.py:486
+#: mcomix/keybindings.py:61 mcomix/ui.py:485
 msgid "Back"
 msgstr "Terug"
 
 #. TRANSLATORS: Go again to the page "Back" left, as a browser
 #. goes forward.
-#: mcomix/keybindings.py:62 mcomix/ui.py:489
+#: mcomix/keybindings.py:62 mcomix/ui.py:488
 msgid "Forward"
 msgstr "Vooruit"
 
-#: mcomix/keybindings.py:64 mcomix/ui.py:492
+#: mcomix/keybindings.py:64 mcomix/ui.py:491
 msgid "Next book"
 msgstr "Volgend boek"
 
-#: mcomix/keybindings.py:65 mcomix/ui.py:493
+#: mcomix/keybindings.py:65 mcomix/ui.py:492
 msgid "Previous book"
 msgstr "Vorig boek"
 
@@ -944,11 +964,11 @@ msgstr "Willekeurig archief in de map"
 msgid "Shuffle books"
 msgstr "Boeken in willekeurige volgorde"
 
-#: mcomix/keybindings.py:70 mcomix/ui.py:494
+#: mcomix/keybindings.py:70 mcomix/ui.py:493
 msgid "Next folder"
 msgstr "Volgende map"
 
-#: mcomix/keybindings.py:71 mcomix/ui.py:495
+#: mcomix/keybindings.py:71 mcomix/ui.py:494
 msgid "Previous folder"
 msgstr "Vorige map"
 
@@ -1052,7 +1072,7 @@ msgstr "Transformatie behouden"
 #: mcomix/keybindings.py:102 mcomix/keybindings.py:103
 #: mcomix/keybindings.py:104 mcomix/keybindings.py:105
 #: mcomix/keybindings.py:175 mcomix/keybindings.py:178
-#: mcomix/properties_dialog.py:51 mcomix/ui.py:535
+#: mcomix/properties_dialog.py:51 mcomix/ui.py:534
 msgid "Image"
 msgstr "Afbeelding"
 
@@ -1101,7 +1121,7 @@ msgstr "Automatisch draaien op hoogte"
 #
 # File: src/preferences.py, line: 177
 # File: src/ui.py, line: 296
-#: mcomix/keybindings.py:112 mcomix/preferences_dialog.py:422 mcomix/ui.py:546
+#: mcomix/keybindings.py:112 mcomix/preferences_dialog.py:422 mcomix/ui.py:545
 msgid "Double page mode"
 msgstr "Dubbele pagina modus"
 
@@ -1123,51 +1143,51 @@ msgstr "Titelpagina apart"
 
 #
 # File: src/ui.py, line: 297
-#: mcomix/keybindings.py:114 mcomix/ui.py:563
+#: mcomix/keybindings.py:114 mcomix/ui.py:562
 msgid "Manga mode"
 msgstr "Manga modus"
 
-#: mcomix/keybindings.py:115 mcomix/preferences_dialog.py:440 mcomix/ui.py:564
+#: mcomix/keybindings.py:115 mcomix/preferences_dialog.py:440 mcomix/ui.py:563
 msgid "Continuous mode"
 msgstr "Doorlopende modus"
 
-#: mcomix/keybindings.py:116 mcomix/ui.py:565
+#: mcomix/keybindings.py:116 mcomix/ui.py:564
 msgid "Invert smart scroll"
 msgstr "Slim scrollen omkeren"
 
 #
 # File: src/ui.py, line: 298
-#: mcomix/keybindings.py:118 mcomix/preferences_dialog.py:488 mcomix/ui.py:571
+#: mcomix/keybindings.py:118 mcomix/preferences_dialog.py:488 mcomix/ui.py:570
 msgid "Magnifying lens"
 msgstr "Vergrootglas"
 
 #
-#: mcomix/keybindings.py:119 mcomix/ui.py:572
+#: mcomix/keybindings.py:119 mcomix/ui.py:571
 msgid "Stretch small images"
 msgstr "Kleine afbeeldingen uitrekken"
 
-#: mcomix/keybindings.py:120 mcomix/ui.py:574
+#: mcomix/keybindings.py:120 mcomix/ui.py:573
 msgid "Crop borders"
 msgstr "Randen bijsnijden"
 
 #
 # File: src/preferences.py, line: 262
 # File: src/ui.py, line: 288
-#: mcomix/keybindings.py:122 mcomix/ui.py:581
+#: mcomix/keybindings.py:122 mcomix/ui.py:580
 msgid "Best fit mode"
 msgstr "Best passend"
 
 #
 # File: src/preferences.py, line: 263
 # File: src/ui.py, line: 290
-#: mcomix/keybindings.py:123 mcomix/ui.py:582
+#: mcomix/keybindings.py:123 mcomix/ui.py:581
 msgid "Fit width mode"
 msgstr "Rek naar hoogte"
 
 #
 # File: src/preferences.py, line: 264
 # File: src/ui.py, line: 292
-#: mcomix/keybindings.py:124 mcomix/ui.py:583
+#: mcomix/keybindings.py:124 mcomix/ui.py:582
 msgid "Fit height mode"
 msgstr "Rek naar hoogte modus"
 
@@ -1180,11 +1200,11 @@ msgstr "Passend op grootte"
 #
 # File: src/preferences.py, line: 265
 # File: src/ui.py, line: 294
-#: mcomix/keybindings.py:126 mcomix/ui.py:585
+#: mcomix/keybindings.py:126 mcomix/ui.py:584
 msgid "Manual zoom mode"
 msgstr "Handmatige zoom modus"
 
-#: mcomix/keybindings.py:129 mcomix/osd.py:273 mcomix/ui.py:499
+#: mcomix/keybindings.py:129 mcomix/osd.py:273 mcomix/ui.py:498
 msgid "Leave fullscreen"
 msgstr "Volledig scherm verlaten"
 
@@ -1260,7 +1280,7 @@ msgstr "Alles verbergen"
 
 #
 # File: src/preferences.py, line: 279
-#: mcomix/keybindings.py:145 mcomix/slideshow.py:60 mcomix/ui.py:570
+#: mcomix/keybindings.py:145 mcomix/slideshow.py:60 mcomix/ui.py:569
 msgid "Start slideshow"
 msgstr "Slideshow starten"
 
@@ -1293,7 +1313,7 @@ msgstr "Verwijderen"
 msgid "File"
 msgstr "Bestand"
 
-#: mcomix/keybindings.py:155 mcomix/ui.py:451 mcomix/library/book_area.py:317
+#: mcomix/keybindings.py:155 mcomix/ui.py:447 mcomix/library/book_area.py:337
 msgid "Delete permanently"
 msgstr "Definitief verwijderen"
 
@@ -1362,14 +1382,14 @@ msgstr "Eigenschappen"
 msgid "Preferences"
 msgstr "Voorkeuren"
 
-#: mcomix/keybindings.py:173 mcomix/ui.py:453 mcomix/ui.py:456
-#: mcomix/library/book_area.py:321
+#: mcomix/keybindings.py:173 mcomix/ui.py:449 mcomix/ui.py:452
+#: mcomix/library/book_area.py:341
 msgid "Open containing folder"
 msgstr "Bovenliggende map openen"
 
 #
 # File: src/library.py, line: 38
-#: mcomix/keybindings.py:176 mcomix/library/main_dialog.py:65
+#: mcomix/keybindings.py:176 mcomix/library/main_dialog.py:66
 msgid "Library"
 msgstr "Bibliotheek"
 
@@ -1377,7 +1397,7 @@ msgstr "Bibliotheek"
 msgid "Search the library's covers"
 msgstr "Zoeken in de omslagen van de bibliotheek"
 
-#: mcomix/keybindings.py:178 mcomix/ui.py:576
+#: mcomix/keybindings.py:178 mcomix/ui.py:575
 msgid "Invert image colors"
 msgstr "Afbeeldingskleuren omkeren"
 
@@ -1690,7 +1710,7 @@ msgstr "! Kon het volgende beeld niet tekenen: %s"
 
 #
 # File: src/ui.py, line: 69
-#: mcomix/pageselect.py:39 mcomix/ui.py:529 mcomix/ui.py:530
+#: mcomix/pageselect.py:39 mcomix/ui.py:528 mcomix/ui.py:529
 msgid "_Go"
 msgstr "_Ga naar"
 
@@ -2220,7 +2240,7 @@ msgstr ""
 "dat boek uit."
 
 #
-#: mcomix/preferences_dialog.py:447 mcomix/ui.py:584
+#: mcomix/preferences_dialog.py:447 mcomix/ui.py:583
 msgid "Fit to size mode"
 msgstr "Passend op grootte"
 
@@ -2248,10 +2268,6 @@ msgstr "Vaste breedte voor overige pagina's:"
 #: mcomix/preferences_dialog.py:464
 msgid "Fixed height for other pages:"
 msgstr "Vaste hoogte voor overige pagina's:"
-
-#: mcomix/preferences_dialog.py:472
-msgid "Automatically rotate images according to their metadata"
-msgstr "Afbeeldingen automatisch draaien volgens hun metagegevens"
 
 #: mcomix/preferences_dialog.py:474
 msgid ""
@@ -2445,7 +2461,7 @@ msgstr ""
 "behouden."
 
 #: mcomix/preferences_dialog.py:741 mcomix/preferences_dialog.py:914
-#: mcomix/preferences_dialog.py:969 mcomix/ui.py:590
+#: mcomix/preferences_dialog.py:969 mcomix/ui.py:589
 msgid "Never"
 msgstr "Nooit"
 
@@ -2502,7 +2518,7 @@ msgstr "Bestandsnaam"
 msgid "File name (GLib)"
 msgstr "Bestandsnaam (GLib)"
 
-#: mcomix/preferences_dialog.py:795 mcomix/library/book_area.py:387
+#: mcomix/preferences_dialog.py:795 mcomix/library/book_area.py:407
 msgid "File size"
 msgstr "Bestandsgrootte"
 
@@ -2544,11 +2560,11 @@ msgstr ""
 "sortering gebruikt, dus 1, 2, 34, 5. De GLib-volgorde sorteert met de "
 "sorteersleutels van GLib/GTK, die ook veel andere GTK-programma's gebruiken."
 
-#: mcomix/preferences_dialog.py:826 mcomix/library/book_area.py:395
+#: mcomix/preferences_dialog.py:826 mcomix/library/book_area.py:415
 msgid "Ascending"
 msgstr "Oplopend"
 
-#: mcomix/preferences_dialog.py:827 mcomix/library/book_area.py:396
+#: mcomix/preferences_dialog.py:827 mcomix/library/book_area.py:416
 msgid "Descending"
 msgstr "Aflopend"
 
@@ -2666,7 +2682,7 @@ msgstr ""
 "houdt de kleuren in verhouding; relatief colorimetrisch houdt de kleuren die "
 "het scherm kan tonen exact."
 
-#: mcomix/preferences_dialog.py:970 mcomix/library/book_area.py:403
+#: mcomix/preferences_dialog.py:970 mcomix/library/book_area.py:423
 msgid "Normal"
 msgstr "Normaal"
 
@@ -2929,39 +2945,39 @@ msgstr "\"%s\" wordt geschreven"
 msgid "Stop slideshow"
 msgstr "Slideshow stoppen"
 
-#: mcomix/status.py:325
+#: mcomix/status.py:321
 msgid "Show page numbers"
 msgstr "Paginanummers tonen"
 
-#: mcomix/status.py:326
+#: mcomix/status.py:322
 msgid "Show file numbers"
 msgstr "Bestandsnummers tonen"
 
-#: mcomix/status.py:327
+#: mcomix/status.py:323
 msgid "Show resolution"
 msgstr "Resolutie tonen"
 
-#: mcomix/status.py:328
+#: mcomix/status.py:324
 msgid "Show path"
 msgstr "Pad tonen"
 
-#: mcomix/status.py:329
+#: mcomix/status.py:325
 msgid "Show filename"
 msgstr "Bestandsnaam tonen"
 
-#: mcomix/status.py:330
+#: mcomix/status.py:326
 msgid "Show filesize"
 msgstr "Bestandsgrootte tonen"
 
-#: mcomix/status.py:331
+#: mcomix/status.py:327
 msgid "Show date modified"
 msgstr "Wijzigingsdatum tonen"
 
-#: mcomix/status.py:368
+#: mcomix/status.py:364
 msgid "Copy file name"
 msgstr "Bestandsnaam kopiëren"
 
-#: mcomix/status.py:369
+#: mcomix/status.py:365
 msgid "Copy path"
 msgstr "Pad kopiëren"
 
@@ -3203,47 +3219,61 @@ msgstr "Vectorpictogram"
 msgid "! Could not save thumbnail \"%(thumbpath)s\": %(error)s"
 msgstr "! Kon voorbeeld \"%(thumbpath)s\" niet opslaan: %(error)s"
 
-#: mcomix/ui.py:444 mcomix/library/book_area.py:320
+#: mcomix/ui.py:440 mcomix/library/book_area.py:340
 msgid "_Copy"
 msgstr "_Kopiëren"
 
-#: mcomix/ui.py:444
+#: mcomix/ui.py:440
 msgid "Copies the current page to clipboard."
 msgstr "Kopieert de huidige pagina naar het klembord."
 
-#: mcomix/ui.py:446
+#: mcomix/ui.py:442
 msgid "_Copy page"
 msgstr "Pagi_na kopiëren"
 
-#: mcomix/ui.py:447
+#: mcomix/ui.py:443
 msgid "Copies the page the menu was opened over to the clipboard."
 msgstr "Kopieert de pagina waarboven het menu is geopend naar het klembord."
 
-#: mcomix/ui.py:449
+#: mcomix/ui.py:445
 msgid "_Delete"
 msgstr "V_erwijderen"
 
-#: mcomix/ui.py:449
+#: mcomix/ui.py:445
 msgid "Deletes the current file or archive from disk."
 msgstr "Verwijdert het huidige bestand of archief van de schijf."
 
-#: mcomix/ui.py:454 mcomix/ui.py:457
+#: mcomix/ui.py:450 mcomix/ui.py:453
 msgid "Shows the open file in the file manager."
 msgstr "Toont het geopende bestand in bestandsbeheer."
 
-#: mcomix/ui.py:460
+#: mcomix/ui.py:456
 msgid "Renames the page the menu was opened over."
 msgstr "Hernoemt de pagina waarboven het menu is geopend."
 
-#: mcomix/ui.py:462
+#: mcomix/ui.py:458
+msgid "Save rotation to _file"
+msgstr "Draaiing in bes_tand opslaan"
+
+#: mcomix/ui.py:459
+msgid ""
+"Turns the picture in its file as the page is shown turned, without loss. "
+"JPEG pictures only. In an archive, the change is written when the archive is "
+"saved."
+msgstr ""
+"Draait de afbeelding in haar bestand zoals de pagina gedraaid wordt getoond, "
+"zonder verlies. Alleen JPEG-afbeeldingen. In een archief wordt de wijziging "
+"geschreven wanneer het archief wordt opgeslagen."
+
+#: mcomix/ui.py:461
 msgid "Rename arc_hive..."
 msgstr "Archie_f hernoemen..."
 
-#: mcomix/ui.py:464
+#: mcomix/ui.py:463
 msgid "_Delete page"
 msgstr "_Pagina verwijderen"
 
-#: mcomix/ui.py:465
+#: mcomix/ui.py:464
 msgid ""
 "Removes the page the menu was opened over from the book. The archive on disk "
 "is not changed until it is saved."
@@ -3251,268 +3281,268 @@ msgstr ""
 "Verwijdert de pagina waarboven het menu is geopend uit het boek. Het archief "
 "op schijf verandert pas als het wordt opgeslagen."
 
-#: mcomix/ui.py:467
+#: mcomix/ui.py:466
 msgid "_Remove bookmark"
 msgstr "_Bladwijzer verwijderen"
 
-#: mcomix/ui.py:468
+#: mcomix/ui.py:467
 msgid "Removes the bookmark of the page the menu was opened over."
 msgstr "Verwijdert de bladwijzer van de pagina waarboven het menu is geopend."
 
-#: mcomix/ui.py:470
+#: mcomix/ui.py:469
 msgid "Pu_t back pages picked out"
 msgstr "Paginasele_ctie opheffen"
 
-#: mcomix/ui.py:471
+#: mcomix/ui.py:470
 msgid "Puts back every page picked out with CTRL and a click."
 msgstr ""
 "Heft de selectie op van alle pagina's die met CTRL en een klik gekozen zijn."
 
-#: mcomix/ui.py:474
+#: mcomix/ui.py:473
 msgid "Takes back the last page removed from the book."
 msgstr "Haalt de laatst uit het boek verwijderde pagina terug."
 
-#: mcomix/ui.py:477
+#: mcomix/ui.py:476
 msgid "Removes again the page the last undo brought back."
 msgstr ""
 "Verwijdert opnieuw de pagina die de laatste ongedaanmaking terughaalde."
 
 #
 # File: src/ui.py, line: 34
-#: mcomix/ui.py:479
+#: mcomix/ui.py:478
 msgid "_Next page"
 msgstr "Vo_lgende pagina"
 
 #
 # File: src/ui.py, line: 36
-#: mcomix/ui.py:480
+#: mcomix/ui.py:479
 msgid "_Previous page"
 msgstr "Vo_rige pagina"
 
 #
 # File: src/ui.py, line: 38
-#: mcomix/ui.py:481
+#: mcomix/ui.py:480
 msgid "_First page"
 msgstr "_Eerste pagina"
 
 #
 # File: src/ui.py, line: 40
-#: mcomix/ui.py:482
+#: mcomix/ui.py:481
 msgid "_Last page"
 msgstr "Laatste _pagina"
 
 #
-#: mcomix/ui.py:483
+#: mcomix/ui.py:482
 msgid "_Go to page..."
 msgstr "_Ga naar pagina..."
 
 #
-#: mcomix/ui.py:483
+#: mcomix/ui.py:482
 msgid "Go to page..."
 msgstr "Ga naar pagina..."
 
-#: mcomix/ui.py:490
+#: mcomix/ui.py:489
 msgid "Re_fresh"
 msgstr "_Vernieuwen"
 
-#: mcomix/ui.py:490
+#: mcomix/ui.py:489
 msgid "Reloads the currently opened files or archive."
 msgstr "Laadt de geopende bestanden of het archief opnieuw."
 
-#: mcomix/ui.py:492
+#: mcomix/ui.py:491
 msgid "Next _book"
 msgstr "Volgend _boek"
 
-#: mcomix/ui.py:493
+#: mcomix/ui.py:492
 msgid "Previous b_ook"
 msgstr "_Vorig boek"
 
-#: mcomix/ui.py:496
+#: mcomix/ui.py:495
 msgid "Zoom _in"
 msgstr "In_zoomen"
 
 #
 # File: src/ui.py, line: 44
-#: mcomix/ui.py:497
+#: mcomix/ui.py:496
 msgid "Zoom _out"
 msgstr "_Uitzoomen"
 
-#: mcomix/ui.py:498
+#: mcomix/ui.py:497
 msgid "_Normal size"
 msgstr "_Normale afmeting"
 
-#: mcomix/ui.py:501
+#: mcomix/ui.py:500
 msgid "Closes all opened files."
 msgstr "Sluit alle geopende bestanden."
 
 #
 # File: src/ui.py, line: 50
-#: mcomix/ui.py:502
+#: mcomix/ui.py:501
 msgid "_Quit"
 msgstr "Afslu_iten"
 
-#: mcomix/ui.py:503
+#: mcomix/ui.py:502
 msgid "_Save and quit"
 msgstr "Opslaan en afsl_uiten"
 
-#: mcomix/ui.py:503
+#: mcomix/ui.py:502
 msgid ""
 "Quits and restores the currently opened file next time the program starts."
 msgstr "Sluit af en herstelt het geopende bestand bij de volgende start."
 
-#: mcomix/ui.py:505 mcomix/ui.py:591 mcomix/ui.py:593
+#: mcomix/ui.py:504 mcomix/ui.py:590 mcomix/ui.py:592
 msgid "_Rotate 90° clockwise"
 msgstr "_Roteer 90 graden MKM"
 
 #
 # File: src/ui.py, line: 54
-#: mcomix/ui.py:506
+#: mcomix/ui.py:505
 msgid "Rotate _180°"
 msgstr "R_oteer 180 graden"
 
-#: mcomix/ui.py:507 mcomix/ui.py:592 mcomix/ui.py:594
+#: mcomix/ui.py:506 mcomix/ui.py:591 mcomix/ui.py:593
 msgid "Rotat_e 90° anticlockwise"
 msgstr "Rot_eer 90 graden TKI"
 
 #
 # File: src/ui.py, line: 58
-#: mcomix/ui.py:508
+#: mcomix/ui.py:507
 msgid "Fli_p horizontally"
 msgstr "_Horizontaal spiegelen"
 
 #
 # File: src/ui.py, line: 60
-#: mcomix/ui.py:509
+#: mcomix/ui.py:508
 msgid "Flip _vertically"
 msgstr "_Verticaal spiegelen"
 
-#: mcomix/ui.py:510 mcomix/ui.py:511
+#: mcomix/ui.py:509 mcomix/ui.py:510
 msgid "Save page _as..."
 msgstr "Pagina opslaan _als..."
 
-#: mcomix/ui.py:511
+#: mcomix/ui.py:510
 msgid "Saves the page the menu was opened over."
 msgstr "Slaat de pagina op waarboven het menu is geopend."
 
 #
-#: mcomix/ui.py:513
+#: mcomix/ui.py:512
 msgid "_Zoom"
 msgstr "_Zoomen"
 
-#: mcomix/ui.py:514
+#: mcomix/ui.py:513
 msgid "_Recent"
 msgstr "_Recent"
 
 #
 # File: src/ui.py, line: 64
-#: mcomix/ui.py:515 mcomix/ui.py:516
+#: mcomix/ui.py:514 mcomix/ui.py:515
 msgid "_Bookmarks"
 msgstr "Bladwij_zers"
 
 #
 # File: src/ui.py, line: 65
-#: mcomix/ui.py:517
+#: mcomix/ui.py:516
 msgid "T_oolbars"
 msgstr "W_erkbalken"
 
 #
 # File: src/ui.py, line: 66
-#: mcomix/ui.py:518
+#: mcomix/ui.py:517
 msgid "_Edit"
 msgstr "Be_werken"
 
-#: mcomix/ui.py:519 mcomix/ui.py:520
+#: mcomix/ui.py:518 mcomix/ui.py:519
 msgid "Open _with"
 msgstr "Openen _met"
 
-#: mcomix/ui.py:522
+#: mcomix/ui.py:521
 msgid "Mo_ve to"
 msgstr "Verplaa_tsen naar"
 
-#: mcomix/ui.py:523 mcomix/ui.py:525
+#: mcomix/ui.py:522 mcomix/ui.py:524
 msgid "Moves the file, or the archive the page is in, to another folder."
 msgstr ""
 "Verplaatst het bestand, of het archief waarin de pagina zit, naar een andere "
 "map."
 
-#: mcomix/ui.py:524
+#: mcomix/ui.py:523
 msgid "_Move to"
 msgstr "V_erplaatsen naar"
 
 #
 # File: src/ui.py, line: 67
-#: mcomix/ui.py:526
+#: mcomix/ui.py:525
 msgid "_File"
 msgstr "_Bestand"
 
 #
 # File: src/ui.py, line: 68
-#: mcomix/ui.py:527 mcomix/ui.py:528
+#: mcomix/ui.py:526 mcomix/ui.py:527
 msgid "_View"
 msgstr "Beel_d"
 
-#: mcomix/ui.py:531
+#: mcomix/ui.py:530
 msgid "_Image"
 msgstr "_Afbeelding"
 
 #
 # File: src/ui.py, line: 70
-#: mcomix/ui.py:536
+#: mcomix/ui.py:535
 msgid "_Help"
 msgstr "_Hulp"
 
-#: mcomix/ui.py:537
+#: mcomix/ui.py:536
 msgid "_Manual"
 msgstr "_Handleiding"
 
 #
-#: mcomix/ui.py:539
+#: mcomix/ui.py:538
 msgid "_Auto-rotate image"
 msgstr "Afbeelding _automatisch draaien"
 
-#: mcomix/ui.py:540
+#: mcomix/ui.py:539
 msgid "...when width exceeds height"
 msgstr "...wanneer de breedte de hoogte overtreft"
 
-#: mcomix/ui.py:541
+#: mcomix/ui.py:540
 msgid "...when height exceeds width"
 msgstr "...wanneer de hoogte de breedte overtreft"
 
 #
 # File: src/ui.py, line: 75
-#: mcomix/ui.py:545
+#: mcomix/ui.py:544
 msgid "_Fullscreen"
 msgstr "_Volledig scherm"
 
-#: mcomix/ui.py:545
+#: mcomix/ui.py:544
 msgid "Fullscreen mode"
 msgstr "Volledig scherm"
 
 #
 # File: src/ui.py, line: 77
-#: mcomix/ui.py:546
+#: mcomix/ui.py:545
 msgid "_Double page mode"
 msgstr "_Dubbele pagina modus"
 
-#: mcomix/ui.py:547
+#: mcomix/ui.py:546
 msgid "_Title page alone"
 msgstr "_Titelpagina apart"
 
-#: mcomix/ui.py:548
+#: mcomix/ui.py:547
 msgid "Skip this page"
 msgstr "Deze pagina overslaan"
 
-#: mcomix/ui.py:549
+#: mcomix/ui.py:548
 msgid ""
 "Passes this page over when the pages are turned. The book is not changed."
 msgstr ""
 "Slaat deze pagina over bij het bladeren. Het boek wordt niet gewijzigd."
 
-#: mcomix/ui.py:551
+#: mcomix/ui.py:550
 msgid "Show this page alone"
 msgstr "Deze pagina alleen tonen"
 
-#: mcomix/ui.py:552
+#: mcomix/ui.py:551
 msgid ""
 "Shows this page on its own in double page mode. The pages after it pair up "
 "anew."
@@ -3520,11 +3550,11 @@ msgstr ""
 "Toont deze pagina alleen in de dubbele pagina modus. De pagina's erna worden "
 "opnieuw gekoppeld."
 
-#: mcomix/ui.py:554
+#: mcomix/ui.py:553
 msgid "Cover in the library"
 msgstr "Omslag in de bibliotheek"
 
-#: mcomix/ui.py:555
+#: mcomix/ui.py:554
 msgid ""
 "Shows this page as the book's cover in the library. The book is not changed."
 msgstr ""
@@ -3533,180 +3563,180 @@ msgstr ""
 
 #
 # File: src/ui.py, line: 79
-#: mcomix/ui.py:557
+#: mcomix/ui.py:556
 msgid "_Toolbar"
 msgstr "_Werkbalk"
 
 #
 # File: src/ui.py, line: 81
-#: mcomix/ui.py:558
+#: mcomix/ui.py:557
 msgid "_Menubar"
 msgstr "_Menubalk"
 
 #
 # File: src/ui.py, line: 83
-#: mcomix/ui.py:559
+#: mcomix/ui.py:558
 msgid "St_atusbar"
 msgstr "St_atusbalk"
 
 #
 # File: src/ui.py, line: 85
-#: mcomix/ui.py:560
+#: mcomix/ui.py:559
 msgid "S_crollbars"
 msgstr "S_crollbalken"
 
 #
 # File: src/ui.py, line: 87
-#: mcomix/ui.py:561
+#: mcomix/ui.py:560
 msgid "Th_umbnails"
 msgstr "P_reviews"
 
 #
 # File: src/ui.py, line: 89
-#: mcomix/ui.py:562
+#: mcomix/ui.py:561
 msgid "H_ide all"
 msgstr "_Verberg alles"
 
 #
 # File: src/ui.py, line: 91
-#: mcomix/ui.py:563
+#: mcomix/ui.py:562
 msgid "_Manga mode"
 msgstr "_Manga modus"
 
-#: mcomix/ui.py:564
+#: mcomix/ui.py:563
 msgid "_Continuous mode"
 msgstr "Doo_rlopende modus"
 
-#: mcomix/ui.py:565
+#: mcomix/ui.py:564
 msgid "Invert smart scrolling direction."
 msgstr "Keert de richting van slim scrollen om."
 
-#: mcomix/ui.py:566
+#: mcomix/ui.py:565
 msgid "_Shuffle books"
 msgstr "Boeken in _willekeurige volgorde"
 
-#: mcomix/ui.py:566
+#: mcomix/ui.py:565
 msgid "Next and Previous book open the books of the folder in random order."
 msgstr ""
 "Volgend en Vorig boek openen de boeken van de map in willekeurige volgorde."
 
 #
 # File: src/ui.py, line: 93
-#: mcomix/ui.py:568
+#: mcomix/ui.py:567
 msgid "_Keep transformation"
 msgstr "Bewaar _transformatie"
 
-#: mcomix/ui.py:568
+#: mcomix/ui.py:567
 msgid "Keeps the currently selected transformation for the next pages."
 msgstr "Behoudt de gekozen transformatie voor de volgende pagina's."
 
 #
 # File: src/preferences.py, line: 279
-#: mcomix/ui.py:570
+#: mcomix/ui.py:569
 msgid "Start slid_eshow"
 msgstr "_Slideshow starten"
 
 #
 # File: src/ui.py, line: 97
-#: mcomix/ui.py:571
+#: mcomix/ui.py:570
 msgid "Magnifying _lens"
 msgstr "Vergr_ootglas"
 
-#: mcomix/ui.py:572
+#: mcomix/ui.py:571
 msgid "Stretch images to fit to the screen, depending on zoom mode."
 msgstr "Rekt afbeeldingen uit tot schermgrootte, afhankelijk van de zoommodus."
 
-#: mcomix/ui.py:574
+#: mcomix/ui.py:573
 msgid "Cut off the plain margins around each page."
 msgstr "Snijdt de effen marges rond elke pagina weg."
 
 #
 # File: src/ui.py, line: 101
-#: mcomix/ui.py:581
+#: mcomix/ui.py:580
 msgid "_Best fit mode"
 msgstr "_Best passend"
 
 #
 # File: src/ui.py, line: 103
-#: mcomix/ui.py:582
+#: mcomix/ui.py:581
 msgid "Fit _width mode"
 msgstr "Rek _naar breedte modus"
 
 #
 # File: src/ui.py, line: 105
-#: mcomix/ui.py:583
+#: mcomix/ui.py:582
 msgid "Fit _height mode"
 msgstr "_Rek naar hoogte modus"
 
 #
 # File: src/ui.py, line: 103
-#: mcomix/ui.py:584
+#: mcomix/ui.py:583
 msgid "Fit _size mode"
 msgstr "Passend op _grootte"
 
 #
 # File: src/ui.py, line: 107
-#: mcomix/ui.py:585
+#: mcomix/ui.py:584
 msgid "M_anual zoom mode"
 msgstr "H_andmatig zoomen"
 
 #
 # File: src/ui.py, line: 113
-#: mcomix/ui.py:598
+#: mcomix/ui.py:597
 msgid "A_bout"
 msgstr "In_fo"
 
-#: mcomix/ui.py:601
+#: mcomix/ui.py:600
 msgid "Co_mments..."
 msgstr "_Commentaar..."
 
 #
-#: mcomix/ui.py:604
+#: mcomix/ui.py:603
 msgid "Proper_ties"
 msgstr "Eigenscha_ppen"
 
 #
 # File: src/ui.py, line: 128
-#: mcomix/ui.py:607
+#: mcomix/ui.py:606
 msgid "_Preferences"
 msgstr "_Voorkeuren"
 
-#: mcomix/ui.py:608
+#: mcomix/ui.py:607
 msgid "_Keyboard shortcuts"
 msgstr "_Sneltoetsen"
 
 #
 # File: src/ui.py, line: 117
-#: mcomix/ui.py:613
+#: mcomix/ui.py:612
 msgid "_Edit archive..."
 msgstr "Archief be_werken..."
 
-#: mcomix/ui.py:613
+#: mcomix/ui.py:612
 msgid "Opens the archive editor."
 msgstr "Opent de archiefbewerker."
 
 #
 # File: src/ui.py, line: 119
-#: mcomix/ui.py:615
+#: mcomix/ui.py:614
 msgid "_Open..."
 msgstr "_Openen..."
 
-#: mcomix/ui.py:616
+#: mcomix/ui.py:615
 msgid "Enha_nce image..."
 msgstr "A_fbeelding verbeteren..."
 
 #
 # File: src/ui.py, line: 132
-#: mcomix/ui.py:619
+#: mcomix/ui.py:618
 msgid "_Library..."
 msgstr "Bib_liotheek..."
 
-#: mcomix/ui.py:741
+#: mcomix/ui.py:740
 #, python-format
 msgid "Could not open the manual: %s"
 msgstr "Kon de handleiding niet openen: %s"
 
-#: mcomix/worker_thread.py:121
+#: mcomix/worker_thread.py:132
 #, python-format
 msgid "! Worker thread processing %(function)r failed: %(error)s"
 msgstr "! De werkthread die %(function)r verwerkte is mislukt: %(error)s"
@@ -3771,47 +3801,48 @@ msgstr "Toegevoegde boeken:"
 
 #
 # File: src/library.py, line: 952
-#: mcomix/library/add_progress_dialog.py:121
+#: mcomix/library/add_progress_dialog.py:127
 #, python-format
 msgid "Adding '%s'..."
 msgstr "\"%s\" toevoegen..."
 
-#: mcomix/library/backend.py:309
+#: mcomix/library/backend.py:423
 #, python-format
 msgid "! Non-existent book #%i"
 msgstr "! Boek #%i bestaat niet"
 
-#: mcomix/library/backend.py:373
+#: mcomix/library/backend.py:487
 #, python-format
 msgid "! Could not get cover for book \"%s\""
 msgstr "! Kon de omslag van boek \"%s\" niet ophalen"
 
-#: mcomix/library/backend.py:477 mcomix/library/backend.py:494
-#: mcomix/library/backend.py:507 mcomix/library/backend.py:536
+#: mcomix/library/backend.py:591 mcomix/library/backend.py:608
+#: mcomix/library/backend.py:621 mcomix/library/backend.py:650
 msgid "Recent"
 msgstr "Onlangs gebruikt"
 
-#: mcomix/library/backend.py:616 mcomix/library/backend.py:663
+#: mcomix/library/backend.py:730 mcomix/library/backend.py:743
+#: mcomix/library/backend.py:787
 #, python-format
 msgid "! Could not add book \"%s\" to the library"
 msgstr "! Kon boek \"%s\" niet aan de bibliotheek toevoegen"
 
-#: mcomix/library/backend.py:692 mcomix/library/backend.py:774
+#: mcomix/library/backend.py:818 mcomix/library/backend.py:901
 #, python-format
 msgid "! Could not move book \"%s\" in the library"
 msgstr "! Kon boek \"%s\" niet verplaatsen in de bibliotheek"
 
-#: mcomix/library/backend.py:824
+#: mcomix/library/backend.py:951
 #, python-format
 msgid "! Could not add collection \"%s\""
 msgstr "! Kon collectie \"%s\" niet toevoegen"
 
-#: mcomix/library/backend.py:856
+#: mcomix/library/backend.py:983
 #, python-format
 msgid "! Could not add book %(book)s to collection %(collection)s"
 msgstr "! Kon boek %(book)s niet aan collectie %(collection)s toevoegen"
 
-#: mcomix/library/backend.py:883
+#: mcomix/library/backend.py:1010
 #, python-format
 msgid "! Could not rename collection to \"%s\""
 msgstr "! Kon de collectie niet hernoemen naar \"%s\""
@@ -3819,15 +3850,15 @@ msgstr "! Kon de collectie niet hernoemen naar \"%s\""
 #
 # File: src/librarybackend.py, line: 272
 # File: src/librarybackend.py, line: 274
-#: mcomix/library/backend.py:900 mcomix/library/backend.py:902
+#: mcomix/library/backend.py:1027 mcomix/library/backend.py:1029
 msgid "(Copy)"
 msgstr "(kopie)"
 
-#: mcomix/library/backend.py:1220
+#: mcomix/library/backend.py:1419
 msgid "Could not determine library database version!"
 msgstr "Kon de versie van de bibliotheekdatabase niet bepalen!"
 
-#: mcomix/library/backend.py:1270
+#: mcomix/library/backend.py:1470
 #, python-format
 msgid "Upgrading library database version from %(from)d to %(to)d."
 msgstr ""
@@ -3835,140 +3866,141 @@ msgstr ""
 
 #
 # File: src/library.py, line: 202
-#: mcomix/library/backend_types.py:439 mcomix/library/collection_area.py:201
+#: mcomix/library/backend_types.py:431 mcomix/library/collection_area.py:201
 #: mcomix/library/control_area.py:95
 msgid "All books"
 msgstr "Alle boeken"
 
-#: mcomix/library/backend_types.py:600 mcomix/library/backend_types.py:606
+#: mcomix/library/backend_types.py:603 mcomix/library/backend_types.py:609
 #, python-format
 msgid "! Could not scan for new books: %s"
 msgstr "! Kon niet naar nieuwe boeken zoeken: %s"
 
-#: mcomix/library/book_area.py:299
+#: mcomix/library/book_area.py:319
 msgid "Open among its fol_der's books"
 msgstr "Openen tussen de boeken in zijn _map"
 
-#: mcomix/library/book_area.py:301
+#: mcomix/library/book_area.py:321
 msgid "Open _without closing library"
 msgstr "Openen _zonder de bibliotheek te sluiten"
 
-#: mcomix/library/book_area.py:303
+#: mcomix/library/book_area.py:323
 msgid "Open in a new w_indow"
 msgstr "Openen _in nieuw venster"
 
-#: mcomix/library/book_area.py:305
+#: mcomix/library/book_area.py:325
 msgid "_Mark as read"
 msgstr "_Als gelezen markeren"
 
-#: mcomix/library/book_area.py:306
+#: mcomix/library/book_area.py:326
 msgid "Mark as u_nread"
 msgstr "Als o_ngelezen markeren"
 
-#: mcomix/library/book_area.py:307 mcomix/library/collection_area.py:132
+#: mcomix/library/book_area.py:327 mcomix/library/collection_area.py:132
 msgid "_Add..."
 msgstr "_Toevoegen..."
 
-#: mcomix/library/book_area.py:310
+#: mcomix/library/book_area.py:330
 msgid "Remove _from this collection"
 msgstr "Uit deze co_llectie verwijderen"
 
-#: mcomix/library/book_area.py:312
+#: mcomix/library/book_area.py:332
 msgid "Remove from the _library"
 msgstr "Uit de _bibliotheek verwijderen"
 
-#: mcomix/library/book_area.py:314
+#: mcomix/library/book_area.py:334
 msgid "_Remove and move to the trash"
 msgstr "_Verwijderen en naar prullenbak verplaatsen"
 
-#: mcomix/library/book_area.py:319 mcomix/library/collection_area.py:138
+#: mcomix/library/book_area.py:339 mcomix/library/collection_area.py:138
 msgid "Clean _up"
 msgstr "O_pschonen"
 
-#: mcomix/library/book_area.py:324
+#: mcomix/library/book_area.py:344
 msgid "R_ename"
 msgstr "_Hernoemen"
 
-#: mcomix/library/book_area.py:327
+#: mcomix/library/book_area.py:347
 msgid "_Properties"
 msgstr "_Eigenschappen"
 
-#: mcomix/library/book_area.py:362
+#: mcomix/library/book_area.py:382
 msgid "Library books"
 msgstr "Boeken in de bibliotheek"
 
-#: mcomix/library/book_area.py:374
+#: mcomix/library/book_area.py:394
 msgid "Move _to"
 msgstr "Verplaat_sen naar"
 
-#: mcomix/library/book_area.py:385
+#: mcomix/library/book_area.py:405
 msgid "Book name"
 msgstr "Naam van het boek"
 
-#: mcomix/library/book_area.py:386
+#: mcomix/library/book_area.py:406
 msgid "Full path"
 msgstr "Volledig pad"
 
-#: mcomix/library/book_area.py:388
+#: mcomix/library/book_area.py:408
 msgid "Pages"
 msgstr "Pagina's"
 
-#: mcomix/library/book_area.py:389 mcomix/library/book_properties.py:102
+#: mcomix/library/book_area.py:409 mcomix/library/book_properties.py:102
 msgid "Date added"
 msgstr "Datum toegevoegd"
 
-#: mcomix/library/book_area.py:390
+#: mcomix/library/book_area.py:410
 msgid "Date modified"
 msgstr "Wijzigingsdatum"
 
-#: mcomix/library/book_area.py:391 mcomix/library/book_properties.py:106
+#: mcomix/library/book_area.py:411 mcomix/library/book_properties.py:106
 msgid "Last read"
 msgstr "Laatst gelezen"
 
-#: mcomix/library/book_area.py:392
+#: mcomix/library/book_area.py:412
 msgid "By hand"
 msgstr "Handmatig"
 
-#: mcomix/library/book_area.py:401
+#: mcomix/library/book_area.py:421
 msgid "Huge"
 msgstr "Enorm"
 
-#: mcomix/library/book_area.py:402
+#: mcomix/library/book_area.py:422
 msgid "Large"
 msgstr "Groot"
 
-#: mcomix/library/book_area.py:404
+#: mcomix/library/book_area.py:424
 msgid "Small"
 msgstr "Klein"
 
-#: mcomix/library/book_area.py:405
+#: mcomix/library/book_area.py:425
 msgid "Tiny"
 msgstr "Zeer klein"
 
-#: mcomix/library/book_area.py:409
+#: mcomix/library/book_area.py:429
 msgid "Custom..."
 msgstr "Aangepast..."
 
-#: mcomix/library/book_area.py:413
+#: mcomix/library/book_area.py:433
 msgid "_Sort"
 msgstr "Sorte_ren"
 
-#: mcomix/library/book_area.py:414
+#: mcomix/library/book_area.py:434
 msgid "Cover si_ze"
 msgstr "Omslag_grootte"
 
-#: mcomix/library/book_area.py:875
+#: mcomix/library/book_area.py:922
 msgid "Set library cover size"
 msgstr "Stelt de omslaggrootte in de bibliotheek in"
 
-#: mcomix/library/book_area.py:1167
+#: mcomix/library/book_area.py:1230
 #, python-format
 msgid "Removed %(num)d book from '%(collection)s'."
 msgid_plural "Removed %(num)d books from '%(collection)s'."
 msgstr[0] "%(num)d boek uit \"%(collection)s\" gehaald."
 msgstr[1] "%(num)d boeken uit \"%(collection)s\" gehaald."
 
-#: mcomix/library/book_area.py:1190 mcomix/library/collection_area.py:287
+#: mcomix/library/book_area.py:1253 mcomix/library/collection_area.py:287
+#: mcomix/library/main_dialog.py:256
 #, python-format
 msgid "Removed %d book from the library."
 msgid_plural "Removed %d books from the library."
@@ -3977,11 +4009,11 @@ msgstr[1] "%d boeken uit de bibliotheek gehaald."
 
 #
 # File: src/library.py, line: 597
-#: mcomix/library/book_area.py:1212 mcomix/library/book_area.py:1233
+#: mcomix/library/book_area.py:1275 mcomix/library/book_area.py:1296
 msgid "Remove books from the library?"
 msgstr "Boeken uit de bibliotheek halen?"
 
-#: mcomix/library/book_area.py:1213
+#: mcomix/library/book_area.py:1276
 msgid ""
 "The selected books will be removed from the library. Any in a folder with no "
 "trash is deleted permanently and cannot be restored."
@@ -3990,28 +4022,28 @@ msgstr ""
 "zonder prullenbak worden definitief verwijderd en kunnen niet worden "
 "hersteld."
 
-#: mcomix/library/book_area.py:1234
+#: mcomix/library/book_area.py:1297
 msgid ""
 "The selected books will be removed from the library and moved to the trash."
 msgstr ""
 "De gekozen boeken worden uit de bibliotheek gehaald en naar de prullenbak "
 "verplaatst."
 
-#: mcomix/library/book_area.py:1259
+#: mcomix/library/book_area.py:1322
 #, python-format
 msgid "Delete %d book permanently?"
 msgid_plural "Delete %d books permanently?"
 msgstr[0] "%d boek definitief verwijderen?"
 msgstr[1] "%d boeken definitief verwijderen?"
 
-#: mcomix/library/book_area.py:1391
+#: mcomix/library/book_area.py:1454
 #, python-format
 msgid "Remove the bookmarks in the deleted book?"
 msgid_plural "Remove the bookmarks in the %(count)d deleted books?"
 msgstr[0] "De bladwijzers in het verwijderde boek verwijderen?"
 msgstr[1] "De bladwijzers in de %(count)d verwijderde boeken verwijderen?"
 
-#: mcomix/library/book_area.py:1585
+#: mcomix/library/book_area.py:1648
 msgid "Open with"
 msgstr "Openen met"
 
@@ -4220,28 +4252,28 @@ msgstr "Het gekozen boek openen."
 msgid "Finished reading on %(date)s, %(time)s"
 msgstr "Uitgelezen op %(date)s, %(time)s"
 
-#: mcomix/library/main_dialog.py:163
+#: mcomix/library/main_dialog.py:164
 msgid "Scanning for new books..."
 msgstr "Zoeken naar nieuwe boeken..."
 
-#: mcomix/library/main_dialog.py:221
+#: mcomix/library/main_dialog.py:235
 #, python-format
 msgid "Added new book '%(bookname)s' from folder '%(directory)s'."
 msgstr "Nieuw boek \"%(bookname)s\" toegevoegd uit map \"%(directory)s\"."
 
-#: mcomix/library/main_dialog.py:228
+#: mcomix/library/main_dialog.py:242
 #, python-format
 msgid "Added %(count)d new book from folder '%(directory)s'."
 msgid_plural "Added %(count)d new books from folder '%(directory)s'."
 msgstr[0] "%(count)d nieuwe boeken toegevoegd uit map \"%(directory)s\"."
 msgstr[1] "%(count)d nieuwe boeken toegevoegd uit map \"%(directory)s\"."
 
-#: mcomix/library/main_dialog.py:236
+#: mcomix/library/main_dialog.py:252
 #, python-format
 msgid "No new books found in folder '%s'."
 msgstr "Geen nieuwe boeken gevonden in map \"%s\"."
 
-#: mcomix/library/main_dialog.py:290
+#: mcomix/library/main_dialog.py:367
 #, python-format
 msgid "Books relocated: %d"
 msgstr "Boeken met nieuwe locatie: %d"

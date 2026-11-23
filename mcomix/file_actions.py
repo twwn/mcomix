@@ -26,6 +26,7 @@ from mcomix import edit_dialog
 from mcomix import file_chooser_simple_dialog
 from mcomix import file_mover
 from mcomix import i18n
+from mcomix import jpeg_turn
 from mcomix import log
 from mcomix import message_dialog
 from mcomix import page_marks
@@ -108,12 +109,18 @@ class FileActions:
         #: which is what the archive on disk holds since; None before
         #: the book has been saved.
         self._written_as: "tuple[list[str], dict[str, str]] | None" = None
+        #: The turned copy of each page whose turn was written into its
+        #: picture, by its path, with the page it stands for and the
+        #: turn that page had: an undo that brings the page back as it
+        #: was brings its turn back too.
+        self._turns_written: dict[str, tuple[tuple[str, str], int]] = {}
 
     def forget_changes(self) -> None:
         """Drop the undo stack, which belongs to the book that is going."""
         self._undone.clear()
         self._redone.clear()
         self._page_names.clear()
+        self._turns_written.clear()
         self._close_offer_answered = False
         self._waiting_close = None
         self._written_as = None
@@ -450,6 +457,110 @@ class FileActions:
         path = listing[page - 1]
         return self._page_names.get(path, os.path.basename(path))
 
+    def turn_to_write(self, page: int) -> int:
+        """The turn given to <page> by hand that can be written into its
+        picture, in degrees clockwise; 0 where there is none, or none
+        that can be.
+
+        The turn remembered for the page itself, and only for a JPEG
+        picture, the one kind that turns without being encoded again.
+        A turn "Keep transformation" gives every page alike is no one
+        page's, and neither is one in continuous mode, which shows no
+        page's own turn.  A page in an archive can be turned where the
+        archive can be written again, which is when its turn reaches
+        the archive.
+        """
+        handler = self._window.filehandler
+        if prefs['keep transformation'] or self._window.is_continuous \
+                or (handler.archive_type is not None
+                    and self.writeable_archive_type() is None):
+            return 0
+        identity = handler.page_identity(page)
+        path = self._window.imagehandler.get_path_to_page(page)
+        if identity is None or path is None:
+            return 0
+        degrees = page_rotations.rotation(*identity)
+        try:
+            return degrees if degrees and jpeg_turn.is_jpeg(path) else 0
+        except OSError:
+            # Not unpacked yet, or gone.
+            return 0
+
+    def write_turn_popup(self, *args: object) -> None:
+        """Write the turn of the page the right-click menu was opened
+        over into its picture, or that of the page being read where it
+        was opened over no page."""
+        page = self._window.popup_page
+        self.write_turn(page if page is not None
+                        else self._window.imagehandler.get_current_page())
+
+    def write_turn(self, page: int) -> bool:
+        """Turn the picture of <page> the way the page is shown turned,
+        without loss, and say whether it was.
+
+        The page shows the same afterwards, turned by its picture rather
+        than by the turn MComix remembers for it, so that every program
+        shows it that way.  A picture in a folder is written at once.
+        One in an archive is turned in a copy that takes the page's
+        place in the book, as any other change to its pages does: it
+        reaches the archive when the archive is saved, and an undo puts
+        the page back as it was, turn and all.
+        """
+        degrees = self.turn_to_write(page)
+        path = self._window.imagehandler.get_path_to_page(page)
+        identity = self._window.filehandler.page_identity(page)
+        if not degrees or path is None or identity is None:
+            return False
+        in_archive = self._window.filehandler.archive_type is not None
+        try:
+            with open(path, 'rb') as file:
+                turned = jpeg_turn.turn(file.read(), degrees,
+                                        prefs['auto rotate from exif'])
+            if in_archive:
+                # Under its own name, in a folder of its own beside it:
+                # the name is what the window shows for the page.
+                copy = os.path.join(
+                    tempfile.mkdtemp(prefix='turned.',
+                                     dir=os.path.dirname(path)),
+                    os.path.basename(path))
+                with open(copy, 'wb') as file:
+                    file.write(turned)
+            else:
+                with tools.atomic_write(path, binary=True) as file:
+                    file.write(turned)
+        except jpeg_turn.NotLossless:
+            self._turn_failed(path, _(
+                'At its size, its pixels cannot be turned without loss. '
+                'Only its Exif orientation could be turned, which MComix '
+                'does not follow while "%s" is off.')
+                % _('Automatically rotate images according to their metadata'))
+            return False
+        except (OSError, ValueError) as error:
+            self._turn_failed(path, str(error))
+            return False
+        page_rotations.remember(*identity, 0)
+        listing = self._window.imagehandler.get_image_files()
+        if in_archive:
+            self._window.filehandler.stand_for(copy, path)
+            self._give_name(copy, self.page_name(page))
+            self._turns_written[copy] = (identity, degrees)
+            self._undone.append(list(listing))
+            self._redone.clear()
+            listing[page - 1] = copy
+        else:
+            # Read again: what was read of it is the picture unturned.
+            self._window.imagehandler.forget_picture(page)
+        self._show_pages(listing, self._window.imagehandler.get_current_page())
+        if in_archive:
+            self.offer_to_save()
+        return True
+
+    def _turn_failed(self, path: str, why: str) -> None:
+        dialog = message_dialog.MessageDialog(
+            self._window, buttons=Gtk.ButtonsType.CLOSE)
+        dialog.set_text(_('Could not turn "%s"') % os.path.basename(path), why)
+        dialog.run_async(lambda response: None)
+
     def delete_page(self, page: "int | None" = None) -> bool:
         """Take pages out of the book being read, and say whether any went.
 
@@ -518,6 +629,9 @@ class FileActions:
         # made after the book was let off being written is a change the
         # reader has not been asked about yet.
         self._close_offer_answered = False
+        for copy, (identity, degrees) in self._turns_written.items():
+            page_rotations.remember(*identity,
+                                    0 if copy in listing else degrees)
         self._window.selected_pages = {number for number in self._window.selected_pages
                                if number <= len(listing)}
         self._window.pages_replaced(listing, page)
@@ -783,6 +897,9 @@ class FileActions:
                 waiting=save_progress.waiting(self._window, path))
             self.pages_written(path, written)
             self._written_as = (image_files, dict(self._page_names))
+            # What the archive holds now: an undo past this point is a
+            # change to the book as written, turns and all.
+            self._turns_written.clear()
             self._window.filehandler.archive_written()
         except archive_packer.Cancelled:
             # The archive on disk is the one that was there: nothing

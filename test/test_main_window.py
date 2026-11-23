@@ -5639,10 +5639,11 @@ class MainWindowTest(MComixTest):
         self.assertEqual(
             ['win.leave-fullscreen', 'win.copy-page-popup',
              'win.extract-page-popup', 'win.rename-page-popup',
-             'win.delete-page-popup', 'win.skip-page-popup',
-             'win.page-alone-popup', 'win.library-cover-popup',
-             'win.remove-bookmark-popup', 'win.unpick-pages', None],
-            actions[:11])
+             'win.write-turn-popup', 'win.delete-page-popup',
+             'win.skip-page-popup', 'win.page-alone-popup',
+             'win.library-cover-popup', 'win.remove-bookmark-popup',
+             'win.unpick-pages', None],
+            actions[:12])
 
     def test_the_right_click_menu_leaves_out_what_cannot_be_done(self):
         """A greyed item says the menu could do it somewhere else; this

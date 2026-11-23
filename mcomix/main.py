@@ -2699,6 +2699,8 @@ class MainWindow(Gtk.Window):
             self.imagehandler.is_skipped(meant))
         self.actiongroup.get_action('page_alone_popup').show_active(
             self.imagehandler.stands_alone(meant))
+        self.actiongroup.get_action('write_turn_popup').set_sensitive(
+            bool(self.file_actions.turn_to_write(meant)))
         self.actiongroup.get_action('remove_bookmark_popup').set_sensitive(
             page is not None
             and page in bookmark_backend.BookmarksStore.pages_marked())

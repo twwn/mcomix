@@ -463,6 +463,12 @@ class ImageHandler:
                                  for index, path in enumerate(image_files)
                                  if path in pixbufs}
 
+    def forget_picture(self, page: int) -> None:
+        """Read <page> from its file again when it is next drawn: what
+        is held of it was read from a file that has changed since."""
+        with self._cache_lock:
+            self._raw_pixbufs.pop(page - 1, None)
+
     def _file_available(self, filepaths: Iterable[str]) -> None:
         """ Called by the filehandler when a new file becomes available. """
         # Find the pages that correspond to <filepaths>, in page order.
