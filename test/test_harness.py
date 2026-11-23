@@ -13,13 +13,15 @@ information into the reader's data directory.
 import os
 import tempfile
 import threading
+import unittest.mock
 
 from gi.repository import GLib, Gtk
 
-from . import MComixTest, session_tmp_dir
+from . import MComixTest, close_a_main_window, session_tmp_dir, wait_for
 
 from mcomix import constants
 from mcomix import preferences
+from mcomix import worker_thread
 from mcomix.preferences import prefs
 
 
@@ -111,6 +113,25 @@ class MainWindowClosedTest(MComixTest):
         # Registered first, so it runs after the window's own cleanup.
         self.addCleanup(self._no_worker_thread_left, before)
         self.open_main_window_on_a_book()
+
+    def test_a_pool_nothing_stopped_fails_the_close_instead_of_hanging(self):
+        """A thumbnail list a failed test never stopped leaves its
+        worker threads waiting for orders, and the next close of a main
+        window in that process, which waits for every thread that is not
+        a daemon, waited for them until the Windows CI cancelled the run
+        and its failures went unreported."""
+        window = self.open_main_window()
+        pool = worker_thread.WorkerThread(lambda order: None, name='left')
+        pool.append_order(1)
+        self.assertTrue(wait_for(lambda: pool._threads
+                                 and pool._in_hand == 0))
+        threads = list(pool._threads)
+        with unittest.mock.patch(__package__ + '.QUIT_JOIN_SECONDS', 0.1), \
+                self.assertRaisesRegex(AssertionError, 'left'):
+            close_a_main_window(window)
+        for thread in threads:
+            thread.join(5)
+            self.assertFalse(thread.is_alive())
 
     def _no_worker_thread_left(self, before):
         self.assertEqual(

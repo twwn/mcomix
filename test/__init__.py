@@ -206,10 +206,48 @@ def close_a_main_window(window, rounds=4000):
     if window in _closed_windows:
         return
     _closed_windows.add(window)
-    window.terminate_program()
+    stuck = _quit_without_waiting_for_good(window)
     window.destroy()
     main.set_main_window(None)
     pump(rounds)
+    if stuck:
+        raise AssertionError(
+            'quitting waited %d s for threads that never ended, stopped '
+            'now: %s' % (QUIT_JOIN_SECONDS, ', '.join(stuck)))
+
+
+#: How long close_a_main_window() lets quitting wait for one thread.
+QUIT_JOIN_SECONDS = 20
+
+
+def _quit_without_waiting_for_good(window):
+    """window.terminate_program(), which waits for every thread that is
+    not a daemon; and answer with the names of those it waited for in
+    vain.  A pool of worker threads that an earlier test opened and
+    never stopped waits for orders for good, and quitting waited for it
+    until the CI cancelled the whole run, its failures unreported.  So
+    a thread still running after QUIT_JOIN_SECONDS is named, and its
+    pool, if it is a WorkerThread's, let go."""
+    import unittest.mock
+    from mcomix.worker_thread import WorkerThread
+    join = threading.Thread.join
+    caller = threading.current_thread()
+    stuck = []
+
+    def bounded_join(thread, timeout=None):
+        if timeout is not None or threading.current_thread() is not caller:
+            return join(thread, timeout)
+        join(thread, QUIT_JOIN_SECONDS)
+        if thread.is_alive():
+            stuck.append(thread.name)
+            pool = getattr(getattr(thread, '_target', None), '__self__', None)
+            if isinstance(pool, WorkerThread):
+                pool.retire()
+                join(thread, QUIT_JOIN_SECONDS)
+
+    with unittest.mock.patch.object(threading.Thread, 'join', bounded_join):
+        window.terminate_program()
+    return stuck
 
 
 def pump(rounds=4000, seconds=1.0):
