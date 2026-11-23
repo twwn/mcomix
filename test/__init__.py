@@ -1256,19 +1256,21 @@ class PageStoreCases:
         self.assertEqual(0, self.store.relocate(old, new))
 
     def test_it_follows_pages_renamed_by_a_book_written_again(self):
-        """The pages swap names at once; what is kept for a page the
-        book no longer holds goes, and a book left with nothing leaves
-        the file."""
+        """The pages swap names at once; a page that keeps its name keeps
+        what is kept for it, what is kept for a page the book no longer
+        holds goes, and a book left with nothing leaves the file."""
         self._keep('/books/a.cbz', 'p01.jpg')
         self._keep('/books/a.cbz', 'p03.jpg')
+        self._keep('/books/a.cbz', 'p04.jpg')
         self.store.rename_pages(
             '/books/a.cbz', {'p01.jpg': 'p02.jpg', 'p02.jpg': 'p01.jpg'},
-            ['p01.jpg', 'p02.jpg'])
+            ['p01.jpg', 'p02.jpg', 'p04.jpg'])
         self._read_again()
         self.assertFalse(self._kept('/books/a.cbz', 'p01.jpg'))
         self.assertTrue(self._kept('/books/a.cbz', 'p02.jpg'))
         self.assertFalse(self._kept('/books/a.cbz', 'p03.jpg'))
-        self.store.rename_pages('/books/a.cbz', {}, ['p04.jpg'])
+        self.assertTrue(self._kept('/books/a.cbz', 'p04.jpg'))
+        self.store.rename_pages('/books/a.cbz', {}, ['p05.jpg'])
         self.assertEqual({}, self._stored())
 
 
