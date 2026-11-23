@@ -74,12 +74,21 @@ class PopupAtTest(MComixTest):
     def test_the_menu_opens_from_the_pointer_rather_than_around_it(self):
         """A popover is centred over what it points at and put above it,
         which is right for a bubble and wrong for a menu: the pointer
-        ended up in the middle of it."""
+        ended up in the middle of it.  Beside the point, its top there:
+        below it, GTK would not slide a tall menu up, and cut it to the
+        room below the pointer instead."""
         widgets.popup_at(self.popover, self.inner, 10.0, 10.0)
-        self.assertEqual(self.popover.get_halign(), Gtk.Align.START)
+        self.assertEqual(self.popover.get_valign(), Gtk.Align.START)
         self.assertEqual(self.popover.get_position(),
-                         Gtk.PositionType.BOTTOM)
+                         Gtk.PositionType.RIGHT)
         self.assertFalse(self.popover.get_has_arrow())
+
+    def test_it_opens_once_the_main_loop_has_turned(self):
+        """GTK puts the lines between a menu's sections in from an idle,
+        and a menu measured before them scrolled by their height."""
+        widgets.popup_at(self.popover, self.inner, 10.0, 10.0)
+        self.assertFalse(self.popover.get_visible())
+        self.assertTrue(wait_for(self.popover.get_visible))
 
 
 class EmptyTest(MComixTest):

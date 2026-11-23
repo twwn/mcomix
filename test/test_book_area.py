@@ -1879,7 +1879,7 @@ class MenuKeyTest(_AreaOnScreenTest):
                               (Gdk.KEY_F10, Gdk.ModifierType.SHIFT_MASK)):
             self.assertFalse(self.area._book_menu.get_visible())
             self.assertEqual(Gdk.EVENT_STOP, self._press(keyval, state))
-            self.assertTrue(self.area._book_menu.get_visible(),
+            self.assertTrue(wait_for(self.area._book_menu.get_visible),
                             'the menu did not open for %s'
                             % Gdk.keyval_name(keyval))
             self.area._book_menu.popdown()
@@ -2020,7 +2020,7 @@ class OpenAndClickTest(_AreaOnScreenTest):
                                         return_value=2):
             self.area._button_press(self._Gesture(), 1, 5.0, 5.0)
         self.assertEqual([2], self.area._covers.get_selected_positions())
-        self.assertTrue(self.area._book_menu.get_visible())
+        self.assertTrue(wait_for(self.area._book_menu.get_visible))
 
     def test_a_right_click_on_one_already_picked_keeps_the_others(self):
         hold_open(self.area._book_menu)

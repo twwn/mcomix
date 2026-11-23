@@ -218,8 +218,18 @@ def popup_at(popover: Gtk.Popover, widget: Gtk.Widget,
 
     A popover is centred over what it points at and put above it, which
     is right for a bubble and wrong for a menu: it opened with the
-    pointer in the middle of it.  START and BOTTOM put its corner where
-    the pointer is, which is where a menu goes.
+    pointer in the middle of it.  RIGHT with its top at the point puts
+    its corner where the pointer is, which is where a menu goes.  Not
+    BOTTOM, which did the same: GTK lets a popover below its point flip
+    above it but not slide, so a menu taller than the room on either
+    side of the pointer was cut to the room below and scrolled, however
+    much room the screen had.  Beside the point it slides up as far as
+    it has to, and flips to the left at the screen's right edge.
+
+    It opens from an idle: GTK adds the lines between a menu's sections
+    from an idle of its own, after a menu was built or items were hidden
+    or shown, and a menu that opened before them was measured without
+    them and scrolled by as much.
     """
     parent = popover.get_parent()
     if parent is None:
@@ -234,9 +244,15 @@ def popup_at(popover: Gtk.Popover, widget: Gtk.Widget,
     area.x, area.y, area.width, area.height = int(x), int(y), 1, 1
     popover.set_pointing_to(area)
     popover.set_has_arrow(False)
-    popover.set_halign(Gtk.Align.START)
-    popover.set_position(Gtk.PositionType.BOTTOM)
-    popover.popup()
+    popover.set_valign(Gtk.Align.START)
+    popover.set_position(Gtk.PositionType.RIGHT)
+
+    def open_now() -> bool:
+        if popover.get_parent() is not None:
+            popover.popup()
+        return GLib.SOURCE_REMOVE
+
+    GLib.idle_add(open_now, priority=GLib.PRIORITY_DEFAULT_IDLE + 10)
 
 
 def focus_where_scrolled(view: Gtk.Widget) -> None:

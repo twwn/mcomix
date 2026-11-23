@@ -9,7 +9,8 @@ import unittest.mock
 
 from gi.repository import GLib, Gtk
 
-from . import MComixTest, MainWindowLaterTest, MainWindowOpenTest, pump
+from . import (MComixTest, MainWindowLaterTest, MainWindowOpenTest, hold_open,
+               pump, wait_for)
 
 from mcomix import constants
 from mcomix import keybindings
@@ -114,8 +115,9 @@ class MenusBuiltOnceTest(MainWindowLaterTest):
         return set(_accelerators(menu.get_menu_model()))
 
     def _open_the_right_click_menu(self):
+        hold_open(self.window.popup)
         self.window.show_page_menu(self.window.page_area, 1, 1, None)
-        self.assertTrue(self.window.popup.get_visible())
+        self.assertTrue(wait_for(self.window.popup.get_visible))
         self.window.popup.popdown()
         pump()
 
@@ -138,6 +140,49 @@ class MenusBuiltOnceTest(MainWindowLaterTest):
         self.assertIn('<Control>F12', self._keys(self.window.popup))
         self.assertEqual(['menu bar', 'right-click menu', 'menu bar',
                           'right-click menu'], self.built)
+
+
+class RightClickMenuHeightTest(MComixTest):
+
+    """The right-click menu on a page is as tall as its items, wherever
+    on the page it opens, while the screen has room for all of it."""
+
+    def setUp(self):
+        super().setUp()
+        self.open_main_window_on_a_book()
+        self.popup = self.window.popup
+        hold_open(self.popup)
+
+    def _heights_opened_at(self, y):
+        """The menu's height and the height its items want, opened on
+        the first page <y> pixels down the page area."""
+        self.window.show_page_menu(self.window.page_area, 20, y, 1)
+        self.assertTrue(wait_for(lambda: self.popup.get_mapped()
+                                 and self.popup.get_height() > 0))
+        pump()
+        natural = self.popup.measure(Gtk.Orientation.VERTICAL, -1)[1]
+        screen = self.window.get_display().get_monitor_at_surface(
+            self.window.get_surface()).get_geometry()
+        if screen.height < natural + 100:
+            self.skipTest('a screen %d pixels high has no room for a menu '
+                          'of %d' % (screen.height, natural))
+        return self.popup.get_height(), natural
+
+    def test_the_first_opening_is_not_cut_short(self):
+        """The menu is built when it first opens, and GTK adds the lines
+        between its sections from an idle: opened in the same turn, it
+        was measured without them, 618 pixels for 709, and scrolled."""
+        height, natural = self._heights_opened_at(5)
+        self.assertEqual(natural, height)
+
+    def test_opened_low_on_the_page_it_moves_up_rather_than_scrolling(self):
+        """Below the point, GTK flips a popover above it where it fits
+        there, and otherwise cuts it to the room below: with the pointer
+        low in a window 600 pixels high the menu came out 579 pixels for
+        709, on a screen of 1024."""
+        height, natural = self._heights_opened_at(
+            self.window.page_area.get_height() - 5)
+        self.assertEqual(natural, height)
 
 
 class HelpMenuTest(MainWindowOpenTest):

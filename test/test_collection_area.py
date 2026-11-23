@@ -447,9 +447,9 @@ class CollectionAreaTest(MComixTest):
             self.assertFalse(self.area._collection_menu.get_visible())
             self.assertEqual(Gdk.EVENT_STOP,
                              self.area._key_press(None, keyval, 0, state))
-            # Read before the main loop turns, although hold_open() has
-            # taken away what closed it after a pump under xdist.
-            self.assertTrue(self.area._collection_menu.get_visible(),
+            # It opens from an idle; hold_open() has taken away what
+            # closed it after a pump under xdist.
+            self.assertTrue(wait_for(self.area._collection_menu.get_visible),
                             'the menu did not open for %s'
                             % Gdk.keyval_name(keyval))
             self.area._collection_menu.popdown()
