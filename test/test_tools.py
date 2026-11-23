@@ -326,19 +326,22 @@ class TestXdgDirectories(unittest.TestCase):
 
     def _with(self, variable, value, function):
         saved = os.environ.get(variable)
-        os.environ[variable] = value
+        if value is None:
+            os.environ.pop(variable, None)
+        else:
+            os.environ[variable] = value
         try:
             return function()
         finally:
             if saved is None:
-                del os.environ[variable]
+                os.environ.pop(variable, None)
             else:
                 os.environ[variable] = saved
 
-    def test_an_empty_or_relative_variable_is_ignored(self):
+    def test_an_unset_empty_or_relative_variable_is_ignored(self):
         home = os.path.expanduser('~')
         for function, variable, default in self.CASES:
-            for value in ('', 'relative/dir'):
+            for value in (None, '', 'relative/dir'):
                 with self.subTest(variable=variable, value=value):
                     self.assertEqual(os.path.join(home, *default),
                                      self._with(variable, value, function))
@@ -422,10 +425,13 @@ class TestThreadCount(unittest.TestCase):
         """A thread with a process of its own, as the PDF reader's
         have, cost 3 GB for one book when there was one per
         processor."""
-        for gigabytes, expected in ((8, 4), (16, 8), (64, 24)):
+        # 9 GB holds four and a half: a pool takes whole threads.
+        for gigabytes, expected in ((8, 4), (9, 4), (16, 8), (64, 24)):
             with self.subTest(gigabytes=gigabytes), self._available(24), \
                     self._memory(gigabytes):
-                self.assertEqual(expected, tools.thread_count(0, 128 * 2**20))
+                count = tools.thread_count(0, 128 * 2**20)
+                self.assertIs(int, type(count))
+                self.assertEqual(expected, count)
 
     def test_threads_that_cost_more_than_the_share_still_get_one(self):
         with self._available(24), self._memory(1):
