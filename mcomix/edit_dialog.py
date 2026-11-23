@@ -239,7 +239,8 @@ class _EditArchiveDialog(Dialog):
                 # else, so the list itself says what each is called.
                 comment_names=self._comment_area.file_names(),
                 waiting=save_progress.waiting(self, archive_path,
-                                              also=(self._window,)))
+                                              also=(self._window,)),
+                webp_pages=prefs['png pages as webp when saving'])
             saved = True
             book = self.file_handler.get_path_to_base()
             if (self.file_handler.archive_type is not None

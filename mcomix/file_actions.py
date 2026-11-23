@@ -894,7 +894,8 @@ class FileActions:
                 carried_files=carried_files,
                 archive_type=archive_type, permissions_from=path,
                 page_names=self._page_names,
-                waiting=save_progress.waiting(self._window, path))
+                waiting=save_progress.waiting(self._window, path),
+                webp_pages=prefs['png pages as webp when saving'])
             self.pages_written(path, written)
             self._written_as = (image_files, dict(self._page_names))
             # What the archive holds now: an undo past this point is a

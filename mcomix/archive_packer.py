@@ -1,8 +1,10 @@
 """archive_packer.py - Archive creation class."""
 
+import concurrent.futures
 import contextlib
 import errno
 import os
+import struct
 import shutil
 import tarfile
 import tempfile
@@ -17,6 +19,94 @@ from mcomix import portability
 from mcomix import process
 from mcomix import tools
 from mcomix.i18n import _
+
+
+#: What a PNG file starts with.
+_PNG_SIGNATURE = b'\x89PNG\r\n\x1a\n'
+
+#: The widest and highest picture a WebP can hold.
+_WEBP_MAX_SIDE = 16383
+
+#: The bytes a pixel of a page costs while it is made a WebP: the PNG
+#: decoded, as RGBA, the encoder's own copy and the WebP decoded again
+#: to compare, four bytes a pixel each.
+_WEBP_BYTES_PER_PIXEL = 16
+
+
+def _png_header(path: str) -> "tuple[int, int, int] | None":
+    """The width, height and bit depth of the PNG at <path>, or None
+    where it is no PNG."""
+    with open(path, 'rb') as file:
+        head = file.read(33)
+    # The IHDR chunk comes first: length, type, width, height, depth.
+    if len(head) < 25 or not head.startswith(_PNG_SIGNATURE) \
+            or head[12:16] != b'IHDR':
+        return None
+    width, height = struct.unpack('>II', head[16:24])
+    return width, height, head[24]
+
+
+def webp_instead(path: str, directory: str, name: str) -> "str | None":
+    """Write a lossless WebP of the PNG picture at <path> into
+    <directory> as <name>, and answer with its path; or answer None,
+    writing nothing, where that would lose anything or gain nothing.
+
+    Kept only where it is smaller than the PNG and decodes to the same
+    pixels, transparent ones included.  Left alone: a PNG of 16 bits a
+    channel (a WebP holds 8), an animated one, one with a gamma other
+    than sRGB's (a WebP has no place for it), and one wider or higher
+    than a WebP can be.  A colour profile and Exif go along; text a PNG
+    carries does not.
+    """
+    from PIL import Image, features
+
+    header = _png_header(path)
+    if header is None or not features.check('webp'):
+        return None
+    width, height, depth = header
+    if depth > 8 or max(width, height) > _WEBP_MAX_SIDE:
+        return None
+    with Image.open(path) as picture:
+        if getattr(picture, 'is_animated', False):
+            return None
+        gamma = picture.info.get('gamma')
+        if gamma is not None and abs(float(gamma) - 1 / 2.2) > 0.001:
+            return None
+        picture.load()
+        mode = 'RGBA' if picture.has_transparency_data else 'RGB'
+        pixels = picture.convert(mode)
+        options = {key: picture.info[key]
+                   for key in ('icc_profile', 'exif') if picture.info.get(key)}
+    target = os.path.join(directory, name)
+    # exact: the colour under a transparent pixel is kept as it is.
+    pixels.save(target, 'WEBP', lossless=True, quality=80, method=4,
+                exact=True, **options)
+    try:
+        if os.path.getsize(target) >= os.path.getsize(path):
+            raise ValueError('no smaller')
+        with Image.open(target) as written:
+            if written.convert(mode).tobytes() != pixels.tobytes():
+                raise ValueError('not the same pixels')
+    except ValueError as reason:
+        log.debug('Kept "%s" as a PNG: the WebP was %s', path, reason)
+        os.remove(target)
+        return None
+    return target
+
+
+def webp_threads(paths: Iterable[str]) -> int:
+    """How many pictures of <paths> to make WebPs of at once: one for
+    each processor, as long as the largest page fits that many times
+    in the share of memory tools.thread_count() allows."""
+    largest = 0
+    for path in paths:
+        try:
+            header = _png_header(path)
+        except OSError:
+            continue
+        if header is not None:
+            largest = max(largest, header[0] * header[1])
+    return tools.thread_count(0, largest * _WEBP_BYTES_PER_PIXEL)
 
 
 class Cancelled(Exception):
@@ -54,9 +144,11 @@ def check_room_for(files: "Iterable[str]", archive_path: str) -> None:
 
 def _add_comic_info(image_files: Sequence[str],
                     carried_files: "dict[str, str]",
-                    directory: str) -> "str | None":
+                    directory: str) -> "tuple[str, bytes | None] | None":
     """Put the ComicInfo.xml an archive of <image_files> wants into
-    <carried_files>, and answer with the path it was written to.
+    <carried_files>, and answer with the path it was written to and
+    the file it was made from, the one the archive carried (None where
+    it carried none).
 
     None where there is nothing to write, which is the usual case for a
     book saved with its pages untouched: the file it already carries
@@ -93,7 +185,7 @@ def _add_comic_info(image_files: Sequence[str],
     else:
         del carried_files[was_carried[0]]
         carried_files[path] = was_carried[1]
-    return path
+    return path, existing
 
 
 def write_archive(archive_path: str, image_files: Sequence[str],
@@ -103,7 +195,8 @@ def write_archive(archive_path: str, image_files: Sequence[str],
                   permissions_from: "str | None" = None,
                   page_names: "Mapping[str, str] | None" = None,
                   comment_names: "Mapping[str, str] | None" = None,
-                  waiting: "Callable[[Packer], None] | None" = None
+                  waiting: "Callable[[Packer], None] | None" = None,
+                  webp_pages: bool = False
                   ) -> dict[str, str]:
     """Write an archive of those files at <archive_path>, and answer
     with the name each page was written under, by its path.
@@ -122,6 +215,9 @@ def write_archive(archive_path: str, image_files: Sequence[str],
     A ComicInfo.xml goes in as well, so that what MComix writes is a
     comic archive to every other reader and not merely a ZIP of
     pictures.  See mcomix.comicinfo for what goes in it.
+
+    <webp_pages> has the PNG pages written as lossless WebPs where
+    webp_instead() finds that loses nothing and saves room.
 
     <waiting>, where it is given, is called with the Packer once it
     has started, and returns when it likes: what it does in the
@@ -153,8 +249,10 @@ def write_archive(archive_path: str, image_files: Sequence[str],
     comic_info_path = None
     written = False
     try:
-        comic_info_path = _add_comic_info(image_files, carried_files,
-                                          os.path.dirname(archive_path))
+        comic_info = _add_comic_info(image_files, carried_files,
+                                     os.path.dirname(archive_path))
+        if comic_info is not None:
+            comic_info_path = comic_info[0]
         check_room_for(list(image_files) + list(comment_files)
                        + list(carried_files), archive_path)
         fd, tmp_path = tempfile.mkstemp(
@@ -168,7 +266,9 @@ def write_archive(archive_path: str, image_files: Sequence[str],
                         carried_files=carried_files,
                         archive_type=archive_type,
                         page_names=page_names,
-                        comment_names=comment_names)
+                        comment_names=comment_names,
+                        webp_pages=webp_pages,
+                        comic_info=comic_info)
         packer.pack()
         try:
             if waiting is not None:
@@ -534,7 +634,10 @@ class Packer:
                  carried_files: "Mapping[str, str] | None" = None,
                  archive_type: int = constants.ZIP,
                  page_names: "Mapping[str, str] | None" = None,
-                 comment_names: "Mapping[str, str] | None" = None) -> None:
+                 comment_names: "Mapping[str, str] | None" = None,
+                 webp_pages: bool = False,
+                 comic_info: "tuple[str, bytes | None] | None" = None
+                 ) -> None:
         """Setup a Packer object to create an archive at <archive_path>.
         All files pointed to by paths in the sequences <image_files> and
         <other_files> will be included in the archive when packed.
@@ -565,6 +668,15 @@ class Packer:
 
         <archive_type> is which format to write, out of the three
         can_write() answers for; anything else is a ZIP.
+
+        <webp_pages> has every PNG page made a lossless WebP first, in
+        parallel, and written as that where webp_instead() keeps it,
+        its name ending in .webp; a name the reader gave it too.  The
+        WebPs are made in a folder beside the archive, removed after.
+
+        <comic_info> is the ComicInfo.xml written for the archive, and
+        the one it was made from: a page made a WebP has another size,
+        so the file is written again once the WebPs are there.
         """
         self._image_files = image_files
         self._other_files = other_files
@@ -574,6 +686,10 @@ class Packer:
         self._archive_path = archive_path
         self._base_name = base_name
         self._archive_type = archive_type
+        self._webp_pages = webp_pages
+        # The WebP each page's file was made into, by the file's path.
+        self._webps: dict[str, str] = {}
+        self._comic_info = comic_info
         self._pack_thread: threading.Thread | None = None
         self._packing_successful = False
         self._stop = threading.Event()
@@ -656,9 +772,11 @@ class Packer:
         pages = []
         taken = set()
         for number, path in enumerate(self._image_files, start=1):
-            extension = os.path.splitext(path)[1]
+            extension = os.path.splitext(self._webps.get(path, path))[1]
             name = self._page_names.get(
                 path, f'{number:0{digits}d} - {self._base_name}{extension}')
+            if path in self._webps:
+                name = os.path.splitext(name)[0] + extension
             while name in taken:
                 name = '_%s' % name
             taken.add(name)
@@ -671,6 +789,48 @@ class Packer:
         named here as the last of them."""
         return dict(self._pages_to_pack())
 
+    def _make_webps(self, directory: str) -> None:
+        """Make the WebPs of the pages, several at once, into
+        <directory>; each counts as a file written, so that the
+        progress goes on moving while they are made."""
+        paths = list(dict.fromkeys(self._image_files))
+        # The pages and the rest, counted roughly until the names are
+        # given; the pages are counted twice, once for their WebP.
+        self._files_to_write = 2 * len(paths) + len(self._other_files) \
+            + len(self._carried_files)
+
+        def make(number: int, path: str) -> "str | None":
+            if self._stop.is_set():
+                return None
+            try:
+                return webp_instead(path, directory, '%d.webp' % number)
+            except Exception as error:
+                # Pillow refuses a broken PNG with whatever it found;
+                # the page is then written as it was.
+                log.debug('No WebP of "%s": %s', path, error)
+                return None
+
+        with concurrent.futures.ThreadPoolExecutor(
+                webp_threads(paths), thread_name_prefix='webp') as pool:
+            futures = {pool.submit(make, number, path): path
+                       for number, path in enumerate(paths)}
+            for future in concurrent.futures.as_completed(futures):
+                webp = future.result()
+                if webp is not None:
+                    self._webps[futures[future]] = webp
+                self._files_written += 1
+
+    def _rewrite_comic_info(self, path: str,
+                            existing: "bytes | None") -> None:
+        """Write the ComicInfo.xml at <path> again, made from <existing>
+        as it was before, for the pages as they are written now."""
+        document = comicinfo.for_pages(
+            [self._webps.get(page, page) for page in self._image_files],
+            existing)
+        if document is not None:
+            with open(path, 'wb') as file:
+                file.write(document)
+
     def _thread_pack(self) -> None:
         try:
             archive = make_writer(self._archive_path, self._archive_type)
@@ -679,15 +839,22 @@ class Packer:
                       self._archive_path)
             return
 
+        webp_directory = None
         try:
+            if self._webp_pages:
+                webp_directory = tempfile.mkdtemp(
+                    prefix='tmp.webp.', dir=os.path.dirname(self._archive_path))
+                self._make_webps(webp_directory)
+                if self._webps and self._comic_info is not None:
+                    self._rewrite_comic_info(*self._comic_info)
             files = list(self._files_to_pack())
-            self._files_to_write = len(files)
+            self._files_to_write = self._files_written + len(files)
             for path, name in files:
                 if self._stop.is_set():
                     log.debug('Stopped writing "%s"', self._archive_path)
                     break
                 try:
-                    archive.add(path, name)
+                    archive.add(self._webps.get(path, path), name)
                 except Exception:
                     log.error(_('! Could not add file %(sourcefile)s '
                                 'to archive %(archivefile)s, aborting...'),
@@ -702,6 +869,8 @@ class Packer:
             log.error(_('! Could not create archive at path "%s"'),
                       self._archive_path)
         finally:
+            if webp_directory is not None:
+                shutil.rmtree(webp_directory, ignore_errors=True)
             if not self._packing_successful:
                 # Closing what failed to be written can fail the same
                 # way, the disk being as full as it was a moment ago;

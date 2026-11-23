@@ -1141,6 +1141,34 @@ class SavedArchiveContentsTest(MainWindowLaterTest):
                          self.window.filehandler.page_member(2))
         self.assertTrue(self.window.imagehandler.is_skipped(2))
 
+    def test_with_webp_pages_a_mark_follows_its_page_to_the_new_name(self):
+        """Stored as a WebP, a page is called something else again: what
+        is kept by its name has to find it under that one, from the
+        editor and from the main window alike."""
+        prefs['png pages as webp when saving'] = True
+        page_marks.mark(self.source, 'pages/02.png', page_marks.SKIP, True)
+        self.dialog._pack_archive(self.source)
+        pump()
+        with zipfile.ZipFile(self.source) as saved:
+            self.assertEqual(['1 - Book.webp', '2 - Book.webp',
+                              '3 - Book.webp'],
+                             sorted(name for name in saved.namelist()
+                                    if name.endswith('.webp')))
+        self.assertTrue(page_marks.marked(self.source, '2 - Book.webp',
+                                          page_marks.SKIP))
+        self.assertEqual('2 - Book.webp',
+                         self.window.filehandler.page_member(2))
+        self.assertTrue(self.window.imagehandler.is_skipped(2))
+
+        page_marks.mark(self.source, '3 - Book.webp', page_marks.SKIP, True)
+        self.assertTrue(self.window.file_actions.save_archive())
+        # The book's files are still the PNGs it was unpacked to: made
+        # WebPs again, its pages keep their names.
+        self.assertTrue(page_marks.marked(self.source, '3 - Book.webp',
+                                          page_marks.SKIP))
+        self.assertEqual('3 - Book.webp',
+                         self.window.filehandler.page_member(3))
+
     def test_saved_under_another_name_the_open_book_keeps_its_own(self):
         page_marks.mark(self.source, 'pages/02.png', page_marks.SKIP, True)
         self._saved()

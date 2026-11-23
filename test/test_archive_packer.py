@@ -684,4 +684,213 @@ class StoppingTest(_PackingTest):
         self.assertFalse(issubclass(archive_packer.Cancelled, OSError))
 
 
+
+def _drawing(path, size=(240, 320), mode='RGB', **options):
+    """A PNG at <path> of lines on white, which compresses as a page of
+    line art does; answer its path."""
+    from PIL import Image, ImageDraw
+    picture = Image.new(mode, size, 'white')
+    draw = ImageDraw.Draw(picture)
+    for step in range(0, size[0], 12):
+        draw.line((step, 0, size[0] - step, size[1]), fill='black', width=2)
+    picture.save(path, **options)
+    return path
+
+
+def _pixels(path, mode='RGBA'):
+    from PIL import Image
+    with Image.open(path) as picture:
+        return picture.convert(mode).tobytes()
+
+
+class WebpPagesTest(_PackingTest):
+
+    """A save can store the PNG pages as lossless WebPs: only where the
+    WebP is smaller and decodes to the same pixels, and under a name
+    ending in .webp."""
+
+    def setUp(self):
+        super().setUp()
+        self.work = os.path.join(self.tmp_dir, 'work')
+        os.makedirs(self.work)
+
+    def _png(self, name='page.png', **options):
+        return _drawing(os.path.join(self.tmp_dir, name), **options)
+
+    def test_a_png_drawing_is_made_a_smaller_webp_of_the_same_pixels(self):
+        png = self._png()
+        webp = archive_packer.webp_instead(png, self.work, 'page.webp')
+        self.assertEqual(os.path.join(self.work, 'page.webp'), webp)
+        self.assertLess(os.path.getsize(webp), os.path.getsize(png))
+        self.assertEqual(_pixels(png), _pixels(webp))
+
+    def test_the_colour_of_a_transparent_pixel_is_kept(self):
+        """Without exact, the encoder writes whatever compresses best
+        under a pixel nobody sees - which is a pixel changed."""
+        from PIL import Image
+        picture = Image.new('RGBA', (64, 64), (255, 0, 0, 0))
+        picture.putpixel((3, 3), (0, 255, 0, 0))
+        picture.putpixel((4, 4), (0, 0, 255, 255))
+        png = os.path.join(self.tmp_dir, 'clear.png')
+        picture.save(png)
+        webp = archive_packer.webp_instead(png, self.work, 'clear.webp')
+        self.assertIsNotNone(webp)
+        self.assertEqual(_pixels(png), _pixels(webp))
+
+    def test_a_colour_profile_goes_along(self):
+        from PIL import ImageCms
+        profile = ImageCms.ImageCmsProfile(
+            ImageCms.createProfile('sRGB')).tobytes()
+        png = self._png(icc_profile=profile)
+        webp = archive_packer.webp_instead(png, self.work, 'page.webp')
+        from PIL import Image
+        with Image.open(webp) as written:
+            self.assertEqual(profile, written.info.get('icc_profile'))
+
+    def test_what_a_webp_cannot_hold_stays_a_png(self):
+        from PIL import Image
+        deep = os.path.join(self.tmp_dir, 'deep.png')
+        Image.new('I;16', (64, 64), 300).save(deep)
+        gamma = self._png('gamma.png')
+        # A gAMA of 1.0, before the image data.
+        with open(gamma, 'rb') as file:
+            data = file.read()
+        chunk = b'gAMA' + (100000).to_bytes(4, 'big')
+        import zlib
+        gama = (4).to_bytes(4, 'big') + chunk + \
+            zlib.crc32(chunk).to_bytes(4, 'big')
+        with open(gamma, 'wb') as file:
+            file.write(data[:33] + gama + data[33:])
+        animated = os.path.join(self.tmp_dir, 'animated.png')
+        frames = [Image.new('RGB', (32, 32), colour)
+                  for colour in ('red', 'blue')]
+        frames[0].save(animated, save_all=True, append_images=frames[1:])
+        jpeg = os.path.join(self.tmp_dir, 'page.jpg')
+        Image.new('RGB', (32, 32), 'white').save(jpeg)
+        for path in (deep, gamma, animated, jpeg):
+            with self.subTest(os.path.basename(path)):
+                self.assertIsNone(archive_packer.webp_instead(
+                    path, self.work, 'page.webp'))
+        self.assertEqual([], os.listdir(self.work))
+
+    def test_a_webp_no_smaller_or_not_the_same_is_not_kept(self):
+        from PIL import Image
+        save = Image.Image.save
+
+        def larger(picture, target, *args, **options):
+            save(picture, target, *args, **options)
+            with open(target, 'ab') as file:
+                file.write(bytes(100000))
+
+        def lossy(picture, target, *args, **options):
+            options.update(lossless=False, quality=10)
+            save(picture, target, *args, **options)
+
+        # Noise, which a PNG cannot make smaller and a lossy WebP can:
+        # each case is refused for its own reason.
+        noise = os.path.join(self.tmp_dir, 'noise.png')
+        Image.frombytes('RGB', (64, 64), os.urandom(64 * 64 * 3)).save(noise)
+        for wrong, png in ((larger, self._png()), (lossy, noise)):
+            with self.subTest(wrong.__name__), \
+                    unittest.mock.patch.object(Image.Image, 'save', wrong):
+                self.assertIsNone(archive_packer.webp_instead(
+                    png, self.work, 'page.webp'))
+                self.assertEqual([], os.listdir(self.work))
+
+    def test_a_save_writes_the_png_pages_as_webps_and_says_so(self):
+        drawing = self._png('drawing.png')
+        pages = [self.pages[0], drawing, self.pages[2]]
+        written = archive_packer.write_archive(
+            self.archive, pages, [], webp_pages=True)
+        self.assertEqual({pages[0]: '1 - packed.jpg',
+                          drawing: '2 - packed.webp',
+                          pages[2]: '3 - packed.webp'}, written)
+        with zipfile.ZipFile(self.archive) as packed:
+            names = packed.namelist()
+            webp = os.path.join(self.tmp_dir, 'out.webp')
+            with open(webp, 'wb') as file:
+                file.write(packed.read('2 - packed.webp'))
+            info = ElementTree.fromstring(packed.read('ComicInfo.xml'))
+            size = packed.getinfo('2 - packed.webp').file_size
+        self.assertEqual(['1 - packed.jpg', '2 - packed.webp',
+                          '3 - packed.webp', 'ComicInfo.xml'], names)
+        self.assertEqual(_pixels(drawing), _pixels(webp))
+        # The size the ComicInfo.xml gives is the WebP's, not the PNG's.
+        page = info.find('Pages').findall('Page')[1]
+        self.assertEqual(str(size), page.get('ImageSize'))
+        self.assertEqual(['packed.cbz'], os.listdir(self.directory))
+
+    def test_without_the_option_a_png_stays_a_png(self):
+        written = archive_packer.write_archive(self.archive, self.pages, [])
+        self.assertEqual('3 - packed.png', written[self.pages[2]])
+
+    def test_a_name_the_reader_gave_a_page_ends_in_webp(self):
+        written = archive_packer.write_archive(
+            self.archive, self.pages, [], webp_pages=True,
+            page_names={self.pages[2]: 'cover.png'})
+        self.assertEqual('cover.webp', written[self.pages[2]])
+
+    def test_the_webps_are_made_at_once(self):
+        """Two pages are let through only together: one at a time, the
+        first would wait for the second until the barrier gave up."""
+        barrier = threading.Barrier(2, timeout=10)
+        made = archive_packer.webp_instead
+
+        def together(*args):
+            barrier.wait()
+            return made(*args)
+
+        pages = [self._png('a.png'), self._png('b.png')]
+        with unittest.mock.patch.object(archive_packer, 'webp_instead',
+                                        together), \
+                unittest.mock.patch.object(archive_packer, 'webp_threads',
+                                           return_value=2):
+            written = archive_packer.write_archive(
+                self.archive, pages, [], webp_pages=True)
+        self.assertEqual(['1 - packed.webp', '2 - packed.webp'],
+                         sorted(written.values()))
+
+    def test_as_many_threads_as_fit_in_the_memory_share(self):
+        pages = [self._png(size=(1000, 1000))]
+        per_page = 1000 * 1000 * archive_packer._WEBP_BYTES_PER_PIXEL
+        memory = 3 * per_page * archive_packer.tools.THREAD_MEMORY_SHARE
+        with unittest.mock.patch.object(archive_packer.tools,
+                                        'physical_memory',
+                                        return_value=memory), \
+                unittest.mock.patch('os.cpu_count', return_value=64), \
+                unittest.mock.patch('os.process_cpu_count', create=True,
+                                    return_value=64), \
+                unittest.mock.patch('os.sched_getaffinity', create=True,
+                                    return_value=set(range(64))):
+            self.assertEqual(3, archive_packer.webp_threads(pages))
+
+    def test_a_save_stopped_while_the_webps_are_made_leaves_nothing(self):
+        go_on = threading.Event()
+        self.addCleanup(go_on.set)
+        made = archive_packer.webp_instead
+
+        def held(*args):
+            go_on.wait(10)
+            return made(*args)
+
+        def stop(packer):
+            packer.stop()
+            go_on.set()
+
+        with unittest.mock.patch.object(archive_packer, 'webp_instead', held):
+            with self.assertRaises(archive_packer.Cancelled):
+                archive_packer.write_archive(
+                    self.archive, [self._png()], [], webp_pages=True,
+                    waiting=stop)
+        self.assertEqual([], os.listdir(self.directory))
+
+    def test_the_progress_counts_the_webps_as_well(self):
+        packer = archive_packer.Packer(self.pages, [], self.archive, 'Comic',
+                                       webp_pages=True)
+        packer.pack()
+        self.assertTrue(packer.wait())
+        # Three made, three written.
+        self.assertEqual((6, 6), packer.progress())
+
+
 # vim: expandtab:sw=4:ts=4

@@ -36,6 +36,7 @@ Open files in the window that is already open | A book opened from a file manage
 Remember recently opened files | Keeps File → Recent and each book's last page, which the library's "Recent" collection lists. On by default. Turning it off offers to clear both. Off, the file chooser opens in the home folder rather than on the file chosen last. The page is stored two seconds after the last page turn, so a crash loses no more than that.
 Save page as opens at the last folder saved into | Instead of the book's own directory.
 Save an edited archive in the format it was opened in | Write it back as the ZIP, tar, 7z or RAR it was read as. 7z and RAR need the `7z` and `rar` programs, which MComix does not install; a format it cannot write is saved as ZIP.
+Store PNG pages as lossless WebP when saving an archive | Each PNG page is written as a WebP where that keeps every pixel and is smaller; see [Saved archives](editing.md#saved-archives). Off by default, since some other comic readers cannot show WebP.
 Comment file extensions | Which files in an archive count as comments. txt, nfo and xml by default.
 Prompts answered for good | Every prompt whose answer can be remembered, with its answer: reopening a part-read book, deleting the open file, bookmarking a book that has bookmarks, deleting books removed from the library, deleting a bookmarked file, changing the pages of the open book, leaving a book with pages picked out. "Do not ask again" sets an answer here; "Ask every time" takes it back.
 
