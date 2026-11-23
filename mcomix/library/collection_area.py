@@ -265,13 +265,9 @@ class _CollectionArea(Gtk.ScrolledWindow, widgets.Releasable,
                 prefs['last library collection'] = collection
                 self._library.collection_area.display_collections()
             else:
-                message = _("Could not add a new collection called '%s'.") % (
+                self._name_refused(
+                    _("Could not add a new collection called '%s'.") % name,
                     name)
-                if (self._library.backend.get_collection_by_name(name)
-                        is not None):
-                    message = '%s %s' % (message,
-                                         _('A collection by that name already exists.'))
-                self._library.set_status_message(message)
 
     def clean_collection(self, collection: int | None) -> None:
         """ Removes from the library every book in <collection> whose
@@ -375,12 +371,17 @@ class _CollectionArea(Gtk.ScrolledWindow, widgets.Releasable,
             if self._library.backend.rename_collection(collection, new_name):
                 self.display_collections()
             else:
-                message = _("Could not change the name to '%s'.") % new_name
-                if (self._library.backend.get_collection_by_name(new_name)
-                        is not None):
-                    message = '%s %s' % (message,
-                                         _('A collection by that name already exists.'))
-                self._library.set_status_message(message)
+                self._name_refused(
+                    _("Could not change the name to '%s'.") % new_name,
+                    new_name)
+
+    def _name_refused(self, message: str, name: str) -> None:
+        """Show <message>, that the library refused a collection called
+        <name>, saying why where the name is already taken."""
+        if self._library.backend.get_collection_by_name(name) is not None:
+            message = '%s %s' % (message,
+                                 _('A collection by that name already exists.'))
+        self._library.set_status_message(message)
 
     def _duplicate_collection(self, *args: object) -> None:
         """Duplicate the currently selected collection."""
