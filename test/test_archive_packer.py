@@ -917,19 +917,81 @@ class WebpPagesTest(_PackingTest):
         self.assertEqual(['1 - packed.webp', '2 - packed.webp'],
                          sorted(written.values()))
 
-    def test_as_many_threads_as_fit_in_the_memory_share(self):
-        pages = [self._png(size=(1000, 1000))]
-        per_page = 1000 * 1000 * archive_packer._WEBP_BYTES_PER_PIXEL
-        memory = 3 * per_page * archive_packer.tools.THREAD_MEMORY_SHARE
-        with unittest.mock.patch.object(archive_packer.tools,
-                                        'physical_memory',
-                                        return_value=memory), \
-                unittest.mock.patch('os.cpu_count', return_value=64), \
-                unittest.mock.patch('os.process_cpu_count', create=True,
-                                    return_value=64), \
-                unittest.mock.patch('os.sched_getaffinity', create=True,
-                                    return_value=set(range(64))):
-            self.assertEqual(3, archive_packer.webp_threads(pages))
+    def _processors(self, count):
+        """Have the machine seem to have <count> processors."""
+        for name in ('cpu_count', 'process_cpu_count'):
+            self.enterContext(unittest.mock.patch(
+                'os.' + name, create=True, return_value=count))
+        self.enterContext(unittest.mock.patch(
+            'os.sched_getaffinity', create=True,
+            return_value=set(range(count))))
+
+    def test_a_thread_for_each_processor_and_no_more_than_pages(self):
+        """However large the pages: the memory is the budget's to
+        share out, page by page."""
+        pages = [self._png(size=(1000, 1000))] * 5
+        self._processors(64)
+        self.assertEqual(5, archive_packer.webp_threads(pages))
+        self._processors(2)
+        self.assertEqual(2, archive_packer.webp_threads(pages))
+
+    def test_as_many_pages_at_once_as_fit_in_the_memory_share(self):
+        """Three pages' cost fits in the share: three are made at once,
+        never a fourth beside them.  A fourth let through would wait at
+        the barrier for two more, and be counted."""
+        pages = [self._png('%d.png' % number, size=(40, 30))
+                 for number in range(6)]
+        cost = archive_packer.webp_cost(pages[0])
+        self.enterContext(unittest.mock.patch.object(
+            archive_packer.tools, 'physical_memory',
+            return_value=3 * cost * archive_packer._WEBP_MEMORY_SHARE))
+        self.enterContext(unittest.mock.patch.object(
+            archive_packer, 'webp_threads', return_value=6))
+        barrier = threading.Barrier(3, timeout=10)
+        lock = threading.Lock()
+        at_once = [0, 0]
+        made = archive_packer.webp_instead
+
+        def counted(*args):
+            with lock:
+                at_once[0] += 1
+                at_once[1] = max(at_once)
+            barrier.wait()
+            try:
+                return made(*args)
+            finally:
+                with lock:
+                    at_once[0] -= 1
+
+        self.enterContext(unittest.mock.patch.object(
+            archive_packer, 'webp_instead', counted))
+        written = archive_packer.write_archive(
+            self.archive, pages, [], webp_pages=True)
+        self.assertEqual(3, at_once[1])
+        self.assertEqual(6, len([name for name in written.values()
+                                 if name.endswith('.webp')]))
+
+    def test_a_page_larger_than_the_share_is_made_alone(self):
+        budget = archive_packer._MemoryBudget()
+        stop = threading.Event()
+        self.enterContext(unittest.mock.patch.object(
+            archive_packer.tools, 'physical_memory',
+            return_value=archive_packer._WEBP_MEMORY_SHARE * 100))
+        with budget.held(1000, stop) as held:
+            self.assertTrue(held, 'nothing else held, it goes ahead')
+            waited = []
+
+            def other():
+                with budget.held(1, stop) as held:
+                    waited.append(held)
+
+            thread = threading.Thread(target=other)
+            thread.start()
+            thread.join(0.2)
+            self.assertTrue(thread.is_alive(), 'a page went beside it')
+            stop.set()
+            thread.join(10)
+        self.assertEqual([False], waited, 'a stop did not end the wait')
 
     def test_a_save_stopped_while_the_webps_are_made_leaves_nothing(self):
         go_on = threading.Event()

@@ -33,9 +33,15 @@ _PNG_SIGNATURE = b'\x89PNG\r\n\x1a\n'
 _WEBP_MAX_SIDE = 16383
 
 #: The bytes a pixel of a page costs while it is made a WebP: the PNG
-#: decoded, as RGBA, the encoder's own copy and the WebP decoded again
-#: to compare, four bytes a pixel each.
-_WEBP_BYTES_PER_PIXEL = 16
+#: decoded, as RGBA, the encoder's own copy and its working buffers, and
+#: the WebP decoded again to compare.  Measured as the peak a process
+#: grew by for one page, with Pillow 13: 27 to 33 bytes a pixel, for
+#: grey and colour pages of 4.7 and 18.7 million pixels.
+_WEBP_BYTES_PER_PIXEL = 32
+
+#: The share of the physical memory the pages being made WebPs may take
+#: at once, all saves together.
+_WEBP_MEMORY_SHARE = 8
 
 #: What each further frame of an animated PNG adds to that: every frame
 #: is held decoded, as RGBA, while the animation is encoded.
@@ -220,20 +226,72 @@ def _kept_a_png(path: str, reason: str) -> None:
     log.debug('Kept "%s" as a PNG: %s', path, reason)
 
 
-def webp_threads(paths: Iterable[str]) -> int:
-    """How many pictures of <paths> to make WebPs of at once: one for
-    each processor, as long as the largest page fits that many times
-    in the share of memory tools.thread_count() allows."""
-    largest = 0
-    for path in paths:
+def webp_threads(paths: Sequence[str]) -> int:
+    """How many threads make the WebPs of <paths>: one for each
+    processor, and no more than there are pages.  How many of them
+    work at once is the memory's to say: see _MemoryBudget."""
+    return max(1, min(tools.thread_count(0), len(paths)))
+
+
+def webp_cost(path: str) -> int:
+    """The bytes making a WebP of the picture at <path> costs: 0 for
+    one that is no PNG, which is left as it is."""
+    try:
+        header = _png_header(path)
+    except OSError:
+        return 0
+    if header is None:
+        return 0
+    width, height, _depth, frames = header
+    return _webp_cost(width, height, frames)
+
+
+class _MemoryBudget:
+
+    """The memory the pages being made WebPs may take at once: a share
+    of the physical memory, for every save going on together.
+
+    It was a number of threads before, worked out for each save from its
+    largest page: one large page, a spread or a cover, held every other
+    page of the book to a few threads, and the processors idled.  Now a
+    page waits only until its own cost fits in what is left.  A page
+    costing more than the whole share waits until it is the only one.
+    """
+
+    def __init__(self) -> None:
+        self._changed = threading.Condition()
+        self._used = 0
+
+    @contextlib.contextmanager
+    def held(self, cost: int, stop: threading.Event) -> Iterator[bool]:
+        """Hold <cost> bytes of the share while the body runs; True
+        once they are held, False where <stop> was set first."""
+        memory = tools.physical_memory()
+        total = memory // _WEBP_MEMORY_SHARE if memory is not None else 0
+        cost = min(cost, total)
+        with self._changed:
+            while self._used and self._used + cost > total \
+                    and not stop.is_set():
+                # A save stopped meanwhile is told within the second.
+                self._changed.wait(1.0)
+            if stop.is_set():
+                held = False
+            else:
+                held = True
+                self._used += cost
+        if not held:
+            yield False
+            return
         try:
-            header = _png_header(path)
-        except OSError:
-            continue
-        if header is not None:
-            width, height, _depth, frames = header
-            largest = max(largest, _webp_cost(width, height, frames))
-    return tools.thread_count(0, largest)
+            yield True
+        finally:
+            with self._changed:
+                self._used -= cost
+                self._changed.notify_all()
+
+
+#: Every save's pages, made WebPs, are held to the one share.
+_webp_memory = _MemoryBudget()
 
 
 def working_folder() -> "str | None":
@@ -977,21 +1035,26 @@ class Packer:
         self._files_to_write = 2 * len(paths) + len(self._other_files) \
             + len(self._carried_files)
 
-        def make(number: int, path: str) -> "str | None":
-            if self._stop.is_set():
-                return None
-            try:
-                return webp_instead(path, directory, '%d.webp' % number)
-            except Exception as error:
-                # Pillow refuses a broken PNG with whatever it found;
-                # the page is then written as it was.
-                log.debug('No WebP of "%s": %s', path, error)
-                return None
+        def make(number: int, path: str, cost: int) -> "str | None":
+            with _webp_memory.held(cost, self._stop) as held:
+                if not held or self._stop.is_set():
+                    return None
+                try:
+                    return webp_instead(path, directory, '%d.webp' % number)
+                except Exception as error:
+                    # Pillow refuses a broken PNG with whatever it
+                    # found; the page is then written as it was.
+                    log.debug('No WebP of "%s": %s', path, error)
+                    return None
 
+        costs = {path: webp_cost(path) for path in paths}
+        # The largest first, so that the last page left working alone,
+        # with the processors idle beside it, is a small one.
+        order = sorted(enumerate(paths), key=lambda page: -costs[page[1]])
         with concurrent.futures.ThreadPoolExecutor(
                 webp_threads(paths), thread_name_prefix='webp') as pool:
-            futures = {pool.submit(make, number, path): path
-                       for number, path in enumerate(paths)}
+            futures = {pool.submit(make, number, path, costs[path]): path
+                       for number, path in order}
             for future in concurrent.futures.as_completed(futures):
                 webp = future.result()
                 if webp is not None:
