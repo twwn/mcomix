@@ -30,7 +30,7 @@ The archive on disk is untouched until the changes are written.
 
 ## The archive editor
 
-"Edit → Edit archive..." opens it on the book: an archive or a folder of images.
+"Edit → Edit archive..." or CTRL+E opens it on the book: an archive or a folder of images.
 
 - "Images" shows the pages as thumbnails; drag them into another order.
 - "Comment files" lists the text files that came with them.

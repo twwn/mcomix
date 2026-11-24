@@ -543,6 +543,7 @@ class DocumentedKeyBindingsTest(MComixTest):
         'Undo': 'undo',
         'Redo': 'redo',
         'Add bookmark': 'add_bookmark',
+        'Edit archive': 'edit_archive',
         'Edit bookmarks': 'edit_bookmarks',
         'Minimize window': 'minimize',
         'Quit program': 'quit',

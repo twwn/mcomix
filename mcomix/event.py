@@ -523,7 +523,7 @@ class EventHandler:
                          self._window.actiongroup.get_action('shortcuts').activate)
 
         manager.register('edit_archive',
-                         [],
+                         ['<Control>E'],
                          self._window.actiongroup.get_action('edit_archive').activate)
 
         manager.register('open_containing_folder',

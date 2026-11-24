@@ -113,6 +113,7 @@ Delete the page or the file | Delete, KeyPadDelete
 Delete the file permanently | SHIFT+Delete, SHIFT+KeyPadDelete
 Rename page | F2
 Rename archive | SHIFT+F2
+Edit archive | CTRL+E
 Undo | CTRL+Z
 Redo | CTRL+Y, CTRL+SHIFT+Z
 Copy the page, or both pages in double page mode | CTRL+C
@@ -127,7 +128,7 @@ Execute first, second, ... external command (see [External commands](external-co
 - Delete removes the pages picked out with CTRL+LeftMouse; with none picked out, it asks before moving the file to the trash.
 - SHIFT+Delete, or "File → Delete permanently", asks before deleting the file permanently, without the trash; pages picked out are removed as Delete removes them.
 - Where the trash would refuse the file, Delete asks to delete it permanently instead. GLib keeps no trash on a folder bind-mounted from another partition, or on a tmpfs such as /tmp.
-- No key until given one: Rotate 180°, Flip horizontally, Flip vertically, Never autorotate, the two rotations under "Autorotate by width" and the two under "Autorotate by height", Toolbar, Statusbar, Scrollbars, Title page alone, Edit archive, Open containing folder, Random page, Random archive in the folder and Shuffle books.
+- No key until given one: Rotate 180°, Flip horizontally, Flip vertically, Never autorotate, the two rotations under "Autorotate by width" and the two under "Autorotate by height", Toolbar, Statusbar, Scrollbars, Title page alone, Open containing folder, Random page, Random archive in the folder and Shuffle books.
 
 ## Changing keys
 
