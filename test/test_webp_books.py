@@ -79,9 +79,8 @@ class ConvertTest(_BookTest):
         self.assertEqual(photo, contents['02.jpg'])
         self.assertEqual(b'notes', contents['notes.txt'])
         self.assertEqual(b'finder', contents['._01.png'])
-        # Named as MComix names a member: with the system's separator.
-        self.assertEqual({os.path.join('art', '01.png'):
-                          os.path.join('art', '01.webp'), '02.jpg': '02.jpg'},
+        # With "/" on Windows too, as the bookmarks hold a page's name.
+        self.assertEqual({'art/01.png': 'art/01.webp', '02.jpg': '02.jpg'},
                          converted.renamed)
         self.assertEqual(os.path.getsize(path), converted.after)
         self.assertLess(converted.after, converted.before)

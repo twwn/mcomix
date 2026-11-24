@@ -2658,14 +2658,19 @@ class StorePagesAsWebpTest(_LibraryWindowTest):
         self.assertEqual(os.path.getsize(self.book), stored.size)
 
     def test_what_is_kept_by_a_page_name_follows_it(self):
+        """A page in a folder of the archive too, whose name is kept
+        with "/" on Windows as well."""
+        with zipfile.ZipFile(self.book, 'w') as book:
+            book.writestr('01.png', line_art_png())
+            book.writestr('art/02.png', line_art_png(size=(200, 300)))
         self._held(self.dialog, self.book)
         backend = self.dialog.backend
-        backend.set_chosen_cover(self.book, '02.png')
+        backend.set_chosen_cover(self.book, 'art/02.png')
         backend.get_book_by_path(self.book).set_last_read_page(
-            2, member='02.png')
+            2, member='art/02.png')
         self._store(self.book)
-        self.assertEqual('02.webp', backend.get_chosen_cover(self.book))
-        self.assertEqual('02.webp', backend.get_book_by_path(
+        self.assertEqual('art/02.webp', backend.get_chosen_cover(self.book))
+        self.assertEqual('art/02.webp', backend.get_book_by_path(
             self.book).get_last_read_member())
 
     def test_saying_no_writes_nothing(self):

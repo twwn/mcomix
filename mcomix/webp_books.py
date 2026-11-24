@@ -46,7 +46,9 @@ class Converted:
 
     """A book written again with WebP pages."""
 
-    #: The name of each page within the archive, to the name it has now.
+    #: The name of each page within the archive, to the name it has now:
+    #: written with "/" whatever the system, as the stores kept by a
+    #: page's name hold it (file_handler.member_of()).
     renamed: dict[str, str]
     #: The archive's size in bytes before and after.
     before: int
@@ -112,11 +114,17 @@ def convert(path: str, stop: threading.Event,
         except archive_packer.Unchanged:
             raise Skipped(_('no page smaller as WebP')) from None
         progress(1.0)
-        return Converted({page_files[file]: name
+        return Converted({_member(page_files[file]): _member(name)
                           for file, name in written.items()},
                          before, os.stat(path).st_size)
     finally:
         tools.remove_tree(directory)
+
+
+def _member(name: str) -> str:
+    """<name>, as the archive was listed or written on this system, as
+    MComix keeps a member's name."""
+    return name.replace(os.sep, '/')
 
 
 def _unpack(archive: archive_base.BaseArchive,
