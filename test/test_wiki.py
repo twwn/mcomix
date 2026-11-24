@@ -647,7 +647,8 @@ class ImagesTest(unittest.TestCase):
 
 
 #: The Markdown files a reader follows links through, relative to ROOT.
-MARKDOWN = ('README.md', 'CONTRIBUTING.md', 'SECURITY.md', 'ChangeLog.md',
+MARKDOWN = ('README.md', 'AGENTS.md', 'CONTRIBUTING.md', 'SECURITY.md',
+            'ChangeLog.md',
             os.path.join('.github', 'PULL_REQUEST_TEMPLATE.md'),
             os.path.join('docs', '*.md'), os.path.join('docs', '*', '*.md'))
 
