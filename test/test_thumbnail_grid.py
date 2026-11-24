@@ -7,11 +7,15 @@ and reordering by dragging, which is a drag source and a drop target on
 every cell.
 """
 
+import unittest
+import unittest.mock
+
 from gi.repository import Gtk
 
 from . import MComixTest, pump, solid_pixbuf, wait_for, wait_frames
 
 from mcomix import thumbnail_list
+from mcomix import widgets
 
 #: How many frames a test lets go by for the grid to lay itself out and
 #: scroll.
@@ -289,5 +293,48 @@ class MovingAScrolledEntryTest(MComixTest):
         self.assertIsNotNone(focused)
         self.assertIs(self.view.get_item(focused.get_first_child().position),
                       moved)
+
+    def _drag_held_at(self, y):
+        """A drag over the view, held <y> pixels from its top."""
+        motion = self.view._drag_motion
+        self.enterContext(unittest.mock.patch.object(
+            motion, 'get_drop', return_value=object()))
+        self.view._drag_moved(motion, 10.0, y)
+
+    def test_a_drag_held_near_an_edge_scrolls_the_view(self):
+        """The mouse wheel cannot, while a drag holds the pointer: an
+        entry could be dropped only on what was in sight."""
+        self._drag_held_at(self.view.get_height() - 2)
+        before = self.adjustment.get_value()
+        self.assertTrue(wait_for(
+            lambda: self.adjustment.get_value() > before + 50, seconds=10),
+            'held at the bottom edge, the view did not scroll down')
+        self._drag_held_at(2)
+        lower = self.adjustment.get_value()
+        self.assertTrue(wait_for(
+            lambda: self.adjustment.get_value() < lower - 50, seconds=10),
+            'held at the top edge, the view did not scroll up')
+
+    def test_a_drag_in_the_middle_or_gone_scrolls_nothing(self):
+        self._drag_held_at(self.view.get_height() / 2)
+        before = self.adjustment.get_value()
+        self._settle()
+        self.assertEqual(before, self.adjustment.get_value())
+        self.assertTrue(self.view._autoscroll_tick)
+        # The drag ends without saying it has left: the drop is gone.
+        self.view._drag_motion.get_drop.return_value = None
+        self._settle()
+        self.assertEqual(0, self.view._autoscroll_tick)
+
+    def test_the_step_grows_towards_the_edge(self):
+        step = widgets.autoscroll_step
+        self.assertEqual(0.0, step(150, 300))
+        self.assertLess(step(0, 300), step(30, 300))
+        self.assertLess(step(30, 300), 0.0)
+        self.assertGreater(step(299, 300), step(270, 300))
+        self.assertGreater(step(270, 300), 0.0)
+        self.assertEqual(-widgets.AUTOSCROLL_STEP, step(-5, 300))
+        self.assertEqual(widgets.AUTOSCROLL_STEP, step(305, 300))
+        self.assertEqual(0.0, step(0, 0))
 
 # vim: expandtab:sw=4:ts=4

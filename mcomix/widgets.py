@@ -524,10 +524,56 @@ class DragReorderable:
     #: What a reordering drag carries: the position it started from.
     _REORDER_TYPE: str
     _reorderable = False
+    #: What follows a drag over the view, to scroll it near an edge.
+    _drag_motion: "Gtk.DropControllerMotion | None" = None
+    #: Where over the view a drag is, from its top; None when none is.
+    _drag_y: float | None = None
+    #: The tick callback scrolling the view while a drag is over it.
+    _autoscroll_tick = 0
 
     def set_reorderable(self, reorderable: bool) -> None:
-        """Let the entries be dragged into a different order."""
+        """Let the entries be dragged into a different order.
+
+        A drag held near the top or bottom edge scrolls the view, since
+        nothing else can while a drag is going on: the drag holds the
+        pointer, and the mouse wheel's scrolling goes to it, not to the
+        view.  So an entry can be dragged to a place out of sight.
+        """
         self._reorderable = reorderable
+        if reorderable and self._drag_motion is None:
+            view = cast(Gtk.Widget, self)
+            self._drag_motion = Gtk.DropControllerMotion()
+            self._drag_motion.connect('motion', self._drag_moved)
+            self._drag_motion.connect('leave', self._drag_left)
+            view.add_controller(self._drag_motion)
+
+    def _drag_moved(self, motion: Gtk.DropControllerMotion,
+                    x: float, y: float) -> None:
+        self._drag_y = y
+        if not self._autoscroll_tick:
+            self._autoscroll_tick = cast(Gtk.Widget, self).add_tick_callback(
+                self._autoscroll)
+
+    def _drag_left(self, motion: Gtk.DropControllerMotion) -> None:
+        self._drag_y = None
+
+    def _autoscroll(self, view: Gtk.Widget, clock: Gdk.FrameClock) -> bool:
+        """Scroll the view a step towards the edge a drag is held near,
+        each frame; stop once no drag is over the view."""
+        motion = self._drag_motion
+        if self._drag_y is None or motion is None \
+                or motion.get_drop() is None:
+            # A drop, or a drag let go of, need not say it has left.
+            self._drag_y = None
+            self._autoscroll_tick = 0
+            return GLib.SOURCE_REMOVE
+        step = autoscroll_step(self._drag_y, view.get_height())
+        adjustment = cast(Gtk.Scrollable, self).get_vadjustment()
+        if step and adjustment is not None:
+            adjustment.set_value(min(
+                max(adjustment.get_lower(), adjustment.get_value() + step),
+                adjustment.get_upper() - adjustment.get_page_size()))
+        return GLib.SOURCE_CONTINUE
 
     def _may_reorder(self) -> bool:
         """Whether a drag may start or land now."""
@@ -573,6 +619,30 @@ class DragReorderable:
         except ValueError:
             return False
         return self._move_dragged(source_position, _position(cell))
+
+
+#: How near the top or bottom edge of a view, in pixels, a drag held
+#: over it scrolls it.
+AUTOSCROLL_EDGE = 48
+
+#: The pixels a frame a view scrolls by while a drag is held at its
+#: very edge; nearer the middle, less.
+AUTOSCROLL_STEP = 24.0
+
+
+def autoscroll_step(y: float, height: int) -> float:
+    """The pixels to scroll a view <height> pixels high by, this frame,
+    while a drag is held at <y> from its top: up near the top edge,
+    down near the bottom, the faster the nearer; 0 elsewhere.  A view
+    too low for two edges has its halves for them."""
+    edge = min(AUTOSCROLL_EDGE, height / 2)
+    if edge <= 0:
+        return 0.0
+    if y < edge:
+        return -AUTOSCROLL_STEP * (edge - max(y, 0.0)) / edge
+    if y > height - edge:
+        return AUTOSCROLL_STEP * (min(y, height) - (height - edge)) / edge
+    return 0.0
 
 
 def _position(cell: Gtk.Widget) -> int:

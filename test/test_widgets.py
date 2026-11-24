@@ -123,11 +123,12 @@ class EmptyTest(MComixTest):
         self.assertEqual(self._children(other), [label])
 
 
-class _Reorderable(widgets.DragReorderable):
+class _Reorderable(widgets.DragReorderable, Gtk.Box):
 
     _REORDER_TYPE = 'application/x-mcomix-test-position'
 
     def __init__(self):
+        super().__init__()
         self.moved = []
 
     def _move_dragged(self, source, destination):

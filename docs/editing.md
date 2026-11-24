@@ -32,7 +32,7 @@ The archive on disk is untouched until the changes are written.
 
 "Edit → Edit archive..." or CTRL+E opens it on the book: an archive or a folder of images.
 
-- "Images" shows the pages as thumbnails; drag them into another order.
+- "Images" shows the pages as thumbnails; drag them into another order. Hold a dragged page near the top or bottom edge to scroll.
 - "Comment files" lists the text files that came with them.
 - "Remove from archive", in either list's right-click menu, or Delete, takes out what is selected.
 - "Rename page..." or F2 names the selected page; "Rename file..." or F2 names a comment file.
