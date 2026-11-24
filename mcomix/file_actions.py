@@ -36,6 +36,8 @@ from mcomix import portability
 from mcomix import rename_dialog
 from mcomix import save_progress
 from mcomix import tools
+from mcomix import webp_books
+from mcomix import webp_dialog
 from mcomix.archive import password as archive_password
 from mcomix.dialog import Response
 from mcomix.i18n import _
@@ -77,7 +79,8 @@ def follow_pages(book: str, renamed: "Mapping[str, str]") -> None:
     given, its bookmarks, the cover chosen for the library and the page
     the book was left at.  Left where they were, they were lost on the
     next opening - and after a second write found again, by whichever
-    page had come to be called that.
+    page had come to be called that.  The library also keeps the size
+    it sorts the book by.
     """
     book = os.path.abspath(book)
     pages = set(renamed.values())
@@ -91,6 +94,7 @@ def follow_pages(book: str, renamed: "Mapping[str, str]") -> None:
         # out: its name is the next page's to be given.
         library.set_chosen_cover(book, renamed.get(cover))
     library.rename_last_read_member(book, renamed)
+    library.book_rewritten(book)
 
 
 def _same_file_recased(path: str, target: str) -> bool:
@@ -964,6 +968,74 @@ class FileActions:
                    for page, name in written.items()}
         handler.members_written(written)
         follow_pages(path, renamed)
+
+    def can_store_pages_as_webp(self) -> bool:
+        """Whether "Store PNG pages as WebP..." applies to the open book.
+
+        To an archive MComix can write back in its own format, one file
+        rather than a RAR set in volumes, that has a PNG page and was
+        not opened with a password: webp_books.convert() leaves those
+        alone, and asks for no password.  What else it leaves alone - a
+        book of archives, one none of whose pages is smaller as a WebP -
+        is found only by reading the book, and the summary says so.
+        """
+        handler = self._window.filehandler
+        path = handler.get_path_to_base()
+        archive_type = handler.archive_type
+        if path is None or archive_type is None \
+                or not archive_packer.can_write(archive_type) \
+                or archive_password.remembered(path) is not None:
+            return False
+        if not any(os.path.splitext(page)[1].lower() == '.png'
+                   for page in self._window.imagehandler.get_image_files()):
+            return False
+        return not archive_tools.is_later_volume(path) \
+            and len(archive_tools.volume_set(path)) == 1
+
+    def store_pages_as_webp(self, *args: object) -> None:
+        """Offer to store the open book's PNG pages as WebP, as the
+        library does for the books selected there (mcomix.webp_dialog).
+
+        The archive is written again, so the book is closed first, as for
+        a move: changes not yet written are offered to be saved, and its
+        file is let go of.  It is opened again afterwards at the page
+        being read, under the page's new name; where nothing was written
+        it stays open as it was.
+        """
+        if not self.can_store_pages_as_webp():
+            return
+        path = self._window.filehandler.get_path_to_base()
+        assert path is not None  # can_store_pages_as_webp() answered for it
+        stored: dict[str, str] = {}
+        place: list[tuple[int, str | None]] = []
+
+        def release(run: Callable[[], None]) -> None:
+            if not self._is_open_book(path):
+                self._stayed()
+                return
+            page = self._window.imagehandler.get_current_page()
+            place.append((page, self._window.filehandler.page_member(page)))
+            self._window.filehandler.release_archive()
+            run()
+
+        def written(book: str, converted: webp_books.Converted) -> None:
+            follow_pages(book, converted.renamed)
+            stored.update(converted.renamed)
+            self._window.filehandler.archive_written()
+
+        def finished() -> None:
+            if not stored or not place or not self._is_open_book(path):
+                self._stayed()
+                return
+            page, member = place[0]
+            self._window.filehandler.open_file(
+                path, page, keep_fileprovider=True,
+                start_member=stored.get(member or '', member))
+
+        webp_dialog.offer(self._window, [path], written,
+                          start=lambda run: self.before_closing(
+                              lambda: release(run)),
+                          finished=finished)
 
     def undo(self, *args: object) -> bool:
         """Put the pages back as they were before the last change."""

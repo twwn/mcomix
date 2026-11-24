@@ -35,6 +35,9 @@
 - "File → Rename archive..." (SHIFT+F2), also in the right-click menu, renames the open archive in its folder.
   It goes on at the same page, and what follows a moved book follows a renamed one.
   A name typed without an extension keeps the old one. A name another file holds is refused.
+- "File → Store PNG pages as WebP..." writes the open archive again with each PNG page a lossless WebP where that is smaller, as the [library](library.md) does for the books selected there.
+  It is offered for an archive MComix can write back in its own format that has PNG pages, and not for one opened with a password or split into volumes.
+  Changes to its pages not yet written are offered to be saved first. The book is then opened again at the page being read, and its bookmarks, marks and turns follow the renamed pages.
 
 ## Opening books
 

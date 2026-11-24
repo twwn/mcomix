@@ -5,6 +5,7 @@ real window, which is where a whole class of start-up regressions hides.
 """
 
 import contextlib
+import io
 import datetime
 import errno
 import json
@@ -19,12 +20,14 @@ import unittest.mock
 import warnings
 
 from gi.repository import Gdk, GdkPixbuf, Gio, GLib, Gtk
+from PIL import Image
 
 from . import (MComixTest, MainWindowLaterTest, NORMAL_ZIP, children,
                close_a_main_window, copy_rar_set, descendants,
                fresh_bookmarks_store, get_testfile_path,
-               held_by_another_process, hold_open, prompts_over, pump,
-               sample_pages, visible_prompts, wait_for, windows_refusal)
+               held_by_another_process, hold_open, line_art_png,
+               prompts_over, pump, sample_pages, visible_prompts, wait_for,
+               windows_refusal)
 
 from mcomix import archive_packer
 from mcomix import bookmark_backend
@@ -49,6 +52,7 @@ from mcomix import tools
 from mcomix import ui
 from mcomix import widgets
 from mcomix import openwith
+from mcomix import webp_dialog
 from mcomix import preferences_dialog
 from mcomix import theme
 from mcomix.archive import archive_base
@@ -4732,6 +4736,131 @@ class MainWindowTest(MComixTest):
                                     | Gdk.ModifierType.CONTROL_MASK
                                     | Gdk.ModifierType.SHIFT_MASK, 10, 10)
         self.assertEqual(scrolled, [], 'the pages moved under the drag')
+
+    # -- Storing the open book's PNG pages as WebP -------------------------
+
+    def _book_of(self, pages, name='Pictures.cbz'):
+        """Open a book of <pages>, a mapping of each name to its bytes,
+        and answer with its path once its pages are listed."""
+        path = os.path.join(self.tmp_dir, name)
+        with zipfile.ZipFile(path, 'w') as book:
+            for page, data in pages.items():
+                book.writestr(page, data)
+        self.window.filehandler.open_file(path)
+        self.assertTrue(wait_for(
+            lambda: self.window.filehandler.get_path_to_base() == path
+            and self.window.imagehandler.get_number_of_pages()
+            == len(pages), seconds=20), 'the book never listed its pages')
+        self._pump()
+        return path
+
+    def _png_book(self):
+        return self._book_of({'01.png': line_art_png(),
+                              'art/02.png': line_art_png(size=(200, 300)),
+                              '03.png': line_art_png(size=(220, 300))})
+
+    def _store_as_webp(self, response=Response.OK):
+        """Give the File menu's command and answer its question with
+        <response>; answer with the progress dialog once it is done, or
+        None where there is none."""
+        self.window.actiongroup.get_action('store_webp').activate()
+        self._pump()
+        prompt, = visible_prompts()
+        prompt.response(response)
+        self._pump()
+        progress = [window for window in Gtk.Window.list_toplevels()
+                    if isinstance(window, webp_dialog._ProgressDialog)]
+        if not progress:
+            return None
+        self.addCleanup(progress[0].destroy)
+        self.assertTrue(wait_for(lambda: progress[0].finished, seconds=20))
+        self._pump()
+        return progress[0]
+
+    def _menu_bar_item(self, action):
+        """What hides the menu bar's item for <action>, or None where
+        nothing does; KeyError where the menu bar has no such item."""
+        def items(model):
+            for index in range(model.get_n_items()):
+                found = model.get_item_attribute_value(
+                    index, Gio.MENU_ATTRIBUTE_ACTION, None)
+                if found is not None and found.get_string() == action:
+                    hidden = model.get_item_attribute_value(
+                        index, 'hidden-when', None)
+                    yield hidden.get_string() if hidden else None
+                links = model.iterate_item_links(index)
+                while links.next():
+                    yield from items(links.get_value())
+        for hidden in items(self.window.menubar.get_menu_model()):
+            return hidden
+        raise KeyError(action)
+
+    def test_storing_pages_as_webp_is_offered_only_where_it_applies(self):
+        """For an archive with PNG pages it can write back, and left out
+        of the File menu otherwise rather than greyed."""
+        store = self.window.actiongroup.get_action('store_webp')
+        self.assertEqual('action-disabled',
+                         self._menu_bar_item('win.store-webp'))
+        self._png_book()
+        self.assertTrue(store.get_sensitive())
+        picture = io.BytesIO()
+        Image.new('RGB', (64, 64), 'white').save(picture, 'JPEG')
+        self._book_of({'01.jpg': picture.getvalue()}, 'Photos.cbz')
+        self.assertFalse(store.get_sensitive(), 'offered with no PNG page')
+        # Nor for a book opened with a password: the command asks for none.
+        path = self._png_book()
+        archive_password.remember(path, 'secret')
+        self.addCleanup(archive_password.forget, path)
+        self.window.uimanager.set_sensitivities()
+        self.assertFalse(store.get_sensitive(), 'offered for an encrypted book')
+
+    def test_storing_pages_as_webp_goes_on_at_the_page_being_read(self):
+        """The book is opened again where it was read, though the page
+        is called something else now, and so are its bookmarks."""
+        path = self._png_book()
+        # The third page: a folder sorts after the pages beside it.
+        self.window.set_page(3)
+        self._pump()
+        bookmark_backend.BookmarksStore.add_current_to_bookmarks()
+        self._pump()
+
+        progress = self._store_as_webp()
+
+        self.assertTrue(progress._status.get_text().startswith(
+            '1 book stored with WebP pages'))
+        with zipfile.ZipFile(path) as book:
+            self.assertEqual(['01.webp', '03.webp', 'art/02.webp'],
+                             sorted(book.namelist()))
+        self.assertTrue(wait_for(
+            lambda: (self.window.imagehandler.get_path_to_page(3) or '')
+            .endswith('02.webp')
+            and self.window.imagehandler.get_current_page() == 3,
+            seconds=20), 'the book did not come back at the page read')
+        bookmark, = bookmark_backend.BookmarksStore.get_bookmarks()
+        self.assertEqual('art/02.webp', bookmark._member)
+
+    def test_storing_pages_as_webp_can_be_called_off(self):
+        path = self._png_book()
+        with open(path, 'rb') as book:
+            before = book.read()
+        self.assertIsNone(self._store_as_webp(Response.CANCEL))
+        with open(path, 'rb') as book:
+            self.assertEqual(before, book.read())
+
+    def test_storing_pages_as_webp_offers_to_save_changes_first(self):
+        """The book is written again and opened from it: a change not
+        yet written is the reader's to save or let go, as for a move."""
+        path = self._png_book()
+        self._swap_the_first_two()
+        self._remember_answer(Response.YES)
+        self._store_as_webp()
+        with zipfile.ZipFile(path) as book:
+            names = book.namelist()
+        self.assertTrue(names, names)
+        self.assertTrue(all(name.endswith('.webp')
+                            for name in names if not name.endswith('.xml')),
+                        names)
+        self.assertFalse(self.window.file_actions.has_unsaved_changes())
 
     # -- Renaming a page --------------------------------------------------
 

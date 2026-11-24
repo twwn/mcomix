@@ -37,9 +37,11 @@ from mcomix import move_menu
 from mcomix import openwith
 from mcomix import openwith_menu
 from mcomix import tools
+from mcomix import file_actions
+from mcomix import webp_books
+from mcomix import webp_dialog
 from mcomix.library import backend_types
 from mcomix.library import book_properties
-from mcomix.library import webp_dialog
 from mcomix.library.pixbuf_cache import get_pixbuf_cache
 from mcomix.i18n import _
 from mcomix.dialog import Response
@@ -1658,12 +1660,19 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable, LibraryPart):
 
     def store_pages_as_webp(self, *args: object) -> None:
         """Offer to store the PNG pages of the selected books as WebP:
-        see mcomix.library.webp_dialog."""
+        see mcomix.webp_dialog.  The book the main window reads is left
+        alone."""
         webp_dialog.offer(
             self._library.window,
             [item.path for item in self._selected_items()],
-            self._library.main_window.filehandler.get_path_to_base,
-            self._library.backend.book_rewritten)
+            self._stored_as_webp,
+            open_book=self._library.main_window.filehandler.get_path_to_base)
+
+    def _stored_as_webp(self, path: str,
+                        converted: webp_books.Converted) -> None:
+        """Bring what is kept by a page's name along to the pages of the
+        book at <path>, renamed as <converted> says."""
+        file_actions.follow_pages(path, converted.renamed)
 
     def show_properties(self, *args: object) -> None:
         """Describe the selected books, in a window of their own.

@@ -1,6 +1,7 @@
-"""webp_dialog.py - The library's "Store PNG pages as WebP...".
+"""webp_dialog.py - "Store PNG pages as WebP...", in the library and
+the main window's File menu.
 
-The command may be given a few books or the whole of a large library,
+The library's command may be given a few books or the whole of a large library,
 which takes hours.  So it asks first, saying how many books will be
 written again; shows how far it is over all of them and within the one
 being written, how much room it has saved and about how long is left;
@@ -12,8 +13,9 @@ it leaves alone or cannot write is named in the log.
 The books are written one at a time on a thread of their own, each
 with its pages encoded in parallel (mcomix.webp_books).  What is kept
 by the name of a page - bookmarks, marks, turns, the chosen cover, the
-page a book was left at - follows each book on the main thread as soon
-as it is written, so a stop or a crash later loses none of it.
+page a book was left at - is the caller's to bring along, on the main
+thread as soon as each book is written, so a stop or a crash later loses
+none of it.
 """
 
 import math
@@ -24,7 +26,6 @@ import time
 from gi.repository import GLib, Gtk, Pango
 
 from mcomix import archive_packer
-from mcomix import file_actions
 from mcomix import i18n
 from mcomix import log
 from mcomix import message_dialog
@@ -47,15 +48,20 @@ _FAILURES_NAMED = 10
 
 
 def offer(parent: Gtk.Window, books: Sequence[str],
-          open_book: Callable[[], "str | None"],
-          written: Callable[[str], None]) -> None:
+          written: "Callable[[str, webp_books.Converted], None]",
+          open_book: Callable[[], "str | None"] = lambda: None,
+          start: "Callable[[Callable[[], None]], None]" = lambda run: run(),
+          finished: Callable[[], None] = lambda: None) -> None:
     """Ask whether to store the PNG pages of <books> as WebP, and do it
     if the reader says yes.
 
-    <open_book> answers with the path of the book the main window has
-    open, which is left alone: its archive is the one it reads from.
     <written> is called on the main thread with the path of each book
-    written again.
+    written again and what was done to it.  <open_book> answers with
+    the path of a book to leave alone - the one the main window reads,
+    where the library asks.  Once the reader has said yes, <start> is
+    given what starts the work, to call when the books are ready to be
+    read, or never.  <finished> is called on the main thread once the
+    work has ended, however it ended.
     """
     count = len(books)
     if not count:
@@ -71,9 +77,12 @@ def offer(parent: Gtk.Window, books: Sequence[str],
     dialog.add_confirmation_buttons(_('_Cancel'), Response.CANCEL,
                                     _('_Store as WebP'), Response.OK)
 
+    def run() -> None:
+        _ProgressDialog(parent, list(books), open_book, written, finished)
+
     def answered(response: int) -> None:
         if response == Response.OK:
-            _ProgressDialog(parent, list(books), open_book, written)
+            start(run)
     dialog.run_async(answered)
 
 
@@ -84,13 +93,15 @@ class _ProgressDialog(Dialog):
 
     def __init__(self, parent: Gtk.Window, books: list[str],
                  open_book: Callable[[], "str | None"],
-                 written: Callable[[str], None]) -> None:
+                 written: "Callable[[str, webp_books.Converted], None]",
+                 finished: Callable[[], None]) -> None:
         super().__init__(title=_('Storing PNG pages as WebP'),
                          transient_for=parent, modal=True,
                          destroy_with_parent=True)
         self._books = books
         self._open_book = open_book
         self._written = written
+        self._finished_with = finished
         self._stop = threading.Event()
         # Written by the thread, read by the tick; a read between two
         # writes is a moment out of date, nothing worse.
@@ -168,8 +179,7 @@ class _ProgressDialog(Dialog):
     def _book_done(self, path: str,
                    outcome: "webp_books.Converted | str | None") -> bool:
         if isinstance(outcome, webp_books.Converted):
-            file_actions.follow_pages(path, outcome.renamed)
-            self._written(path)
+            self._written(path, outcome)
             self._converted += 1
             self._saved += outcome.before - outcome.after
         elif outcome is not None:
@@ -248,6 +258,7 @@ class _ProgressDialog(Dialog):
             stop.set_label(_('_Close'))
             stop.set_use_underline(True)
         self.set_response_sensitive(Response.CANCEL, True)
+        self._finished_with()
         return GLib.SOURCE_REMOVE
 
 # vim: expandtab:sw=4:ts=4

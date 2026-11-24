@@ -353,7 +353,7 @@ _MENUBAR = (
                    'extract_page', 'properties', 'comments', None,
                    'menu_open_with', 'open_containing_folder', None,
                    'refresh_archive', None,
-                   'rename_book', 'menu_move_to', None,
+                   'rename_book', 'menu_move_to', 'store_webp', None,
                    'delete', 'delete_permanently', None,
                    'close', 'save_and_quit', 'quit')),
     ('menu_edit', ('undo', 'redo', None,
@@ -460,6 +460,8 @@ class MainUI:
                    window.file_actions.write_turn_popup),
             _Entry('rename_book', 'document-edit', _('Rename arc_hive...'), None,
                    window.file_actions.rename_book),
+            _Entry('store_webp', 'document-save', _('Store PNG pages as _WebP...'), None,
+                   window.file_actions.store_pages_as_webp),
             _Entry('delete_page_popup', 'edit-delete', _('_Delete page'),
                    _('Removes the page the menu was opened over from the book. The archive on disk is not changed until it is saved.'),
                    window.file_actions.delete_popup_page),
@@ -747,6 +749,11 @@ class MainUI:
     #: The submenus of the right-click menu that act on the open book.
     _NEEDS_A_BOOK = ('menu_move_to_popup', 'menu_open_with_popup')
 
+    #: What the menu bar leaves out, rather than greys, while it does not
+    #: apply to the open book: the archive cannot be written back, or
+    #: has no PNG page (FileActions.can_store_pages_as_webp()).
+    _HIDDEN_WHILE_DISABLED = ('store_webp',)
+
     def _dynamic(self, name: str) -> "Gio.Menu | None":
         """The model of a submenu that is rebuilt as the program runs."""
         return {'menu_recent': self.recent.model,
@@ -805,7 +812,7 @@ class MainUI:
             detailed, target = self._actions.detailed(item)
             entry = widgets.menu_item(self._actions.label(item), detailed,
                                       self._accelerators.get(item), target)
-            if hide_disabled:
+            if hide_disabled or item in self._HIDDEN_WHILE_DISABLED:
                 entry.set_attribute_value('hidden-when',
                                           GLib.Variant('s', 'action-disabled'))
             section.append_item(entry)
@@ -901,6 +908,10 @@ class MainUI:
         self._actions.get_action('comments').set_sensitive(
             general_sensitive
             and self._window.filehandler.get_number_of_comments() > 0)
+
+        self._actions.get_action('store_webp').set_sensitive(
+            general_sensitive
+            and self._window.file_actions.can_store_pages_as_webp())
 
         # A folder of images has no one file to rename; its pages are
         # renamed one by one.

@@ -51,7 +51,7 @@ from mcomix.library import main_dialog
 from mcomix.library import pixbuf_cache
 from mcomix.library import relocate_dialog
 from mcomix.library import watchlist
-from mcomix.library import webp_dialog
+from mcomix import webp_dialog
 from mcomix.preferences import prefs
 from mcomix import tools
 
