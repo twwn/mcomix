@@ -261,12 +261,14 @@ class _Book:
 
     """Enough of a library book for a cover to be made from it."""
 
-    def __init__(self, id, path, size=0, added='2000-01-01', pages=1):
+    def __init__(self, id, path, size=0, added='2000-01-01', pages=1,
+                 format=constants.ZIP):
         self.id = id
         self.path = path
         self.size = size
         self.added = added
         self.pages = pages
+        self.format = format
 
 
 class _CoverBackend(_Backend):
@@ -1665,6 +1667,43 @@ class _FourCoversTest(_AreaOnScreenTest):
         self._present((600, 400))
         self.assertTrue(wait_for(
             lambda: self.area._covers.position_at(60, 60) >= 0))
+
+
+class StorePagesAsWebpEntryTest(_FourCoversTest):
+
+    def test_offered_only_for_a_book_mcomix_can_write_back(self):
+        """A PDF, or a RAR where no rar is installed, would only be
+        counted as left alone after the question and the pass."""
+        self.library.collection_area = _CollectionArea()
+        self.library.main_window = _main_window()
+        action = self.area._popup_actions.lookup_action('store-webp')
+        self.area._covers.get_item(0).format = constants.PDF
+        self.area._covers.get_item(1).format = constants.RAR
+        with unittest.mock.patch.object(book_area.widgets, 'popup_at'), \
+                unittest.mock.patch.object(
+                    book_area.archive_packer, 'rar_executable',
+                    return_value=None):
+            for selected, offered in (([0], False), ([0, 1], False),
+                                      ([0, 1, 2], True), ([3], True),
+                                      ([], False)):
+                with self.subTest(selected=selected):
+                    self.area._covers.select_positions(selected)
+                    self.area._popup_book_menu()
+                    self.assertEqual(offered, action.get_enabled())
+
+    def test_it_has_a_section_of_its_own(self):
+        """It writes every book selected again; it sat among Rename and
+        Properties, which only name or describe one."""
+        model = self.area._book_menu.get_menu_model()
+        sections = [model.get_item_link(index, Gio.MENU_LINK_SECTION)
+                    for index in range(model.get_n_items())]
+        actions = [[section.get_item_attribute_value(
+                        index, 'action', None).get_string()
+                    for index in range(section.get_n_items())
+                    if section.get_item_attribute_value(
+                        index, 'action', None) is not None]
+                   for section in sections if section is not None]
+        self.assertIn(['books.store-webp'], actions)
 
 
 class MiddleClickTest(_FourCoversTest):

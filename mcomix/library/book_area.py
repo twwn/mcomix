@@ -38,6 +38,7 @@ from mcomix import openwith
 from mcomix import openwith_menu
 from mcomix import tools
 from mcomix import file_actions
+from mcomix import archive_packer
 from mcomix import webp_books
 from mcomix import webp_dialog
 from mcomix.library import backend_types
@@ -154,6 +155,9 @@ class _BookItem(thumbnail_list.ThumbnailItem):
         self.size = book.size
         self.pages = book.pages
         self.added = book.added
+        #: The archive format the library read the book as, one of
+        #: constants' archive types.
+        self.format = book.format
         #: The place the book was given by hand in the collection on
         #: show, or None if it has none there.
         self.position: int | None = None
@@ -345,11 +349,13 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable, LibraryPart):
              self._show_selected_in_folder),
             # Not the collections' "Re_name": N is "Mark as u_nread"'s here.
             ('rename', _('R_ename'), self.rename_selected),
-            ('store-webp', _('Store PNG pages as _WebP...'),
-             self.store_pages_as_webp),
             # Not the File menu's "Proper_ties": its letter is taken here
             # in several languages.
             ('properties', _('_Properties'), self.show_properties),
+            # A section of its own: it writes every book selected again,
+            # which none of the entries about the file beside it does.
+            ('store-webp', _('Store PNG pages as _WebP...'),
+             self.store_pages_as_webp),
         )
 
     def _create_popup_menu(self) -> Gtk.PopoverMenu:
@@ -386,7 +392,8 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable, LibraryPart):
         entries = self._menu_entries()
         for heading, group in ((_('Library books'), entries[0:4]),
                                (None, entries[4:6]), (None, entries[6:7]),
-                               (None, entries[7:12]), (None, entries[12:17])):
+                               (None, entries[7:12]), (None, entries[12:16]),
+                               (None, entries[16:17])):
             section = Gio.Menu()
             for name, label, _handler in group:
                 item = widgets.menu_item(label, 'books.' + name,
@@ -1605,8 +1612,14 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable, LibraryPart):
                        'mark-read',
                        'mark-unread', 'remove-from-library',
                        'completely-remove', 'delete-permanently',
-                       'store-webp', 'properties'):
+                       'properties'):
             self._set_sensitive(action, books_selected)
+        # Only where a book selected could be written back: a PDF, a
+        # RAR without rar, would only be counted as left alone.  Whether
+        # it has PNG pages is found only by reading it.
+        self._set_sensitive('store-webp', any(
+            archive_packer.can_write(archive_type)
+            for archive_type in {item.format for item in selected}))
 
         manages = self._library.manages
         self._set_sensitive('open-keep-library', books_selected and manages)
