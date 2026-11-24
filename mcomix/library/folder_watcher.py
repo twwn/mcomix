@@ -132,7 +132,9 @@ class FolderWatcher:
                  other: Gio.File | None, event: Gio.FileMonitorEvent) -> None:
         arrived = other if event == Gio.FileMonitorEvent.RENAMED else file
         path = arrived.get_path() if arrived is not None else None
-        if path is None:
+        if path is None or archive_tools.is_working_file(path):
+            # An archive being written again comes and goes under a
+            # name of its own, and arrives under its own name after.
             return
         if event in _APPEARED and os.path.isdir(path):
             # join(root, '') ends in one separator, also where the root

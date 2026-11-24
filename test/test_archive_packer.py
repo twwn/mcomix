@@ -20,6 +20,7 @@ import xml.etree.ElementTree as ElementTree
 from . import MComixTest, line_art_png, replace_held_once, sample_pages
 
 from mcomix import archive_packer
+from mcomix import archive_tools
 from mcomix import constants
 from mcomix import log
 from mcomix import tools
@@ -269,7 +270,7 @@ class WriterTest(MComixTest):
         self.assertIn('Path = 1 - Comic.jpg', listing)
         self.assertIn('Path = 2 - Comic.jpg', listing)
         self.assertEqual([name for name in os.listdir(self.tmp_dir)
-                          if name.startswith('mcomix-pack.')], [],
+                          if archive_tools.is_working_file(name)], [],
                          'the staging directory was left behind')
 
     @unittest.skipIf(archive_packer.szip_executable() is None,
@@ -303,7 +304,7 @@ class WriterTest(MComixTest):
 
     def _staging_left(self):
         return [name for name in os.listdir(self.tmp_dir)
-                if name.startswith('mcomix-pack.')]
+                if archive_tools.is_working_file(name)]
 
     def test_7z_that_is_not_installed_packs_nothing(self):
         with unittest.mock.patch.object(archive_packer._SevenZipWriter,

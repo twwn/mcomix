@@ -93,6 +93,6 @@ Option | Explanation
 -------|------------
 Extraction threads | For formats more than one thread can unpack: ZIP, PDF, and those unpacked by an outside program, such as 7z. 0, the default, is one per processor. Each PDF thread runs a process of its own of about 130 MB, so for PDFs 0 also keeps to a sixteenth of the memory.
 Thumbnail threads | Read at start. 0, the default, is one per processor.
-Unpack books in | The folder archives are unpacked into while they are read, such as a RAM disk. Empty, the system's temporary folder. A folder that is missing or read-only is passed over. Takes effect with the next book. The pages of the two books closed last [stay there](reading.md) until MComix closes.
+Unpack books in | The folder archives are unpacked into while they are read, such as a RAM disk. Pages being stored as WebP are worked on there too. Empty, the system's temporary folder. A folder that is missing or read-only is passed over. Takes effect with the next book. The pages of the two books closed last [stay there](reading.md) until MComix closes.
 Pages to keep in the cache | 7 by default. -1 caches the whole book; a large number can run MComix out of memory.
 Store thumbnails for opened files | In the freedesktop.org thumbnail directory that file managers and other programs share.

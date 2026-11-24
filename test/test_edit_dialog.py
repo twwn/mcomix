@@ -18,6 +18,7 @@ from . import (MComixTest, MainWindowLaterTest, children, descendants,
                wait_for)
 
 from mcomix import archive_packer
+from mcomix import archive_tools
 from mcomix import constants
 from mcomix import edit_dialog
 from mcomix import file_chooser_simple_dialog
@@ -375,7 +376,7 @@ class EditArchiveDialogTest(MComixTest):
                              'the failure was not reported')
             self.assertFalse(os.path.exists(target))
             self.assertEqual([name for name in os.listdir(self.tmp_dir)
-                              if name.startswith('tmp.')], [],
+                              if archive_tools.is_working_file(name)], [],
                              'a temporary archive was written anyway')
         finally:
             for dialog in prompts_over(self.window):
@@ -411,7 +412,7 @@ class EditArchiveDialogTest(MComixTest):
             self.assertFalse(os.path.exists(target),
                              'a broken archive was left under the real name')
             self.assertEqual([name for name in os.listdir(self.tmp_dir)
-                              if name.startswith('tmp.')], [],
+                              if archive_tools.is_working_file(name)], [],
                              'the temporary archive was left behind')
         finally:
             # A dialog left standing is answered by whichever test goes

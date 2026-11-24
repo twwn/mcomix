@@ -8,6 +8,7 @@ import os
 from . import NORMAL_ZIP, copy_rar_set, get_testfile_path, posix_byte_names
 from .test_library_backend import OpenLibraryTest
 
+from mcomix import archive_tools
 from mcomix import constants
 from mcomix.library import backend
 from mcomix.library import backend_types
@@ -375,6 +376,21 @@ class WatchListEntryTest(unittest.TestCase):
                     self.assertEqual([first], entry.get_new_files([]))
         finally:
             shutil.rmtree(tmpdir)
+
+    def test_an_archive_being_written_again_is_nothing_new(self):
+        """MComix writes a book again under a name of its own beside it,
+        which ends as the book's does; a scan meanwhile found it and
+        then said it could not add it."""
+        tmpdir = os.path.abspath(tempfile.mkdtemp(prefix='library_types.'))
+        self.addCleanup(shutil.rmtree, tmpdir)
+        book = os.path.join(tmpdir, 'book.cbz')
+        shutil.copy(NORMAL_ZIP, book)
+        shutil.copy(NORMAL_ZIP, os.path.join(
+            tmpdir, archive_tools.WORKING_PREFIX + 'x1y2.book.cbz'))
+        for recursive in (False, True):
+            with self.subTest(recursive=recursive):
+                entry = backend_types._WatchListEntry(tmpdir, recursive, None)
+                self.assertEqual([book], entry.get_new_files([]))
 
     def test_new_files_come_in_the_order_they_are_numbered(self):
         """They are added to the library in this order, and "All books"

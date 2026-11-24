@@ -84,8 +84,8 @@ def convert(path: str, stop: threading.Event,
     if archive is None:
         raise Skipped(_('a format MComix cannot write here'))
     before = os.stat(path).st_size
-    directory = tempfile.mkdtemp(
-        prefix='tmp.webp-book.', dir=os.path.dirname(os.path.abspath(path)))
+    directory = tempfile.mkdtemp(prefix='mcomix-webp-book.',
+                                 dir=archive_packer.working_folder())
     try:
         try:
             pages, others = _unpack(archive, directory, stop, progress)

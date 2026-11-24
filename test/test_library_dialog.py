@@ -26,6 +26,7 @@ from . import (FolderDialogStub, MComixTest, NORMAL_ZIP, descendants,
                solid_pixbuf, visible_prompts, wait_for)
 
 from mcomix import archive_packer
+from mcomix import archive_tools
 from mcomix import bookmark_backend
 from mcomix import bookmark_menu_item
 from mcomix import column_list
@@ -760,6 +761,16 @@ class FolderWatchTest(_LibraryWindowTest):
                 fp.write('x')
         with unittest.mock.patch.object(dialog._watcher, '_scan') as scan:
             self._no_scan_after(folder, scan, write)
+
+    def test_an_archive_being_written_again_scans_nothing(self):
+        """Its name ends as a book's does, and it is gone a moment
+        later: the scan it started reported it as a book it could not
+        add."""
+        folder = self._watched()
+        dialog = self._open_watching((folder, False))
+        with unittest.mock.patch.object(dialog._watcher, '_scan') as scan:
+            self._no_scan_after(folder, scan, lambda: self._arrive(
+                folder, archive_tools.WORKING_PREFIX + 'x1y2.new.cbz'))
 
     def test_nothing_is_watched_with_the_scan_at_opening_off(self):
         folder = self._watched()

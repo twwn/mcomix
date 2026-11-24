@@ -7,11 +7,13 @@ import sys
 import tarfile
 import threading
 import unittest
+import unittest.mock
 import zipfile
 
 from PIL import Image
 
 from mcomix import archive_packer
+from mcomix import archive_tools
 from mcomix import webp_books
 
 from . import (MComixTest, copy_rar_set, get_testfile_path, line_art_png,
@@ -86,6 +88,26 @@ class ConvertTest(_BookTest):
         self.assertLess(converted.after, converted.before)
         # Nothing is left beside the book.
         self.assertEqual(['book.cbz'], os.listdir(self.directory))
+
+    def test_the_pages_are_worked_on_away_from_the_book(self):
+        """Only the new archive is written beside the book, under a name
+        the library passes over: the pages unpacked and their WebPs
+        made there were read and written again on the book's disk, and
+        a watched folder saw each of them come and go."""
+        beside = []
+        made = archive_packer.webp_instead
+
+        def looking(*args):
+            beside.extend(os.listdir(self.directory))
+            return made(*args)
+
+        path = self.zip_book({'01.png': line_art_png()})
+        with unittest.mock.patch.object(archive_packer, 'webp_instead',
+                                        looking):
+            self.convert(path)
+        self.assertIn('book.cbz', beside)
+        self.assertEqual([], [name for name in beside if name != 'book.cbz'
+                              and not archive_tools.is_working_file(name)])
 
     def test_no_comicinfo_is_added(self):
         path = self.zip_book({'01.png': line_art_png()})

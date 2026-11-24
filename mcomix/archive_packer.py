@@ -13,6 +13,7 @@ import threading
 from collections.abc import Callable, Iterable, Iterator, Mapping, Sequence
 from typing import BinaryIO, TYPE_CHECKING
 
+from mcomix import archive_tools
 from mcomix import comicinfo
 from mcomix import constants
 from mcomix import log
@@ -235,6 +236,22 @@ def webp_threads(paths: Iterable[str]) -> int:
     return tools.thread_count(0, largest)
 
 
+def working_folder() -> "str | None":
+    """The folder to work on the pages of a book being written in: the
+    one books are unpacked into, which is the system's temporary folder
+    unless the preference "unpack folder" names another.
+
+    Not the book's own folder, though only the new archive has to be
+    written there, to take the old one's place: what is unpacked there
+    is read and written again on that disk, which may be a slow one,
+    and a folder the library watches sees every file of it come and go.
+    """
+    # Not imported at the top: file_handler imports save_progress, which
+    # imports this module.
+    from mcomix import file_handler
+    return file_handler.unpack_folder()
+
+
 class Cancelled(Exception):
 
     """The reader stopped a save before the archive was replaced.
@@ -310,7 +327,8 @@ def _add_comic_info(image_files: Sequence[str],
     if document is None:
         return None
     fd, path = tempfile.mkstemp(suffix='.%s' % comicinfo.NAME,
-                                prefix='tmp.', dir=directory)
+                                prefix=archive_tools.WORKING_PREFIX,
+                                dir=directory)
     with os.fdopen(fd, 'wb') as fp:
         fp.write(document)
     if was_carried is None:
@@ -401,7 +419,8 @@ def write_archive(archive_path: str, image_files: Sequence[str],
                        + list(carried_files), archive_path)
         fd, tmp_path = tempfile.mkstemp(
             suffix='.%s' % os.path.basename(archive_path),
-            prefix='tmp.', dir=os.path.dirname(archive_path))
+            prefix=archive_tools.WORKING_PREFIX,
+            dir=os.path.dirname(archive_path))
         # Close the open handle; the writing is the packer's.
         os.close(fd)
 
@@ -618,7 +637,8 @@ class _StagedWriter(_Writer):
     def __init__(self, archive_path: str) -> None:
         super().__init__(archive_path)
         self._staging = tempfile.mkdtemp(
-            prefix='mcomix-pack.', dir=os.path.dirname(archive_path))
+            prefix=archive_tools.WORKING_PREFIX,
+            dir=os.path.dirname(archive_path))
 
     def add(self, path: str, name: str) -> None:
         staged = os.path.join(self._staging, name)
@@ -1000,8 +1020,8 @@ class Packer:
         webp_directory = None
         try:
             if self._webp_pages:
-                webp_directory = tempfile.mkdtemp(
-                    prefix='tmp.webp.', dir=os.path.dirname(self._archive_path))
+                webp_directory = tempfile.mkdtemp(prefix='mcomix-webp.',
+                                                  dir=working_folder())
                 self._make_webps(webp_directory)
                 if self._only_converted and not self._webps \
                         and not self._stop.is_set():

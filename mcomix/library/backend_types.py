@@ -711,8 +711,11 @@ class _WatchListEntry(_BackendObject):
         # A file the library cannot hold would be new at every scan, and
         # so would the later volumes of a RAR set, which are no books to
         # add; only files not in the library already are read for that.
+        # Nor is the archive MComix is writing again under a name of its
+        # own, which a scan meanwhile found and then could not add.
         new_files = [path for path in available_files.difference(old_files)
-                     if storable(path)
+                     if not archive_tools.is_working_file(path)
+                     and storable(path)
                      and not archive_tools.is_later_volume(path)]
         tools.alphanumeric_sort(new_files)
         return new_files

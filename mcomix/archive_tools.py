@@ -200,6 +200,20 @@ def is_archive_file(path: str) -> bool:
     return _SUPPORTED_ARCHIVE_REGEX.search(path) is not None
 
 
+#: How the files MComix writes beside an archive while it writes it
+#: again begin, such as the new archive under a name of its own until it
+#: takes the old one's place.  That one ends as the archive's name does,
+#: since 7z and rar tell the format to write by it.
+WORKING_PREFIX = 'mcomix-tmp.'
+
+
+def is_working_file(path: str) -> bool:
+    """Whether the file at <path> is one MComix is writing an archive
+    as: no book to add to the library, though it is named as one, and
+    gone, renamed over the book, a moment later."""
+    return os.path.basename(path).startswith(WORKING_PREFIX)
+
+
 def archive_mime_type(path: str) -> int | None:
     """Return the archive type of <path> or None for non-archives."""
     try:
