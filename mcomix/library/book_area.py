@@ -445,9 +445,19 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable, LibraryPart):
         submenus.append_submenu(_('_Sort'), sort_menu)
         submenus.append_submenu(_('Cover si_ze'), size_menu)
         model.append_section(None, submenus)
+        self._view_menu = submenus
+        self._before_popup: Callable[[], None] | None = None
 
         menu = Gtk.PopoverMenu.new_from_model(model)
         return menu
+
+    def add_view_submenu(self, label: str, menu: Gio.MenuModel,
+                         before_popup: Callable[[], None]) -> None:
+        """Offer <menu> under <label> before Sort and Cover size in the
+        right-click menu, and run <before_popup> each time the menu
+        opens, to bring <menu> up to date."""
+        self._view_menu.prepend_submenu(label, menu)
+        self._before_popup = before_popup
 
     @staticmethod
     def _current_cover_size() -> int:
@@ -1633,6 +1643,8 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable, LibraryPart):
         self._set_sensitive('rename', len(selected) == 1)
         self._move_to.update()
         self._offer_commands(selected[0].path if selected else None)
+        if self._before_popup is not None:
+            self._before_popup()
 
         widgets.popup_at(self._book_menu, over or self, x, y)
 

@@ -5,7 +5,7 @@ import shutil
 import unittest.mock
 import weakref
 
-from gi.repository import Gdk, Gio, Graphene, Gtk
+from gi.repository import Gdk, Gio, GLib, Graphene, Gtk
 
 from . import (MainWindowLaterTest, collect_garbage, get_testfile_path, pump,
                wait_for, wait_frames)
@@ -86,6 +86,57 @@ class ShelfTest(_ShelfWindowTest):
         found = self._shown()
         self.assertEqual(constants.COLLECTION_RECENT, found._collection)
         self.assertEqual([self.books[1]], found.book_area.shown_paths())
+
+    def _menu_collections(self, found):
+        """The labels and targets the covers' Collection submenu offers,
+        as it is listed when the menu opens."""
+        with unittest.mock.patch('mcomix.widgets.popup_at'):
+            found.book_area._popup_book_menu()
+        model = found._collections
+        return [(model.get_item_attribute_value(
+                     index, 'label', None).get_string(),
+                 model.get_item_attribute_value(
+                     index, 'target', None).get_int32())
+                for index in range(model.get_n_items())]
+
+    def test_the_menu_picks_the_collection_shown_and_it_is_kept(self):
+        """The shelf has no list of collections beside it, so its
+        covers' menu is where another is picked."""
+        library = backend.LibraryBackend()
+        for path in self.books:
+            library.add_book(path)
+        library.add_collection('Wes_tern')
+        western = library.get_collection_by_name('Wes_tern').id
+        library.add_book_to_collection(
+            library.get_book_by_path(self.books[0]).id, western)
+        library.add_book_to_collection(
+            library.get_book_by_path(self.books[1]).id,
+            constants.COLLECTION_RECENT)
+        self._window()
+        found = self._shown()
+        self.assertEqual(constants.COLLECTION_RECENT, found._collection)
+        offered = self._menu_collections(found)
+        self.assertEqual(('All books', constants.COLLECTION_ALL), offered[0])
+        self.assertIn(('Wes__tern', western), offered)
+        self.assertIn(('Recent', constants.COLLECTION_RECENT), offered)
+        found.activate_action('shelf.collection',
+                              GLib.Variant('i', western))
+        self.assertEqual([self.books[0]], found.book_area.shown_paths())
+        self.assertEqual(western, prefs['shelf collection'])
+        self.assertEqual(western, found._pick.get_state().get_int32())
+        found.activate_action('shelf.collection',
+                              GLib.Variant('i', constants.COLLECTION_ALL))
+        self.assertCountEqual(self.books, found.book_area.shown_paths())
+        # Shown again when no book is open, as picked.
+        prefs['shelf collection'] = western
+        found.show_books()
+        self.assertEqual([self.books[0]], found.book_area.shown_paths())
+        # Gone from the library, it is the books last read again.
+        library.remove_collection(western)
+        found.show_books()
+        self.assertEqual(constants.COLLECTION_RECENT, found._collection)
+        self.assertEqual(constants.COLLECTION_RECENT,
+                         found._pick.get_state().get_int32())
 
     def test_an_empty_library_says_where_books_come_from(self):
         self._window()

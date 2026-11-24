@@ -4,8 +4,9 @@ A window with no book in it has nothing to show, and the books to open
 are a window away.  The Shelf fills the page area with the covers of
 the books last read - of every book, where none has been read yet -
 and a click on one opens it.  It is the library window's cover area
-with little around it: no collections and no adding, and a search
-field only while CTRL+F has opened it.
+with little around it: no list of collections and no adding, and a
+search field only while CTRL+F has opened it.  Another collection is
+picked from the covers' right-click menu.
 """
 
 import functools
@@ -13,11 +14,12 @@ import weakref
 from collections.abc import Sequence
 from typing import TYPE_CHECKING, cast
 
-from gi.repository import Gdk, GLib, Gtk
+from gi.repository import Gdk, Gio, GLib, Gtk
 
 from mcomix import constants
 from mcomix import theme
 from mcomix.i18n import _
+from mcomix.preferences import prefs
 from mcomix.library import backend as library_backend
 from mcomix.library import backend_types
 from mcomix.library import book_area as library_book_area
@@ -128,6 +130,20 @@ class Shelf(Gtk.Box):
         self.book_area.set_vexpand(True)
         content.append(self.book_area)
 
+        # Which collection is on show, picked from the covers' menu:
+        # there is no list of collections beside them, and a bar above
+        # them would take the room the covers start in.
+        self._pick = Gio.SimpleAction.new_stateful(
+            'collection', GLib.VariantType.new('i'),
+            GLib.Variant('i', self._collection))
+        self._pick.connect('change-state', self._collection_picked)
+        actions = Gio.SimpleActionGroup()
+        actions.add_action(self._pick)
+        self.insert_action_group('shelf', actions)
+        self._collections = Gio.Menu()
+        self.book_area.add_view_submenu(_('Collection'), self._collections,
+                                        self._list_collections)
+
         self._empty = Gtk.Label(
             label=_('The library holds no books yet. '
                     'Add some in the library window.'),
@@ -161,24 +177,60 @@ class Shelf(Gtk.Box):
         return self
 
     def show_books(self) -> None:
-        """Show the books last read, or every book where none has been
-        read, as the library now holds them."""
+        """Show the collection picked from the menu, or else the books
+        last read, or every book where none has been read, as the
+        library now holds them."""
         if self._closed:
             return
-        recent = self.backend.get_recent_collection()
+        picked = prefs['shelf collection']
+        if (picked is not None
+                and self.backend.get_collection_by_id(picked) is None):
+            # Removed in the library window since.
+            picked = None
         # A search looks among every book: those last read are a few.
-        if self.filter_string is None and recent.get_books():
+        if self.filter_string is not None:
+            self._collection = constants.COLLECTION_ALL
+            books = self.backend.has_books()
+        elif picked is not None:
+            self._collection = picked
+            books = self.backend.has_books()
+        elif self.backend.get_recent_collection().get_books():
             self._collection = constants.COLLECTION_RECENT
             books = True
         else:
             self._collection = constants.COLLECTION_ALL
             books = self.backend.has_books()
+        self._pick.set_state(GLib.Variant('i', self._collection))
         self.book_area.set_visible(books)
         self._empty.set_visible(not books)
         self.book_area.display_covers(self._collection)
 
     def get_current_collection(self) -> int | None:
         return self._collection
+
+    def _list_collections(self) -> None:
+        """Offer every book and each collection the library has now:
+        the library window adds, renames and removes them."""
+        self._collections.remove_all()
+        entries = [(_('All books'), constants.COLLECTION_ALL)]
+        for collection in self.backend.get_all_collections():
+            name = self.backend.get_collection_name(collection)
+            if name is not None:
+                entries.append((name, collection))
+        for label, collection in entries:
+            # A menu reads an underscore as the mark of an access key;
+            # one in a collection's name is doubled to stay itself.
+            item = Gio.MenuItem.new(label.replace('_', '__'), None)
+            item.set_action_and_target_value(
+                'shelf.collection', GLib.Variant('i', collection))
+            self._collections.append_item(item)
+
+    def _collection_picked(self, action: Gio.SimpleAction,
+                           value: GLib.Variant) -> None:
+        """Show the collection picked, and from now on whenever no
+        book is open."""
+        prefs['shelf collection'] = value.get_int32()
+        self.show_books()
 
     def search(self) -> None:
         """Open the search field, or go back to it, with the keyboard."""

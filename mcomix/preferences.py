@@ -161,6 +161,7 @@ Preferences = TypedDict('Preferences', {
     'pageselector width': int,
     'library cover size': int,
     'last library collection': "int | None",
+    'shelf collection': "int | None",
     'lib window height': int,
     'lib window width': int,
     'lib sort key': int,
@@ -324,6 +325,10 @@ _DEFAULTS: Preferences = {
     'pageselector width': -1,
     'library cover size': 125,
     'last library collection': None,
+    # The collection the main window shows while no book is open, as
+    # picked from its covers' menu; None shows "Recent", or every book
+    # where nothing has been read.
+    'shelf collection': None,
     'lib window height': 600,
     'lib window width': 500,
     'lib sort key': constants.SORT_PATH,
