@@ -11,6 +11,7 @@ import tempfile
 import zipfile
 import threading
 from collections.abc import Callable, Iterable, Iterator, Mapping, Sequence
+from typing import BinaryIO, TYPE_CHECKING
 
 from mcomix import comicinfo
 from mcomix import constants
@@ -19,6 +20,9 @@ from mcomix import portability
 from mcomix import process
 from mcomix import tools
 from mcomix.i18n import _
+
+if TYPE_CHECKING:
+    from PIL import Image
 
 
 #: What a PNG file starts with.
@@ -32,18 +36,47 @@ _WEBP_MAX_SIDE = 16383
 #: to compare, four bytes a pixel each.
 _WEBP_BYTES_PER_PIXEL = 16
 
+#: What each further frame of an animated PNG adds to that: every frame
+#: is held decoded, as RGBA, while the animation is encoded.
+_WEBP_BYTES_PER_FRAME = 4
 
-def _png_header(path: str) -> "tuple[int, int, int] | None":
-    """The width, height and bit depth of the PNG at <path>, or None
-    where it is no PNG."""
+
+def _png_header(path: str) -> "tuple[int, int, int, int] | None":
+    """The width, height, bit depth and frame count of the PNG at
+    <path>, or None where it is no PNG."""
     with open(path, 'rb') as file:
         head = file.read(33)
-    # The IHDR chunk comes first: length, type, width, height, depth.
-    if len(head) < 25 or not head.startswith(_PNG_SIGNATURE) \
-            or head[12:16] != b'IHDR':
-        return None
-    width, height = struct.unpack('>II', head[16:24])
-    return width, height, head[24]
+        # The IHDR chunk comes first: length, type, width, height, depth.
+        if len(head) < 25 or not head.startswith(_PNG_SIGNATURE) \
+                or head[12:16] != b'IHDR':
+            return None
+        width, height = struct.unpack('>II', head[16:24])
+        return width, height, head[24], _png_frames(file)
+
+
+def _png_frames(file: BinaryIO) -> int:
+    """How many frames the PNG <file> is read from holds: what its acTL
+    chunk says, which comes before the first IDAT, or 1."""
+    file.seek(len(_PNG_SIGNATURE))
+    while True:
+        chunk = file.read(8)
+        if len(chunk) < 8:
+            return 1
+        length, kind = struct.unpack('>I4s', chunk)
+        if kind in (b'IDAT', b'IEND'):
+            return 1
+        if kind == b'acTL':
+            data = file.read(4)
+            return max(1, struct.unpack('>I', data)[0]) \
+                if len(data) == 4 else 1
+        file.seek(length + 4, os.SEEK_CUR)
+
+
+def _webp_cost(width: int, height: int, frames: int) -> int:
+    """The bytes making a WebP of a PNG of <width> by <height> pixels
+    and <frames> frames costs."""
+    return width * height * (_WEBP_BYTES_PER_PIXEL
+                             + _WEBP_BYTES_PER_FRAME * (frames - 1))
 
 
 def webp_instead(path: str, directory: str, name: str) -> "str | None":
@@ -52,18 +85,25 @@ def webp_instead(path: str, directory: str, name: str) -> "str | None":
     writing nothing, where that would lose anything or gain nothing.
 
     Kept only where it is smaller than the PNG and decodes to the same
-    pixels, transparent ones included.  Left alone: a PNG of 16 bits a
-    channel (a WebP holds 8), an animated one, one with a gamma other
-    than sRGB's (a WebP has no place for it), and one wider or higher
-    than a WebP can be.  A colour profile and Exif go along; text a PNG
-    carries does not.
+    pixels, transparent ones included.  An animated PNG becomes an
+    animated WebP, kept where every frame shows the same pixels for as
+    long, to the millisecond a WebP counts in, and it plays as often:
+    there the colour under a wholly transparent pixel, which no one
+    sees, is not kept, since the WebP animation encoder cannot.  Left
+    alone: a PNG of 16 bits a channel (a WebP holds 8), one with a gamma
+    other than sRGB's (a WebP has no place for it), one wider or higher
+    than a WebP can be, an animated one whose first picture is no frame
+    of its animation, and one whose frames would take more than a
+    sixteenth of the memory to hold.  A colour profile and Exif go
+    along; text a PNG carries does not.
     """
     from PIL import Image, features
 
     header = _png_header(path)
     if header is None:
         return None
-    width, height, depth = header
+    width, height, depth, frames = header
+    memory = tools.physical_memory()
     if not features.check('webp'):
         why = 'this Pillow writes no WebP'
     elif depth > 8:
@@ -71,26 +111,51 @@ def webp_instead(path: str, directory: str, name: str) -> "str | None":
     elif max(width, height) > _WEBP_MAX_SIDE:
         why = 'it is %dx%d pixels, a WebP at most %d either way' % (
             width, height, _WEBP_MAX_SIDE)
+    elif frames > 1 and memory is not None and _webp_cost(
+            width, height, frames) > memory // tools.THREAD_MEMORY_SHARE:
+        why = 'its %d frames would take too much memory' % frames
     else:
         why = None
     if why is not None:
         _kept_a_png(path, why)
         return None
+    target = os.path.join(directory, name)
     with Image.open(path) as picture:
         gamma = picture.info.get('gamma')
-        if getattr(picture, 'is_animated', False):
-            why = 'it is animated'
+        if picture.info.get('default_image'):
+            why = 'its first picture is no frame of its animation'
         elif gamma is not None and abs(float(gamma) - 1 / 2.2) > 0.001:
             why = "its gamma, %s, is not sRGB's" % gamma
         if why is not None:
             _kept_a_png(path, why)
             return None
-        picture.load()
-        mode = 'RGBA' if picture.has_transparency_data else 'RGB'
-        pixels = picture.convert(mode)
         options = {key: picture.info[key]
                    for key in ('icc_profile', 'exif') if picture.info.get(key)}
-    target = os.path.join(directory, name)
+        if getattr(picture, 'n_frames', 1) > 1:
+            written = _webp_animation(picture, target, options)
+        else:
+            written = _webp_picture(picture, target, options)
+    try:
+        if os.path.getsize(target) >= os.path.getsize(path):
+            raise ValueError('no smaller')
+        with Image.open(target) as webp:
+            if not written(webp):
+                raise ValueError('not the same pixels')
+    except ValueError as reason:
+        os.remove(target)
+        _kept_a_png(path, 'the WebP was %s' % reason)
+        return None
+    return target
+
+
+def _webp_picture(picture: "Image.Image", target: str,
+                  options: "dict[str, bytes]"
+                  ) -> "Callable[[Image.Image], bool]":
+    """Write <picture>, a still PNG, to <target> as a lossless WebP;
+    answer with what tells whether a WebP read back is the same."""
+    picture.load()
+    mode = 'RGBA' if picture.has_transparency_data else 'RGB'
+    pixels = picture.convert(mode)
     # exact: the colour under a transparent pixel is kept as it is.
     # Lossless, quality is how hard the encoder tries.  At method 4,
     # 100 rather than Pillow's 80 makes the WebP of a page 0.6 % smaller
@@ -98,17 +163,54 @@ def webp_instead(path: str, directory: str, name: str) -> "str | None":
     # smaller again, takes sixteen times as long.
     pixels.save(target, 'WEBP', lossless=True, quality=100, method=4,
                 exact=True, **options)
-    try:
-        if os.path.getsize(target) >= os.path.getsize(path):
-            raise ValueError('no smaller')
-        with Image.open(target) as written:
-            if written.convert(mode).tobytes() != pixels.tobytes():
-                raise ValueError('not the same pixels')
-    except ValueError as reason:
-        os.remove(target)
-        _kept_a_png(path, 'the WebP was %s' % reason)
-        return None
-    return target
+
+    def same(webp: "Image.Image") -> bool:
+        return bool(webp.convert(mode).tobytes() == pixels.tobytes())
+    return same
+
+
+def _webp_animation(picture: "Image.Image", target: str,
+                    options: "dict[str, bytes]"
+                    ) -> "Callable[[Image.Image], bool]":
+    """Write <picture>, an animated PNG, to <target> as a lossless
+    animated WebP; answer with what tells whether a WebP read back has
+    the same frames, shown as long, and plays as often."""
+    frames = []
+    durations = []
+    for index in range(getattr(picture, 'n_frames', 1)):
+        picture.seek(index)
+        frames.append(picture.convert('RGBA'))
+        # An APNG counts in fractions of a second, a WebP in ms.
+        durations.append(round(picture.info.get('duration') or 0))
+    loop = picture.info.get('loop', 0)
+    frames[0].save(target, 'WEBP', save_all=True, append_images=frames[1:],
+                   duration=durations, loop=loop, lossless=True,
+                   quality=100, method=4, **options)
+
+    def same(webp: "Image.Image") -> bool:
+        if getattr(webp, 'n_frames', 1) != len(frames) \
+                or webp.info.get('loop', 0) != loop:
+            return False
+        for index, frame in enumerate(frames):
+            webp.seek(index)
+            # The frame says how long it is shown once it is loaded.
+            webp.load()
+            if webp.info.get('duration') != durations[index] \
+                    or _seen(webp) != _seen(frame):
+                return False
+        return True
+    return same
+
+
+def _seen(picture: "Image.Image") -> bytes:
+    """The RGBA pixels of <picture>, each wholly transparent one made
+    transparent black: what is seen of it."""
+    from PIL import Image
+
+    rgba = picture.convert('RGBA')
+    shown = rgba.getchannel('A').point(lambda alpha: 255 if alpha else 0)
+    return bytes(Image.composite(
+        rgba, Image.new('RGBA', rgba.size), shown).tobytes())
 
 
 def _kept_a_png(path: str, reason: str) -> None:
@@ -128,8 +230,9 @@ def webp_threads(paths: Iterable[str]) -> int:
         except OSError:
             continue
         if header is not None:
-            largest = max(largest, header[0] * header[1])
-    return tools.thread_count(0, largest * _WEBP_BYTES_PER_PIXEL)
+            width, height, _depth, frames = header
+            largest = max(largest, _webp_cost(width, height, frames))
+    return tools.thread_count(0, largest)
 
 
 class Cancelled(Exception):

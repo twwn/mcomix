@@ -64,7 +64,8 @@ The archive on disk is untouched until the changes are written.
 - The ComicInfo.xml MComix writes keeps its own name, whatever the list calls it.
 - With "Store PNG pages as lossless WebP when saving an archive", each PNG page is written as a WebP instead, its name ending in .webp: "03 - Batman 01.webp".
   - Lossless: a page becomes a WebP only where that decodes to exactly the same pixels and is smaller. The drawn and painted pages it was tried on took a quarter to three fifths less room; a page that would not shrink stays a PNG.
-  - Pages that WebP cannot hold exactly stay PNGs: 16 bits a channel, animated, wider or higher than 16383 pixels, or with a gamma other than sRGB's. A colour profile and Exif go along with the page.
+  - Pages that WebP cannot hold exactly stay PNGs: 16 bits a channel, wider or higher than 16383 pixels, or with a gamma other than sRGB's. A colour profile and Exif go along with the page.
+  - An animated PNG becomes an animated WebP where every frame shows the same pixels for as long, to the millisecond, and it plays as often; the colour under a wholly transparent pixel, which nothing shows, is not kept. It stays a PNG where its own picture is not a frame of the animation, or where its frames would take more than a sixteenth of the memory to hold at once.
   - Other formats are left as they are: a JPEG made a WebP again would lose more of the picture each time.
   - The pages are converted on all processors at once, as far as memory allows, and the save's progress counts them.
   - Some other comic readers and older devices cannot show WebP.

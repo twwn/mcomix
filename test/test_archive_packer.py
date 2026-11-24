@@ -5,6 +5,7 @@ them, and the files that came with them keep the names they had unless
 one of the pages has taken it.
 """
 
+import io
 import os
 import shutil
 import stat
@@ -21,6 +22,7 @@ from . import MComixTest, line_art_png, replace_held_once, sample_pages
 from mcomix import archive_packer
 from mcomix import constants
 from mcomix import log
+from mcomix import tools
 
 
 class PackerTest(MComixTest):
@@ -743,6 +745,55 @@ class WebpPagesTest(_PackingTest):
         with Image.open(webp) as written:
             self.assertEqual(profile, written.info.get('icc_profile'))
 
+    def _apng(self, name='animated.png', loop=2):
+        """An animated PNG of three frames of line art on transparency,
+        each moved a little, shown for 100 ms, a 30th of a second and a
+        quarter of one; and its frames."""
+        from PIL import Image
+        frames = []
+        for shift in (0, 4, 8):
+            with Image.open(io.BytesIO(line_art_png(mode='RGBA'))) as frame:
+                frames.append(frame.transform(
+                    frame.size, Image.Transform.AFFINE, (1, 0, shift, 0, 1, 0),
+                    fillcolor=(255, 255, 255, 0)))
+        path = os.path.join(self.tmp_dir, name)
+        frames[0].save(path, save_all=True, append_images=frames[1:],
+                       duration=[100, 1000 / 30, 250], loop=loop)
+        return path, frames
+
+    def test_an_animated_png_becomes_an_animated_webp(self):
+        """Every frame shows what it showed, for as long to the
+        millisecond, and the animation plays as often."""
+        from PIL import Image
+        png, frames = self._apng()
+        webp = archive_packer.webp_instead(png, self.work, 'page.webp')
+        self.assertIsNotNone(webp)
+        self.assertLess(os.path.getsize(webp), os.path.getsize(png))
+        with Image.open(webp) as written:
+            self.assertEqual(3, written.n_frames)
+            self.assertEqual(2, written.info['loop'])
+            for index, frame in enumerate(frames):
+                written.seek(index)
+                written.load()
+                self.assertEqual([100, 33, 250][index],
+                                 written.info['duration'])
+                self.assertEqual(archive_packer._seen(frame),
+                                 archive_packer._seen(written))
+
+    def test_an_animation_too_large_to_hold_stays_a_png(self):
+        """Its frames, counted from its acTL chunk, would take more
+        than a sixteenth of the memory, decoded all at once."""
+        png, frames = self._apng()
+        self.enterContext(unittest.mock.patch.object(
+            tools, 'physical_memory',
+            return_value=archive_packer._webp_cost(240, 320, 2) * 16))
+        with self.assertLogs('mcomix', 'DEBUG') as logs:
+            self.assertIsNone(archive_packer.webp_instead(
+                png, self.work, 'page.webp'))
+        self.assertIn('its 3 frames would take too much memory',
+                      '\n'.join(logs.output))
+        self.assertEqual([], os.listdir(self.work))
+
     def test_what_a_webp_cannot_hold_stays_a_png(self):
         from PIL import Image
         deep = os.path.join(self.tmp_dir, 'deep.png')
@@ -757,10 +808,12 @@ class WebpPagesTest(_PackingTest):
             zlib.crc32(chunk).to_bytes(4, 'big')
         with open(gamma, 'wb') as file:
             file.write(data[:33] + gama + data[33:])
+        # An APNG whose own picture is shown only where APNG is not.
         animated = os.path.join(self.tmp_dir, 'animated.png')
         frames = [Image.new('RGB', (32, 32), colour)
-                  for colour in ('red', 'blue')]
-        frames[0].save(animated, save_all=True, append_images=frames[1:])
+                  for colour in ('green', 'red', 'blue')]
+        frames[0].save(animated, save_all=True, append_images=frames[1:],
+                       default_image=True)
         jpeg = os.path.join(self.tmp_dir, 'page.jpg')
         Image.new('RGB', (32, 32), 'white').save(jpeg)
         tall = os.path.join(self.tmp_dir, 'tall.png')
@@ -769,7 +822,7 @@ class WebpPagesTest(_PackingTest):
         # found PNGs; a page that is no PNG is not one asked about.
         for path, reason in ((deep, '16 bits a channel'),
                              (gamma, "gamma, 1.0, is not sRGB's"),
-                             (animated, 'it is animated'),
+                             (animated, 'no frame of its animation'),
                              (tall, '8x16384 pixels'),
                              (jpeg, None)):
             with self.subTest(os.path.basename(path)), \
