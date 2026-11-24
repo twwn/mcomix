@@ -39,6 +39,7 @@ from mcomix import openwith_menu
 from mcomix import tools
 from mcomix.library import backend_types
 from mcomix.library import book_properties
+from mcomix.library import webp_dialog
 from mcomix.library.pixbuf_cache import get_pixbuf_cache
 from mcomix.i18n import _
 from mcomix.dialog import Response
@@ -342,6 +343,8 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable, LibraryPart):
              self._show_selected_in_folder),
             # Not the collections' "Re_name": N is "Mark as u_nread"'s here.
             ('rename', _('R_ename'), self.rename_selected),
+            ('store-webp', _('Store PNG pages as _WebP...'),
+             self.store_pages_as_webp),
             # Not the File menu's "Proper_ties": its letter is taken here
             # in several languages.
             ('properties', _('_Properties'), self.show_properties),
@@ -381,7 +384,7 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable, LibraryPart):
         entries = self._menu_entries()
         for heading, group in ((_('Library books'), entries[0:4]),
                                (None, entries[4:6]), (None, entries[6:7]),
-                               (None, entries[7:12]), (None, entries[12:16])):
+                               (None, entries[7:12]), (None, entries[12:17])):
             section = Gio.Menu()
             for name, label, _handler in group:
                 item = widgets.menu_item(label, 'books.' + name,
@@ -1600,7 +1603,7 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable, LibraryPart):
                        'mark-read',
                        'mark-unread', 'remove-from-library',
                        'completely-remove', 'delete-permanently',
-                       'properties'):
+                       'store-webp', 'properties'):
             self._set_sensitive(action, books_selected)
 
         manages = self._library.manages
@@ -1652,6 +1655,15 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable, LibraryPart):
         """Run <command> once for each book selected."""
         for item in self._selected_items():
             command.execute_on_book(item.path, self._library.set_status_message)
+
+    def store_pages_as_webp(self, *args: object) -> None:
+        """Offer to store the PNG pages of the selected books as WebP:
+        see mcomix.library.webp_dialog."""
+        webp_dialog.offer(
+            self._library.window,
+            [item.path for item in self._selected_items()],
+            self._library.main_window.filehandler.get_path_to_base,
+            self._library.backend.book_rewritten)
 
     def show_properties(self, *args: object) -> None:
         """Describe the selected books, in a window of their own.

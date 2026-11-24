@@ -22,9 +22,10 @@ import PIL.Image
 from gi.repository import Gdk, GdkPixbuf, Gio, GLib, Gtk, Pango
 
 from . import (FolderDialogStub, MComixTest, NORMAL_ZIP, descendants,
-               get_testfile_path, mounted_at, pixel, pump, solid_pixbuf,
-               visible_prompts, wait_for)
+               get_testfile_path, line_art_png, mounted_at, pixel, pump,
+               solid_pixbuf, visible_prompts, wait_for)
 
+from mcomix import archive_packer
 from mcomix import bookmark_backend
 from mcomix import bookmark_menu_item
 from mcomix import column_list
@@ -38,6 +39,7 @@ from mcomix import page_marks
 from mcomix import page_rotations
 from mcomix import reading_directions
 from mcomix import thumbnail_list
+from mcomix import webp_books
 from mcomix import widgets
 from mcomix.dialog import Response
 from mcomix.library import backend_types
@@ -49,6 +51,7 @@ from mcomix.library import main_dialog
 from mcomix.library import pixbuf_cache
 from mcomix.library import relocate_dialog
 from mcomix.library import watchlist
+from mcomix.library import webp_dialog
 from mcomix.preferences import prefs
 from mcomix import tools
 
@@ -2603,3 +2606,124 @@ class RelocateBooksTest(_LibraryWindowTest):
             prompt, None, prompt._folder_chosen)
         shown, = chooser.return_value.set_initial_folder.call_args.args
         self.assertEqual(self.new, shown.get_path())
+
+
+class StorePagesAsWebpTest(_LibraryWindowTest):
+
+    """"Store PNG pages as WebP..." on the books selected, from the
+    question it asks to the summary it ends with."""
+
+    def setUp(self):
+        super().setUp()
+        self.dialog = self._open_all()
+        self.book = os.path.join(self.tmp_dir, 'drawn.cbz')
+        with zipfile.ZipFile(self.book, 'w') as book:
+            book.writestr('01.png', line_art_png())
+            book.writestr('02.png', line_art_png(size=(200, 300)))
+
+    def _store(self, *paths, response=Response.OK, done=True):
+        """Hold <paths> in the library, select every cover, give the
+        command and answer its question with <response>; answer with
+        the progress dialog, once it is <done> where that is True, or
+        None where there is none."""
+        self._held(self.dialog, *paths)
+        self.dialog.book_area._covers.select_all()
+        self.dialog.book_area.store_pages_as_webp()
+        pump()
+        prompt, = visible_prompts()
+        prompt.response(response)
+        pump()
+        progress = [window for window in Gtk.Window.list_toplevels()
+                    if isinstance(window, webp_dialog._ProgressDialog)]
+        if not progress:
+            return None
+        self.addCleanup(progress[0].destroy)
+        if not done:
+            return progress[0]
+        self.assertTrue(wait_for(
+            lambda: progress[0].finished, seconds=20))
+        return progress[0]
+
+    @staticmethod
+    def _names(path):
+        with zipfile.ZipFile(path) as book:
+            return sorted(book.namelist())
+
+    def test_the_pages_are_stored_as_webp(self):
+        progress = self._store(self.book)
+        self.assertEqual(['01.webp', '02.webp'], self._names(self.book))
+        self.assertTrue(progress._status.get_text().startswith(
+            '1 book stored with WebP pages'))
+        stored = self.dialog.backend.get_book_by_path(self.book)
+        self.assertEqual(os.path.getsize(self.book), stored.size)
+
+    def test_what_is_kept_by_a_page_name_follows_it(self):
+        self._held(self.dialog, self.book)
+        backend = self.dialog.backend
+        backend.set_chosen_cover(self.book, '02.png')
+        backend.get_book_by_path(self.book).set_last_read_page(
+            2, member='02.png')
+        self._store(self.book)
+        self.assertEqual('02.webp', backend.get_chosen_cover(self.book))
+        self.assertEqual('02.webp', backend.get_book_by_path(
+            self.book).get_last_read_member())
+
+    def test_saying_no_writes_nothing(self):
+        with open(self.book, 'rb') as book:
+            before = book.read()
+        self.assertIsNone(self._store(self.book, response=Response.CANCEL))
+        with open(self.book, 'rb') as book:
+            self.assertEqual(before, book.read())
+
+    def test_the_book_open_in_the_main_window_is_left_alone(self):
+        """The main window reads NORMAL_ZIP, which has PNG pages."""
+        with open(NORMAL_ZIP, 'rb') as book:
+            before = book.read()
+        progress = self._store(NORMAL_ZIP, self.book)
+        with open(NORMAL_ZIP, 'rb') as book:
+            self.assertEqual(before, book.read())
+        self.assertIn('1 book left as it was: open in the main window',
+                      progress._status.get_text())
+
+    def test_a_stop_keeps_the_book_done_and_counts_the_rest(self):
+        second = os.path.join(self.tmp_dir, 'second.cbz')
+        shutil.copy(self.book, second)
+        with open(second, 'rb') as book:
+            before = book.read()
+        real = webp_books.convert
+
+        def first_then_stop(path, stop, progress):
+            converted = real(path, stop, progress)
+            stop.set()
+            return converted
+        self.enterContext(unittest.mock.patch.object(
+            webp_books, 'convert', first_then_stop))
+        progress = self._store(self.book, second)
+        done = [path for path in (self.book, second)
+                if self._names(path) == ['01.webp', '02.webp']]
+        self.assertEqual(1, len(done))
+        untouched = second if done == [self.book] else self.book
+        with open(untouched, 'rb') as book:
+            self.assertEqual(before, book.read())
+        self.assertIn('Stopped with 1 book not yet looked at',
+                      progress._status.get_text())
+
+    def test_closing_the_window_stops_and_shows_the_summary(self):
+        started = threading.Event()
+
+        def until_stopped(path, stop, progress):
+            started.set()
+            stop.wait(10)
+            raise archive_packer.Cancelled()
+        self.enterContext(unittest.mock.patch.object(
+            webp_books, 'convert', until_stopped))
+        second = os.path.join(self.tmp_dir, 'second.cbz')
+        shutil.copy(self.book, second)
+        progress = self._store(self.book, second, done=False)
+        self.assertTrue(started.wait(10))
+        progress.close()
+        self.assertTrue(wait_for(
+            lambda: progress.finished, seconds=10))
+        self.assertTrue(progress.get_visible())
+        self.assertIn('Stopped with 2 books not yet looked at',
+                      progress._status.get_text())

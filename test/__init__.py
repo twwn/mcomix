@@ -1322,6 +1322,21 @@ def session_tmp_dir():
     return _SESSION_TMPDIR
 
 
+def line_art_png(size=(240, 320), mode='RGB', **options):
+    """The bytes of a PNG of lines on white, which compresses as a page
+    of line art does: its lossless WebP is smaller.  <options> go to
+    Pillow's save()."""
+    import io
+    from PIL import Image, ImageDraw
+    picture = Image.new(mode, size, 'white')
+    draw = ImageDraw.Draw(picture)
+    for step in range(0, size[0], 12):
+        draw.line((step, 0, size[0] - step, size[1]), fill='black', width=2)
+    buffer = io.BytesIO()
+    picture.save(buffer, 'PNG', **options)
+    return buffer.getvalue()
+
+
 # Helper to get path to testsuite sample files.
 
 def sample_pages(count=3):

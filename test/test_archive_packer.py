@@ -16,7 +16,7 @@ import unittest.mock
 import zipfile
 import xml.etree.ElementTree as ElementTree
 
-from . import MComixTest, replace_held_once, sample_pages
+from . import MComixTest, line_art_png, replace_held_once, sample_pages
 
 from mcomix import archive_packer
 from mcomix import constants
@@ -686,15 +686,10 @@ class StoppingTest(_PackingTest):
 
 
 
-def _drawing(path, size=(240, 320), mode='RGB', **options):
-    """A PNG at <path> of lines on white, which compresses as a page of
-    line art does; answer its path."""
-    from PIL import Image, ImageDraw
-    picture = Image.new(mode, size, 'white')
-    draw = ImageDraw.Draw(picture)
-    for step in range(0, size[0], 12):
-        draw.line((step, 0, size[0] - step, size[1]), fill='black', width=2)
-    picture.save(path, **options)
+def _drawing(path, **options):
+    """A PNG at <path> of line_art_png(<options>); answer its path."""
+    with open(path, 'wb') as file:
+        file.write(line_art_png(**options))
     return path
 
 

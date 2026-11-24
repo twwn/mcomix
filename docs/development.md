@@ -75,6 +75,7 @@ Class or helper | For
 `PageStoreCases` | The cases every store of what is kept per page shares (moved books, moved folders, renamed pages): mix it into the test of such a store and give it `store`, `_keep()` and `_kept()`.
 `session_tmp_dir()` | A folder that lasts the whole run, for what goes on writing after its test.
 `sample_pages(count)` | Paths of up to three pictures to pack or open.
+`line_art_png(size, mode, **options)` | The bytes of a PNG of line art, whose lossless WebP is smaller.
 `described_book(path, comicinfo)` | A CBZ of two of them, with a `ComicInfo.xml` where one is given.
 `solid_pixbuf(width, height, colour, has_alpha)` | A pixbuf all of one colour, `0xRRGGBBAA`.
 `pixel(pixbuf, x, y)` | One pixel's channels.

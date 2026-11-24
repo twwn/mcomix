@@ -15,7 +15,7 @@ import os
 import stat
 import threading
 
-from collections.abc import Iterable, Iterator, Sequence
+from collections.abc import Iterable, Iterator, Mapping, Sequence
 from typing import Any, TYPE_CHECKING
 
 from mcomix import archive_tools
@@ -515,6 +515,30 @@ class _LibraryBackend:
         cover: str | None = self.fetchone(
             'select cover from Book where path = ?', (path,))
         return cover
+
+    def book_rewritten(self, path: str) -> None:
+        """The book at <path> was written again by MComix: keep the
+        size the library sorts it by."""
+        try:
+            size = os.stat(path).st_size
+        except OSError:
+            return
+        self.execute('update Book set size = ? where path = ?',
+                     (size, os.path.abspath(path)))
+
+    def rename_last_read_member(self, path: str,
+                                renamed: "Mapping[str, str]") -> None:
+        """Follow the page the book at <path> was left at to the name
+        <renamed> gives it now that the archive was written again; a
+        page it does not name keeps what was remembered."""
+        book = self.get_book_by_path(path)
+        if book is None:
+            return
+        member = book.get_last_read_member()
+        if member is None or renamed.get(member, member) == member:
+            return
+        self.execute('update recent set member = ? where book = ?',
+                     (renamed[member], book.id))
 
     def set_chosen_cover(self, path: str, member: str | None) -> bool:
         """Make the picture called <member> within the book at <path>

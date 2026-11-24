@@ -142,6 +142,13 @@ class Cancelled(Exception):
     """
 
 
+class Unchanged(Exception):
+
+    """A write that was to store PNG pages as WebP found none worth it,
+    and left the archive as it was: see write_archive()'s
+    <only_converted>."""
+
+
 def check_room_for(files: "Iterable[str]", archive_path: str) -> None:
     """Raise ENOSPC if <files> will not fit beside <archive_path>.
 
@@ -219,7 +226,9 @@ def write_archive(archive_path: str, image_files: Sequence[str],
                   page_names: "Mapping[str, str] | None" = None,
                   comment_names: "Mapping[str, str] | None" = None,
                   waiting: "Callable[[Packer], None] | None" = None,
-                  webp_pages: bool = False
+                  webp_pages: bool = False,
+                  add_comic_info: bool = True,
+                  only_converted: bool = False
                   ) -> dict[str, str]:
     """Write an archive of those files at <archive_path>, and answer
     with the name each page was written under, by its path.
@@ -241,6 +250,13 @@ def write_archive(archive_path: str, image_files: Sequence[str],
 
     <webp_pages> has the PNG pages written as lossless WebPs where
     webp_instead() finds that loses nothing and saves room.
+    <only_converted> then writes nothing where no page became one, and
+    raises Unchanged: an archive rewritten only to store its pages as
+    WebP is not rewritten for nothing.
+
+    <add_comic_info> False carries what the book holds as it is,
+    without writing or updating a ComicInfo.xml: for a rewrite that
+    changes no page and should add nothing the reader did not ask for.
 
     <waiting>, where it is given, is called with the Packer once it
     has started, and returns when it likes: what it does in the
@@ -248,7 +264,8 @@ def write_archive(archive_path: str, image_files: Sequence[str],
     stop the Packer - is the caller's.  The Packer is waited for after
     it returns either way.
 
-    Raises Cancelled where the Packer was stopped, and OSError if
+    Raises Cancelled where the Packer was stopped, Unchanged as said
+    above, and OSError if
     anything on the way fails, having left nothing behind in both: everything here writes to the directory the archive is in -
     the temporary file, the rename, the permissions - and any of it can.
     """
@@ -273,7 +290,8 @@ def write_archive(archive_path: str, image_files: Sequence[str],
     written = False
     try:
         comic_info = _add_comic_info(image_files, carried_files,
-                                     os.path.dirname(archive_path))
+                                     os.path.dirname(archive_path)) \
+            if add_comic_info else None
         if comic_info is not None:
             comic_info_path = comic_info[0]
         check_room_for(list(image_files) + list(comment_files)
@@ -291,6 +309,7 @@ def write_archive(archive_path: str, image_files: Sequence[str],
                         page_names=page_names,
                         comment_names=comment_names,
                         webp_pages=webp_pages,
+                        only_converted=only_converted,
                         comic_info=comic_info)
         packer.pack()
         try:
@@ -303,6 +322,8 @@ def write_archive(archive_path: str, image_files: Sequence[str],
         # there to keep.
         if packer.stopped:
             raise Cancelled()
+        if packer.unchanged:
+            raise Unchanged()
         if not packed:
             raise OSError('the archive could not be packed')
 
@@ -659,6 +680,7 @@ class Packer:
                  page_names: "Mapping[str, str] | None" = None,
                  comment_names: "Mapping[str, str] | None" = None,
                  webp_pages: bool = False,
+                 only_converted: bool = False,
                  comic_info: "tuple[str, bytes | None] | None" = None
                  ) -> None:
         """Setup a Packer object to create an archive at <archive_path>.
@@ -696,6 +718,8 @@ class Packer:
         parallel, and written as that where webp_instead() keeps it,
         its name ending in .webp; a name the reader gave it too.  The
         WebPs are made in a folder beside the archive, removed after.
+        <only_converted> has nothing written where no page became a
+        WebP; unchanged then says so.
 
         <comic_info> is the ComicInfo.xml written for the archive, and
         the one it was made from: a page made a WebP has another size,
@@ -710,6 +734,8 @@ class Packer:
         self._base_name = base_name
         self._archive_type = archive_type
         self._webp_pages = webp_pages
+        self._only_converted = only_converted
+        self._unchanged = False
         # The WebP each page's file was made into, by the file's path.
         self._webps: dict[str, str] = {}
         self._comic_info = comic_info
@@ -753,6 +779,12 @@ class Packer:
     def stopped(self) -> bool:
         """Whether stop() was called."""
         return self._stop.is_set()
+
+    @property
+    def unchanged(self) -> bool:
+        """Whether nothing was written because no page became a WebP
+        (<only_converted>)."""
+        return self._unchanged
 
     def progress(self) -> tuple[int, int]:
         """How many files are written, out of how many; (0, 0) before
@@ -868,6 +900,10 @@ class Packer:
                 webp_directory = tempfile.mkdtemp(
                     prefix='tmp.webp.', dir=os.path.dirname(self._archive_path))
                 self._make_webps(webp_directory)
+                if self._only_converted and not self._webps \
+                        and not self._stop.is_set():
+                    self._unchanged = True
+                    return
                 if self._webps and self._comic_info is not None:
                     self._rewrite_comic_info(*self._comic_info)
             files = list(self._files_to_pack())

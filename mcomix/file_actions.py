@@ -67,6 +67,32 @@ def follow_book(current_file: str, target: str) -> None:
     archive_password.follow(old, new)
 
 
+def follow_pages(book: str, renamed: "Mapping[str, str]") -> None:
+    """Keep what is kept by the name of a page within the archive at
+    <book>, which was just written again: <renamed> maps the name each
+    page had to the one it has now, and holds every page the archive
+    has kept.
+
+    That is the marks to skip a page or show it alone, the turn it was
+    given, its bookmarks, the cover chosen for the library and the page
+    the book was left at.  Left where they were, they were lost on the
+    next opening - and after a second write found again, by whichever
+    page had come to be called that.
+    """
+    book = os.path.abspath(book)
+    pages = set(renamed.values())
+    page_marks.rename_pages(book, renamed, pages)
+    page_rotations.rename_pages(book, renamed, pages)
+    bookmark_backend.BookmarksStore.rename_members(book, renamed)
+    library = backend.LibraryBackend()
+    cover = library.get_chosen_cover(book)
+    if cover is not None and renamed.get(cover) != cover:
+        # Back to the guessed one where the page chosen was taken
+        # out: its name is the next page's to be given.
+        library.set_chosen_cover(book, renamed.get(cover))
+    library.rename_last_read_member(book, renamed)
+
+
 def _same_file_recased(path: str, target: str) -> bool:
     """Whether <target> is <path> itself under a name that differs only
     in case, which is what a file system that ignores case answers."""
@@ -930,28 +956,14 @@ class FileActions:
         file to its name in the new archive.
 
         A save numbers the pages anew, so nearly all of them are called
-        something else afterwards, and a good deal is kept by a page's
-        name within its archive: the marks to skip it or show it alone,
-        the turn it was given, its bookmarks, and the cover chosen for
-        the library.  Left where they were, they were lost on the next
-        opening - and after a second save they were found again, by
-        whichever page had come to be called that.
+        something else afterwards: follow_pages() takes what is kept by
+        a page's name along.
         """
         handler = self._window.filehandler
         renamed = {handler.member_of(page): name
                    for page, name in written.items()}
         handler.members_written(written)
-        book = os.path.abspath(path)
-        pages = set(written.values())
-        page_marks.rename_pages(book, renamed, pages)
-        page_rotations.rename_pages(book, renamed, pages)
-        bookmark_backend.BookmarksStore.rename_members(book, renamed)
-        library = backend.LibraryBackend()
-        cover = library.get_chosen_cover(book)
-        if cover is not None and renamed.get(cover) != cover:
-            # Back to the guessed one where the page chosen was taken
-            # out: its name is the next page's to be given.
-            library.set_chosen_cover(book, renamed.get(cover))
+        follow_pages(path, renamed)
 
     def undo(self, *args: object) -> bool:
         """Put the pages back as they were before the last change."""
