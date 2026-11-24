@@ -1063,6 +1063,25 @@ class MainWindowTest(MComixTest):
         self.assertEqual(self._selected_images(), [0],
                          'the page came back without its outline')
 
+    def test_the_outline_waits_for_the_page_it_belongs_to(self):
+        """The page widgets show the page turned from until the new one
+        is drawn, from an idle; outlined at the turn, the last page
+        picked out was outlined round the page End was pressed on."""
+        self._ready()
+        last = self.window.imagehandler.get_number_of_pages()
+        self.window.select_page(last)
+        self.window.select_page(1)
+        self.window.last_page()
+        self.assertEqual(self._selected_images(), [],
+                         'the page turned from was outlined')
+        self._pump()
+        self.assertEqual(self._selected_images(), [0])
+        self.window.first_page()
+        self.assertEqual(self._selected_images(), [],
+                         'the page turned from was outlined')
+        self._pump()
+        self.assertEqual(self._selected_images(), [0])
+
     def test_closing_the_book_puts_every_picked_out_page_back(self):
         self._ready()
         self.window.select_page(1)
