@@ -578,6 +578,22 @@ class WriteArchiveTest(_PackingTest):
             os.chmod(self.archive, stat.S_IREAD | stat.S_IWRITE)
         self.assertEqual(['packed.cbz'], os.listdir(self.directory))
 
+    @unittest.skipIf(sys.platform == 'win32',
+                     'a name this long under the test folder passes MAX_PATH')
+    def test_a_book_whose_name_is_nearly_as_long_as_a_name_can_be(self):
+        """The new archive was written as mcomix-tmp.<random>.<the
+        book's name>, 20 bytes past the book's own name: past the 255
+        a file system allows, so the save failed with "File name too
+        long" over a book that was there."""
+        self.archive = os.path.join(self.directory,
+                                    '"%s".cbz' % ('x' * 240))
+        self._write(pages=self.pages[:1])
+        self._write()
+        self.assertEqual([os.path.basename(self.archive)],
+                         os.listdir(self.directory))
+        with zipfile.ZipFile(self.archive) as archive:
+            self.assertEqual(len(self.pages) + 1, len(archive.namelist()))
+
     def test_the_old_archive_stays_when_the_permissions_cannot_be_set(self):
         """The mode was set once the new archive had replaced the old
         one, so a failure there reported a save that had not happened

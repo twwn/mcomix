@@ -202,7 +202,7 @@ def is_archive_file(path: str) -> bool:
 
 #: How the files MComix writes beside an archive while it writes it
 #: again begin, such as the new archive under a name of its own until it
-#: takes the old one's place.  That one ends as the archive's name does,
+#: takes the old one's place.  That one ends in the archive's extension,
 #: since 7z and rar tell the format to write by it.
 WORKING_PREFIX = 'mcomix-tmp.'
 

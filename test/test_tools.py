@@ -197,6 +197,16 @@ class TestAtomicWrite(unittest.TestCase):
             self.assertEqual(file.read(), b'old')
         self.assertListEqual(os.listdir(self.tmp_dir), ['preferences.conf'])
 
+    @unittest.skipIf(sys.platform == 'win32',
+                     'a name this long under the test folder passes MAX_PATH')
+    def test_a_name_nearly_as_long_as_a_name_can_be(self) -> None:
+        # The temporary file began with the whole name, which took it
+        # past the 255 bytes a file system allows a name.
+        self.path = os.path.join(self.tmp_dir, 'x' * 250)
+        with tools.atomic_write(self.path) as file:
+            file.write('new')
+        self.assertListEqual(os.listdir(self.tmp_dir), ['x' * 250])
+
     def test_a_file_held_open_for_a_moment_is_still_written(self) -> None:
         """Windows refuses to replace a file something has open, and a
         virus scanner opens the file just written: the preferences, the

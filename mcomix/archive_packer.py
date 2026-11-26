@@ -475,8 +475,11 @@ def write_archive(archive_path: str, image_files: Sequence[str],
             comic_info_path = comic_info[0]
         check_room_for(list(image_files) + list(comment_files)
                        + list(carried_files), archive_path)
+        # Ending as the archive's name does, which 7z and rar tell the
+        # format by, and no longer: a book's name may take nearly all
+        # of the 255 bytes a file system allows one.
         fd, tmp_path = tempfile.mkstemp(
-            suffix='.%s' % os.path.basename(archive_path),
+            suffix=os.path.splitext(archive_path)[1],
             prefix=archive_tools.WORKING_PREFIX,
             dir=os.path.dirname(archive_path))
         # Close the open handle; the writing is the packer's.

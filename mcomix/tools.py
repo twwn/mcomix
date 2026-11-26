@@ -624,6 +624,21 @@ def replaced_path(path: str) -> str:
     return path
 
 
+#: How much of a file's name a temporary file beside it starts with.
+_TEMPORARY_STEM = 40
+
+
+def temporary_prefix(path: str) -> str:
+    """The start of the name of a temporary file to be renamed to
+    <path>: as much of its name as tells what it is for.
+
+    Not the whole name: most file systems allow a name 255 bytes, and
+    a book's name can take nearly all of them, which the few letters
+    a temporary name adds would then take past the limit.
+    """
+    return os.path.basename(path)[:_TEMPORARY_STEM] + '.'
+
+
 @contextlib.contextmanager
 def atomic_write(path: str, binary: bool = False) -> "Iterator[IO[Any]]":  # type: ignore[explicit-any]  # the mode decides whether it is text or bytes
     """ Context manager that yields a file object for writing to <path>.
@@ -639,7 +654,7 @@ def atomic_write(path: str, binary: bool = False) -> "Iterator[IO[Any]]":  # typ
     path = replaced_path(path)
     directory = os.path.dirname(path) or os.curdir
     fd, temp_path = tempfile.mkstemp(dir=directory,
-                                     prefix=os.path.basename(path) + '.',
+                                     prefix=temporary_prefix(path),
                                      suffix='.tmp')
     try:
         with (os.fdopen(fd, 'wb') if binary

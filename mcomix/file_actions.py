@@ -1211,7 +1211,7 @@ class FileActions:
         try:
             handle, partial = tempfile.mkstemp(
                 dir=os.path.dirname(final) or os.curdir,
-                prefix=os.path.basename(final) + '.', suffix='.tmp')
+                prefix=tools.temporary_prefix(final), suffix='.tmp')
             os.close(handle)
             shutil.copy2(file_path, partial)
             # Windows refuses for a moment while something reads the
