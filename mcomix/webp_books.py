@@ -13,14 +13,18 @@ what it answers with is the caller's to bring to the stores kept by a
 page's name (file_actions.follow_pages()), on the main thread.
 """
 
+import contextlib
+import errno
 import os
 import tempfile
 import threading
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from mcomix import archive_packer
 from mcomix import archive_tools
+from mcomix import i18n
 from mcomix import image_tools
+from mcomix import log
 from mcomix import tools
 from mcomix.archive import archive_base
 from mcomix.archive import password as archive_password
@@ -34,6 +38,13 @@ _UNPACKING = 0.2
 
 #: How often the progress of the writing is passed on, in seconds.
 _TICK = 0.1
+
+#: The errors of unpacking that say the disk or the system failed, and
+#: not the file being unpacked: a book that meets one is not written,
+#: where one with a file that cannot be read is written without it.
+_NOT_THE_FILE = frozenset((
+    errno.ENOSPC, errno.EDQUOT, errno.EACCES, errno.EPERM, errno.EROFS,
+    errno.EIO, errno.ENAMETOOLONG, errno.EMFILE, errno.ENFILE))
 
 
 class Skipped(Exception):
@@ -53,6 +64,9 @@ class Converted:
     #: The archive's size in bytes before and after.
     before: int
     after: int
+    #: The files within the archive that could not be read, and so were
+    #: left out of it, by name, to why.
+    left_out: dict[str, str] = field(default_factory=dict)
 
 
 def _ignore_progress(done: float) -> None:
@@ -67,6 +81,10 @@ def convert(path: str, stop: threading.Event,
     For a thread of its own: it unpacks the whole book and encodes each
     PNG page.  <stop>, once set, stops it before the next file, and
     <progress> is called with how much of the book is done, from 0 to 1.
+
+    A file in the archive that cannot be read, being damaged, is left
+    out of it, and named in what is answered: the rest of the book is
+    not lost with it.
 
     Raises Skipped for a book it leaves alone, archive_packer.Cancelled
     where <stop> was set, and OSError where reading or writing failed;
@@ -88,7 +106,8 @@ def convert(path: str, stop: threading.Event,
                                  dir=archive_packer.working_folder())
     try:
         try:
-            pages, others = _unpack(archive, directory, stop, progress)
+            pages, others, left_out = _unpack(archive, directory, stop,
+                                              progress)
         finally:
             archive.close()
 
@@ -114,9 +133,13 @@ def convert(path: str, stop: threading.Event,
         except archive_packer.Unchanged:
             raise Skipped(_('no page smaller as WebP')) from None
         progress(1.0)
+        for name, why in left_out.items():
+            log.warning('Left "%s" out of "%s": it could not be read: %s',
+                        i18n.to_display_string(name),
+                        i18n.to_display_string(path), why)
         return Converted({_member(page_files[file]): _member(name)
                           for file, name in written.items()},
-                         before, os.stat(path).st_size)
+                         before, os.stat(path).st_size, left_out)
     finally:
         tools.remove_tree(directory)
 
@@ -130,9 +153,15 @@ def _member(name: str) -> str:
 def _unpack(archive: archive_base.BaseArchive,
             directory: str, stop: threading.Event,
             progress: Callable[[float], None]
-            ) -> tuple[list[str], list[str]]:
+            ) -> tuple[list[str], list[str], dict[str, str]]:
     """Unpack everything <archive> holds into <directory>, and answer
-    with the names of its pages, sorted, and of everything else.
+    with the names of its pages, sorted, of everything else, and of the
+    files that could not be read, to why.
+
+    Where unpacking the whole archive fails, each file not yet out is
+    unpacked by itself, so that one damaged file costs only itself.  A
+    failure that is the disk's and not the file's (_NOT_THE_FILE) fails
+    the book instead.
 
     The library never asks for a password, and neither does this: an
     encrypted book is skipped.  So is one with archives inside it, which
@@ -152,26 +181,63 @@ def _unpack(archive: archive_base.BaseArchive,
             if not any(os.path.splitext(name)[1].lower() == '.png'
                        for name in pages):
                 raise Skipped(_('no PNG pages'))
-            for count, _name in enumerate(
-                    archive.iter_extract(names, directory), start=1):
+            left_out: dict[str, str] = {}
+            done: set[str] = set()
+
+            def unpacked(name: str) -> None:
                 if stop.is_set():
                     raise archive_packer.Cancelled()
-                progress(_UNPACKING * count / len(names))
+                done.add(name)
+                progress(_UNPACKING * len(done) / len(names))
+
+            try:
+                for name in archive.iter_extract(names, directory):
+                    unpacked(name)
+            except (Skipped, archive_packer.Cancelled):
+                raise
+            except Exception as error:
+                _raise_unless_the_file(error, withheld.wanted)
+                for name in names:
+                    if name in done:
+                        continue
+                    try:
+                        archive.extract(name, directory)
+                    except Exception as error:
+                        _raise_unless_the_file(error, withheld.wanted)
+                        left_out[name] = str(error)
+                    unpacked(name)
         except (Skipped, archive_packer.Cancelled):
             raise
         except Exception as error:
             if withheld.wanted:
                 raise Skipped(_('encrypted')) from error
+            if isinstance(error, OSError):
+                # A full disk, say, told as the system tells it.
+                raise
             raise OSError(str(error)) from error
     if withheld.wanted:
         raise Skipped(_('encrypted'))
-    missing = [name for name in names
-               if not os.path.isfile(os.path.join(directory, name))]
-    if missing:
-        raise OSError('%d of its files could not be unpacked, the first '
-                      '"%s"' % (len(missing), missing[0]))
+    for name in names:
+        if name not in left_out \
+                and not os.path.isfile(os.path.join(directory, name)):
+            left_out[name] = 'nothing came out of it'
+    for name in left_out:
+        # What came out of a damaged file before it failed is no file.
+        with contextlib.suppress(FileNotFoundError):
+            tools.remove_file(os.path.join(directory, name))
+    pages = [name for name in pages if name not in left_out]
     tools.alphanumeric_sort(pages)
     listed = set(pages)
-    return pages, [name for name in names if name not in listed]
+    return pages, [name for name in names
+                   if name not in listed and name not in left_out], left_out
+
+
+def _raise_unless_the_file(error: Exception, encrypted: bool) -> None:
+    """Raise what <error> tells of the book, unless it says only
+    that the file being unpacked could not be read."""
+    if encrypted:
+        raise Skipped(_('encrypted')) from error
+    if isinstance(error, OSError) and error.errno in _NOT_THE_FILE:
+        raise error
 
 # vim: expandtab:sw=4:ts=4

@@ -1,5 +1,6 @@
 """Storing the PNG pages of books as lossless WebP (mcomix.webp_books)."""
 
+import errno
 import io
 import os
 import shutil
@@ -15,6 +16,7 @@ from PIL import Image
 from mcomix import archive_packer
 from mcomix import archive_tools
 from mcomix import webp_books
+from mcomix.archive import zip as zip_archive
 
 from . import (MComixTest, copy_rar_set, get_testfile_path, line_art_png,
                refuse_passwords, sample_pages)
@@ -139,6 +141,76 @@ class ConvertTest(_BookTest):
         webp_books.convert(path, self.stop, done.append)
         self.assertEqual(sorted(done), done)
         self.assertAlmostEqual(1.0, done[-1])
+
+
+class DamagedTest(_BookTest):
+
+    """A file in the archive that cannot be read is left out of it,
+    rather than costing the whole book: every other page was lost with
+    it before, the book reported as not written."""
+
+    def damaged_book(self, damaged='02.png'):
+        """A ZIP of three PNG pages and a text, the bytes of <damaged>
+        changed so that its checksum fails."""
+        path = self.zip_book({name: line_art_png() for name in
+                              ('01.png', '02.png', '03.png')}
+                             | {'notes.txt': b'notes'})
+        with zipfile.ZipFile(path) as book:
+            info = book.getinfo(damaged)
+        with open(path, 'r+b') as book:
+            # Past the local header: 30 bytes, the name, no extra field.
+            book.seek(info.header_offset + 30 + len(damaged) + 40)
+            book.write(b'damaged')
+        return path
+
+    def test_a_damaged_page_is_left_out(self):
+        path = self.damaged_book()
+        converted = self.convert(path)
+        with zipfile.ZipFile(path) as book:
+            self.assertEqual(['01.webp', '03.webp', 'notes.txt'],
+                             sorted(book.namelist()))
+            self.assertEqual(b'notes', book.read('notes.txt'))
+        self.assertEqual(['02.png'], list(converted.left_out))
+        self.assertIn('CRC', converted.left_out['02.png'])
+        self.assertEqual({'01.png': '01.webp', '03.png': '03.webp'},
+                         converted.renamed)
+        self.assertEqual(['book.cbz'], os.listdir(self.directory))
+
+    def test_a_file_that_comes_out_as_nothing_is_left_out(self):
+        """The reader's book failed with "[Errno 2] No such file or
+        directory" over its damaged page."""
+        path = self.damaged_book()
+        extract = zip_archive.ZipArchive.extract
+
+        def missing(archive, name, directory):
+            if name == '01.png':
+                raise FileNotFoundError(2, 'No such file or directory',
+                                        os.path.join(directory, name))
+            return extract(archive, name, directory)
+
+        with unittest.mock.patch.object(zip_archive.ZipArchive, 'extract',
+                                        missing):
+            converted = self.convert(path)
+        self.assertEqual(['01.png', '02.png'], sorted(converted.left_out))
+        with zipfile.ZipFile(path) as book:
+            self.assertEqual(['03.webp', 'notes.txt'],
+                             sorted(book.namelist()))
+
+    def test_a_full_disk_is_no_damaged_file(self):
+        path = self.damaged_book()
+        with open(path, 'rb') as book:
+            before = book.read()
+
+        def full(archive, name, directory):
+            raise OSError(errno.ENOSPC, os.strerror(errno.ENOSPC), name)
+
+        with unittest.mock.patch.object(zip_archive.ZipArchive, 'extract',
+                                        full), \
+                self.assertRaises(OSError) as raised:
+            self.convert(path)
+        self.assertEqual(errno.ENOSPC, raised.exception.errno)
+        with open(path, 'rb') as book:
+            self.assertEqual(before, book.read())
 
 
 class SkippedTest(_BookTest):
