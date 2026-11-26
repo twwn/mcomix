@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix 1.00-SVN\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-24 19:24+0100\n"
+"POT-Creation-Date: 2026-11-26 15:33+0100\n"
 "PO-Revision-Date: 2012-08-16 13:10+0900\n"
 "Last-Translator: Toshiharu Kudoh <toshi.kd2@gmail.com>\n"
 "Language-Team: Japanese\n"
@@ -47,24 +47,24 @@ msgstr "このライセンスの複製は %s から入手できます"
 msgid "! Extraction error: %s"
 msgstr "! 展開エラーです: %s"
 
-#: mcomix/archive_extractor.py:460 mcomix/archive_tools.py:240
+#: mcomix/archive_extractor.py:460 mcomix/archive_tools.py:254
 #: mcomix/book_store.py:66 mcomix/image_tools.py:521
 #, python-format
 msgid "! Could not read %s"
 msgstr "! %s を読めませんでした"
 
-#: mcomix/archive_packer.py:461 mcomix/file_actions.py:1473
-#: mcomix/library/book_area.py:1394
+#: mcomix/archive_packer.py:541 mcomix/file_actions.py:1473
+#: mcomix/library/book_area.py:1411
 #, python-format
 msgid "! Could not remove %(file)s: %(error)s"
 msgstr "! %(file)s を削除できませんでした: %(error)s"
 
-#: mcomix/archive_packer.py:996 mcomix/archive_packer.py:1031
+#: mcomix/archive_packer.py:1082 mcomix/archive_packer.py:1117
 #, python-format
 msgid "! Could not create archive at path \"%s\""
 msgstr "! パス \"%s\" でアーカイブを作成できませんでした"
 
-#: mcomix/archive_packer.py:1021
+#: mcomix/archive_packer.py:1107
 #, python-format
 msgid ""
 "! Could not add file %(sourcefile)s to archive %(archivefile)s, aborting..."
@@ -100,6 +100,7 @@ msgid "! Could not save %(file)s to %(directory)s: %(error)s"
 msgstr "! %(file)s を %(directory)s に保存できませんでした: %(error)s"
 
 #: mcomix/bookmark_backend.py:493 mcomix/file_actions.py:1245
+#: mcomix/webp_dialog.py:387
 #, python-format
 msgid "Could not save \"%(file)s\" to \"%(directory)s\""
 msgstr "\"%(file)s\" を \"%(directory)s\" に保存できませんでした"
@@ -118,7 +119,7 @@ msgstr "いいえ(_N)"
 #: mcomix/file_chooser_base_dialog.py:242
 #: mcomix/file_chooser_library_dialog.py:42 mcomix/message_dialog.py:26
 #: mcomix/message_dialog.py:29 mcomix/pageselect.py:38
-#: mcomix/save_progress.py:119 mcomix/webp_dialog.py:77
+#: mcomix/save_progress.py:119 mcomix/webp_dialog.py:96
 msgid "_Cancel"
 msgstr "キャンセル(_C)"
 
@@ -162,14 +163,14 @@ msgstr "ブックマークの編集"
 msgid "C_lear bookmarks..."
 msgstr "ブックマークの消去(_L)..."
 
-#: mcomix/bookmark_dialog.py:33 mcomix/main.py:1555 mcomix/openwith.py:429
+#: mcomix/bookmark_dialog.py:33 mcomix/main.py:1562 mcomix/openwith.py:429
 #: mcomix/library/collection_area.py:140 mcomix/library/watchlist.py:69
 msgid "_Remove"
 msgstr "削除(_R)"
 
 #: mcomix/bookmark_dialog.py:34 mcomix/comment_dialog.py:29
 #: mcomix/message_dialog.py:25 mcomix/preferences_dialog.py:105
-#: mcomix/properties_dialog.py:38 mcomix/ui.py:502 mcomix/webp_dialog.py:258
+#: mcomix/properties_dialog.py:38 mcomix/ui.py:502 mcomix/webp_dialog.py:323
 #: mcomix/library/book_properties.py:60 mcomix/library/watchlist.py:41
 msgid "_Close"
 msgstr "閉じる(_C)"
@@ -183,7 +184,7 @@ msgstr "種類"
 msgid "Name"
 msgstr "名前"
 
-#: mcomix/bookmark_dialog.py:65 mcomix/main.py:2737
+#: mcomix/bookmark_dialog.py:65 mcomix/main.py:2747
 #: mcomix/library/book_properties.py:107 mcomix/library/control_area.py:158
 msgid "Page"
 msgstr "ページ"
@@ -315,7 +316,7 @@ msgid "Comment files"
 msgstr "コメントファイル"
 
 #: mcomix/edit_dialog.py:262 mcomix/file_actions.py:941
-#: mcomix/webp_dialog.py:170
+#: mcomix/webp_dialog.py:201
 #, python-format
 msgid "! Could not save the archive %(archivefile)s: %(error)s"
 msgstr "! アーカイブファイル %(archivefile)s を保存できませんでした: %(error)s"
@@ -560,11 +561,11 @@ msgstr "ファイルはゴミ箱へ移動されます。"
 msgid "_Move to Trash"
 msgstr "ゴミ箱へ移動する(_M)"
 
-#: mcomix/file_actions.py:1317 mcomix/library/book_area.py:1331
+#: mcomix/file_actions.py:1317 mcomix/library/book_area.py:1348
 msgid "It does not go to the trash and cannot be restored."
 msgstr "ゴミ箱へは移動されず、元に戻すことはできません。"
 
-#: mcomix/file_actions.py:1325 mcomix/library/book_area.py:1323
+#: mcomix/file_actions.py:1325 mcomix/library/book_area.py:1340
 #, python-format
 msgid "Delete \"%s\" permanently?"
 msgstr "\"%s\" を完全に削除しますか?"
@@ -574,7 +575,7 @@ msgstr "\"%s\" を完全に削除しますか?"
 msgid "Could not move \"%s\" to the trash"
 msgstr "\"%s\" をゴミ箱へ移動できませんでした"
 
-#: mcomix/file_actions.py:1436 mcomix/library/book_area.py:1408
+#: mcomix/file_actions.py:1436 mcomix/library/book_area.py:1425
 #, python-format
 msgid "%d book could not be moved to the trash."
 msgid_plural "%d books could not be moved to the trash."
@@ -639,7 +640,7 @@ msgstr[0] "%d ページ"
 msgid "Open"
 msgstr "開く"
 
-#: mcomix/file_chooser_base_dialog.py:238 mcomix/library/book_area.py:321
+#: mcomix/file_chooser_base_dialog.py:238 mcomix/library/book_area.py:325
 msgid "_Open"
 msgstr "開く(_O)"
 
@@ -1150,7 +1151,7 @@ msgstr "削除"
 msgid "File"
 msgstr "ファイル"
 
-#: mcomix/keybindings.py:155 mcomix/ui.py:447 mcomix/library/book_area.py:340
+#: mcomix/keybindings.py:155 mcomix/ui.py:447 mcomix/library/book_area.py:344
 msgid "Delete permanently"
 msgstr "完全に削除"
 
@@ -1210,7 +1211,7 @@ msgid "Preferences"
 msgstr "設定"
 
 #: mcomix/keybindings.py:173 mcomix/ui.py:449 mcomix/ui.py:452
-#: mcomix/library/book_area.py:344
+#: mcomix/library/book_area.py:348
 msgid "Open containing folder"
 msgstr "ファイルのあるディレクトリーを開く"
 
@@ -1263,13 +1264,13 @@ msgstr "キーバインディングを読めませんでした: %s"
 msgid "! Could not remove file \"%s\""
 msgstr "! ファイル \"%s\" を削除できませんでした"
 
-#: mcomix/main.py:1546
+#: mcomix/main.py:1553
 #, python-format
 msgid "Remove the page picked out of \"%s\"?"
 msgid_plural "Remove the pages picked out of \"%s\"?"
 msgstr[0] "選んだページを「%s」から取り除きますか？"
 
-#: mcomix/main.py:1549
+#: mcomix/main.py:1556
 msgid ""
 "They are taken out of the archive on disk, which is written again at once. "
 "Leaving the book without removing them forgets which pages they were."
@@ -1277,16 +1278,16 @@ msgstr ""
 "ディスク上の書庫から取り除かれ、書庫はすぐに書き直されます。取り除かずに本を"
 "離れると、どのページだったかは忘れられます。"
 
-#: mcomix/main.py:1554
+#: mcomix/main.py:1561
 msgid "_Keep them"
 msgstr "残す(_K)"
 
-#: mcomix/main.py:1770
+#: mcomix/main.py:1777
 #, python-format
 msgid "Animation speed: %s"
 msgstr "アニメーション速度: %s"
 
-#: mcomix/main.py:2438
+#: mcomix/main.py:2445
 msgid "SLIDESHOW"
 msgstr "SLIDESHOW"
 
@@ -2258,7 +2259,7 @@ msgstr "ファイル名"
 msgid "File name (GLib)"
 msgstr "ファイル名（GLib）"
 
-#: mcomix/preferences_dialog.py:800 mcomix/library/book_area.py:412
+#: mcomix/preferences_dialog.py:800 mcomix/library/book_area.py:419
 msgid "File size"
 msgstr "ファイルサイズ"
 
@@ -2299,11 +2300,11 @@ msgstr ""
 "C の並べ方、つまり 1、2、34、5 を使います。GLib 順は GLib/GTK が生成する照合"
 "キーでファイルを並べ、他の多くの GTK アプリケーションもこの順序を使います。"
 
-#: mcomix/preferences_dialog.py:831 mcomix/library/book_area.py:420
+#: mcomix/preferences_dialog.py:831 mcomix/library/book_area.py:427
 msgid "Ascending"
 msgstr "昇順"
 
-#: mcomix/preferences_dialog.py:832 mcomix/library/book_area.py:421
+#: mcomix/preferences_dialog.py:832 mcomix/library/book_area.py:428
 msgid "Descending"
 msgstr "降順"
 
@@ -2417,7 +2418,7 @@ msgstr ""
 "に範囲内に収めるか。知覚的は色の比率を保ち、相対的な色域を維持は画面で表示で"
 "きる色を正確に保ちます。"
 
-#: mcomix/preferences_dialog.py:975 mcomix/library/book_area.py:428
+#: mcomix/preferences_dialog.py:975 mcomix/library/book_area.py:435
 msgid "Normal"
 msgstr "普通"
 
@@ -2880,7 +2881,7 @@ msgstr "ベクターアイコン"
 msgid "! Could not save thumbnail \"%(thumbpath)s\": %(error)s"
 msgstr "! サムネイル \"%(thumbpath)s\" を保存できませんでした: %(error)s"
 
-#: mcomix/ui.py:440 mcomix/library/book_area.py:343
+#: mcomix/ui.py:440 mcomix/library/book_area.py:347
 msgid "_Copy"
 msgstr "コピー(_P)"
 
@@ -2929,7 +2930,7 @@ msgstr ""
 msgid "Rename arc_hive..."
 msgstr "アーカイブファイルの名前を変更(_H)..."
 
-#: mcomix/ui.py:463 mcomix/library/book_area.py:348
+#: mcomix/ui.py:463 mcomix/library/book_area.py:357
 msgid "Store PNG pages as _WebP..."
 msgstr "PNG ページを WebP で格納(_B)..."
 
@@ -3320,37 +3321,37 @@ msgstr "マニュアルを開けませんでした: %s"
 
 #. TRANSLATORS: Why a book was left as it was, after "3 books left as
 #. they were: ". So are the others here and "open in the main window".
-#: mcomix/webp_books.py:79
+#: mcomix/webp_books.py:97
 msgid "split into volumes"
 msgstr "複数巻に分割されている"
 
-#: mcomix/webp_books.py:82 mcomix/webp_books.py:85
+#: mcomix/webp_books.py:100 mcomix/webp_books.py:103
 msgid "a format MComix cannot write here"
 msgstr "MComix がここでは書き込めない形式"
 
-#: mcomix/webp_books.py:115
+#: mcomix/webp_books.py:134
 msgid "no page smaller as WebP"
 msgstr "WebP で小さくなるページがない"
 
-#: mcomix/webp_books.py:148
+#: mcomix/webp_books.py:177
 msgid "archives inside"
 msgstr "中に他のアーカイブがある"
 
-#: mcomix/webp_books.py:154
+#: mcomix/webp_books.py:183
 msgid "no PNG pages"
 msgstr "PNG ページがない"
 
-#: mcomix/webp_books.py:164 mcomix/webp_books.py:167
+#: mcomix/webp_books.py:213 mcomix/webp_books.py:219 mcomix/webp_books.py:239
 msgid "encrypted"
 msgstr "暗号化されている"
 
-#: mcomix/webp_dialog.py:72
+#: mcomix/webp_dialog.py:91
 #, python-format
 msgid "Store the PNG pages of %d book as WebP?"
 msgid_plural "Store the PNG pages of %d books as WebP?"
 msgstr[0] "%d 冊の本の PNG ページを WebP で格納しますか?"
 
-#: mcomix/webp_dialog.py:74
+#: mcomix/webp_dialog.py:93
 msgid ""
 "Each book with PNG pages is written again, with every page that is smaller "
 "as a lossless WebP. Some other comic readers cannot show WebP pages."
@@ -3359,50 +3360,64 @@ msgstr ""
 "すべて WebP で格納されます。他のコミックリーダーの中には WebP ページを表示で"
 "きないものがあります。"
 
-#: mcomix/webp_dialog.py:78
+#: mcomix/webp_dialog.py:97
 msgid "_Store as WebP"
 msgstr "WebP で格納(_S)"
 
-#: mcomix/webp_dialog.py:98
+#: mcomix/webp_dialog.py:117
 msgid "Storing PNG pages as WebP"
 msgstr "PNG ページを WebP で格納しています"
 
-#: mcomix/webp_dialog.py:119 mcomix/library/add_progress_dialog.py:57
+#: mcomix/webp_dialog.py:140 mcomix/library/add_progress_dialog.py:57
 msgid "_Stop"
 msgstr "停止(_S)"
 
-#: mcomix/webp_dialog.py:159
+#: mcomix/webp_dialog.py:190
 msgid "open in the main window"
 msgstr "メインウィンドウで開いている"
 
-#: mcomix/webp_dialog.py:193
+#: mcomix/webp_dialog.py:226
 #, python-format
 msgid "%(count)d book stored with WebP pages, %(size)s smaller"
 msgid_plural "%(count)d books stored with WebP pages, %(size)s smaller"
 msgstr[0] "%(count)d 冊を WebP ページで格納、%(size)s 削減"
 
-#: mcomix/webp_dialog.py:211
+#: mcomix/webp_dialog.py:238
 #, python-format
-msgid "About %d minute left"
-msgid_plural "About %d minutes left"
-msgstr[0] "残り約 %d 分"
+msgid "%d book stored without its damaged files"
+msgid_plural "%d books stored without their damaged files"
+msgstr[0] "%d 冊を破損したファイルを除いて格納"
 
-#: mcomix/webp_dialog.py:237
+#: mcomix/webp_dialog.py:243
 #, python-format
 msgid "%(count)d book left as it was: %(reason)s"
 msgid_plural "%(count)d books left as they were: %(reason)s"
 msgstr[0] "%(count)d 冊はそのまま: %(reason)s"
 
-#: mcomix/webp_dialog.py:245
-#, python-format
-msgid "Could not be written: %s"
-msgstr "書き込めませんでした: %s"
-
-#: mcomix/webp_dialog.py:250
+#: mcomix/webp_dialog.py:257
 #, python-format
 msgid "Stopped with %d book not yet looked at"
 msgid_plural "Stopped with %d books not yet looked at"
 msgstr[0] "停止しました。未確認の本が %d 冊あります"
+
+#: mcomix/webp_dialog.py:277
+#, python-format
+msgid "About %d minute left"
+msgid_plural "About %d minutes left"
+msgstr[0] "残り約 %d 分"
+
+#: mcomix/webp_dialog.py:310 mcomix/webp_dialog.py:357
+#, python-format
+msgid "Could not be written: %s"
+msgstr "書き込めませんでした: %s"
+
+#: mcomix/webp_dialog.py:326
+msgid "_Save Log…"
+msgstr "ログを保存(_S)…"
+
+#: mcomix/webp_dialog.py:370
+msgid "Save the log as"
+msgstr "ログを別名で保存"
 
 #: mcomix/worker_thread.py:132
 #, python-format
@@ -3519,7 +3534,7 @@ msgstr ""
 "しています。"
 
 #: mcomix/library/backend_types.py:431 mcomix/library/collection_area.py:201
-#: mcomix/library/control_area.py:95
+#: mcomix/library/control_area.py:95 mcomix/library/shelf.py:215
 msgid "All books"
 msgstr "全ての本"
 
@@ -3528,140 +3543,140 @@ msgstr "全ての本"
 msgid "! Could not scan for new books: %s"
 msgstr "! 新しい本を検索できませんでした: %s"
 
-#: mcomix/library/book_area.py:322
+#: mcomix/library/book_area.py:326
 msgid "Open among its fol_der's books"
 msgstr "ディレクトリーの本の中で開く(_D)"
 
-#: mcomix/library/book_area.py:324
+#: mcomix/library/book_area.py:328
 msgid "Open _without closing library"
 msgstr "ライブラリーを閉じずに開く(_W)"
 
-#: mcomix/library/book_area.py:326
+#: mcomix/library/book_area.py:330
 msgid "Open in a new w_indow"
 msgstr "新しいウィンドウで開く(_I)"
 
-#: mcomix/library/book_area.py:328
+#: mcomix/library/book_area.py:332
 msgid "_Mark as read"
 msgstr "既読にする(_M)"
 
-#: mcomix/library/book_area.py:329
+#: mcomix/library/book_area.py:333
 msgid "Mark as u_nread"
 msgstr "未読にする(_N)"
 
-#: mcomix/library/book_area.py:330 mcomix/library/collection_area.py:132
+#: mcomix/library/book_area.py:334 mcomix/library/collection_area.py:132
 msgid "_Add..."
 msgstr "追加(_A)..."
 
-#: mcomix/library/book_area.py:333
+#: mcomix/library/book_area.py:337
 msgid "Remove _from this collection"
 msgstr "このコレクションから削除(_C)"
 
-#: mcomix/library/book_area.py:335
+#: mcomix/library/book_area.py:339
 msgid "Remove from the _library"
 msgstr "ライブラリーから削除(_L)"
 
-#: mcomix/library/book_area.py:337
+#: mcomix/library/book_area.py:341
 msgid "_Remove and move to the trash"
 msgstr "削除してゴミ箱へ移動(_R)"
 
-#: mcomix/library/book_area.py:342 mcomix/library/collection_area.py:138
+#: mcomix/library/book_area.py:346 mcomix/library/collection_area.py:138
 msgid "Clean _up"
 msgstr "クリーンアップ(_U)"
 
-#: mcomix/library/book_area.py:347
+#: mcomix/library/book_area.py:351
 msgid "R_ename"
 msgstr "名称変更(_E)"
 
-#: mcomix/library/book_area.py:352
+#: mcomix/library/book_area.py:354
 msgid "_Properties"
 msgstr "プロパティー(_T)"
 
-#: mcomix/library/book_area.py:387
+#: mcomix/library/book_area.py:393
 msgid "Library books"
 msgstr "ライブラリーの本"
 
-#: mcomix/library/book_area.py:399
+#: mcomix/library/book_area.py:406
 msgid "Move _to"
 msgstr "移動先(_V)"
 
-#: mcomix/library/book_area.py:410
+#: mcomix/library/book_area.py:417
 msgid "Book name"
 msgstr "本の名前"
 
-#: mcomix/library/book_area.py:411
+#: mcomix/library/book_area.py:418
 msgid "Full path"
 msgstr "フルパス"
 
-#: mcomix/library/book_area.py:413
+#: mcomix/library/book_area.py:420
 msgid "Pages"
 msgstr "ページ数"
 
-#: mcomix/library/book_area.py:414 mcomix/library/book_properties.py:102
+#: mcomix/library/book_area.py:421 mcomix/library/book_properties.py:102
 msgid "Date added"
 msgstr "日付追加"
 
-#: mcomix/library/book_area.py:415
+#: mcomix/library/book_area.py:422
 msgid "Date modified"
 msgstr "更新日時"
 
-#: mcomix/library/book_area.py:416 mcomix/library/book_properties.py:106
+#: mcomix/library/book_area.py:423 mcomix/library/book_properties.py:106
 msgid "Last read"
 msgstr "最後に読んだ日時"
 
-#: mcomix/library/book_area.py:417
+#: mcomix/library/book_area.py:424
 msgid "By hand"
 msgstr "手動"
 
-#: mcomix/library/book_area.py:426
+#: mcomix/library/book_area.py:433
 msgid "Huge"
 msgstr "巨大"
 
-#: mcomix/library/book_area.py:427
+#: mcomix/library/book_area.py:434
 msgid "Large"
 msgstr "大"
 
-#: mcomix/library/book_area.py:429
+#: mcomix/library/book_area.py:436
 msgid "Small"
 msgstr "小"
 
-#: mcomix/library/book_area.py:430
+#: mcomix/library/book_area.py:437
 msgid "Tiny"
 msgstr "極小"
 
-#: mcomix/library/book_area.py:434
+#: mcomix/library/book_area.py:441
 msgid "Custom..."
 msgstr "カスタム..."
 
-#: mcomix/library/book_area.py:438
+#: mcomix/library/book_area.py:445
 msgid "_Sort"
 msgstr "ソート(_S)"
 
-#: mcomix/library/book_area.py:439
+#: mcomix/library/book_area.py:446
 msgid "Cover si_ze"
 msgstr "カバーサイズ(_Z)"
 
-#: mcomix/library/book_area.py:927
+#: mcomix/library/book_area.py:944
 msgid "Set library cover size"
 msgstr "ライブラリーのカバーサイズを指定"
 
-#: mcomix/library/book_area.py:1235
+#: mcomix/library/book_area.py:1252
 #, python-format
 msgid "Removed %(num)d book from '%(collection)s'."
 msgid_plural "Removed %(num)d books from '%(collection)s'."
 msgstr[0] "%(num)d 個の本が '%(collection)s' から削除されました。"
 
-#: mcomix/library/book_area.py:1258 mcomix/library/collection_area.py:283
+#: mcomix/library/book_area.py:1275 mcomix/library/collection_area.py:283
 #: mcomix/library/main_dialog.py:256
 #, python-format
 msgid "Removed %d book from the library."
 msgid_plural "Removed %d books from the library."
 msgstr[0] "%d 個の本がライブラリーから削除されました。"
 
-#: mcomix/library/book_area.py:1280 mcomix/library/book_area.py:1301
+#: mcomix/library/book_area.py:1297 mcomix/library/book_area.py:1318
 msgid "Remove books from the library?"
 msgstr "ライブラリーから本を削除しますか?"
 
-#: mcomix/library/book_area.py:1281
+#: mcomix/library/book_area.py:1298
 msgid ""
 "The selected books will be removed from the library. Any in a folder with no "
 "trash is deleted permanently and cannot be restored."
@@ -3669,28 +3684,29 @@ msgstr ""
 "選択された本はライブラリーから削除されます。ゴミ箱のないディレクトリーにある"
 "本は完全に削除され、元に戻すことはできません。"
 
-#: mcomix/library/book_area.py:1302
+#: mcomix/library/book_area.py:1319
 msgid ""
 "The selected books will be removed from the library and moved to the trash."
 msgstr "選択された本はライブラリーから削除され、ゴミ箱へ移動されます。"
 
-#: mcomix/library/book_area.py:1327
+#: mcomix/library/book_area.py:1344
 #, python-format
 msgid "Delete %d book permanently?"
 msgid_plural "Delete %d books permanently?"
 msgstr[0] "%d 冊の本を完全に削除しますか?"
 
-#: mcomix/library/book_area.py:1459
+#: mcomix/library/book_area.py:1476
 #, python-format
 msgid "Remove the bookmarks in the deleted book?"
 msgid_plural "Remove the bookmarks in the %(count)d deleted books?"
 msgstr[0] "削除した %(count)d 個の本のブックマークも削除しますか?"
 
-#: mcomix/library/book_area.py:1653
+#: mcomix/library/book_area.py:1678
 msgid "Open with"
 msgstr "外部プログラムで開く"
 
-#: mcomix/library/book_properties.py:111 mcomix/library/watchlist.py:53
+#: mcomix/library/book_properties.py:111 mcomix/library/shelf.py:144
+#: mcomix/library/watchlist.py:53
 msgid "Collection"
 msgstr "コレクション"
 
@@ -3817,7 +3833,7 @@ msgstr ""
 msgid "_Search:"
 msgstr "検索(_S):"
 
-#: mcomix/library/control_area.py:87 mcomix/library/shelf.py:103
+#: mcomix/library/control_area.py:87 mcomix/library/shelf.py:105
 msgid ""
 "Display only those books that have the specified text string in their full "
 "path. The search is not case sensitive."
@@ -3910,7 +3926,7 @@ msgstr "現在の場所:"
 msgid "Select a Folder"
 msgstr "ディレクトリーを選択"
 
-#: mcomix/library/shelf.py:132
+#: mcomix/library/shelf.py:148
 msgid "The library holds no books yet. Add some in the library window."
 msgstr ""
 "ライブラリーにはまだ本がありません。ライブラリーのウィンドウで追加してくださ"

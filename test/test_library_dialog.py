@@ -7,6 +7,7 @@ with no sqlite, which the plain "from sqlite3 import dbapi2" in the
 backend made unreachable.
 """
 
+import dataclasses
 import datetime
 import gettext
 import io
@@ -23,7 +24,7 @@ from gi.repository import Gdk, GdkPixbuf, Gio, GLib, Gtk, Pango
 
 from . import (FolderDialogStub, MComixTest, NORMAL_ZIP, descendants,
                get_testfile_path, line_art_png, mounted_at, pixel, pump,
-               solid_pixbuf, visible_prompts, wait_for)
+               solid_pixbuf, visible_prompts, wait_for, wait_frames)
 
 from mcomix import archive_packer
 from mcomix import archive_tools
@@ -2743,3 +2744,76 @@ class StorePagesAsWebpTest(_LibraryWindowTest):
         self.assertTrue(progress.get_visible())
         self.assertIn('Stopped with 2 books not yet looked at',
                       progress._status.get_text())
+
+    def _copies(self, count, stem):
+        """<count> copies of the book, named <stem> and a number."""
+        paths = [os.path.join(self.tmp_dir, '%s %d.cbz' % (stem, number))
+                 for number in range(count)]
+        for path in paths:
+            shutil.copy(self.book, path)
+        return paths
+
+    def _failing(self, *failing, left_out=(), damaged=None):
+        """convert() failing on <failing>, and answering for <damaged>
+        that it left out <left_out>."""
+        real = webp_books.convert
+
+        def convert(path, stop, progress):
+            if path in failing:
+                raise OSError('the disk went away')
+            converted = real(path, stop, progress)
+            if path == damaged:
+                return dataclasses.replace(converted,
+                                           left_out=dict(left_out))
+            return converted
+        self.enterContext(unittest.mock.patch.object(
+            webp_books, 'convert', convert))
+
+    def test_long_names_and_many_failures_do_not_widen_it(self):
+        """The window took the width of the name being written, and the
+        summary joined the books that failed into one line: a few long
+        names made it wider than the screen, its Close button out of
+        reach at the edge."""
+        failing = self._copies(12, 'long-name-' + 'x' * 120)
+        self._failing(*failing)
+        progress = self._store(*failing)
+        self.assertTrue(wait_frames(progress))
+        self.assertLessEqual(progress.get_width(), webp_dialog._WIDTH)
+        self.assertLessEqual(progress.get_height(),
+                             webp_dialog._SUMMARY_HEIGHT + 200)
+        self.assertEqual(webp_dialog._FAILURES_NAMED,
+                         progress._status.get_text().count(
+                             'Could not be written: long-name-'))
+        # The name of the book being written asks for no more either.
+        progress._book.set_text(os.path.basename(failing[0]))
+        progress._book.set_visible(True)
+        self.assertLessEqual(progress._book.measure(
+            Gtk.Orientation.HORIZONTAL, -1)[1], webp_dialog._WIDTH)
+
+    def test_the_log_names_every_book_by_what_became_of_it(self):
+        failing, damaged = self._copies(2, 'book')
+        self._failing(failing, damaged=damaged,
+                      left_out={'02.png': 'Bad CRC-32'})
+        progress = self._store(self.book, failing, damaged, NORMAL_ZIP)
+        self.assertIn('1 book stored without its damaged files',
+                      progress._status.get_text())
+        save = progress.get_widget_for_response(webp_dialog._SAVE_LOG)
+        self.assertEqual('_Save Log…', save.get_label())
+        log_path = os.path.join(self.tmp_dir, 'webp.txt')
+        progress.save_log(log_path)
+        with open(log_path, encoding='utf-8') as log_file:
+            sections = log_file.read().split('\n\n')
+        self.assertTrue(sections[0].startswith(
+            '2 books stored with WebP pages'))
+        # In the order the library holds them.
+        self.assertEqual(sorted(['  ' + self.book, '  ' + damaged]),
+                         sorted(sections[0].splitlines()[1:]))
+        self.assertEqual(['1 book stored without its damaged files',
+                          '  ' + damaged, '    - 02.png: Bad CRC-32'],
+                         sections[1].splitlines())
+        self.assertEqual(['1 book left as it was: open in the main window',
+                          '  ' + NORMAL_ZIP], sections[2].splitlines())
+        self.assertEqual(['Could not be written: ' + failing,
+                          '    the disk went away'],
+                         sections[3].splitlines())
+        self.assertEqual(4, len(sections))
