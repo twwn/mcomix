@@ -12,7 +12,6 @@ viewer follows.
 """
 
 import contextlib
-import io
 import struct
 import subprocess
 from collections.abc import Iterator
@@ -49,10 +48,21 @@ class NotLossless(ValueError):
 
 def orientation_of(data: bytes) -> int:
     """The Exif orientation of the JPEG picture <data>, 1 where it has
-    none or one that means nothing."""
-    with Image.open(io.BytesIO(data)) as image, _damaged_exif():
-        orientation = image.getexif().get(ORIENTATION, 1)
-    return orientation if orientation in _TURNS else 1
+    none or one that means nothing.
+
+    Read from the Exif block itself, as Pillow reads a JPEG's, the
+    first one: opening the picture with Pillow refuses one of more
+    pixels than its limit (Image.MAX_IMAGE_PIXELS) with an error of its
+    own, though the turn needs none of them.
+    """
+    for marker, start, end in _segments(data):
+        if marker == 0xe1 and data[start + 4:start + 10] == _EXIF:
+            exif = Image.Exif()
+            with _damaged_exif():
+                exif.load(data[start + 10:end])
+                orientation = exif.get(ORIENTATION, 1)
+            return orientation if orientation in _TURNS else 1
+    return 1
 
 
 @contextlib.contextmanager

@@ -134,6 +134,21 @@ class JpegTurnTest(MComixTest):
         with self.assertRaises(ValueError):
             jpeg_turn.with_orientation(b'\x89PNG\r\n\x1a\n', 6)
 
+    def test_a_picture_past_pillows_pixel_limit_is_turned(self):
+        """Pillow opens no picture of more pixels than its limit, and
+        the turn read the orientation by opening it: one of 20000 by
+        20000 pixels raised DecompressionBombError, which the window
+        does not catch.  The turn needs none of its pixels."""
+        data = bytearray(_picture(16, 16, orientation=6))
+        frame = data.index(b'\xff\xc0')
+        data[frame + 5:frame + 9] = (20000).to_bytes(2, 'big') * 2
+        data = bytes(data)
+        self.assertEqual(6, jpeg_turn.orientation_of(data))
+        with _without_jpegtran():
+            turned = jpeg_turn.turn(data, 90, follow_exif=True)
+        self.assertEqual(3, jpeg_turn.orientation_of(turned))
+        self.assertEqual(_scan(data), _scan(turned))
+
     def test_a_damaged_exif_block_is_refused(self):
         """Pillow, reading or writing the Exif block of a damaged
         picture, raised SyntaxError, struct.error or TypeError, none of
