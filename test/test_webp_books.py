@@ -15,6 +15,7 @@ from PIL import Image
 
 from mcomix import archive_packer
 from mcomix import archive_tools
+from mcomix import constants
 from mcomix import webp_books
 from mcomix.archive import zip as zip_archive
 
@@ -241,7 +242,36 @@ class SkippedTest(_BookTest):
     def test_a_format_mcomix_cannot_write(self):
         path = os.path.join(self.directory, 'Flat.lha')
         shutil.copy(get_testfile_path('archives', 'Flat.lha'), path)
-        self.assertSkipped(path, 'a format MComix cannot write here')
+        self.assertSkipped(path, 'a format MComix does not write: '
+                           'LHA archive')
+
+    def test_a_file_that_is_no_archive(self):
+        """A damaged book, or a video saved as one, is told as such and
+        not as a format MComix cannot write."""
+        path = os.path.join(self.directory, 'book.cbz')
+        with open(path, 'wb') as book:
+            book.write(b'\x00\x00\x00\x18ftypmp42' + bytes(64))
+        self.assertSkipped(path, 'damaged, or not an archive')
+
+    def test_a_rar_without_the_rar_program(self):
+        path = os.path.join(self.directory, 'Flat.rar')
+        shutil.copy(get_testfile_path('archives', 'Flat.rar'), path)
+        with unittest.mock.patch.object(archive_packer, 'rar_executable',
+                                        return_value=None):
+            self.assertSkipped(path, 'the rar program that writes the '
+                               'format is not installed')
+
+    def test_no_png_pages_is_told_before_the_missing_program(self):
+        """A book done before, in a format written only with a program
+        that is not installed, has nothing to write either way: it is
+        told as having no PNG pages.  The ZIP stands in for that format
+        here, since every RAR the tests carry holds a PNG."""
+        path = self.zip_book({'01.webp': b'RIFF'})
+        with unittest.mock.patch.object(archive_packer, 'can_write',
+                                        return_value=False), \
+                unittest.mock.patch.dict(webp_books._WRITTEN_BY_PROGRAM,
+                                         {constants.ZIP: 'zip'}):
+            self.assertSkipped(path, 'no PNG pages')
 
     def test_a_book_in_volumes(self):
         first = copy_rar_set(self.directory)[0]

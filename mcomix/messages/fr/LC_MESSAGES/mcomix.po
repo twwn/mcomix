@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix 0.93\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-26 15:33+0100\n"
+"POT-Creation-Date: 2026-11-27 23:11+0100\n"
 "PO-Revision-Date: 2015-04-05 08:54+0100\n"
 "Last-Translator: Benoit Pierre <benoit.pierre@gmail.com>\n"
 "Language-Team: \n"
@@ -3385,27 +3385,41 @@ msgstr "Impossible d'ouvrir le manuel : %s"
 
 #. TRANSLATORS: Why a book was left as it was, after "3 books left as
 #. they were: ". So are the others here and "open in the main window".
-#: mcomix/webp_books.py:97
+#: mcomix/webp_books.py:102
 msgid "split into volumes"
 msgstr "découpé en volumes"
 
-#: mcomix/webp_books.py:100 mcomix/webp_books.py:103
-msgid "a format MComix cannot write here"
-msgstr "un format que MComix ne peut pas écrire ici"
+#: mcomix/webp_books.py:105
+msgid "damaged, or not an archive"
+msgstr "endommagé, ou pas une archive"
 
-#: mcomix/webp_books.py:134
+#: mcomix/webp_books.py:110
+#, python-format
+msgid "a format MComix does not write: %s"
+msgstr "un format que MComix n'écrit pas : %s"
+
+#: mcomix/webp_books.py:114
+#, python-format
+msgid "the %s program that writes the format is not installed"
+msgstr "le programme %s, qui écrit ce format, n'est pas installé"
+
+#: mcomix/webp_books.py:118
+msgid "nothing installed here reads the format"
+msgstr "rien d'installé ici ne lit ce format"
+
+#: mcomix/webp_books.py:149
 msgid "no page smaller as WebP"
 msgstr "aucune page plus petite en WebP"
 
-#: mcomix/webp_books.py:177
+#: mcomix/webp_books.py:196
 msgid "archives inside"
 msgstr "contient d'autres archives"
 
-#: mcomix/webp_books.py:183
+#: mcomix/webp_books.py:202
 msgid "no PNG pages"
 msgstr "aucune page PNG"
 
-#: mcomix/webp_books.py:213 mcomix/webp_books.py:219 mcomix/webp_books.py:239
+#: mcomix/webp_books.py:234 mcomix/webp_books.py:240 mcomix/webp_books.py:260
 msgid "encrypted"
 msgstr "chiffré"
 
@@ -4042,6 +4056,9 @@ msgid "Automatically scan for new books when library is _opened"
 msgstr ""
 "Rechercher automatiquement les nouveaux livres à l'_ouverture de la "
 "bibliothèque"
+
+#~ msgid "a format MComix cannot write here"
+#~ msgstr "un format que MComix ne peut pas écrire ici"
 
 #~ msgid "Opens the selected books for viewing."
 #~ msgstr "Ouvre les livres sélectionnés pour lecture."

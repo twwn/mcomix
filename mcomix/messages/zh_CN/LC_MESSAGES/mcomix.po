@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Comix 4.0.1\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-26 15:33+0100\n"
+"POT-Creation-Date: 2026-11-27 23:11+0100\n"
 "PO-Revision-Date: 2009-01-28 13:36+0800\n"
 "Last-Translator: Xie Yanbo <xieyanbo@gmail.com>\n"
 "Language-Team: Xie Yanbo <xieyanbo@gmail.com>\n"
@@ -3248,27 +3248,41 @@ msgstr "无法打开手册：%s"
 
 #. TRANSLATORS: Why a book was left as it was, after "3 books left as
 #. they were: ". So are the others here and "open in the main window".
-#: mcomix/webp_books.py:97
+#: mcomix/webp_books.py:102
 msgid "split into volumes"
 msgstr "分成了多卷"
 
-#: mcomix/webp_books.py:100 mcomix/webp_books.py:103
-msgid "a format MComix cannot write here"
-msgstr "MComix 无法在此写入的格式"
+#: mcomix/webp_books.py:105
+msgid "damaged, or not an archive"
+msgstr "已损坏，或不是归档"
 
-#: mcomix/webp_books.py:134
+#: mcomix/webp_books.py:110
+#, python-format
+msgid "a format MComix does not write: %s"
+msgstr "MComix 不写入的格式：%s"
+
+#: mcomix/webp_books.py:114
+#, python-format
+msgid "the %s program that writes the format is not installed"
+msgstr "未安装写入此格式的 %s 程序"
+
+#: mcomix/webp_books.py:118
+msgid "nothing installed here reads the format"
+msgstr "此处未安装可读取此格式的程序"
+
+#: mcomix/webp_books.py:149
 msgid "no page smaller as WebP"
 msgstr "没有页面存为 WebP 后更小"
 
-#: mcomix/webp_books.py:177
+#: mcomix/webp_books.py:196
 msgid "archives inside"
 msgstr "包含其他归档"
 
-#: mcomix/webp_books.py:183
+#: mcomix/webp_books.py:202
 msgid "no PNG pages"
 msgstr "没有 PNG 页面"
 
-#: mcomix/webp_books.py:213 mcomix/webp_books.py:219 mcomix/webp_books.py:239
+#: mcomix/webp_books.py:234 mcomix/webp_books.py:240 mcomix/webp_books.py:260
 msgid "encrypted"
 msgstr "已加密"
 
@@ -3861,6 +3875,9 @@ msgstr "包含子目录"
 #: mcomix/library/watchlist.py:85
 msgid "Automatically scan for new books when library is _opened"
 msgstr "当打开收藏库时自动扫描新书(_O)"
+
+#~ msgid "a format MComix cannot write here"
+#~ msgstr "MComix 无法在此写入的格式"
 
 #~ msgid "Opens the selected books for viewing."
 #~ msgstr "打开选中的书。"

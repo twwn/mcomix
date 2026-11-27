@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix 1.00-SVN\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-26 15:33+0100\n"
+"POT-Creation-Date: 2026-11-27 23:11+0100\n"
 "PO-Revision-Date: 2012-08-16 13:10+0900\n"
 "Last-Translator: Toshiharu Kudoh <toshi.kd2@gmail.com>\n"
 "Language-Team: Japanese\n"
@@ -3321,27 +3321,41 @@ msgstr "マニュアルを開けませんでした: %s"
 
 #. TRANSLATORS: Why a book was left as it was, after "3 books left as
 #. they were: ". So are the others here and "open in the main window".
-#: mcomix/webp_books.py:97
+#: mcomix/webp_books.py:102
 msgid "split into volumes"
 msgstr "複数巻に分割されている"
 
-#: mcomix/webp_books.py:100 mcomix/webp_books.py:103
-msgid "a format MComix cannot write here"
-msgstr "MComix がここでは書き込めない形式"
+#: mcomix/webp_books.py:105
+msgid "damaged, or not an archive"
+msgstr "壊れているか、アーカイブではない"
 
-#: mcomix/webp_books.py:134
+#: mcomix/webp_books.py:110
+#, python-format
+msgid "a format MComix does not write: %s"
+msgstr "MComix が書き込まない形式: %s"
+
+#: mcomix/webp_books.py:114
+#, python-format
+msgid "the %s program that writes the format is not installed"
+msgstr "この形式を書き込む %s プログラムがインストールされていない"
+
+#: mcomix/webp_books.py:118
+msgid "nothing installed here reads the format"
+msgstr "この形式を読み込むものがインストールされていない"
+
+#: mcomix/webp_books.py:149
 msgid "no page smaller as WebP"
 msgstr "WebP で小さくなるページがない"
 
-#: mcomix/webp_books.py:177
+#: mcomix/webp_books.py:196
 msgid "archives inside"
 msgstr "中に他のアーカイブがある"
 
-#: mcomix/webp_books.py:183
+#: mcomix/webp_books.py:202
 msgid "no PNG pages"
 msgstr "PNG ページがない"
 
-#: mcomix/webp_books.py:213 mcomix/webp_books.py:219 mcomix/webp_books.py:239
+#: mcomix/webp_books.py:234 mcomix/webp_books.py:240 mcomix/webp_books.py:260
 msgid "encrypted"
 msgstr "暗号化されている"
 
@@ -3951,6 +3965,9 @@ msgstr "サブディレクトリー含む"
 #: mcomix/library/watchlist.py:85
 msgid "Automatically scan for new books when library is _opened"
 msgstr "ライブラリーが開かれているとき自動的に新しい本をスキャン(_O)"
+
+#~ msgid "a format MComix cannot write here"
+#~ msgstr "MComix がここでは書き込めない形式"
 
 #~ msgid "Opens the selected books for viewing."
 #~ msgstr "閲覧のために選択された本を開きます。"

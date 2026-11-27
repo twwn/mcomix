@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-26 15:33+0100\n"
+"POT-Creation-Date: 2026-11-27 23:11+0100\n"
 "PO-Revision-Date: 2018-05-10 22:46+0900\n"
 "Last-Translator: Minho Jeung <jeungmh@gmail.com>\n"
 "Language-Team: \n"
@@ -3288,27 +3288,41 @@ msgstr "설명서를 열 수 없습니다: %s"
 
 #. TRANSLATORS: Why a book was left as it was, after "3 books left as
 #. they were: ". So are the others here and "open in the main window".
-#: mcomix/webp_books.py:97
+#: mcomix/webp_books.py:102
 msgid "split into volumes"
 msgstr "여러 권으로 나뉨"
 
-#: mcomix/webp_books.py:100 mcomix/webp_books.py:103
-msgid "a format MComix cannot write here"
-msgstr "MComix가 여기서 쓸 수 없는 형식"
+#: mcomix/webp_books.py:105
+msgid "damaged, or not an archive"
+msgstr "손상되었거나 아카이브가 아님"
 
-#: mcomix/webp_books.py:134
+#: mcomix/webp_books.py:110
+#, python-format
+msgid "a format MComix does not write: %s"
+msgstr "MComix가 쓰지 않는 형식: %s"
+
+#: mcomix/webp_books.py:114
+#, python-format
+msgid "the %s program that writes the format is not installed"
+msgstr "이 형식을 쓰는 %s 프로그램이 설치되지 않음"
+
+#: mcomix/webp_books.py:118
+msgid "nothing installed here reads the format"
+msgstr "이 형식을 읽는 프로그램이 설치되지 않음"
+
+#: mcomix/webp_books.py:149
 msgid "no page smaller as WebP"
 msgstr "WebP로 더 작아지는 페이지 없음"
 
-#: mcomix/webp_books.py:177
+#: mcomix/webp_books.py:196
 msgid "archives inside"
 msgstr "안에 다른 아카이브가 있음"
 
-#: mcomix/webp_books.py:183
+#: mcomix/webp_books.py:202
 msgid "no PNG pages"
 msgstr "PNG 페이지 없음"
 
-#: mcomix/webp_books.py:213 mcomix/webp_books.py:219 mcomix/webp_books.py:239
+#: mcomix/webp_books.py:234 mcomix/webp_books.py:240 mcomix/webp_books.py:260
 msgid "encrypted"
 msgstr "암호화됨"
 
@@ -3908,6 +3922,9 @@ msgstr "하위 디렉토리 포함"
 #: mcomix/library/watchlist.py:85
 msgid "Automatically scan for new books when library is _opened"
 msgstr "새 책을 모음집에 자동으로 추가(_O)"
+
+#~ msgid "a format MComix cannot write here"
+#~ msgstr "MComix가 여기서 쓸 수 없는 형식"
 
 #~ msgid "Opens the selected books for viewing."
 #~ msgstr "선택된 책들을 보기 위해 엽니다."

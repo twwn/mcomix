@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix 2.0.0\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-26 15:33+0100\n"
+"POT-Creation-Date: 2026-11-27 23:11+0100\n"
 "PO-Revision-Date: 2024-01-21 19:55+0100\n"
 "Last-Translator: Moritz Brunner <oddegamra@gmx.org>\n"
 "Language-Team: \n"
@@ -3397,27 +3397,41 @@ msgstr "Konnte das Handbuch nicht öffnen: %s"
 
 #. TRANSLATORS: Why a book was left as it was, after "3 books left as
 #. they were: ". So are the others here and "open in the main window".
-#: mcomix/webp_books.py:97
+#: mcomix/webp_books.py:102
 msgid "split into volumes"
 msgstr "in Bände aufgeteilt"
 
-#: mcomix/webp_books.py:100 mcomix/webp_books.py:103
-msgid "a format MComix cannot write here"
-msgstr "ein Format, das MComix hier nicht schreiben kann"
+#: mcomix/webp_books.py:105
+msgid "damaged, or not an archive"
+msgstr "beschädigt oder kein Archiv"
 
-#: mcomix/webp_books.py:134
+#: mcomix/webp_books.py:110
+#, python-format
+msgid "a format MComix does not write: %s"
+msgstr "ein Format, das MComix nicht schreibt: %s"
+
+#: mcomix/webp_books.py:114
+#, python-format
+msgid "the %s program that writes the format is not installed"
+msgstr "das Programm %s, das das Format schreibt, ist nicht installiert"
+
+#: mcomix/webp_books.py:118
+msgid "nothing installed here reads the format"
+msgstr "hier ist nichts installiert, das das Format liest"
+
+#: mcomix/webp_books.py:149
 msgid "no page smaller as WebP"
 msgstr "keine Seite als WebP kleiner"
 
-#: mcomix/webp_books.py:177
+#: mcomix/webp_books.py:196
 msgid "archives inside"
 msgstr "Archive darin"
 
-#: mcomix/webp_books.py:183
+#: mcomix/webp_books.py:202
 msgid "no PNG pages"
 msgstr "keine PNG-Seiten"
 
-#: mcomix/webp_books.py:213 mcomix/webp_books.py:219 mcomix/webp_books.py:239
+#: mcomix/webp_books.py:234 mcomix/webp_books.py:240 mcomix/webp_books.py:260
 msgid "encrypted"
 msgstr "verschlüsselt"
 
@@ -4057,6 +4071,9 @@ msgstr "Mit Unterverzeichnissen"
 #: mcomix/library/watchlist.py:85
 msgid "Automatically scan for new books when library is _opened"
 msgstr "Aut_omatisch nach Büchern suchen, wenn Bibliothek geöffnet wird"
+
+#~ msgid "a format MComix cannot write here"
+#~ msgstr "ein Format, das MComix hier nicht schreiben kann"
 
 #~ msgid "Opens the selected books for viewing."
 #~ msgstr "Öffnet die ausgewählten Bücher zum Lesen."

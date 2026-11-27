@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-26 15:33+0100\n"
+"POT-Creation-Date: 2026-11-27 23:11+0100\n"
 "PO-Revision-Date: 2009-01-25 21:54+0100\n"
 "Last-Translator: Jan Nekvasil <jan.nekvasil@gmail.com>\n"
 "Language-Team: \n"
@@ -3784,27 +3784,41 @@ msgstr "Příručku se nepodařilo otevřít: %s"
 
 #. TRANSLATORS: Why a book was left as it was, after "3 books left as
 #. they were: ". So are the others here and "open in the main window".
-#: mcomix/webp_books.py:97
+#: mcomix/webp_books.py:102
 msgid "split into volumes"
 msgstr "rozděleno na svazky"
 
-#: mcomix/webp_books.py:100 mcomix/webp_books.py:103
-msgid "a format MComix cannot write here"
-msgstr "formát, který zde MComix neumí zapsat"
+#: mcomix/webp_books.py:105
+msgid "damaged, or not an archive"
+msgstr "poškozeno, nebo nejde o archiv"
 
-#: mcomix/webp_books.py:134
+#: mcomix/webp_books.py:110
+#, python-format
+msgid "a format MComix does not write: %s"
+msgstr "formát, který MComix nezapisuje: %s"
+
+#: mcomix/webp_books.py:114
+#, python-format
+msgid "the %s program that writes the format is not installed"
+msgstr "program %s, který tento formát zapisuje, není nainstalován"
+
+#: mcomix/webp_books.py:118
+msgid "nothing installed here reads the format"
+msgstr "není nainstalováno nic, co by tento formát četlo"
+
+#: mcomix/webp_books.py:149
 msgid "no page smaller as WebP"
 msgstr "žádná stránka není jako WebP menší"
 
-#: mcomix/webp_books.py:177
+#: mcomix/webp_books.py:196
 msgid "archives inside"
 msgstr "obsahuje další archivy"
 
-#: mcomix/webp_books.py:183
+#: mcomix/webp_books.py:202
 msgid "no PNG pages"
 msgstr "žádné stránky PNG"
 
-#: mcomix/webp_books.py:213 mcomix/webp_books.py:219 mcomix/webp_books.py:239
+#: mcomix/webp_books.py:234 mcomix/webp_books.py:240 mcomix/webp_books.py:260
 msgid "encrypted"
 msgstr "šifrováno"
 
@@ -4489,6 +4503,9 @@ msgstr "S podadresáři"
 #: mcomix/library/watchlist.py:85
 msgid "Automatically scan for new books when library is _opened"
 msgstr "Automaticky hledat nové knihy při _otevření knihovny"
+
+#~ msgid "a format MComix cannot write here"
+#~ msgstr "formát, který zde MComix neumí zapsat"
 
 #~ msgid "Opens the selected books for viewing."
 #~ msgstr "Otevře vybrané knihy k prohlížení."

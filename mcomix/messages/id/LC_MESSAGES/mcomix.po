@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Comix-4.0.1\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-26 15:33+0100\n"
+"POT-Creation-Date: 2026-11-27 23:11+0100\n"
 "PO-Revision-Date: 2008-12-13 21:23+0700\n"
 "Last-Translator: Andhika Padmawan <andhika.padmawan@gmail.com>\n"
 "Language-Team: Indonesia <id@li.org>\n"
@@ -3803,27 +3803,41 @@ msgstr "Tidak dapat membuka panduan: %s"
 
 #. TRANSLATORS: Why a book was left as it was, after "3 books left as
 #. they were: ". So are the others here and "open in the main window".
-#: mcomix/webp_books.py:97
+#: mcomix/webp_books.py:102
 msgid "split into volumes"
 msgstr "terbagi menjadi beberapa volume"
 
-#: mcomix/webp_books.py:100 mcomix/webp_books.py:103
-msgid "a format MComix cannot write here"
-msgstr "format yang tidak dapat ditulis MComix di sini"
+#: mcomix/webp_books.py:105
+msgid "damaged, or not an archive"
+msgstr "rusak, atau bukan arsip"
 
-#: mcomix/webp_books.py:134
+#: mcomix/webp_books.py:110
+#, python-format
+msgid "a format MComix does not write: %s"
+msgstr "format yang tidak ditulis MComix: %s"
+
+#: mcomix/webp_books.py:114
+#, python-format
+msgid "the %s program that writes the format is not installed"
+msgstr "program %s yang menulis format ini tidak terpasang"
+
+#: mcomix/webp_books.py:118
+msgid "nothing installed here reads the format"
+msgstr "tidak ada yang terpasang di sini untuk membaca format ini"
+
+#: mcomix/webp_books.py:149
 msgid "no page smaller as WebP"
 msgstr "tidak ada halaman yang lebih kecil sebagai WebP"
 
-#: mcomix/webp_books.py:177
+#: mcomix/webp_books.py:196
 msgid "archives inside"
 msgstr "berisi arsip lain"
 
-#: mcomix/webp_books.py:183
+#: mcomix/webp_books.py:202
 msgid "no PNG pages"
 msgstr "tidak ada halaman PNG"
 
-#: mcomix/webp_books.py:213 mcomix/webp_books.py:219 mcomix/webp_books.py:239
+#: mcomix/webp_books.py:234 mcomix/webp_books.py:240 mcomix/webp_books.py:260
 msgid "encrypted"
 msgstr "terenkripsi"
 
@@ -4482,6 +4496,9 @@ msgstr "Dengan subdirektori"
 #: mcomix/library/watchlist.py:85
 msgid "Automatically scan for new books when library is _opened"
 msgstr "Cari buku baru secara otomatis saat perpustakaan di_buka"
+
+#~ msgid "a format MComix cannot write here"
+#~ msgstr "format yang tidak dapat ditulis MComix di sini"
 
 #~ msgid "Opens the selected books for viewing."
 #~ msgstr "Membuka buku yang dipilih untuk dibaca."

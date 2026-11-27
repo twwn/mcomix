@@ -22,6 +22,7 @@ from dataclasses import dataclass, field
 
 from mcomix import archive_packer
 from mcomix import archive_tools
+from mcomix import constants
 from mcomix import i18n
 from mcomix import image_tools
 from mcomix import log
@@ -45,6 +46,10 @@ _TICK = 0.1
 _NOT_THE_FILE = frozenset((
     errno.ENOSPC, errno.EDQUOT, errno.EACCES, errno.EPERM, errno.EROFS,
     errno.EIO, errno.ENAMETOOLONG, errno.EMFILE, errno.ENFILE))
+
+#: The formats MComix writes only with a program it does not install
+#: (archive_packer.can_write()), to that program's name.
+_WRITTEN_BY_PROGRAM = {constants.SEVENZIP: '7z', constants.RAR: 'rar'}
 
 
 class Skipped(Exception):
@@ -96,18 +101,28 @@ def convert(path: str, stop: threading.Event,
         # they were: ". So are the others here and "open in the main window".
         raise Skipped(_('split into volumes'))
     archive_type = archive_tools.archive_mime_type(path)
-    if archive_type is None or not archive_packer.can_write(archive_type):
-        raise Skipped(_('a format MComix cannot write here'))
+    if archive_type is None:
+        raise Skipped(_('damaged, or not an archive'))
+    unwritable = None
+    if not archive_packer.can_write(archive_type):
+        program = _WRITTEN_BY_PROGRAM.get(archive_type)
+        if program is None:
+            raise Skipped(_('a format MComix does not write: %s')
+                          % archive_tools.describe(path, archive_type))
+        # Told only of a book that has PNG pages: one that has none,
+        # such as a book done before, has nothing to write either way.
+        unwritable = _('the %s program that writes the format is not '
+                       'installed') % program
     archive = archive_tools.get_archive_handler(path, archive_type)
     if archive is None:
-        raise Skipped(_('a format MComix cannot write here'))
+        raise Skipped(_('nothing installed here reads the format'))
     before = os.stat(path).st_size
     directory = tempfile.mkdtemp(prefix='mcomix-webp-book.',
                                  dir=archive_packer.working_folder())
     try:
         try:
             pages, others, left_out = _unpack(archive, directory, stop,
-                                              progress)
+                                              progress, unwritable)
         finally:
             archive.close()
 
@@ -152,11 +167,15 @@ def _member(name: str) -> str:
 
 def _unpack(archive: archive_base.BaseArchive,
             directory: str, stop: threading.Event,
-            progress: Callable[[float], None]
+            progress: Callable[[float], None],
+            unwritable: "str | None" = None
             ) -> tuple[list[str], list[str], dict[str, str]]:
     """Unpack everything <archive> holds into <directory>, and answer
     with the names of its pages, sorted, of everything else, and of the
     files that could not be read, to why.
+
+    <unwritable>, where given, says why a book with PNG pages cannot be
+    written: such a book is skipped for it once listed.
 
     Where unpacking the whole archive fails, each file not yet out is
     unpacked by itself, so that one damaged file costs only itself.  A
@@ -181,6 +200,8 @@ def _unpack(archive: archive_base.BaseArchive,
             if not any(os.path.splitext(name)[1].lower() == '.png'
                        for name in pages):
                 raise Skipped(_('no PNG pages'))
+            if unwritable is not None:
+                raise Skipped(unwritable)
             left_out: dict[str, str] = {}
             done: set[str] = set()
 

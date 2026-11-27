@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix zh_TW\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-26 15:33+0100\n"
+"POT-Creation-Date: 2026-11-27 23:11+0100\n"
 "PO-Revision-Date: 2013-07-05 21:37+0800\n"
 "Last-Translator: Wayne Su <mstarmstar@hotmail.com>\n"
 "Language-Team: \n"
@@ -3237,27 +3237,41 @@ msgstr "無法開啟使用手冊：%s"
 
 #. TRANSLATORS: Why a book was left as it was, after "3 books left as
 #. they were: ". So are the others here and "open in the main window".
-#: mcomix/webp_books.py:97
+#: mcomix/webp_books.py:102
 msgid "split into volumes"
 msgstr "分成了多冊"
 
-#: mcomix/webp_books.py:100 mcomix/webp_books.py:103
-msgid "a format MComix cannot write here"
-msgstr "MComix 無法在此寫入的格式"
+#: mcomix/webp_books.py:105
+msgid "damaged, or not an archive"
+msgstr "已損壞，或不是封存檔"
 
-#: mcomix/webp_books.py:134
+#: mcomix/webp_books.py:110
+#, python-format
+msgid "a format MComix does not write: %s"
+msgstr "MComix 不寫入的格式：%s"
+
+#: mcomix/webp_books.py:114
+#, python-format
+msgid "the %s program that writes the format is not installed"
+msgstr "未安裝寫入此格式的 %s 程式"
+
+#: mcomix/webp_books.py:118
+msgid "nothing installed here reads the format"
+msgstr "此處未安裝可讀取此格式的程式"
+
+#: mcomix/webp_books.py:149
 msgid "no page smaller as WebP"
 msgstr "沒有頁面存為 WebP 後更小"
 
-#: mcomix/webp_books.py:177
+#: mcomix/webp_books.py:196
 msgid "archives inside"
 msgstr "包含其他封存檔"
 
-#: mcomix/webp_books.py:183
+#: mcomix/webp_books.py:202
 msgid "no PNG pages"
 msgstr "沒有 PNG 頁面"
 
-#: mcomix/webp_books.py:213 mcomix/webp_books.py:219 mcomix/webp_books.py:239
+#: mcomix/webp_books.py:234 mcomix/webp_books.py:240 mcomix/webp_books.py:260
 msgid "encrypted"
 msgstr "已加密"
 
@@ -3848,6 +3862,9 @@ msgstr "含子目錄"
 #: mcomix/library/watchlist.py:85
 msgid "Automatically scan for new books when library is _opened"
 msgstr "書庫開啟時自動搜尋新書(_O)"
+
+#~ msgid "a format MComix cannot write here"
+#~ msgstr "MComix 無法在此寫入的格式"
 
 #~ msgid "Opens the selected books for viewing."
 #~ msgstr "開啟選取的書。"

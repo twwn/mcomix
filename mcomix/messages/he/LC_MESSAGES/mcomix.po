@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: mcomix 0.99\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-26 15:33+0100\n"
+"POT-Creation-Date: 2026-11-27 23:11+0100\n"
 "PO-Revision-Date: 2013-01-07 22:51+0200\n"
 "Last-Translator: Isratine Citizen <genghiskhan@gmx.ca>\n"
 "Language-Team: Hebrew <eliz@gnu.org>\n"
@@ -3325,27 +3325,41 @@ msgstr "לא ניתן לפתוח את המדריך: %s"
 
 #. TRANSLATORS: Why a book was left as it was, after "3 books left as
 #. they were: ". So are the others here and "open in the main window".
-#: mcomix/webp_books.py:97
+#: mcomix/webp_books.py:102
 msgid "split into volumes"
 msgstr "מפוצלת לכרכים"
 
-#: mcomix/webp_books.py:100 mcomix/webp_books.py:103
-msgid "a format MComix cannot write here"
-msgstr "תבנית ש־MComix אינו יכול לכתוב כאן"
+#: mcomix/webp_books.py:105
+msgid "damaged, or not an archive"
+msgstr "פגומה, או אינה ארכיון"
 
-#: mcomix/webp_books.py:134
+#: mcomix/webp_books.py:110
+#, python-format
+msgid "a format MComix does not write: %s"
+msgstr "תבנית ש־MComix אינו כותב: %s"
+
+#: mcomix/webp_books.py:114
+#, python-format
+msgid "the %s program that writes the format is not installed"
+msgstr "התוכנה %s, שכותבת את התבנית, אינה מותקנת"
+
+#: mcomix/webp_books.py:118
+msgid "nothing installed here reads the format"
+msgstr "לא מותקן כאן דבר שקורא את התבנית"
+
+#: mcomix/webp_books.py:149
 msgid "no page smaller as WebP"
 msgstr "אף עמוד אינו קטן יותר כ־WebP"
 
-#: mcomix/webp_books.py:177
+#: mcomix/webp_books.py:196
 msgid "archives inside"
 msgstr "מכילה ארכיונים אחרים"
 
-#: mcomix/webp_books.py:183
+#: mcomix/webp_books.py:202
 msgid "no PNG pages"
 msgstr "אין עמודי PNG"
 
-#: mcomix/webp_books.py:213 mcomix/webp_books.py:219 mcomix/webp_books.py:239
+#: mcomix/webp_books.py:234 mcomix/webp_books.py:240 mcomix/webp_books.py:260
 msgid "encrypted"
 msgstr "מוצפנת"
 
@@ -3967,6 +3981,9 @@ msgstr "עם מדורי משנה"
 #: mcomix/library/watchlist.py:85
 msgid "Automatically scan for new books when library is _opened"
 msgstr "סרוק חוברות אוטומטית כאשר הספרייה הינה _פתוחה"
+
+#~ msgid "a format MComix cannot write here"
+#~ msgstr "תבנית ש־MComix אינו יכול לכתוב כאן"
 
 #~ msgid "Opens the selected books for viewing."
 #~ msgstr "פתיחת החוברת הנבחרת לצפיה."

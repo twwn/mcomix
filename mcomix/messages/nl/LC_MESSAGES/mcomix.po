@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-26 15:33+0100\n"
+"POT-Creation-Date: 2026-11-27 23:11+0100\n"
 "PO-Revision-Date: 2006-10-15 21:30+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -3758,27 +3758,41 @@ msgstr "Kon de handleiding niet openen: %s"
 
 #. TRANSLATORS: Why a book was left as it was, after "3 books left as
 #. they were: ". So are the others here and "open in the main window".
-#: mcomix/webp_books.py:97
+#: mcomix/webp_books.py:102
 msgid "split into volumes"
 msgstr "verdeeld over delen"
 
-#: mcomix/webp_books.py:100 mcomix/webp_books.py:103
-msgid "a format MComix cannot write here"
-msgstr "een formaat dat MComix hier niet kan schrijven"
+#: mcomix/webp_books.py:105
+msgid "damaged, or not an archive"
+msgstr "beschadigd, of geen archief"
 
-#: mcomix/webp_books.py:134
+#: mcomix/webp_books.py:110
+#, python-format
+msgid "a format MComix does not write: %s"
+msgstr "een formaat dat MComix niet schrijft: %s"
+
+#: mcomix/webp_books.py:114
+#, python-format
+msgid "the %s program that writes the format is not installed"
+msgstr "het programma %s dat het formaat schrijft is niet geïnstalleerd"
+
+#: mcomix/webp_books.py:118
+msgid "nothing installed here reads the format"
+msgstr "hier is niets geïnstalleerd dat het formaat leest"
+
+#: mcomix/webp_books.py:149
 msgid "no page smaller as WebP"
 msgstr "geen pagina kleiner als WebP"
 
-#: mcomix/webp_books.py:177
+#: mcomix/webp_books.py:196
 msgid "archives inside"
 msgstr "bevat andere archieven"
 
-#: mcomix/webp_books.py:183
+#: mcomix/webp_books.py:202
 msgid "no PNG pages"
 msgstr "geen PNG-pagina's"
 
-#: mcomix/webp_books.py:213 mcomix/webp_books.py:219 mcomix/webp_books.py:239
+#: mcomix/webp_books.py:234 mcomix/webp_books.py:240 mcomix/webp_books.py:260
 msgid "encrypted"
 msgstr "versleuteld"
 
@@ -4452,6 +4466,9 @@ msgstr "Met submappen"
 msgid "Automatically scan for new books when library is _opened"
 msgstr ""
 "Automatisch naar nieuwe boeken zoeken bij het _openen van de bibliotheek"
+
+#~ msgid "a format MComix cannot write here"
+#~ msgstr "een formaat dat MComix hier niet kan schrijven"
 
 #~ msgid "Opens the selected books for viewing."
 #~ msgstr "Opent de gekozen boeken om te lezen."
