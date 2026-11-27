@@ -7,6 +7,7 @@ one of the pages has taken it.
 
 import io
 import os
+import random
 import shutil
 import stat
 import sys
@@ -101,15 +102,24 @@ class PackerTest(MComixTest):
         self.assertEqual(['1 - Comic.jpg', '_1 - Comic.jpg', '3 - Comic.png'],
                          self._names())
 
-    def test_every_entry_is_deflated(self):
-        """The pages were stored rather than deflated, so an archive
-        rewritten with a page or two removed could still come out larger
-        than the one it was made from."""
-        self.assertTrue(self._pack('Comic', [self.comment]))
+    def test_a_page_that_does_not_compress_is_stored(self):
+        """Deflating a page whose bytes are compressed already saves
+        next to nothing, and costs the time every time the book is
+        written and read; a text file beside it is deflated."""
+        page = os.path.join(self.tmp_dir, 'page.jpg')
+        with open(page, 'wb') as compressed:
+            compressed.write(random.Random(7).randbytes(300000))
+        text = os.path.join(self.tmp_dir, 'notes.txt')
+        with open(text, 'w') as notes:
+            notes.write('Drawn in ink, coloured by hand. ' * 100)
+        packer = archive_packer.Packer([page], [text], self.archive, 'Comic')
+        packer.pack()
+        self.assertTrue(packer.wait())
         with zipfile.ZipFile(self.archive) as packed:
-            self.assertEqual({info.compress_type
-                              for info in packed.infolist()},
-                             {zipfile.ZIP_DEFLATED})
+            types = {os.path.splitext(info.filename)[1]: info.compress_type
+                     for info in packed.infolist()}
+        self.assertEqual(zipfile.ZIP_STORED, types['.jpg'])
+        self.assertEqual(zipfile.ZIP_DEFLATED, types['.txt'])
 
     def test_a_page_whose_bytes_compress_is_written_compressed(self):
         """Not every image is a compressed one: a BMP or an

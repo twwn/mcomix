@@ -9,6 +9,7 @@ import shutil
 import tarfile
 import tempfile
 import zipfile
+import zlib
 import threading
 from collections.abc import Callable, Iterable, Iterator, Mapping, Sequence
 from typing import BinaryIO, TYPE_CHECKING
@@ -568,20 +569,45 @@ class _Writer:
         """Drop whatever was left over, finished or not."""
 
 
+#: How much of the start of a file _deflate_pays() deflates, in bytes.
+_DEFLATE_SAMPLE = 1 << 17
+
+#: The least share by which that sample has to shrink for the file to
+#: be deflated.
+_DEFLATE_GAIN = 0.01
+
+
+def _deflate_pays(path: str) -> bool:
+    """Whether deflating the file at <path> makes it smaller by enough
+    to be worth it.
+
+    Judged by a sample at the fastest level, which takes about a
+    millisecond: deflating all of a compressed picture costs some
+    fifteen milliseconds a megabyte, and as much again each time it is
+    read.  A directory, or a file that cannot be read, is left to
+    zipfile, which says what is wrong with it.
+    """
+    try:
+        with open(path, 'rb') as file:
+            sample = file.read(_DEFLATE_SAMPLE)
+    except OSError:
+        return True
+    return bool(sample) and \
+        len(zlib.compress(sample, 1)) <= len(sample) * (1 - _DEFLATE_GAIN)
+
+
 class _ZipWriter(_Writer):
 
     """A ZIP, which is what a CBZ is.
 
-    Everything is deflated, pages included.  Storing them was meant to
-    save the time of compressing a compressed image again, but it also
-    means the archive can only come out larger than the one it was made
-    from: over twenty 1000x1400 JPEG pages the stored copy was 3,265,642
-    bytes against the deflated 3,242,804 and the 3,242,684 of the
-    archive they came out of, so removing a page or two from a long book
-    still left a bigger file than before.  Deflating them costs 54ms
-    against 1.4ms for those twenty pages, on a save that reads and
-    writes the whole book anyway; pages that are not compressed already,
-    BMP and uncompressed TIFF, come out 30% smaller.
+    A file is deflated where that makes it smaller by a share worth
+    having (_deflate_pays()), and stored as it is otherwise.  A JPEG,
+    PNG or WebP page is compressed already: over 120 JPEG pages of 110
+    MB deflating saved 0.12%, over 32 PNG pages 0.97%, over 80 WebP
+    pages nothing, while it made the book 19 times slower to write (1.7
+    s against 0.09 s) and 16 times slower to read back (377 ms against
+    23 ms).  A BMP or uncompressed TIFF page, a ComicInfo.xml or a
+    text file is deflated, as before.
     """
 
     def __init__(self, archive_path: str) -> None:
@@ -589,7 +615,8 @@ class _ZipWriter(_Writer):
         self._zip = zipfile.ZipFile(archive_path, 'w', zipfile.ZIP_DEFLATED)
 
     def add(self, path: str, name: str) -> None:
-        self._zip.write(path, name)
+        self._zip.write(path, name, compress_type=zipfile.ZIP_DEFLATED
+                        if _deflate_pays(path) else zipfile.ZIP_STORED)
 
     def close(self) -> None:
         self._zip.close()

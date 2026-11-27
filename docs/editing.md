@@ -62,6 +62,7 @@ The archive on disk is untouched until the changes are written.
 - The old page names are not kept, so a reordered book's names say its new order.
 - Comment files keep their names; one a page has taken gets an underscore in front.
 - The ComicInfo.xml MComix writes keeps its own name, whatever the list calls it.
+- In a CBZ, a page that is compressed already, such as a JPEG, PNG or WebP, is stored as it is: compressing it again saves a tenth of a percent or so, and makes the book slower to write and to read. Text files and uncompressed pictures, such as BMP, are compressed.
 - With "Store PNG pages as lossless WebP when saving an archive", each PNG page is written as a WebP instead, its name ending in .webp: "03 - Batman 01.webp".
   - Lossless: a page becomes a WebP only where that decodes to exactly the same pixels and is smaller. The drawn and painted pages it was tried on took a quarter to three fifths less room; a page that would not shrink stays a PNG.
   - Pages that WebP cannot hold exactly stay PNGs: 16 bits a channel, wider or higher than 16383 pixels, or with a gamma other than sRGB's. A colour profile and Exif go along with the page.
