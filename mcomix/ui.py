@@ -343,7 +343,8 @@ _VIEW = ('fullscreen', None,
 _GO = ('next_page', 'previous_page', 'go_to',
        'first_page', 'last_page', None,
        'go_back', 'go_forward', None,
-       'next_archive', 'previous_archive', 'shuffle_books', None,
+       'next_archive', 'previous_archive', 'shuffle_books',
+       'library_order', None,
        'next_directory', 'previous_directory', None,
        'invert_scroll')
 
@@ -569,6 +570,8 @@ class MainUI:
             _Entry('invert_scroll', 'edit-undo', _('Invert smart scroll'), _('Invert smart scrolling direction.'), window.change_invert_scroll),
             _Entry('shuffle_books', None, _('_Shuffle books'), _('Next and Previous book open the books of the folder in random order.'),
                    window.change_shuffle_books),
+            _Entry('library_order', None, _('Books in library o_rder'), _("Next and Previous book open the books the library showed, in its order, instead of the folder's."),
+                   window.change_library_order),
             _Entry('keep_transformation', None, _('_Keep transformation'), _('Keeps the currently selected transformation for the next pages.'),
                    window.change_keep_transformation),
             _Entry('slideshow', 'media-playback-start-symbolic', _('Start slid_eshow'), _('Start slideshow'), window.slideshow.toggle),
@@ -915,6 +918,13 @@ class MainUI:
         self._actions.get_action('store_webp').set_sensitive(
             general_sensitive
             and self._window.file_actions.can_store_pages_as_webp())
+
+        # Only a book picked from the library can walk its books.
+        library_order = self._actions.get_action('library_order')
+        library_order.set_sensitive(
+            self._window.filehandler.can_walk_library_list())
+        library_order.show_active(
+            self._window.filehandler.walks_library_list())
 
         # A folder of images has no one file to rename; its pages are
         # renamed one by one.

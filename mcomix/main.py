@@ -1986,6 +1986,17 @@ class MainWindow(Gtk.Window):
         their own order again."""
         prefs['shuffle books'] = toggleaction.get_active()
 
+    def change_library_order(self, toggleaction: "ui.Action") -> None:
+        """Have Next and Previous book walk the books the library showed
+        when the open book was picked from it, or the book's folder."""
+        self.filehandler.walk_library_list(toggleaction.get_active())
+        # The tick follows what is walked, which a book not picked from
+        # the library leaves as it was.
+        toggleaction.show_active(self.filehandler.walks_library_list())
+        number, count = self.filehandler.get_file_number()
+        self.statusbar.set_file_number(number, count)
+        self.statusbar.update()
+
     def change_keep_transformation(self, toggleaction: "ui.Action") -> None:
         """Keep the rotation and flips from one page to the next, or not.
 

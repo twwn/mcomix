@@ -563,6 +563,58 @@ class ResumedLibraryListTest(_WindowTest):
         self.handler.open_next_archive()
         self._opened(self.handler, 'c')
 
+    def _order(self):
+        return self.window.actiongroup.get_action('library_order')
+
+    def test_the_folder_and_the_library_are_walked_in_turn(self):
+        """Once a book was open there was no way to walk its folder in
+        place of the books the library showed, or back."""
+        self.handler.open_file(self.books['a'], listed=self.listed)
+        self._opened(self.handler, 'a')
+        order = self._order()
+        self.assertTrue(order.get_sensitive())
+        self.assertTrue(order.get_active())
+        order.activate()
+        self.assertFalse(self.handler.walks_library_list())
+        self.assertFalse(order.get_active())
+        self.assertEqual(self.books['a'], self.handler.get_path_to_base())
+        self.assertIsNone(file_handler.listed_with(self.books['a']))
+        self.handler.open_next_archive()
+        self._opened(self.handler, 'b')
+        self.assertTrue(order.get_sensitive())
+        self.assertFalse(order.get_active())
+        order.activate()
+        self.assertTrue(self.handler.walks_library_list())
+        self.assertEqual(self.listed, file_handler.listed_with(self.books['b']))
+        self.assertEqual((3, 3), self.handler.get_file_number())
+        self.handler.open_previous_archive()
+        self._opened(self.handler, 'c')
+
+    def test_a_book_not_from_the_library_cannot_walk_it(self):
+        self.handler.open_file(self.books['a'])
+        self._opened(self.handler, 'a')
+        order = self._order()
+        self.assertFalse(order.get_sensitive())
+        self.assertFalse(order.get_active())
+        self.handler.walk_library_list(True)
+        self.assertFalse(self.handler.walks_library_list())
+
+    def test_a_book_the_library_did_not_show_cannot_go_back_to_it(self):
+        """Walked to through its folder, a book none of the library's
+        has no place among them."""
+        stranger = os.path.join(self.tmp_dir, 'd.cbz')
+        shutil.copy2(NORMAL_ZIP, stranger)
+        self.handler.open_file(self.books['b'], listed=self.listed)
+        self._opened(self.handler, 'b')
+        self._order().activate()
+        self.handler.open_next_archive()
+        self._opened(self.handler, 'c')
+        self.handler.open_next_archive()
+        self.assertTrue(wait_for(lambda: self.handler.file_loaded
+                                 and self.handler.get_path_to_base()
+                                 == stranger, seconds=20))
+        self.assertFalse(self._order().get_sensitive())
+
     def test_a_list_of_the_wrong_shape_is_no_list(self):
         os.makedirs(constants.DATA_DIR, exist_ok=True)
         for content in ('{"a": 1}', '[1, 2]', 'not json'):

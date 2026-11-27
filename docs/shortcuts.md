@@ -34,6 +34,7 @@ Back to the page a jump left | CTRL+[, BackKey
 Forward again to the page Back left | CTRL+], ForwardKey
 Next book | CTRL+SHIFT+N
 Previous book | CTRL+SHIFT+P
+Books in library order | CTRL+SHIFT+L
 Next folder | CTRL+N
 Previous folder | CTRL+P
 

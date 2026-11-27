@@ -56,6 +56,7 @@
 - Several files picked at once open as one book of just those.
 - CTRL+SHIFT+N and CTRL+SHIFT+P open the next and previous archive in the folder. Past its last archive they go on into the next folder, as "Go on into the next folder" in the [preferences](preferences.md) describes, while that is on.
 - For a book opened from the [library](library.md), they open the next and previous of the books it shows, and stop at the last.
+- "Go → Books in library order" (CTRL+SHIFT+L) switches such a book between the two while it is open. Off, they walk its folder in natural order, as after CTRL+Enter in the library. On, the library's books again. The book and its page stay.
 - With "Go → Shuffle books" on, they open the folder's archives, or the books the library shows, in random order instead, and so do page turns past either end of a book.
   Next picks one not opened yet in this round; Previous goes back through the ones opened, and past the first picks one too.
   Once every archive has had its turn, a new round starts. The folder is not left, unless it holds no other archive.

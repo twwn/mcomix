@@ -494,6 +494,10 @@ class EventHandler:
         manager.register('shuffle_books', [],
                          self._window.actiongroup.get_action('shuffle_books').activate)
 
+        manager.register('library_order',
+                         ['<control><shift>L'],
+                         self._window.actiongroup.get_action('library_order').activate)
+
         manager.register('next_directory',
                          ['<control>N'],
                          self._window.filehandler.open_next_directory)

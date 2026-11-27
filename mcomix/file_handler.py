@@ -229,6 +229,11 @@ class FileHandler:
         #: order Next and Previous book walk them: the newest at the
         #: end, those Previous reached past the first at the start.
         self._shuffle_trail: list[str] = []
+        #: The books the library showed when the open book was picked
+        #: from it, in the order shown, kept while Next and Previous
+        #: book walk its folder instead (walk_library_list()); None
+        #: for a book opened any other way.
+        self._library_list: list[str] | None = None
         #: Keeps track of the last read page in archives
         self.last_read_page = last_read_page.LastReadPage(backend.LibraryBackend())
         #: Regexp used for determining which archive files are comment files.
@@ -316,7 +321,49 @@ class FileHandler:
         kept = listed_with(old)
         if kept is not None:
             _keep_listed([new if book == old else book for book in kept])
+        if self._library_list is not None:
+            self._library_list = [new if book == old else book
+                                  for book in self._library_list]
         return True
+
+    def walks_library_list(self) -> bool:
+        """Whether Next and Previous book walk the books the library
+        showed when the open book was picked from it, rather than its
+        folder."""
+        return (self._library_list is not None
+                and isinstance(self._file_provider,
+                               file_provider.PreDefinedFileProvider))
+
+    def can_walk_library_list(self) -> bool:
+        """Whether the open book can walk the library's books and its
+        folder's in turn: it was picked from the library, and is still
+        one of the books shown there.  One reached through its folder
+        since may be none of them."""
+        return (self.file_loaded and self._library_list is not None
+                and self._current_file in self._library_list)
+
+    def walk_library_list(self, library: bool) -> None:
+        """Have Next and Previous book walk the books the library
+        showed, where <library> is True, or the open book's folder in
+        natural order, as for a book opened from a file chooser.
+
+        The book and its page stay.  The list is kept either way, so
+        the walk can go back to it; a restart reopens the book among
+        the books it was last walked among.
+        """
+        if not self.can_walk_library_list() \
+                or library == self.walks_library_list():
+            return
+        assert self._library_list is not None
+        assert self._current_file is not None
+        if library:
+            self._file_provider = file_provider.PreDefinedFileProvider(
+                self._library_list)
+            _keep_listed(self._library_list)
+        else:
+            self._file_provider = file_provider.get_file_provider(
+                [self._current_file])
+            _keep_listed(None)
 
     def nearest_in_folder(self, gone: str) -> str | None:
         """The file of the open book's kind that is nearest to <gone> in
@@ -547,10 +594,12 @@ class FileHandler:
 
         if listed is not None and isinstance(path, str):
             _keep_listed(listed)
+            self._library_list = [os.path.abspath(book) for book in listed]
         elif not keep_fileprovider:
             # Opened afresh, not walked to from a book picked in the
             # library.
             _keep_listed(None)
+            self._library_list = None
 
         try:
             if listed is not None and isinstance(path, str):
@@ -765,6 +814,7 @@ class FileHandler:
         if self.file_loaded or self.file_loading:
             if close_provider:
                 self._file_provider = None
+                self._library_list = None
             self.update_last_read_page()
             # Another book can be opened with the prompt up, handed over
             # by a second MComix or reached by a slideshow, and its
