@@ -204,6 +204,23 @@ def sniff_seeds():
     write('sniff', 'tiff-pages', pages.getvalue())
 
 
+def pictures_seeds():
+    def saved(image, format, **options):
+        written = io.BytesIO()
+        image.save(written, format=format, **options)
+        return written.getvalue()
+
+    exif = Image.Exif()
+    exif[0x0112] = 6
+    exif[0x010f] = 'Maker'
+    page = Image.new('RGB', (16, 16), (200, 10, 10))
+    write('pictures', 'jpeg-exif', saved(page, 'JPEG', exif=exif.tobytes()))
+    write('pictures', 'jpeg-jfif', saved(page, 'JPEG'))
+    write('pictures', 'png', saved(page, 'PNG'))
+    write('pictures', 'apng', saved(page, 'PNG', save_all=True,
+                                    append_images=[Image.new('RGB', (16, 16))]))
+
+
 if __name__ == '__main__':
     mobi_seeds()
     sniff_seeds()
@@ -211,6 +228,7 @@ if __name__ == '__main__':
     kfx_seeds()
     epub_seeds()
     comicinfo_seeds()
+    pictures_seeds()
     for target in sorted(os.listdir(CORPUS)):
         folder = os.path.join(CORPUS, target)
         print(target, len(os.listdir(folder)), 'seeds,',

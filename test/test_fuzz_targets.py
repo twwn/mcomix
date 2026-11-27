@@ -19,7 +19,7 @@ from mcomix.archive import kfx
 
 FUZZ = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
                     'fuzz')
-TARGETS = ('ion', 'kfx', 'epub', 'comicinfo', 'mobi', 'sniff')
+TARGETS = ('ion', 'kfx', 'epub', 'comicinfo', 'mobi', 'sniff', 'pictures')
 
 
 def _load(target):
@@ -86,6 +86,10 @@ class FuzzTargetTest(MComixTest):
 
     def test_sniff(self):
         self._run('sniff')
+
+    def test_pictures(self):
+        inputs = self._run('pictures')
+        self.assertTrue(any(name.startswith('regressions/') for name, _ in inputs))
 
     def test_every_target_is_run_here(self):
         found = sorted(name[len('fuzz_'):-len('.py')] for name in os.listdir(FUZZ)
