@@ -377,6 +377,11 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable, LibraryPart):
                 name, GLib.VariantType.new('i'), GLib.Variant('i', state))
             action.connect('change-state', handler)
             self._popup_actions.add_action(action)
+        for name, handler in (('select-all', self._select_all),
+                              ('select-no-pages', self._select_no_pages)):
+            action = Gio.SimpleAction.new(name, None)
+            action.connect('activate', handler)
+            self._popup_actions.add_action(action)
         self.insert_action_group('books', self._popup_actions)
 
         def radio(menu: Gio.Menu, entries: "tuple[tuple[str, int], ...]",
@@ -441,7 +446,16 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable, LibraryPart):
         radio(custom, ((_('Custom...'), 0),), 'cover-size')
         size_menu.append_section(None, custom)
 
+        # Picks the books on show that need the same thing done to
+        # them, to be moved, removed or written again together.
+        select_menu = Gio.Menu()
+        select_menu.append_item(widgets.menu_item(_('All books'),
+                                                  'books.select-all'))
+        select_menu.append_item(widgets.menu_item(_('Books with no pages'),
+                                                  'books.select-no-pages'))
+
         submenus = Gio.Menu()
+        submenus.append_submenu(_('Select books'), select_menu)
         submenus.append_submenu(_('_Sort'), sort_menu)
         submenus.append_submenu(_('Cover si_ze'), size_menu)
         model.append_section(None, submenus)
@@ -453,7 +467,7 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable, LibraryPart):
 
     def add_view_submenu(self, label: str, menu: Gio.MenuModel,
                          before_popup: Callable[[], None]) -> None:
-        """Offer <menu> under <label> before Sort and Cover size in the
+        """Offer <menu> under <label> before Select books, Sort and Cover size in the
         right-click menu, and run <before_popup> each time the menu
         opens, to bring <menu> up to date."""
         self._view_menu.prepend_submenu(label, menu)
@@ -1641,6 +1655,8 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable, LibraryPart):
         self._set_sensitive('open-new-window', len(selected) == 1)
         self._set_sensitive('open-containing-folder', len(selected) == 1)
         self._set_sensitive('rename', len(selected) == 1)
+        self._set_sensitive('select-no-pages', any(
+            item.pages == 0 for item in self._each_item()))
         self._move_to.update()
         self._offer_commands(selected[0].path if selected else None)
         if self._before_popup is not None:
@@ -1729,6 +1745,18 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable, LibraryPart):
             return
         self._library.collection_area.clean_collection(
             None if collection == constants.COLLECTION_ALL else collection)
+
+    def _select_all(self, *args: object) -> None:
+        """Select every book on show."""
+        self._covers.select_all()
+
+    def _select_no_pages(self, *args: object) -> None:
+        """Select the books on show the library found no picture in,
+        such as an archive of videos added before such a book was
+        refused, and nothing else."""
+        self._covers.select_positions(
+            position for position, item in enumerate(self._each_item())
+            if item.pages == 0)
 
     def _set_sensitive(self, action: str, sensitive: bool) -> None:
         """ Enables the popup menu action <action> based on <sensitive>. """

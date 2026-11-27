@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-27 23:48+0100\n"
+"POT-Creation-Date: 2026-11-27 23:54+0100\n"
 "PO-Revision-Date: 2009-02-02 14:19+0100\n"
 "Last-Translator: Dariusz Jakoniuk <pipaceliny@gmail.com>\n"
 "Language-Team: \n"
@@ -56,7 +56,7 @@ msgstr "! Nie udało się odczytać %s"
 #
 # File: src/comment.py, line: 53
 #: mcomix/archive_packer.py:542 mcomix/file_actions.py:1473
-#: mcomix/library/book_area.py:1411
+#: mcomix/library/book_area.py:1425
 #, python-format
 msgid "! Could not remove %(file)s: %(error)s"
 msgstr "! Nie udało się usunąć %(file)s: %(error)s"
@@ -637,12 +637,12 @@ msgstr "Plik zostanie przeniesiony do kosza."
 msgid "_Move to Trash"
 msgstr "_Przenieś do kosza"
 
-#: mcomix/file_actions.py:1317 mcomix/library/book_area.py:1348
+#: mcomix/file_actions.py:1317 mcomix/library/book_area.py:1362
 msgid "It does not go to the trash and cannot be restored."
 msgstr ""
 "Plik nie zostanie przeniesiony do kosza i nie będzie można go przywrócić."
 
-#: mcomix/file_actions.py:1325 mcomix/library/book_area.py:1340
+#: mcomix/file_actions.py:1325 mcomix/library/book_area.py:1354
 #, python-format
 msgid "Delete \"%s\" permanently?"
 msgstr "Usunąć trwale \"%s\"?"
@@ -652,7 +652,7 @@ msgstr "Usunąć trwale \"%s\"?"
 msgid "Could not move \"%s\" to the trash"
 msgstr "Nie udało się przenieść \"%s\" do kosza"
 
-#: mcomix/file_actions.py:1436 mcomix/library/book_area.py:1425
+#: mcomix/file_actions.py:1436 mcomix/library/book_area.py:1439
 #, python-format
 msgid "%d book could not be moved to the trash."
 msgid_plural "%d books could not be moved to the trash."
@@ -2600,7 +2600,7 @@ msgstr "Nazwa pliku"
 msgid "File name (GLib)"
 msgstr "Nazwa pliku (GLib)"
 
-#: mcomix/preferences_dialog.py:800 mcomix/library/book_area.py:419
+#: mcomix/preferences_dialog.py:800 mcomix/library/book_area.py:424
 msgid "File size"
 msgstr "Rozmiar pliku"
 
@@ -2643,11 +2643,11 @@ msgstr ""
 "porównywania tworzonych przez GLib/GTK, których używa wiele innych programów "
 "GTK."
 
-#: mcomix/preferences_dialog.py:831 mcomix/library/book_area.py:427
+#: mcomix/preferences_dialog.py:831 mcomix/library/book_area.py:432
 msgid "Ascending"
 msgstr "Rosnąco"
 
-#: mcomix/preferences_dialog.py:832 mcomix/library/book_area.py:428
+#: mcomix/preferences_dialog.py:832 mcomix/library/book_area.py:433
 msgid "Descending"
 msgstr "Malejąco"
 
@@ -2764,7 +2764,7 @@ msgstr ""
 "proporcje kolorów; względny kolorymetryczny zachowuje dokładnie te, które "
 "ekran może wyświetlić."
 
-#: mcomix/preferences_dialog.py:975 mcomix/library/book_area.py:435
+#: mcomix/preferences_dialog.py:975 mcomix/library/book_area.py:440
 msgid "Normal"
 msgstr "Zwykły"
 
@@ -4084,8 +4084,9 @@ msgstr "Aktualizacja wersji bazy danych biblioteki z %(from)d do %(to)d."
 
 #
 # File: src/library.py, line: 202
-#: mcomix/library/backend_types.py:431 mcomix/library/collection_area.py:201
-#: mcomix/library/control_area.py:95 mcomix/library/shelf.py:215
+#: mcomix/library/backend_types.py:431 mcomix/library/book_area.py:452
+#: mcomix/library/collection_area.py:201 mcomix/library/control_area.py:95
+#: mcomix/library/shelf.py:215
 msgid "All books"
 msgstr "Wszystkie książki"
 
@@ -4144,77 +4145,85 @@ msgstr "Zm_ień nazwę"
 msgid "_Properties"
 msgstr "Właś_ciwości"
 
-#: mcomix/library/book_area.py:393
+#: mcomix/library/book_area.py:398
 msgid "Library books"
 msgstr "Książki w bibliotece"
 
-#: mcomix/library/book_area.py:406
+#: mcomix/library/book_area.py:411
 msgid "Move _to"
 msgstr "P_rzenieś do"
 
-#: mcomix/library/book_area.py:417
+#: mcomix/library/book_area.py:422
 msgid "Book name"
 msgstr "Nazwa książki"
 
-#: mcomix/library/book_area.py:418
+#: mcomix/library/book_area.py:423
 msgid "Full path"
 msgstr "Pełna ścieżka"
 
-#: mcomix/library/book_area.py:420
+#: mcomix/library/book_area.py:425
 msgid "Pages"
 msgstr "Strony"
 
-#: mcomix/library/book_area.py:421 mcomix/library/book_properties.py:102
+#: mcomix/library/book_area.py:426 mcomix/library/book_properties.py:102
 msgid "Date added"
 msgstr "Data dodania"
 
-#: mcomix/library/book_area.py:422
+#: mcomix/library/book_area.py:427
 msgid "Date modified"
 msgstr "Data modyfikacji"
 
-#: mcomix/library/book_area.py:423 mcomix/library/book_properties.py:106
+#: mcomix/library/book_area.py:428 mcomix/library/book_properties.py:106
 msgid "Last read"
 msgstr "Ostatnio czytane"
 
-#: mcomix/library/book_area.py:424
+#: mcomix/library/book_area.py:429
 msgid "By hand"
 msgstr "Ręcznie"
 
-#: mcomix/library/book_area.py:433
+#: mcomix/library/book_area.py:438
 msgid "Huge"
 msgstr "Ogromny"
 
-#: mcomix/library/book_area.py:434
+#: mcomix/library/book_area.py:439
 msgid "Large"
 msgstr "Duży"
 
-#: mcomix/library/book_area.py:436
+#: mcomix/library/book_area.py:441
 msgid "Small"
 msgstr "Mały"
 
-#: mcomix/library/book_area.py:437
+#: mcomix/library/book_area.py:442
 msgid "Tiny"
 msgstr "Bardzo mały"
 
-#: mcomix/library/book_area.py:441
+#: mcomix/library/book_area.py:446
 msgid "Custom..."
 msgstr "Własny..."
 
-#: mcomix/library/book_area.py:445
+#: mcomix/library/book_area.py:454
+msgid "Books with no pages"
+msgstr "Książki bez stron"
+
+#: mcomix/library/book_area.py:458
+msgid "Select books"
+msgstr "Zaznacz książki"
+
+#: mcomix/library/book_area.py:459
 msgid "_Sort"
 msgstr "_Sortuj"
 
-#: mcomix/library/book_area.py:446
+#: mcomix/library/book_area.py:460
 msgid "Cover si_ze"
 msgstr "Roz_miar okładek"
 
-#: mcomix/library/book_area.py:944
+#: mcomix/library/book_area.py:958
 msgid "Set library cover size"
 msgstr "Ustaw rozmiar okładek w bibliotece"
 
 #
 # File: src/library.py, line: 588
-#: mcomix/library/book_area.py:1252
+#: mcomix/library/book_area.py:1266
 #, python-format
 msgid "Removed %(num)d book from '%(collection)s'."
 msgid_plural "Removed %(num)d books from '%(collection)s'."
@@ -4222,7 +4231,7 @@ msgstr[0] "Usunięto %(num)d książkę z \"%(collection)s\"."
 msgstr[1] "Usunięto %(num)d książki z \"%(collection)s\"."
 msgstr[2] "Usunięto %(num)d książek z \"%(collection)s\"."
 
-#: mcomix/library/book_area.py:1275 mcomix/library/collection_area.py:283
+#: mcomix/library/book_area.py:1289 mcomix/library/collection_area.py:283
 #: mcomix/library/main_dialog.py:256
 #, python-format
 msgid "Removed %d book from the library."
@@ -4233,11 +4242,11 @@ msgstr[2] "Usunięto %d książek z biblioteki."
 
 #
 # File: src/library.py, line: 597
-#: mcomix/library/book_area.py:1297 mcomix/library/book_area.py:1318
+#: mcomix/library/book_area.py:1311 mcomix/library/book_area.py:1332
 msgid "Remove books from the library?"
 msgstr "Usuń książki z biblioteki?"
 
-#: mcomix/library/book_area.py:1298
+#: mcomix/library/book_area.py:1312
 msgid ""
 "The selected books will be removed from the library. Any in a folder with no "
 "trash is deleted permanently and cannot be restored."
@@ -4245,12 +4254,12 @@ msgstr ""
 "Wybrane książki zostaną usunięte z biblioteki. Te w katalogu bez kosza "
 "zostaną trwale usunięte i nie będzie można ich przywrócić."
 
-#: mcomix/library/book_area.py:1319
+#: mcomix/library/book_area.py:1333
 msgid ""
 "The selected books will be removed from the library and moved to the trash."
 msgstr "Wybrane książki zostaną usunięte z biblioteki i przeniesione do kosza."
 
-#: mcomix/library/book_area.py:1344
+#: mcomix/library/book_area.py:1358
 #, python-format
 msgid "Delete %d book permanently?"
 msgid_plural "Delete %d books permanently?"
@@ -4258,7 +4267,7 @@ msgstr[0] "Usunąć trwale %d książkę?"
 msgstr[1] "Usunąć trwale %d książki?"
 msgstr[2] "Usunąć trwale %d książek?"
 
-#: mcomix/library/book_area.py:1476
+#: mcomix/library/book_area.py:1490
 #, python-format
 msgid "Remove the bookmarks in the deleted book?"
 msgid_plural "Remove the bookmarks in the %(count)d deleted books?"
@@ -4266,7 +4275,7 @@ msgstr[0] "Usunąć zakładki w usuniętej książce?"
 msgstr[1] "Usunąć zakładki w %(count)d usuniętych książkach?"
 msgstr[2] "Usunąć zakładki w %(count)d usuniętych książkach?"
 
-#: mcomix/library/book_area.py:1678
+#: mcomix/library/book_area.py:1694
 msgid "Open with"
 msgstr "Otwórz za pomocą"
 

@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix 0.90.4\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-27 23:48+0100\n"
+"POT-Creation-Date: 2026-11-27 23:54+0100\n"
 "PO-Revision-Date: 2016-01-10 18:09+0200\n"
 "Last-Translator: Ulyanich Michael <ulianich_mihail@ukr.net>\n"
 "Language-Team: Russian <kde-russian@lists.kde.ru>\n"
@@ -58,7 +58,7 @@ msgstr "! Невозможно прочитать %s"
 #
 # File: src/comment.py, line: 53
 #: mcomix/archive_packer.py:542 mcomix/file_actions.py:1473
-#: mcomix/library/book_area.py:1411
+#: mcomix/library/book_area.py:1425
 #, python-format
 msgid "! Could not remove %(file)s: %(error)s"
 msgstr "! Не удалось удалить %(file)s: %(error)s"
@@ -648,11 +648,11 @@ msgstr "Файл будет перемещён в корзину."
 msgid "_Move to Trash"
 msgstr "_Переместить в Корзину"
 
-#: mcomix/file_actions.py:1317 mcomix/library/book_area.py:1348
+#: mcomix/file_actions.py:1317 mcomix/library/book_area.py:1362
 msgid "It does not go to the trash and cannot be restored."
 msgstr "Файл не будет перемещён в корзину, и восстановить его будет нельзя."
 
-#: mcomix/file_actions.py:1325 mcomix/library/book_area.py:1340
+#: mcomix/file_actions.py:1325 mcomix/library/book_area.py:1354
 #, python-format
 msgid "Delete \"%s\" permanently?"
 msgstr "Удалить \"%s\" безвозвратно?"
@@ -662,7 +662,7 @@ msgstr "Удалить \"%s\" безвозвратно?"
 msgid "Could not move \"%s\" to the trash"
 msgstr "Не удалось переместить «%s» в корзину"
 
-#: mcomix/file_actions.py:1436 mcomix/library/book_area.py:1425
+#: mcomix/file_actions.py:1436 mcomix/library/book_area.py:1439
 #, python-format
 msgid "%d book could not be moved to the trash."
 msgid_plural "%d books could not be moved to the trash."
@@ -2611,7 +2611,7 @@ msgstr "Имя файла"
 msgid "File name (GLib)"
 msgstr "Имя файла (GLib)"
 
-#: mcomix/preferences_dialog.py:800 mcomix/library/book_area.py:419
+#: mcomix/preferences_dialog.py:800 mcomix/library/book_area.py:424
 msgid "File size"
 msgstr "Размер файла"
 
@@ -2654,11 +2654,11 @@ msgstr ""
 "которые создаёт GLib/GTK и которые использует множество других приложений "
 "GTK."
 
-#: mcomix/preferences_dialog.py:831 mcomix/library/book_area.py:427
+#: mcomix/preferences_dialog.py:831 mcomix/library/book_area.py:432
 msgid "Ascending"
 msgstr "По возрастанию"
 
-#: mcomix/preferences_dialog.py:832 mcomix/library/book_area.py:428
+#: mcomix/preferences_dialog.py:832 mcomix/library/book_area.py:433
 msgid "Descending"
 msgstr "По убыванию"
 
@@ -2775,7 +2775,7 @@ msgstr ""
 "относительная колориметрическая точно сохраняет те, которые экран может "
 "показать."
 
-#: mcomix/preferences_dialog.py:975 mcomix/library/book_area.py:435
+#: mcomix/preferences_dialog.py:975 mcomix/library/book_area.py:440
 msgid "Normal"
 msgstr "Обычный"
 
@@ -4113,8 +4113,9 @@ msgstr "Обновление версии базы данных библиоте
 
 #
 # File: src/library.py, line: 202
-#: mcomix/library/backend_types.py:431 mcomix/library/collection_area.py:201
-#: mcomix/library/control_area.py:95 mcomix/library/shelf.py:215
+#: mcomix/library/backend_types.py:431 mcomix/library/book_area.py:452
+#: mcomix/library/collection_area.py:201 mcomix/library/control_area.py:95
+#: mcomix/library/shelf.py:215
 msgid "All books"
 msgstr "Все книги"
 
@@ -4177,77 +4178,85 @@ msgstr "Пере_именовать"
 msgid "_Properties"
 msgstr "Сво_йства"
 
-#: mcomix/library/book_area.py:393
+#: mcomix/library/book_area.py:398
 msgid "Library books"
 msgstr "Книги библиотеки"
 
-#: mcomix/library/book_area.py:406
+#: mcomix/library/book_area.py:411
 msgid "Move _to"
 msgstr "П_ереместить в"
 
-#: mcomix/library/book_area.py:417
+#: mcomix/library/book_area.py:422
 msgid "Book name"
 msgstr "Название книги"
 
-#: mcomix/library/book_area.py:418
+#: mcomix/library/book_area.py:423
 msgid "Full path"
 msgstr "Полный путь"
 
-#: mcomix/library/book_area.py:420
+#: mcomix/library/book_area.py:425
 msgid "Pages"
 msgstr "Страницы"
 
-#: mcomix/library/book_area.py:421 mcomix/library/book_properties.py:102
+#: mcomix/library/book_area.py:426 mcomix/library/book_properties.py:102
 msgid "Date added"
 msgstr "Дата добавления"
 
-#: mcomix/library/book_area.py:422
+#: mcomix/library/book_area.py:427
 msgid "Date modified"
 msgstr "Дата изменения"
 
-#: mcomix/library/book_area.py:423 mcomix/library/book_properties.py:106
+#: mcomix/library/book_area.py:428 mcomix/library/book_properties.py:106
 msgid "Last read"
 msgstr "Последнее чтение"
 
-#: mcomix/library/book_area.py:424
+#: mcomix/library/book_area.py:429
 msgid "By hand"
 msgstr "Вручную"
 
-#: mcomix/library/book_area.py:433
+#: mcomix/library/book_area.py:438
 msgid "Huge"
 msgstr "Огромный"
 
-#: mcomix/library/book_area.py:434
+#: mcomix/library/book_area.py:439
 msgid "Large"
 msgstr "Большой"
 
-#: mcomix/library/book_area.py:436
+#: mcomix/library/book_area.py:441
 msgid "Small"
 msgstr "Маленький"
 
-#: mcomix/library/book_area.py:437
+#: mcomix/library/book_area.py:442
 msgid "Tiny"
 msgstr "Крошечный"
 
-#: mcomix/library/book_area.py:441
+#: mcomix/library/book_area.py:446
 msgid "Custom..."
 msgstr "Другой..."
 
-#: mcomix/library/book_area.py:445
+#: mcomix/library/book_area.py:454
+msgid "Books with no pages"
+msgstr "Книги без страниц"
+
+#: mcomix/library/book_area.py:458
+msgid "Select books"
+msgstr "Выбрать книги"
+
+#: mcomix/library/book_area.py:459
 msgid "_Sort"
 msgstr "_Сортировка"
 
-#: mcomix/library/book_area.py:446
+#: mcomix/library/book_area.py:460
 msgid "Cover si_ze"
 msgstr "Размер о_бложек"
 
-#: mcomix/library/book_area.py:944
+#: mcomix/library/book_area.py:958
 msgid "Set library cover size"
 msgstr "Задать размер обложек в библиотеке"
 
 #
 # File: src/library.py, line: 588
-#: mcomix/library/book_area.py:1252
+#: mcomix/library/book_area.py:1266
 #, python-format
 msgid "Removed %(num)d book from '%(collection)s'."
 msgid_plural "Removed %(num)d books from '%(collection)s'."
@@ -4255,7 +4264,7 @@ msgstr[0] "Из «%(collection)s» удалена %(num)d книга."
 msgstr[1] "Из «%(collection)s» удалено %(num)d книги."
 msgstr[2] "Из «%(collection)s» удалено %(num)d книг."
 
-#: mcomix/library/book_area.py:1275 mcomix/library/collection_area.py:283
+#: mcomix/library/book_area.py:1289 mcomix/library/collection_area.py:283
 #: mcomix/library/main_dialog.py:256
 #, python-format
 msgid "Removed %d book from the library."
@@ -4266,11 +4275,11 @@ msgstr[2] "Из библиотеки удалено %d книг."
 
 #
 # File: src/library.py, line: 597
-#: mcomix/library/book_area.py:1297 mcomix/library/book_area.py:1318
+#: mcomix/library/book_area.py:1311 mcomix/library/book_area.py:1332
 msgid "Remove books from the library?"
 msgstr "Удалить книги из библиотеки?"
 
-#: mcomix/library/book_area.py:1298
+#: mcomix/library/book_area.py:1312
 msgid ""
 "The selected books will be removed from the library. Any in a folder with no "
 "trash is deleted permanently and cannot be restored."
@@ -4278,12 +4287,12 @@ msgstr ""
 "Выбранные книги будут убраны из библиотеки. Книги из каталога без корзины "
 "будут удалены навсегда, и восстановить их будет нельзя."
 
-#: mcomix/library/book_area.py:1319
+#: mcomix/library/book_area.py:1333
 msgid ""
 "The selected books will be removed from the library and moved to the trash."
 msgstr "Выбранные книги будут убраны из библиотеки и перемещены в корзину."
 
-#: mcomix/library/book_area.py:1344
+#: mcomix/library/book_area.py:1358
 #, python-format
 msgid "Delete %d book permanently?"
 msgid_plural "Delete %d books permanently?"
@@ -4291,7 +4300,7 @@ msgstr[0] "Удалить %d книгу безвозвратно?"
 msgstr[1] "Удалить %d книги безвозвратно?"
 msgstr[2] "Удалить %d книг безвозвратно?"
 
-#: mcomix/library/book_area.py:1476
+#: mcomix/library/book_area.py:1490
 #, python-format
 msgid "Remove the bookmarks in the deleted book?"
 msgid_plural "Remove the bookmarks in the %(count)d deleted books?"
@@ -4299,7 +4308,7 @@ msgstr[0] "Удалить закладки в %(count)d удалённой кн�
 msgstr[1] "Удалить закладки в %(count)d удалённых книгах?"
 msgstr[2] "Удалить закладки в %(count)d удалённых книгах?"
 
-#: mcomix/library/book_area.py:1678
+#: mcomix/library/book_area.py:1694
 msgid "Open with"
 msgstr "Открыть с помощью"
 

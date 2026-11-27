@@ -59,6 +59,7 @@ While no book is open, the main window shows the covers of "Recent" itself, or o
   - "Remove from the library".
   - "Remove and move to the trash": the files go to the trash, from where they can be restored. Where the trash would refuse one, MComix asks to delete it permanently instead. It also takes them out of the recent files and asks about their bookmarks.
   - "Delete permanently", or SHIFT+Delete: as the trash, but the files are deleted for good and cannot be restored. Cancel is the default.
+- "Select books" in the same menu selects every book on show, or those with no pages: an archive of videos, say, added before the library refused such books. Then move or remove them together.
 - "Copy", or CTRL+C, puts a single book's path and cover on the clipboard.
 - Delete takes the selected books out of the collection on show, as "Remove from this collection" does. Under "All books" it does nothing.
 - "Open containing folder" shows a single book in the file manager.

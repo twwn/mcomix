@@ -1669,6 +1669,41 @@ class _FourCoversTest(_AreaOnScreenTest):
             lambda: self.area._covers.position_at(60, 60) >= 0))
 
 
+class SelectBooksTest(_FourCoversTest):
+
+    """The covers' "Select books" submenu picks out the books on show
+    that need the same thing done to them."""
+
+    def _popped_up(self):
+        self.library.collection_area = _CollectionArea()
+        self.library.main_window = _main_window()
+        with unittest.mock.patch.object(book_area.widgets, 'popup_at'):
+            self.area._popup_book_menu()
+
+    def _activate(self, name):
+        self.area._popup_actions.lookup_action(name).activate(None)
+        return self.area._covers.get_selected_positions()
+
+    def test_books_with_no_pages_are_selected_and_nothing_else(self):
+        """An archive of videos the library added before it refused
+        such books could only be found by its empty cover."""
+        self.area._covers.get_item(1).pages = 0
+        self.area._covers.get_item(3).pages = 0
+        self.area._covers.select_positions([0, 2])
+        self._popped_up()
+        self.assertTrue(self.area._popup_actions.lookup_action(
+            'select-no-pages').get_enabled())
+        self.assertEqual([1, 3], list(self._activate('select-no-pages')))
+
+    def test_it_is_not_offered_where_every_book_has_pages(self):
+        self._popped_up()
+        self.assertFalse(self.area._popup_actions.lookup_action(
+            'select-no-pages').get_enabled())
+
+    def test_all_books(self):
+        self.assertEqual([0, 1, 2, 3], list(self._activate('select-all')))
+
+
 class StorePagesAsWebpEntryTest(_FourCoversTest):
 
     def test_offered_only_for_a_book_mcomix_can_write_back(self):
