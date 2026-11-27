@@ -11,8 +11,9 @@ name: Fuzzing
 # (test/test_fuzz_targets.py).
 #
 # A minute each on a push to main or a pull request that changes a
-# reader or the targets; ten each every Monday, from the corpus the
-# last run grew; and by hand.
+# reader or the targets, from the corpus the last run grew; ten each
+# by hand.  No schedule: a hundred runs, weekly ones of ten minutes
+# among them, found nothing the inputs of a local session had not.
 #
 # Ubuntu 26.04's own Python 3.14 with its GTK 4 bindings, which MComix
 # imports, and Atheris, pinned with its hashes, which has wheels for
@@ -50,8 +51,6 @@ on:
       - "fuzz/**"
       - ".github/requirements/fuzz.txt"
       - ".github/workflows/fuzz.yml"
-  schedule:
-    - cron: "51 2 * * 1"
   workflow_dispatch:
 
 permissions:
@@ -78,7 +77,7 @@ jobs:
         target: [ion, kfx, epub, mobi, comicinfo, sniff, pictures]
     env:
       TARGET: ${{ matrix.target }}
-      SECONDS_EACH: ${{ github.event_name == 'schedule' && '600' || '60' }}
+      SECONDS_EACH: ${{ github.event_name == 'workflow_dispatch' && '600' || '60' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
