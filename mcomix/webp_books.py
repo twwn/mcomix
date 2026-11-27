@@ -54,7 +54,12 @@ _WRITTEN_BY_PROGRAM = {constants.SEVENZIP: '7z', constants.RAR: 'rar'}
 
 class Skipped(Exception):
 
-    """A book left as it was, and why, in words for the reader."""
+    """A book left as it was, and why, in words for the reader;
+    <damaged> where that is that its file could not be read."""
+
+    def __init__(self, reason: str, damaged: bool = False) -> None:
+        super().__init__(reason)
+        self.damaged = damaged
 
 
 @dataclass(frozen=True)
@@ -102,7 +107,7 @@ def convert(path: str, stop: threading.Event,
         raise Skipped(_('split into volumes'))
     archive_type = archive_tools.archive_mime_type(path)
     if archive_type is None:
-        raise Skipped(_('damaged, or not an archive'))
+        raise Skipped(_('damaged, or not an archive'), damaged=True)
     unwritable = None
     if not archive_packer.can_write(archive_type):
         program = _WRITTEN_BY_PROGRAM.get(archive_type)

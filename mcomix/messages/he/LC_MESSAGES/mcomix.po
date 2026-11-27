@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: mcomix 0.99\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-28 00:01+0100\n"
+"POT-Creation-Date: 2026-11-28 00:10+0100\n"
 "PO-Revision-Date: 2013-01-07 22:51+0200\n"
 "Last-Translator: Isratine Citizen <genghiskhan@gmx.ca>\n"
 "Language-Team: Hebrew <eliz@gnu.org>\n"
@@ -99,7 +99,7 @@ msgid "! Could not save %(file)s to %(directory)s: %(error)s"
 msgstr "! לא ניתן היה לשמור את %(file)s ב־%(directory)s: %(error)s"
 
 #: mcomix/bookmark_backend.py:493 mcomix/file_actions.py:1245
-#: mcomix/webp_dialog.py:387
+#: mcomix/webp_dialog.py:420
 #, python-format
 msgid "Could not save \"%(file)s\" to \"%(directory)s\""
 msgstr "לא ניתן היה לשמור את \"%(file)s\" ב־\"%(directory)s\""
@@ -118,7 +118,7 @@ msgstr "_לא"
 #: mcomix/file_chooser_base_dialog.py:242
 #: mcomix/file_chooser_library_dialog.py:42 mcomix/message_dialog.py:26
 #: mcomix/message_dialog.py:29 mcomix/pageselect.py:38
-#: mcomix/save_progress.py:119 mcomix/webp_dialog.py:96
+#: mcomix/save_progress.py:119 mcomix/webp_dialog.py:102
 msgid "_Cancel"
 msgstr "בי_טול"
 
@@ -168,7 +168,7 @@ msgstr "הס_רה"
 
 #: mcomix/bookmark_dialog.py:34 mcomix/comment_dialog.py:29
 #: mcomix/message_dialog.py:25 mcomix/preferences_dialog.py:105
-#: mcomix/properties_dialog.py:38 mcomix/webp_dialog.py:323
+#: mcomix/properties_dialog.py:38 mcomix/webp_dialog.py:351
 #: mcomix/library/book_properties.py:60 mcomix/library/watchlist.py:41
 msgid "_Close"
 msgstr "ס_גירה"
@@ -317,7 +317,7 @@ msgid "Comment files"
 msgstr "קבצי הערות"
 
 #: mcomix/edit_dialog.py:262 mcomix/file_actions.py:941
-#: mcomix/webp_dialog.py:201
+#: mcomix/webp_dialog.py:215
 #, python-format
 msgid "! Could not save the archive %(archivefile)s: %(error)s"
 msgstr "! לא ניתן היה לשמור את הארכיון %(archivefile)s: %(error)s"
@@ -3348,52 +3348,52 @@ msgstr "לא ניתן לפתוח את המדריך: %s"
 
 #. TRANSLATORS: Why a book was left as it was, after "3 books left as
 #. they were: ". So are the others here and "open in the main window".
-#: mcomix/webp_books.py:102
+#: mcomix/webp_books.py:107
 msgid "split into volumes"
 msgstr "מפוצלת לכרכים"
 
-#: mcomix/webp_books.py:105
+#: mcomix/webp_books.py:110
 msgid "damaged, or not an archive"
 msgstr "פגומה, או אינה ארכיון"
 
-#: mcomix/webp_books.py:110
+#: mcomix/webp_books.py:115
 #, python-format
 msgid "a format MComix does not write: %s"
 msgstr "תבנית ש־MComix אינו כותב: %s"
 
-#: mcomix/webp_books.py:114
+#: mcomix/webp_books.py:119
 #, python-format
 msgid "the %s program that writes the format is not installed"
 msgstr "התוכנה %s, שכותבת את התבנית, אינה מותקנת"
 
-#: mcomix/webp_books.py:118
+#: mcomix/webp_books.py:123
 msgid "nothing installed here reads the format"
 msgstr "לא מותקן כאן דבר שקורא את התבנית"
 
-#: mcomix/webp_books.py:149
+#: mcomix/webp_books.py:154
 msgid "no page smaller as WebP"
 msgstr "אף עמוד אינו קטן יותר כ־WebP"
 
-#: mcomix/webp_books.py:196
+#: mcomix/webp_books.py:201
 msgid "archives inside"
 msgstr "מכילה ארכיונים אחרים"
 
-#: mcomix/webp_books.py:202
+#: mcomix/webp_books.py:207
 msgid "no PNG pages"
 msgstr "אין עמודי PNG"
 
-#: mcomix/webp_books.py:234 mcomix/webp_books.py:240 mcomix/webp_books.py:260
+#: mcomix/webp_books.py:239 mcomix/webp_books.py:245 mcomix/webp_books.py:265
 msgid "encrypted"
 msgstr "מוצפנת"
 
-#: mcomix/webp_dialog.py:91
+#: mcomix/webp_dialog.py:97
 #, python-format
 msgid "Store the PNG pages of %d book as WebP?"
 msgid_plural "Store the PNG pages of %d books as WebP?"
 msgstr[0] "לשמור את עמודי ה־PNG של %d חוברת כ־WebP?"
 msgstr[1] "לשמור את עמודי ה־PNG של %d חוברות כ־WebP?"
 
-#: mcomix/webp_dialog.py:93
+#: mcomix/webp_dialog.py:99
 msgid ""
 "Each book with PNG pages is written again, with every page that is smaller "
 "as a lossless WebP. Some other comic readers cannot show WebP pages."
@@ -3401,67 +3401,71 @@ msgstr ""
 "כל חוברת עם עמודי PNG נכתבת מחדש, וכל עמוד שקטן יותר כ־WebP ללא אובדן נשמר "
 "כך. חלק מקוראי הקומיקס האחרים אינם יכולים להציג עמודי WebP."
 
-#: mcomix/webp_dialog.py:97
+#: mcomix/webp_dialog.py:103
 msgid "_Store as WebP"
 msgstr "_שמירה כ־WebP"
 
-#: mcomix/webp_dialog.py:117
+#: mcomix/webp_dialog.py:126
 msgid "Storing PNG pages as WebP"
 msgstr "עמודי PNG נשמרים כ־WebP"
 
-#: mcomix/webp_dialog.py:140 mcomix/library/add_progress_dialog.py:57
+#: mcomix/webp_dialog.py:152 mcomix/library/add_progress_dialog.py:57
 msgid "_Stop"
 msgstr "_עצירה"
 
-#: mcomix/webp_dialog.py:190
+#: mcomix/webp_dialog.py:203
 msgid "open in the main window"
 msgstr "פתוחה בחלון הראשי"
 
-#: mcomix/webp_dialog.py:226
+#: mcomix/webp_dialog.py:242
 #, python-format
 msgid "%(count)d book stored with WebP pages, %(size)s smaller"
 msgid_plural "%(count)d books stored with WebP pages, %(size)s smaller"
 msgstr[0] "%(count)d חוברת נשמרה עם עמודי WebP, קטנה ב־%(size)s"
 msgstr[1] "%(count)d חוברות נשמרו עם עמודי WebP, קטנות ב־%(size)s"
 
-#: mcomix/webp_dialog.py:238
+#: mcomix/webp_dialog.py:254
 #, python-format
 msgid "%d book stored without its damaged files"
 msgid_plural "%d books stored without their damaged files"
 msgstr[0] "%d חוברת נשמרה ללא הקבצים הפגומים שבה"
 msgstr[1] "%d חוברות נשמרו ללא הקבצים הפגומים שבהן"
 
-#: mcomix/webp_dialog.py:243
+#: mcomix/webp_dialog.py:259
 #, python-format
 msgid "%(count)d book left as it was: %(reason)s"
 msgid_plural "%(count)d books left as they were: %(reason)s"
 msgstr[0] "%(count)d חוברת נותרה כפי שהייתה: %(reason)s"
 msgstr[1] "%(count)d חוברות נותרו כפי שהיו: %(reason)s"
 
-#: mcomix/webp_dialog.py:257
+#: mcomix/webp_dialog.py:282
 #, python-format
 msgid "Stopped with %d book not yet looked at"
 msgid_plural "Stopped with %d books not yet looked at"
 msgstr[0] "נעצר, %d חוברת טרם נבדקה"
 msgstr[1] "נעצר, %d חוברות טרם נבדקו"
 
-#: mcomix/webp_dialog.py:277
+#: mcomix/webp_dialog.py:302
 #, python-format
 msgid "About %d minute left"
 msgid_plural "About %d minutes left"
 msgstr[0] "נותרה כ־%d דקה"
 msgstr[1] "נותרו כ־%d דקות"
 
-#: mcomix/webp_dialog.py:310 mcomix/webp_dialog.py:357
+#: mcomix/webp_dialog.py:338 mcomix/webp_dialog.py:390
 #, python-format
 msgid "Could not be written: %s"
 msgstr "לא ניתן היה לכתוב: %s"
 
-#: mcomix/webp_dialog.py:326
+#: mcomix/webp_dialog.py:354
 msgid "_Save Log…"
 msgstr "_שמירת היומן…"
 
-#: mcomix/webp_dialog.py:370
+#: mcomix/webp_dialog.py:359
+msgid "Select Books with _Errors"
+msgstr "_בחירת חוברות עם שגיאות"
+
+#: mcomix/webp_dialog.py:403
 msgid "Save the log as"
 msgstr "שמירת היומן בשם"
 

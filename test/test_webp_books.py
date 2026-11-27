@@ -49,14 +49,16 @@ class _BookTest(MComixTest):
     def convert(self, path):
         return webp_books.convert(path, self.stop)
 
-    def assertSkipped(self, path, reason):
-        """Converting <path> skips it, saying <reason>, and leaves its
-        bytes as they were."""
+    def assertSkipped(self, path, reason, damaged=False):
+        """Converting <path> skips it, saying <reason>, as a book whose
+        file could not be read where <damaged>, and leaves its bytes as
+        they were."""
         with open(path, 'rb') as book:
             before = book.read()
         with self.assertRaises(webp_books.Skipped) as raised:
             self.convert(path)
         self.assertEqual(reason, str(raised.exception))
+        self.assertEqual(damaged, raised.exception.damaged)
         with open(path, 'rb') as book:
             self.assertEqual(before, book.read())
         self.assertEqual([os.path.basename(path)],
@@ -251,7 +253,7 @@ class SkippedTest(_BookTest):
         path = os.path.join(self.directory, 'book.cbz')
         with open(path, 'wb') as book:
             book.write(b'\x00\x00\x00\x18ftypmp42' + bytes(64))
-        self.assertSkipped(path, 'damaged, or not an archive')
+        self.assertSkipped(path, 'damaged, or not an archive', damaged=True)
 
     def test_a_rar_without_the_rar_program(self):
         path = os.path.join(self.directory, 'Flat.rar')

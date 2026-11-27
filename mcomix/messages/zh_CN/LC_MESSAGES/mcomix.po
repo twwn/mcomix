@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Comix 4.0.1\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-28 00:01+0100\n"
+"POT-Creation-Date: 2026-11-28 00:10+0100\n"
 "PO-Revision-Date: 2009-01-28 13:36+0800\n"
 "Last-Translator: Xie Yanbo <xieyanbo@gmail.com>\n"
 "Language-Team: Xie Yanbo <xieyanbo@gmail.com>\n"
@@ -102,7 +102,7 @@ msgid "! Could not save %(file)s to %(directory)s: %(error)s"
 msgstr "! 无法将 %(file)s 保存到 %(directory)s：%(error)s"
 
 #: mcomix/bookmark_backend.py:493 mcomix/file_actions.py:1245
-#: mcomix/webp_dialog.py:387
+#: mcomix/webp_dialog.py:420
 #, python-format
 msgid "Could not save \"%(file)s\" to \"%(directory)s\""
 msgstr "无法将 \"%(file)s\" 保存到 \"%(directory)s\""
@@ -121,7 +121,7 @@ msgstr "否(_N)"
 #: mcomix/file_chooser_base_dialog.py:242
 #: mcomix/file_chooser_library_dialog.py:42 mcomix/message_dialog.py:26
 #: mcomix/message_dialog.py:29 mcomix/pageselect.py:38
-#: mcomix/save_progress.py:119 mcomix/webp_dialog.py:96
+#: mcomix/save_progress.py:119 mcomix/webp_dialog.py:102
 msgid "_Cancel"
 msgstr "取消(_C)"
 
@@ -174,7 +174,7 @@ msgstr "删除(_R)"
 
 #: mcomix/bookmark_dialog.py:34 mcomix/comment_dialog.py:29
 #: mcomix/message_dialog.py:25 mcomix/preferences_dialog.py:105
-#: mcomix/properties_dialog.py:38 mcomix/webp_dialog.py:323
+#: mcomix/properties_dialog.py:38 mcomix/webp_dialog.py:351
 #: mcomix/library/book_properties.py:60 mcomix/library/watchlist.py:41
 msgid "_Close"
 msgstr "关闭(_C)"
@@ -322,7 +322,7 @@ msgstr "注释文件"
 #
 # File: src/library.py, line: 271
 #: mcomix/edit_dialog.py:262 mcomix/file_actions.py:941
-#: mcomix/webp_dialog.py:201
+#: mcomix/webp_dialog.py:215
 #, python-format
 msgid "! Could not save the archive %(archivefile)s: %(error)s"
 msgstr "! 无法保存文件包 %(archivefile)s：%(error)s"
@@ -3269,51 +3269,51 @@ msgstr "无法打开手册：%s"
 
 #. TRANSLATORS: Why a book was left as it was, after "3 books left as
 #. they were: ". So are the others here and "open in the main window".
-#: mcomix/webp_books.py:102
+#: mcomix/webp_books.py:107
 msgid "split into volumes"
 msgstr "分成了多卷"
 
-#: mcomix/webp_books.py:105
+#: mcomix/webp_books.py:110
 msgid "damaged, or not an archive"
 msgstr "已损坏，或不是归档"
 
-#: mcomix/webp_books.py:110
+#: mcomix/webp_books.py:115
 #, python-format
 msgid "a format MComix does not write: %s"
 msgstr "MComix 不写入的格式：%s"
 
-#: mcomix/webp_books.py:114
+#: mcomix/webp_books.py:119
 #, python-format
 msgid "the %s program that writes the format is not installed"
 msgstr "未安装写入此格式的 %s 程序"
 
-#: mcomix/webp_books.py:118
+#: mcomix/webp_books.py:123
 msgid "nothing installed here reads the format"
 msgstr "此处未安装可读取此格式的程序"
 
-#: mcomix/webp_books.py:149
+#: mcomix/webp_books.py:154
 msgid "no page smaller as WebP"
 msgstr "没有页面存为 WebP 后更小"
 
-#: mcomix/webp_books.py:196
+#: mcomix/webp_books.py:201
 msgid "archives inside"
 msgstr "包含其他归档"
 
-#: mcomix/webp_books.py:202
+#: mcomix/webp_books.py:207
 msgid "no PNG pages"
 msgstr "没有 PNG 页面"
 
-#: mcomix/webp_books.py:234 mcomix/webp_books.py:240 mcomix/webp_books.py:260
+#: mcomix/webp_books.py:239 mcomix/webp_books.py:245 mcomix/webp_books.py:265
 msgid "encrypted"
 msgstr "已加密"
 
-#: mcomix/webp_dialog.py:91
+#: mcomix/webp_dialog.py:97
 #, python-format
 msgid "Store the PNG pages of %d book as WebP?"
 msgid_plural "Store the PNG pages of %d books as WebP?"
 msgstr[0] "是否将 %d 本书的 PNG 页面存为 WebP？"
 
-#: mcomix/webp_dialog.py:93
+#: mcomix/webp_dialog.py:99
 msgid ""
 "Each book with PNG pages is written again, with every page that is smaller "
 "as a lossless WebP. Some other comic readers cannot show WebP pages."
@@ -3321,62 +3321,66 @@ msgstr ""
 "每本含 PNG 页面的书都会重新写入，存为无损 WebP 后更小的页面都会这样保存。有些"
 "其他漫画阅读器无法显示 WebP 页面。"
 
-#: mcomix/webp_dialog.py:97
+#: mcomix/webp_dialog.py:103
 msgid "_Store as WebP"
 msgstr "存为 WebP(_S)"
 
-#: mcomix/webp_dialog.py:117
+#: mcomix/webp_dialog.py:126
 msgid "Storing PNG pages as WebP"
 msgstr "正在将 PNG 页面存为 WebP"
 
-#: mcomix/webp_dialog.py:140 mcomix/library/add_progress_dialog.py:57
+#: mcomix/webp_dialog.py:152 mcomix/library/add_progress_dialog.py:57
 msgid "_Stop"
 msgstr "停止(_S)"
 
-#: mcomix/webp_dialog.py:190
+#: mcomix/webp_dialog.py:203
 msgid "open in the main window"
 msgstr "已在主窗口中打开"
 
-#: mcomix/webp_dialog.py:226
+#: mcomix/webp_dialog.py:242
 #, python-format
 msgid "%(count)d book stored with WebP pages, %(size)s smaller"
 msgid_plural "%(count)d books stored with WebP pages, %(size)s smaller"
 msgstr[0] "%(count)d 本书已存为 WebP 页面，减小了 %(size)s"
 
-#: mcomix/webp_dialog.py:238
+#: mcomix/webp_dialog.py:254
 #, python-format
 msgid "%d book stored without its damaged files"
 msgid_plural "%d books stored without their damaged files"
 msgstr[0] "%d 本书已存储，不含其损坏的文件"
 
-#: mcomix/webp_dialog.py:243
+#: mcomix/webp_dialog.py:259
 #, python-format
 msgid "%(count)d book left as it was: %(reason)s"
 msgid_plural "%(count)d books left as they were: %(reason)s"
 msgstr[0] "%(count)d 本书保持原样：%(reason)s"
 
-#: mcomix/webp_dialog.py:257
+#: mcomix/webp_dialog.py:282
 #, python-format
 msgid "Stopped with %d book not yet looked at"
 msgid_plural "Stopped with %d books not yet looked at"
 msgstr[0] "已停止，还有 %d 本书未查看"
 
-#: mcomix/webp_dialog.py:277
+#: mcomix/webp_dialog.py:302
 #, python-format
 msgid "About %d minute left"
 msgid_plural "About %d minutes left"
 msgstr[0] "大约还剩 %d 分钟"
 
-#: mcomix/webp_dialog.py:310 mcomix/webp_dialog.py:357
+#: mcomix/webp_dialog.py:338 mcomix/webp_dialog.py:390
 #, python-format
 msgid "Could not be written: %s"
 msgstr "无法写入：%s"
 
-#: mcomix/webp_dialog.py:326
+#: mcomix/webp_dialog.py:354
 msgid "_Save Log…"
 msgstr "保存日志(_S)…"
 
-#: mcomix/webp_dialog.py:370
+#: mcomix/webp_dialog.py:359
+msgid "Select Books with _Errors"
+msgstr "选择有错误的书籍(_E)"
+
+#: mcomix/webp_dialog.py:403
 msgid "Save the log as"
 msgstr "日志另存为"
 

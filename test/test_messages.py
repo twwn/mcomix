@@ -396,6 +396,8 @@ class DialogMnemonicTest(MComixTest):
         'message dialog, ok/cancel': ('_Cancel', '_OK'),
         'bookmark menu': ('Add _bookmark', '_Edit bookmarks...',
                           'C_lear bookmarks...'),
+        'WebP summary': ('_Save Log…', 'Select Books with _Errors',
+                         '_Close'),
     }
 
     @classmethod

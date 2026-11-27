@@ -65,12 +65,16 @@ _SUMMARY_HEIGHT = 320
 #: What answers "Save Log".
 _SAVE_LOG = Response.APPLY
 
+#: What answers "Select Books with Errors".
+_SELECT = Response.ACCEPT
+
 
 def offer(parent: Gtk.Window, books: Sequence[str],
           written: "Callable[[str, webp_books.Converted], None]",
           open_book: Callable[[], "str | None"] = lambda: None,
           start: "Callable[[Callable[[], None]], None]" = lambda run: run(),
-          finished: Callable[[], None] = lambda: None) -> None:
+          finished: Callable[[], None] = lambda: None,
+          select: "Callable[[list[str]], None] | None" = None) -> None:
     """Ask whether to store the PNG pages of <books> as WebP, and do it
     if the reader says yes.
 
@@ -80,7 +84,9 @@ def offer(parent: Gtk.Window, books: Sequence[str],
     where the library asks.  Once the reader has said yes, <start> is
     given what starts the work, to call when the books are ready to be
     read, or never.  <finished> is called on the main thread once the
-    work has ended, however it ended.
+    work has ended, however it ended.  Where <select> is given, the
+    summary offers to select the books it found faults in, and it is
+    called with their paths.
     """
     count = len(books)
     if not count:
@@ -97,7 +103,8 @@ def offer(parent: Gtk.Window, books: Sequence[str],
                                     _('_Store as WebP'), Response.OK)
 
     def run() -> None:
-        _ProgressDialog(parent, list(books), open_book, written, finished)
+        _ProgressDialog(parent, list(books), open_book, written, finished,
+                        select)
 
     def answered(response: int) -> None:
         if response == Response.OK:
@@ -113,7 +120,9 @@ class _ProgressDialog(Dialog):
     def __init__(self, parent: Gtk.Window, books: list[str],
                  open_book: Callable[[], "str | None"],
                  written: "Callable[[str, webp_books.Converted], None]",
-                 finished: Callable[[], None]) -> None:
+                 finished: Callable[[], None],
+                 select: "Callable[[list[str]], None] | None" = None
+                 ) -> None:
         super().__init__(title=_('Storing PNG pages as WebP'),
                          transient_for=parent, modal=True,
                          destroy_with_parent=True)
@@ -121,6 +130,7 @@ class _ProgressDialog(Dialog):
         self._open_book = open_book
         self._written = written
         self._finished_with = finished
+        self._select = select
         self._stop = threading.Event()
         # Written by the thread, read by the tick; a read between two
         # writes is a moment out of date, nothing worse.
@@ -131,6 +141,8 @@ class _ProgressDialog(Dialog):
         self._stored: list[tuple[str, webp_books.Converted]] = []
         self._saved = 0
         self._left: dict[str, list[str]] = {}
+        #: The books left alone because their file could not be read.
+        self._unreadable: set[str] = set()
         #: The books that could not be written, each with why.
         self._failed: list[tuple[str, str]] = []
         self._started = time.monotonic()
@@ -183,6 +195,7 @@ class _ProgressDialog(Dialog):
             # it could not be written, for the <error> that says why.
             outcome: "webp_books.Converted | str | None"
             error = ''
+            unreadable = False
             try:
                 open_book = self._open_book()
                 if open_book is not None and \
@@ -194,6 +207,7 @@ class _ProgressDialog(Dialog):
                 break
             except webp_books.Skipped as reason:
                 outcome = str(reason)
+                unreadable = reason.damaged
                 log.info('Left "%s" as it was: %s',
                          i18n.to_display_string(path), reason)
             except OSError as failure:
@@ -201,7 +215,7 @@ class _ProgressDialog(Dialog):
                 log.warning(_('! Could not save the archive %(archivefile)s: '
                               '%(error)s'),
                             {'archivefile': path, 'error': failure})
-            GLib.idle_add(self._book_done, path, outcome, error)
+            GLib.idle_add(self._book_done, path, outcome, error, unreadable)
         GLib.idle_add(self._finished)
 
     def _progress(self, fraction: float) -> None:
@@ -209,13 +223,15 @@ class _ProgressDialog(Dialog):
 
     def _book_done(self, path: str,
                    outcome: "webp_books.Converted | str | None",
-                   error: str) -> bool:
+                   error: str, unreadable: bool = False) -> bool:
         if isinstance(outcome, webp_books.Converted):
             self._written(path, outcome)
             self._stored.append((path, outcome))
             self._saved += outcome.before - outcome.after
         elif outcome is not None:
             self._left.setdefault(outcome, []).append(path)
+            if unreadable:
+                self._unreadable.add(path)
         else:
             self._failed.append((path, error))
         return GLib.SOURCE_REMOVE
@@ -243,6 +259,15 @@ class _ProgressDialog(Dialog):
             '%(count)d book left as it was: %(reason)s',
             '%(count)d books left as they were: %(reason)s',
             count) % {'count': count, 'reason': reason}
+
+    def faulty(self) -> list[str]:
+        """The books found at fault, in the order they were given: those
+        that could not be written, those written without their damaged
+        files, and those that could not be read at all."""
+        found = self._unreadable.union(
+            path for path, _error in self._failed)
+        found.update(path for path, _converted in self._damaged())
+        return [path for path in self._books if path in found]
 
     def _not_looked_at(self) -> list[str]:
         """The books a stop left before they were looked at."""
@@ -282,6 +307,9 @@ class _ProgressDialog(Dialog):
     def _response(self, dialog: Dialog, response: int) -> None:
         if response == _SAVE_LOG:
             self._ask_where_to_save_the_log()
+        elif response == _SELECT and self._select is not None:
+            self._select(self.faulty())
+            self.destroy()
         elif self._thread.is_alive():
             self._stop.set()
             self.set_response_sensitive(Response.CANCEL, False)
@@ -327,6 +355,11 @@ class _ProgressDialog(Dialog):
             row = stop.get_parent()
             if isinstance(row, Gtk.Box):
                 row.reorder_child_after(save, None)
+            if self._select is not None and self.faulty():
+                select = self.add_button(_('Select Books with _Errors'),
+                                         _SELECT)
+                if isinstance(row, Gtk.Box):
+                    row.reorder_child_after(select, save)
         self.set_response_sensitive(Response.CANCEL, True)
         self._finished_with()
         return GLib.SOURCE_REMOVE

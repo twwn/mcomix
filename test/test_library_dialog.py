@@ -2817,3 +2817,41 @@ class StorePagesAsWebpTest(_LibraryWindowTest):
                           '    the disk went away'],
                          sections[3].splitlines())
         self.assertEqual(4, len(sections))
+
+    def test_the_books_with_errors_can_be_selected(self):
+        """A run over a whole library ends with a few books to move or
+        remove: those that could not be written, written without their
+        damaged files, or not readable at all.  Those left alone for
+        want of PNG pages are no fault."""
+        failing, damaged, unreadable = self._copies(3, 'book')
+        self._failing(failing, damaged=damaged,
+                      left_out={'02.png': 'Bad CRC-32'})
+        failing_convert = webp_books.convert
+
+        def spoilt(path, stop, progress):
+            # Spoilt once the library holds it, which it would not take.
+            if path == unreadable:
+                with open(unreadable, 'wb') as book:
+                    book.write(b'not an archive at all')
+            return failing_convert(path, stop, progress)
+        self.enterContext(unittest.mock.patch.object(
+            webp_books, 'convert', spoilt))
+        # NORMAL_ZIP is left alone as open in the main window: no fault.
+        progress = self._store(self.book, failing, damaged, unreadable,
+                               NORMAL_ZIP)
+        self.assertEqual(sorted([failing, damaged, unreadable]),
+                         sorted(progress.faulty()))
+        select = progress.get_widget_for_response(webp_dialog._SELECT)
+        self.assertEqual('Select Books with _Errors', select.get_label())
+        self.dialog.book_area._covers.unselect_all()
+        progress.response(webp_dialog._SELECT)
+        pump()
+        self.assertFalse(progress.get_visible())
+        selected = {item.path for item in
+                    self.dialog.book_area._selected_items()}
+        self.assertEqual({failing, damaged, unreadable}, selected)
+
+    def test_a_run_without_errors_offers_no_selection(self):
+        progress = self._store(self.book)
+        self.assertIsNone(
+            progress.get_widget_for_response(webp_dialog._SELECT))

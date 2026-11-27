@@ -1710,7 +1710,8 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable, LibraryPart):
             self._library.window,
             [item.path for item in self._selected_items()],
             self._stored_as_webp,
-            open_book=self._library.main_window.filehandler.get_path_to_base)
+            open_book=self._library.main_window.filehandler.get_path_to_base,
+            select=self._select_paths)
 
     def _stored_as_webp(self, path: str,
                         converted: webp_books.Converted) -> None:
@@ -1760,6 +1761,13 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable, LibraryPart):
         self._covers.select_positions(
             position for position, item in enumerate(self._each_item())
             if item.pages == 0)
+
+    def _select_paths(self, paths: list[str]) -> None:
+        """Select the books on show at <paths>, and nothing else."""
+        wanted = {os.path.abspath(path) for path in paths}
+        self._covers.select_positions(
+            position for position, item in enumerate(self._each_item())
+            if os.path.abspath(item.path) in wanted)
 
     def _select_absent(self, *args: object) -> None:
         """Select the books on show whose file is not where the library
