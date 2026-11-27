@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Comix 4.0.1\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-28 00:33+0100\n"
+"POT-Creation-Date: 2026-11-28 00:37+0100\n"
 "PO-Revision-Date: 2009-01-28 13:36+0800\n"
 "Last-Translator: Xie Yanbo <xieyanbo@gmail.com>\n"
 "Language-Team: Xie Yanbo <xieyanbo@gmail.com>\n"
@@ -1717,16 +1717,17 @@ msgstr ""
 "rar 程序，而 MComix 不会安装它们；无法写入的格式将保存为 ZIP。"
 
 #: mcomix/preferences_dialog.py:278
-msgid "Store PNG pages as lossless WebP when saving an archive"
-msgstr "保存归档时将 PNG 页面存为无损 WebP"
+msgid "Make pages smaller without loss when saving an archive"
+msgstr "保存归档时无损缩小页面"
 
 #: mcomix/preferences_dialog.py:280
 msgid ""
-"Write each PNG page of an archive MComix saves as a WebP, where that is "
-"smaller and keeps every pixel. Some other comic readers cannot show WebP."
+"Write each PNG or GIF page of an archive MComix saves as a lossless WebP, "
+"and each JPEG page with optimised tables, where that is smaller and keeps "
+"every pixel. Some other comic readers cannot show WebP."
 msgstr ""
-"将 MComix 保存的归档中的每个 PNG 页面写为 WebP，前提是这样更小且保留每个像"
-"素。某些其他漫画阅读器无法显示 WebP。"
+"将 MComix 保存的归档中的每个 PNG 或 GIF 页面写为无损 WebP，每个 JPEG 页面以优"
+"化的表写入，前提是这样更小且保留每个像素。有些其他漫画阅读器无法显示 WebP。"
 
 #: mcomix/preferences_dialog.py:282
 msgid "Comment file extensions:"
@@ -2869,8 +2870,8 @@ msgid "Rename arc_hive..."
 msgstr "重命名文件包(_I)..."
 
 #: mcomix/ui.py:467 mcomix/library/book_area.py:357
-msgid "Store PNG pages as _WebP..."
-msgstr "将 PNG 页面存为 WebP(_B)..."
+msgid "Make pages smaller _without loss..."
+msgstr "无损缩小页面(_B)..."
 
 #: mcomix/ui.py:469
 msgid "_Delete page"
@@ -3292,43 +3293,43 @@ msgid "nothing installed here reads the format"
 msgstr "此处未安装可读取此格式的程序"
 
 #: mcomix/webp_books.py:154
-msgid "no page smaller as WebP"
-msgstr "没有页面存为 WebP 后更小"
+msgid "no page made smaller"
+msgstr "没有页面变小"
 
 #: mcomix/webp_books.py:201
 msgid "archives inside"
 msgstr "包含其他归档"
 
-#. TRANSLATORS: No PNG, GIF or JPEG pages, the kinds made smaller.
-#: mcomix/webp_books.py:207
-msgid "no PNG pages"
-msgstr "没有 PNG 页面"
+#: mcomix/webp_books.py:206
+msgid "no PNG, GIF or JPEG pages"
+msgstr "没有 PNG、GIF 或 JPEG 页面"
 
-#: mcomix/webp_books.py:239 mcomix/webp_books.py:245 mcomix/webp_books.py:265
+#: mcomix/webp_books.py:238 mcomix/webp_books.py:244 mcomix/webp_books.py:264
 msgid "encrypted"
 msgstr "已加密"
 
 #: mcomix/webp_dialog.py:97
 #, python-format
-msgid "Store the PNG pages of %d book as WebP?"
-msgid_plural "Store the PNG pages of %d books as WebP?"
-msgstr[0] "是否将 %d 本书的 PNG 页面存为 WebP？"
+msgid "Make the pages of %d book smaller?"
+msgid_plural "Make the pages of %d books smaller?"
+msgstr[0] "是否缩小 %d 本书的页面？"
 
 #: mcomix/webp_dialog.py:99
 msgid ""
-"Each book with PNG pages is written again, with every page that is smaller "
-"as a lossless WebP. Some other comic readers cannot show WebP pages."
+"Each book is written again, with every PNG or GIF page that is smaller as a "
+"lossless WebP and every JPEG page optimised without loss. Some other comic "
+"readers cannot show WebP pages."
 msgstr ""
-"每本含 PNG 页面的书都会重新写入，存为无损 WebP 后更小的页面都会这样保存。有些"
-"其他漫画阅读器无法显示 WebP 页面。"
+"每本书都会重新写入：更小的 PNG 或 GIF 页面存为无损 WebP，JPEG 页面无损优化。"
+"有些其他漫画阅读器无法显示 WebP 页面。"
 
 #: mcomix/webp_dialog.py:103
-msgid "_Store as WebP"
-msgstr "存为 WebP(_S)"
+msgid "_Make Smaller"
+msgstr "缩小(_S)"
 
 #: mcomix/webp_dialog.py:126
-msgid "Storing PNG pages as WebP"
-msgstr "正在将 PNG 页面存为 WebP"
+msgid "Making pages smaller"
+msgstr "正在缩小页面"
 
 #: mcomix/webp_dialog.py:152 mcomix/library/add_progress_dialog.py:57
 msgid "_Stop"
@@ -3914,6 +3915,44 @@ msgstr "包含子目录"
 #: mcomix/library/watchlist.py:85
 msgid "Automatically scan for new books when library is _opened"
 msgstr "当打开收藏库时自动扫描新书(_O)"
+
+#~ msgid "Store PNG pages as lossless WebP when saving an archive"
+#~ msgstr "保存归档时将 PNG 页面存为无损 WebP"
+
+#~ msgid ""
+#~ "Write each PNG page of an archive MComix saves as a WebP, where that is "
+#~ "smaller and keeps every pixel. Some other comic readers cannot show WebP."
+#~ msgstr ""
+#~ "将 MComix 保存的归档中的每个 PNG 页面写为 WebP，前提是这样更小且保留每个像"
+#~ "素。某些其他漫画阅读器无法显示 WebP。"
+
+#~ msgid "Store PNG pages as _WebP..."
+#~ msgstr "将 PNG 页面存为 WebP(_B)..."
+
+#~ msgid "no page smaller as WebP"
+#~ msgstr "没有页面存为 WebP 后更小"
+
+#~ msgid "no PNG pages"
+#~ msgstr "没有 PNG 页面"
+
+#, python-format
+#~ msgid "Store the PNG pages of %d book as WebP?"
+#~ msgid_plural "Store the PNG pages of %d books as WebP?"
+#~ msgstr[0] "是否将 %d 本书的 PNG 页面存为 WebP？"
+
+#~ msgid ""
+#~ "Each book with PNG pages is written again, with every page that is "
+#~ "smaller as a lossless WebP. Some other comic readers cannot show WebP "
+#~ "pages."
+#~ msgstr ""
+#~ "每本含 PNG 页面的书都会重新写入，存为无损 WebP 后更小的页面都会这样保存。"
+#~ "有些其他漫画阅读器无法显示 WebP 页面。"
+
+#~ msgid "_Store as WebP"
+#~ msgstr "存为 WebP(_S)"
+
+#~ msgid "Storing PNG pages as WebP"
+#~ msgstr "正在将 PNG 页面存为 WebP"
 
 #~ msgid "a format MComix cannot write here"
 #~ msgstr "MComix 无法在此写入的格式"

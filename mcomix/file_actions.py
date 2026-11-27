@@ -970,7 +970,7 @@ class FileActions:
         follow_pages(path, renamed)
 
     def can_store_pages_as_webp(self) -> bool:
-        """Whether "Store PNG pages as WebP..." applies to the open book.
+        """Whether "Make pages smaller without loss..." applies to the open book.
 
         To an archive MComix can write back in its own format, one file
         rather than a RAR set in volumes, that has a PNG or GIF page and was

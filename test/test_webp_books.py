@@ -250,7 +250,7 @@ class SkippedTest(_BookTest):
         webp = io.BytesIO()
         Image.new('RGB', (32, 32), 'white').save(webp, 'WEBP')
         path = self.zip_book({'01.webp': webp.getvalue()})
-        self.assertSkipped(path, 'no PNG pages')
+        self.assertSkipped(path, 'no PNG, GIF or JPEG pages')
 
     def test_a_book_whose_pngs_would_not_be_smaller(self):
         """A PNG of 16 bits a channel has no lossless WebP; the archive is
@@ -258,7 +258,7 @@ class SkippedTest(_BookTest):
         buffer = io.BytesIO()
         Image.new('I;16', (32, 32), 1000).save(buffer, 'PNG')
         path = self.zip_book({'01.png': buffer.getvalue()})
-        self.assertSkipped(path, 'no page smaller as WebP')
+        self.assertSkipped(path, 'no page made smaller')
 
     def test_a_book_with_archives_inside(self):
         path = self.zip_book({'01.png': line_art_png(), 'inner.cbz': b'PK'})
@@ -296,14 +296,14 @@ class SkippedTest(_BookTest):
     def test_no_png_pages_is_told_before_the_missing_program(self):
         """A book done before, in a format written only with a program
         that is not installed, has nothing to write either way: it is
-        told as having no PNG pages.  The ZIP stands in for that format
+        told as having no PNG, GIF or JPEG pages.  The ZIP stands in for that format
         here, since every RAR the tests carry holds a PNG."""
         path = self.zip_book({'01.webp': b'RIFF'})
         with unittest.mock.patch.object(archive_packer, 'can_write',
                                         return_value=False), \
                 unittest.mock.patch.dict(webp_books._WRITTEN_BY_PROGRAM,
                                          {constants.ZIP: 'zip'}):
-            self.assertSkipped(path, 'no PNG pages')
+            self.assertSkipped(path, 'no PNG, GIF or JPEG pages')
 
     def test_a_book_in_volumes(self):
         first = copy_rar_set(self.directory)[0]

@@ -464,7 +464,7 @@ class MainUI:
                    window.file_actions.write_turn_popup),
             _Entry('rename_book', 'document-edit', _('Rename arc_hive...'), None,
                    window.file_actions.rename_book),
-            _Entry('store_webp', 'document-save', _('Store PNG pages as _WebP...'), None,
+            _Entry('store_webp', 'document-save', _('Make pages smaller _without loss...'), None,
                    window.file_actions.store_pages_as_webp),
             _Entry('delete_page_popup', 'edit-delete', _('_Delete page'),
                    _('Removes the page the menu was opened over from the book. The archive on disk is not changed until it is saved.'),

@@ -1,6 +1,6 @@
 """webp_books.py - Storing the PNG pages of books as lossless WebP.
 
-The library's "Store PNG pages as WebP..." writes each book it is given
+The library's "Make pages smaller without loss..." writes each book it is given
 again, with every PNG page a lossless WebP where
 archive_packer.webp_instead() finds one smaller and the same pixel for
 pixel.  Everything else in the archive goes back as it was, under the
@@ -151,7 +151,7 @@ def convert(path: str, stop: threading.Event,
                 page_names=page_files, waiting=wait, webp_pages=True,
                 add_comic_info=False, only_converted=True)
         except archive_packer.Unchanged:
-            raise Skipped(_('no page smaller as WebP')) from None
+            raise Skipped(_('no page made smaller')) from None
         progress(1.0)
         for name, why in left_out.items():
             log.warning('Left "%s" out of "%s": it could not be read: %s',
@@ -203,8 +203,7 @@ def _unpack(archive: archive_base.BaseArchive,
                      if image_tools.is_image_file(name)
                      and not archive_tools.is_finder_file(name)]
             if not any(archive_packer.may_shrink(name) for name in pages):
-                # TRANSLATORS: No PNG, GIF or JPEG pages, the kinds made smaller.
-                raise Skipped(_('no PNG pages'))
+                raise Skipped(_('no PNG, GIF or JPEG pages'))
             if unwritable is not None:
                 raise Skipped(unwritable)
             left_out: dict[str, str] = {}

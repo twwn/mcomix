@@ -354,7 +354,7 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable, LibraryPart):
             ('properties', _('_Properties'), self.show_properties),
             # A section of its own: it writes every book selected again,
             # which none of the entries about the file beside it does.
-            ('store-webp', _('Store PNG pages as _WebP...'),
+            ('store-webp', _('Make pages smaller _without loss...'),
              self.store_pages_as_webp),
         )
 

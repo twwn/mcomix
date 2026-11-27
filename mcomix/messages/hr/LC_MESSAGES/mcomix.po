@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: comix 4.0.1\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-28 00:33+0100\n"
+"POT-Creation-Date: 2026-11-28 00:37+0100\n"
 "PO-Revision-Date: 2008-12-13 18:00+0100\n"
 "Last-Translator: Adrian C. <anrxc@sysphere.org>\n"
 "Language-Team: Croatian\n"
@@ -2006,16 +2006,18 @@ msgstr ""
 "instalira; format koji se ne može zapisati sprema se kao ZIP."
 
 #: mcomix/preferences_dialog.py:278
-msgid "Store PNG pages as lossless WebP when saving an archive"
-msgstr "Spremaj PNG stranice kao WebP bez gubitaka pri spremanju arhive"
+msgid "Make pages smaller without loss when saving an archive"
+msgstr "Smanji stranice bez gubitka pri spremanju arhive"
 
 #: mcomix/preferences_dialog.py:280
 msgid ""
-"Write each PNG page of an archive MComix saves as a WebP, where that is "
-"smaller and keeps every pixel. Some other comic readers cannot show WebP."
+"Write each PNG or GIF page of an archive MComix saves as a lossless WebP, "
+"and each JPEG page with optimised tables, where that is smaller and keeps "
+"every pixel. Some other comic readers cannot show WebP."
 msgstr ""
-"Zapisuje svaku PNG stranicu arhive koju MComix sprema kao WebP, gdje je tako "
-"manja i čuva svaki piksel. Neki drugi čitači stripova ne mogu prikazati WebP."
+"Svaku PNG ili GIF stranicu arhive koju MComix sprema zapiši kao WebP bez "
+"gubitka, a svaku JPEG stranicu s optimiziranim tablicama, gdje je tako manja "
+"i zadržava svaki piksel. Neki drugi čitači stripova ne mogu prikazati WebP."
 
 #: mcomix/preferences_dialog.py:282
 msgid "Comment file extensions:"
@@ -3340,8 +3342,8 @@ msgid "Rename arc_hive..."
 msgstr "Preimenuj ar_hivu..."
 
 #: mcomix/ui.py:467 mcomix/library/book_area.py:357
-msgid "Store PNG pages as _WebP..."
-msgstr "Spremi PNG stranice kao _WebP..."
+msgid "Make pages smaller _without loss..."
+msgstr "Smanji stranice bez _gubitka..."
 
 #: mcomix/ui.py:469
 msgid "_Delete page"
@@ -3847,46 +3849,46 @@ msgid "nothing installed here reads the format"
 msgstr "ovdje nije instalirano ništa što čita taj format"
 
 #: mcomix/webp_books.py:154
-msgid "no page smaller as WebP"
-msgstr "nijedna stranica nije manja kao WebP"
+msgid "no page made smaller"
+msgstr "nijedna stranica nije smanjena"
 
 #: mcomix/webp_books.py:201
 msgid "archives inside"
 msgstr "sadrži druge arhive"
 
-#. TRANSLATORS: No PNG, GIF or JPEG pages, the kinds made smaller.
-#: mcomix/webp_books.py:207
-msgid "no PNG pages"
-msgstr "nema PNG stranica"
+#: mcomix/webp_books.py:206
+msgid "no PNG, GIF or JPEG pages"
+msgstr "nema PNG, GIF ni JPEG stranica"
 
-#: mcomix/webp_books.py:239 mcomix/webp_books.py:245 mcomix/webp_books.py:265
+#: mcomix/webp_books.py:238 mcomix/webp_books.py:244 mcomix/webp_books.py:264
 msgid "encrypted"
 msgstr "šifrirano"
 
 #: mcomix/webp_dialog.py:97
 #, python-format
-msgid "Store the PNG pages of %d book as WebP?"
-msgid_plural "Store the PNG pages of %d books as WebP?"
-msgstr[0] "Spremiti PNG stranice %d knjige kao WebP?"
-msgstr[1] "Spremiti PNG stranice %d knjige kao WebP?"
-msgstr[2] "Spremiti PNG stranice %d knjiga kao WebP?"
+msgid "Make the pages of %d book smaller?"
+msgid_plural "Make the pages of %d books smaller?"
+msgstr[0] "Smanjiti stranice %d knjige?"
+msgstr[1] "Smanjiti stranice %d knjige?"
+msgstr[2] "Smanjiti stranice %d knjiga?"
 
 #: mcomix/webp_dialog.py:99
 msgid ""
-"Each book with PNG pages is written again, with every page that is smaller "
-"as a lossless WebP. Some other comic readers cannot show WebP pages."
+"Each book is written again, with every PNG or GIF page that is smaller as a "
+"lossless WebP and every JPEG page optimised without loss. Some other comic "
+"readers cannot show WebP pages."
 msgstr ""
-"Svaka knjiga s PNG stranicama ponovno se zapisuje, a svaka stranica koja je "
-"manja kao WebP bez gubitaka sprema se tako. Neki drugi čitači stripova ne "
-"mogu prikazati WebP stranice."
+"Svaka se knjiga ponovno zapisuje: svaka PNG ili GIF stranica koja je tako "
+"manja kao WebP bez gubitka, a svaka JPEG stranica optimizirana bez gubitka. "
+"Neki drugi čitači stripova ne mogu prikazati WebP stranice."
 
 #: mcomix/webp_dialog.py:103
-msgid "_Store as WebP"
-msgstr "_Spremi kao WebP"
+msgid "_Make Smaller"
+msgstr "_Smanji"
 
 #: mcomix/webp_dialog.py:126
-msgid "Storing PNG pages as WebP"
-msgstr "Spremanje PNG stranica kao WebP"
+msgid "Making pages smaller"
+msgstr "Smanjivanje stranica"
 
 #: mcomix/webp_dialog.py:152 mcomix/library/add_progress_dialog.py:57
 msgid "_Stop"
@@ -4561,6 +4563,48 @@ msgstr "S poddirektorijima"
 #: mcomix/library/watchlist.py:85
 msgid "Automatically scan for new books when library is _opened"
 msgstr "Automatski traži nove knjige pri _otvaranju biblioteke"
+
+#~ msgid "Store PNG pages as lossless WebP when saving an archive"
+#~ msgstr "Spremaj PNG stranice kao WebP bez gubitaka pri spremanju arhive"
+
+#~ msgid ""
+#~ "Write each PNG page of an archive MComix saves as a WebP, where that is "
+#~ "smaller and keeps every pixel. Some other comic readers cannot show WebP."
+#~ msgstr ""
+#~ "Zapisuje svaku PNG stranicu arhive koju MComix sprema kao WebP, gdje je "
+#~ "tako manja i čuva svaki piksel. Neki drugi čitači stripova ne mogu "
+#~ "prikazati WebP."
+
+#~ msgid "Store PNG pages as _WebP..."
+#~ msgstr "Spremi PNG stranice kao _WebP..."
+
+#~ msgid "no page smaller as WebP"
+#~ msgstr "nijedna stranica nije manja kao WebP"
+
+#~ msgid "no PNG pages"
+#~ msgstr "nema PNG stranica"
+
+#, python-format
+#~ msgid "Store the PNG pages of %d book as WebP?"
+#~ msgid_plural "Store the PNG pages of %d books as WebP?"
+#~ msgstr[0] "Spremiti PNG stranice %d knjige kao WebP?"
+#~ msgstr[1] "Spremiti PNG stranice %d knjige kao WebP?"
+#~ msgstr[2] "Spremiti PNG stranice %d knjiga kao WebP?"
+
+#~ msgid ""
+#~ "Each book with PNG pages is written again, with every page that is "
+#~ "smaller as a lossless WebP. Some other comic readers cannot show WebP "
+#~ "pages."
+#~ msgstr ""
+#~ "Svaka knjiga s PNG stranicama ponovno se zapisuje, a svaka stranica koja "
+#~ "je manja kao WebP bez gubitaka sprema se tako. Neki drugi čitači stripova "
+#~ "ne mogu prikazati WebP stranice."
+
+#~ msgid "_Store as WebP"
+#~ msgstr "_Spremi kao WebP"
+
+#~ msgid "Storing PNG pages as WebP"
+#~ msgstr "Spremanje PNG stranica kao WebP"
 
 #~ msgid "a format MComix cannot write here"
 #~ msgstr "format koji MComix ovdje ne može zapisati"

@@ -2622,7 +2622,7 @@ class RelocateBooksTest(_LibraryWindowTest):
 
 class StorePagesAsWebpTest(_LibraryWindowTest):
 
-    """"Store PNG pages as WebP..." on the books selected, from the
+    """"Make pages smaller without loss..." on the books selected, from the
     question it asks to the summary it ends with."""
 
     def setUp(self):

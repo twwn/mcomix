@@ -275,9 +275,9 @@ class _PreferencesDialog(Dialog):
             _('Write an edited archive back as a ZIP, a tar, a 7z or a RAR, whichever it was read as. The last two need the 7z and rar programs, which MComix does not install; a format it cannot write is saved as a ZIP.')))
 
         page.add_row(self._create_pref_check_button(
-            _('Store PNG pages as lossless WebP when saving an archive'),
+            _('Make pages smaller without loss when saving an archive'),
             'png pages as webp when saving',
-            _('Write each PNG page of an archive MComix saves as a WebP, where that is smaller and keeps every pixel. Some other comic readers cannot show WebP.')))
+            _('Write each PNG or GIF page of an archive MComix saves as a lossless WebP, and each JPEG page with optimised tables, where that is smaller and keeps every pixel. Some other comic readers cannot show WebP.')))
 
         page.add_row(Gtk.Label(label=_('Comment file extensions:')),
                      self._create_extensions_entry())

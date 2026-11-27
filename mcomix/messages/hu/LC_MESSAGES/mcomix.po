@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Comix 4.0.3\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-28 00:33+0100\n"
+"POT-Creation-Date: 2026-11-28 00:37+0100\n"
 "PO-Revision-Date: 2009-01-26 19:34+0100\n"
 "Last-Translator: Ernő Drabik <drerno@gmail.com>\n"
 "Language-Team: \n"
@@ -1745,17 +1745,19 @@ msgstr ""
 "ként lesznek mentve."
 
 #: mcomix/preferences_dialog.py:278
-msgid "Store PNG pages as lossless WebP when saving an archive"
-msgstr "PNG-oldalak tárolása veszteségmentes WebP-ként archívum mentésekor"
+msgid "Make pages smaller without loss when saving an archive"
+msgstr "Oldalak veszteség nélküli kicsinyítése archívum mentésekor"
 
 #: mcomix/preferences_dialog.py:280
 msgid ""
-"Write each PNG page of an archive MComix saves as a WebP, where that is "
-"smaller and keeps every pixel. Some other comic readers cannot show WebP."
+"Write each PNG or GIF page of an archive MComix saves as a lossless WebP, "
+"and each JPEG page with optimised tables, where that is smaller and keeps "
+"every pixel. Some other comic readers cannot show WebP."
 msgstr ""
-"Az MComix által mentett archívum minden PNG-oldalát WebP-ként írja ki, ahol "
-"így kisebb és minden képpont megmarad. Néhány más képregényolvasó nem tudja "
-"megjeleníteni a WebP-t."
+"Az MComix által mentett archívum minden PNG- vagy GIF-oldalát "
+"veszteségmentes WebP-ként, minden JPEG-oldalát optimalizált táblákkal írja, "
+"ahol így kisebb, és minden képpont megmarad. Néhány más képregényolvasó nem "
+"tudja megjeleníteni a WebP-t."
 
 #: mcomix/preferences_dialog.py:282
 msgid "Comment file extensions:"
@@ -2961,8 +2963,8 @@ msgid "Rename arc_hive..."
 msgstr "A_rchívum átnevezése..."
 
 #: mcomix/ui.py:467 mcomix/library/book_area.py:357
-msgid "Store PNG pages as _WebP..."
-msgstr "PNG-oldalak tárolása _WebP-ként..."
+msgid "Make pages smaller _without loss..."
+msgstr "Oldalak ki_csinyítése veszteség nélkül..."
 
 #: mcomix/ui.py:469
 msgid "_Delete page"
@@ -3398,45 +3400,46 @@ msgid "nothing installed here reads the format"
 msgstr "nincs telepítve semmi, ami olvasná a formátumot"
 
 #: mcomix/webp_books.py:154
-msgid "no page smaller as WebP"
-msgstr "egyik oldal sem kisebb WebP-ként"
+msgid "no page made smaller"
+msgstr "egyik oldal sem lett kisebb"
 
 #: mcomix/webp_books.py:201
 msgid "archives inside"
 msgstr "más archívumokat tartalmaz"
 
-#. TRANSLATORS: No PNG, GIF or JPEG pages, the kinds made smaller.
-#: mcomix/webp_books.py:207
-msgid "no PNG pages"
-msgstr "nincsenek PNG-oldalak"
+#: mcomix/webp_books.py:206
+msgid "no PNG, GIF or JPEG pages"
+msgstr "nincsenek PNG-, GIF- vagy JPEG-oldalak"
 
-#: mcomix/webp_books.py:239 mcomix/webp_books.py:245 mcomix/webp_books.py:265
+#: mcomix/webp_books.py:238 mcomix/webp_books.py:244 mcomix/webp_books.py:264
 msgid "encrypted"
 msgstr "titkosított"
 
 #: mcomix/webp_dialog.py:97
 #, python-format
-msgid "Store the PNG pages of %d book as WebP?"
-msgid_plural "Store the PNG pages of %d books as WebP?"
-msgstr[0] "Tárolja %d könyv PNG-oldalait WebP-ként?"
-msgstr[1] "Tárolja %d könyv PNG-oldalait WebP-ként?"
+msgid "Make the pages of %d book smaller?"
+msgid_plural "Make the pages of %d books smaller?"
+msgstr[0] "Kicsinyíti %d könyv oldalait?"
+msgstr[1] "Kicsinyíti %d könyv oldalait?"
 
 #: mcomix/webp_dialog.py:99
 msgid ""
-"Each book with PNG pages is written again, with every page that is smaller "
-"as a lossless WebP. Some other comic readers cannot show WebP pages."
+"Each book is written again, with every PNG or GIF page that is smaller as a "
+"lossless WebP and every JPEG page optimised without loss. Some other comic "
+"readers cannot show WebP pages."
 msgstr ""
-"Minden PNG-oldalakat tartalmazó könyv újraíródik, és minden oldal, amely "
-"veszteségmentes WebP-ként kisebb, így tárolódik. Néhány más képregényolvasó "
-"nem tudja megjeleníteni a WebP-oldalakat."
+"Minden könyv újra íródik: minden PNG- vagy GIF-oldal, amely így kisebb, "
+"veszteségmentes WebP-ként, és minden JPEG-oldal veszteség nélkül "
+"optimalizálva. Néhány más képregényolvasó nem tudja megjeleníteni a WebP-"
+"oldalakat."
 
 #: mcomix/webp_dialog.py:103
-msgid "_Store as WebP"
-msgstr "_Tárolás WebP-ként"
+msgid "_Make Smaller"
+msgstr "_Kicsinyítés"
 
 #: mcomix/webp_dialog.py:126
-msgid "Storing PNG pages as WebP"
-msgstr "PNG-oldalak tárolása WebP-ként"
+msgid "Making pages smaller"
+msgstr "Oldalak kicsinyítése"
 
 #: mcomix/webp_dialog.py:152 mcomix/library/add_progress_dialog.py:57
 msgid "_Stop"
@@ -4056,6 +4059,47 @@ msgstr "Almappákkal együtt"
 #: mcomix/library/watchlist.py:85
 msgid "Automatically scan for new books when library is _opened"
 msgstr "Új könyvek automatikus keresése a könyvtár _megnyitásakor"
+
+#~ msgid "Store PNG pages as lossless WebP when saving an archive"
+#~ msgstr "PNG-oldalak tárolása veszteségmentes WebP-ként archívum mentésekor"
+
+#~ msgid ""
+#~ "Write each PNG page of an archive MComix saves as a WebP, where that is "
+#~ "smaller and keeps every pixel. Some other comic readers cannot show WebP."
+#~ msgstr ""
+#~ "Az MComix által mentett archívum minden PNG-oldalát WebP-ként írja ki, "
+#~ "ahol így kisebb és minden képpont megmarad. Néhány más képregényolvasó "
+#~ "nem tudja megjeleníteni a WebP-t."
+
+#~ msgid "Store PNG pages as _WebP..."
+#~ msgstr "PNG-oldalak tárolása _WebP-ként..."
+
+#~ msgid "no page smaller as WebP"
+#~ msgstr "egyik oldal sem kisebb WebP-ként"
+
+#~ msgid "no PNG pages"
+#~ msgstr "nincsenek PNG-oldalak"
+
+#, python-format
+#~ msgid "Store the PNG pages of %d book as WebP?"
+#~ msgid_plural "Store the PNG pages of %d books as WebP?"
+#~ msgstr[0] "Tárolja %d könyv PNG-oldalait WebP-ként?"
+#~ msgstr[1] "Tárolja %d könyv PNG-oldalait WebP-ként?"
+
+#~ msgid ""
+#~ "Each book with PNG pages is written again, with every page that is "
+#~ "smaller as a lossless WebP. Some other comic readers cannot show WebP "
+#~ "pages."
+#~ msgstr ""
+#~ "Minden PNG-oldalakat tartalmazó könyv újraíródik, és minden oldal, amely "
+#~ "veszteségmentes WebP-ként kisebb, így tárolódik. Néhány más "
+#~ "képregényolvasó nem tudja megjeleníteni a WebP-oldalakat."
+
+#~ msgid "_Store as WebP"
+#~ msgstr "_Tárolás WebP-ként"
+
+#~ msgid "Storing PNG pages as WebP"
+#~ msgstr "PNG-oldalak tárolása WebP-ként"
 
 #~ msgid "a format MComix cannot write here"
 #~ msgstr "olyan formátum, amelyet az MComix itt nem tud írni"

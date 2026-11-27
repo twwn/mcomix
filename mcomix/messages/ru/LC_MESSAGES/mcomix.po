@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix 0.90.4\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-28 00:33+0100\n"
+"POT-Creation-Date: 2026-11-28 00:37+0100\n"
 "PO-Revision-Date: 2016-01-10 18:09+0200\n"
 "Last-Translator: Ulyanich Michael <ulianich_mihail@ukr.net>\n"
 "Language-Team: Russian <kde-russian@lists.kde.ru>\n"
@@ -2032,17 +2032,19 @@ msgstr ""
 "сохраняется как ZIP."
 
 #: mcomix/preferences_dialog.py:278
-msgid "Store PNG pages as lossless WebP when saving an archive"
-msgstr "Сохранять страницы PNG как WebP без потерь при сохранении архива"
+msgid "Make pages smaller without loss when saving an archive"
+msgstr "Уменьшать страницы без потерь при сохранении архива"
 
 #: mcomix/preferences_dialog.py:280
 msgid ""
-"Write each PNG page of an archive MComix saves as a WebP, where that is "
-"smaller and keeps every pixel. Some other comic readers cannot show WebP."
+"Write each PNG or GIF page of an archive MComix saves as a lossless WebP, "
+"and each JPEG page with optimised tables, where that is smaller and keeps "
+"every pixel. Some other comic readers cannot show WebP."
 msgstr ""
-"Записывает каждую страницу PNG архива, сохраняемого MComix, как WebP, если "
-"так она меньше и сохраняет каждый пиксель. Некоторые другие программы для "
-"чтения комиксов не умеют показывать WebP."
+"Записывать каждую страницу PNG или GIF архива, сохраняемого MComix, как WebP "
+"без потерь, а каждую страницу JPEG — с оптимизированными таблицами, если так "
+"она меньше и сохраняет каждый пиксель. Некоторые другие программы для чтения "
+"комиксов не умеют показывать WebP."
 
 #: mcomix/preferences_dialog.py:282
 msgid "Comment file extensions:"
@@ -3364,8 +3366,8 @@ msgid "Rename arc_hive..."
 msgstr "Пе_реименовать архив..."
 
 #: mcomix/ui.py:467 mcomix/library/book_area.py:357
-msgid "Store PNG pages as _WebP..."
-msgstr "Со_хранить страницы PNG как WebP..."
+msgid "Make pages smaller _without loss..."
+msgstr "Умень_шить страницы без потерь..."
 
 #: mcomix/ui.py:469
 msgid "_Delete page"
@@ -3878,46 +3880,47 @@ msgid "nothing installed here reads the format"
 msgstr "здесь не установлено ничего, что читает этот формат"
 
 #: mcomix/webp_books.py:154
-msgid "no page smaller as WebP"
-msgstr "ни одна страница не меньше в WebP"
+msgid "no page made smaller"
+msgstr "ни одна страница не уменьшена"
 
 #: mcomix/webp_books.py:201
 msgid "archives inside"
 msgstr "содержит другие архивы"
 
-#. TRANSLATORS: No PNG, GIF or JPEG pages, the kinds made smaller.
-#: mcomix/webp_books.py:207
-msgid "no PNG pages"
-msgstr "нет страниц PNG"
+#: mcomix/webp_books.py:206
+msgid "no PNG, GIF or JPEG pages"
+msgstr "нет страниц PNG, GIF или JPEG"
 
-#: mcomix/webp_books.py:239 mcomix/webp_books.py:245 mcomix/webp_books.py:265
+#: mcomix/webp_books.py:238 mcomix/webp_books.py:244 mcomix/webp_books.py:264
 msgid "encrypted"
 msgstr "зашифрована"
 
 #: mcomix/webp_dialog.py:97
 #, python-format
-msgid "Store the PNG pages of %d book as WebP?"
-msgid_plural "Store the PNG pages of %d books as WebP?"
-msgstr[0] "Сохранить страницы PNG %d книги как WebP?"
-msgstr[1] "Сохранить страницы PNG %d книг как WebP?"
-msgstr[2] "Сохранить страницы PNG %d книг как WebP?"
+msgid "Make the pages of %d book smaller?"
+msgid_plural "Make the pages of %d books smaller?"
+msgstr[0] "Уменьшить страницы %d книги?"
+msgstr[1] "Уменьшить страницы %d книг?"
+msgstr[2] "Уменьшить страницы %d книг?"
 
 #: mcomix/webp_dialog.py:99
 msgid ""
-"Each book with PNG pages is written again, with every page that is smaller "
-"as a lossless WebP. Some other comic readers cannot show WebP pages."
+"Each book is written again, with every PNG or GIF page that is smaller as a "
+"lossless WebP and every JPEG page optimised without loss. Some other comic "
+"readers cannot show WebP pages."
 msgstr ""
-"Каждая книга со страницами PNG записывается заново, и каждая страница, "
-"которая в WebP без потерь меньше, сохраняется так. Некоторые другие "
-"программы для чтения комиксов не могут показывать страницы WebP."
+"Каждая книга записывается заново: каждая страница PNG или GIF, которая так "
+"меньше, — как WebP без потерь, а каждая страница JPEG оптимизируется без "
+"потерь. Некоторые другие программы для чтения комиксов не умеют показывать "
+"страницы WebP."
 
 #: mcomix/webp_dialog.py:103
-msgid "_Store as WebP"
-msgstr "_Сохранить как WebP"
+msgid "_Make Smaller"
+msgstr "_Уменьшить"
 
 #: mcomix/webp_dialog.py:126
-msgid "Storing PNG pages as WebP"
-msgstr "Сохранение страниц PNG как WebP"
+msgid "Making pages smaller"
+msgstr "Уменьшение страниц"
 
 #: mcomix/webp_dialog.py:152 mcomix/library/add_progress_dialog.py:57
 msgid "_Stop"
@@ -4609,6 +4612,48 @@ msgstr "С подкаталогами"
 #: mcomix/library/watchlist.py:85
 msgid "Automatically scan for new books when library is _opened"
 msgstr "Автоматически искать новые книги при _открытии библиотеки"
+
+#~ msgid "Store PNG pages as lossless WebP when saving an archive"
+#~ msgstr "Сохранять страницы PNG как WebP без потерь при сохранении архива"
+
+#~ msgid ""
+#~ "Write each PNG page of an archive MComix saves as a WebP, where that is "
+#~ "smaller and keeps every pixel. Some other comic readers cannot show WebP."
+#~ msgstr ""
+#~ "Записывает каждую страницу PNG архива, сохраняемого MComix, как WebP, "
+#~ "если так она меньше и сохраняет каждый пиксель. Некоторые другие "
+#~ "программы для чтения комиксов не умеют показывать WebP."
+
+#~ msgid "Store PNG pages as _WebP..."
+#~ msgstr "Со_хранить страницы PNG как WebP..."
+
+#~ msgid "no page smaller as WebP"
+#~ msgstr "ни одна страница не меньше в WebP"
+
+#~ msgid "no PNG pages"
+#~ msgstr "нет страниц PNG"
+
+#, python-format
+#~ msgid "Store the PNG pages of %d book as WebP?"
+#~ msgid_plural "Store the PNG pages of %d books as WebP?"
+#~ msgstr[0] "Сохранить страницы PNG %d книги как WebP?"
+#~ msgstr[1] "Сохранить страницы PNG %d книг как WebP?"
+#~ msgstr[2] "Сохранить страницы PNG %d книг как WebP?"
+
+#~ msgid ""
+#~ "Each book with PNG pages is written again, with every page that is "
+#~ "smaller as a lossless WebP. Some other comic readers cannot show WebP "
+#~ "pages."
+#~ msgstr ""
+#~ "Каждая книга со страницами PNG записывается заново, и каждая страница, "
+#~ "которая в WebP без потерь меньше, сохраняется так. Некоторые другие "
+#~ "программы для чтения комиксов не могут показывать страницы WebP."
+
+#~ msgid "_Store as WebP"
+#~ msgstr "_Сохранить как WebP"
+
+#~ msgid "Storing PNG pages as WebP"
+#~ msgstr "Сохранение страниц PNG как WebP"
 
 #~ msgid "a format MComix cannot write here"
 #~ msgstr "формат, который MComix здесь не может записать"

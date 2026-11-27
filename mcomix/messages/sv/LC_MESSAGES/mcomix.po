@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix 0.90.4\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-28 00:33+0100\n"
+"POT-Creation-Date: 2026-11-28 00:37+0100\n"
 "PO-Revision-Date: 2018-02-24 08:43+0100\n"
 "Last-Translator: Jonatan Nyberg <jonatan@autistici.org>\n"
 "Language-Team: Swedish <LL@li.org>\n"
@@ -2017,16 +2017,18 @@ msgstr ""
 "installerar; ett format som inte kan skrivas sparas som ZIP."
 
 #: mcomix/preferences_dialog.py:278
-msgid "Store PNG pages as lossless WebP when saving an archive"
-msgstr "Lagra PNG-sidor som förlustfri WebP när ett arkiv sparas"
+msgid "Make pages smaller without loss when saving an archive"
+msgstr "Gör sidorna mindre utan förlust när ett arkiv sparas"
 
 #: mcomix/preferences_dialog.py:280
 msgid ""
-"Write each PNG page of an archive MComix saves as a WebP, where that is "
-"smaller and keeps every pixel. Some other comic readers cannot show WebP."
+"Write each PNG or GIF page of an archive MComix saves as a lossless WebP, "
+"and each JPEG page with optimised tables, where that is smaller and keeps "
+"every pixel. Some other comic readers cannot show WebP."
 msgstr ""
-"Skriver varje PNG-sida i ett arkiv som MComix sparar som WebP, där det blir "
-"mindre och behåller varje pixel. Vissa andra serieläsare kan inte visa WebP."
+"Skriv varje PNG- eller GIF-sida i ett arkiv som MComix sparar som förlustfri "
+"WebP, och varje JPEG-sida med optimerade tabeller, där det blir mindre och "
+"behåller varje pixel. Vissa andra serieläsare kan inte visa WebP."
 
 #: mcomix/preferences_dialog.py:282
 msgid "Comment file extensions:"
@@ -3348,8 +3350,8 @@ msgid "Rename arc_hive..."
 msgstr "Döp _om arkivet..."
 
 #: mcomix/ui.py:467 mcomix/library/book_area.py:357
-msgid "Store PNG pages as _WebP..."
-msgstr "Lagra PNG-sidor som _WebP..."
+msgid "Make pages smaller _without loss..."
+msgstr "Gör sidorna mi_ndre utan förlust..."
 
 #: mcomix/ui.py:469
 msgid "_Delete page"
@@ -3861,44 +3863,45 @@ msgid "nothing installed here reads the format"
 msgstr "inget som läser formatet är installerat här"
 
 #: mcomix/webp_books.py:154
-msgid "no page smaller as WebP"
-msgstr "ingen sida mindre som WebP"
+msgid "no page made smaller"
+msgstr "ingen sida blev mindre"
 
 #: mcomix/webp_books.py:201
 msgid "archives inside"
 msgstr "innehåller andra arkiv"
 
-#. TRANSLATORS: No PNG, GIF or JPEG pages, the kinds made smaller.
-#: mcomix/webp_books.py:207
-msgid "no PNG pages"
-msgstr "inga PNG-sidor"
+#: mcomix/webp_books.py:206
+msgid "no PNG, GIF or JPEG pages"
+msgstr "inga PNG-, GIF- eller JPEG-sidor"
 
-#: mcomix/webp_books.py:239 mcomix/webp_books.py:245 mcomix/webp_books.py:265
+#: mcomix/webp_books.py:238 mcomix/webp_books.py:244 mcomix/webp_books.py:264
 msgid "encrypted"
 msgstr "krypterad"
 
 #: mcomix/webp_dialog.py:97
 #, python-format
-msgid "Store the PNG pages of %d book as WebP?"
-msgid_plural "Store the PNG pages of %d books as WebP?"
-msgstr[0] "Lagra PNG-sidorna i %d bok som WebP?"
-msgstr[1] "Lagra PNG-sidorna i %d böcker som WebP?"
+msgid "Make the pages of %d book smaller?"
+msgid_plural "Make the pages of %d books smaller?"
+msgstr[0] "Göra sidorna i %d bok mindre?"
+msgstr[1] "Göra sidorna i %d böcker mindre?"
 
 #: mcomix/webp_dialog.py:99
 msgid ""
-"Each book with PNG pages is written again, with every page that is smaller "
-"as a lossless WebP. Some other comic readers cannot show WebP pages."
+"Each book is written again, with every PNG or GIF page that is smaller as a "
+"lossless WebP and every JPEG page optimised without loss. Some other comic "
+"readers cannot show WebP pages."
 msgstr ""
-"Varje bok med PNG-sidor skrivs om, och varje sida som blir mindre som "
-"förlustfri WebP lagras så. Vissa andra serieläsare kan inte visa WebP-sidor."
+"Varje bok skrivs om: varje PNG- eller GIF-sida som blir mindre så som "
+"förlustfri WebP, och varje JPEG-sida optimerad utan förlust. Vissa andra "
+"serieläsare kan inte visa WebP-sidor."
 
 #: mcomix/webp_dialog.py:103
-msgid "_Store as WebP"
-msgstr "_Lagra som WebP"
+msgid "_Make Smaller"
+msgstr "_Gör mindre"
 
 #: mcomix/webp_dialog.py:126
-msgid "Storing PNG pages as WebP"
-msgstr "Lagrar PNG-sidor som WebP"
+msgid "Making pages smaller"
+msgstr "Gör sidorna mindre"
 
 #: mcomix/webp_dialog.py:152 mcomix/library/add_progress_dialog.py:57
 msgid "_Stop"
@@ -4578,6 +4581,47 @@ msgstr "Med underkataloger"
 #: mcomix/library/watchlist.py:85
 msgid "Automatically scan for new books when library is _opened"
 msgstr "Skanna automatiskt efter nya böcker när biblioteket _öppnas"
+
+#~ msgid "Store PNG pages as lossless WebP when saving an archive"
+#~ msgstr "Lagra PNG-sidor som förlustfri WebP när ett arkiv sparas"
+
+#~ msgid ""
+#~ "Write each PNG page of an archive MComix saves as a WebP, where that is "
+#~ "smaller and keeps every pixel. Some other comic readers cannot show WebP."
+#~ msgstr ""
+#~ "Skriver varje PNG-sida i ett arkiv som MComix sparar som WebP, där det "
+#~ "blir mindre och behåller varje pixel. Vissa andra serieläsare kan inte "
+#~ "visa WebP."
+
+#~ msgid "Store PNG pages as _WebP..."
+#~ msgstr "Lagra PNG-sidor som _WebP..."
+
+#~ msgid "no page smaller as WebP"
+#~ msgstr "ingen sida mindre som WebP"
+
+#~ msgid "no PNG pages"
+#~ msgstr "inga PNG-sidor"
+
+#, python-format
+#~ msgid "Store the PNG pages of %d book as WebP?"
+#~ msgid_plural "Store the PNG pages of %d books as WebP?"
+#~ msgstr[0] "Lagra PNG-sidorna i %d bok som WebP?"
+#~ msgstr[1] "Lagra PNG-sidorna i %d böcker som WebP?"
+
+#~ msgid ""
+#~ "Each book with PNG pages is written again, with every page that is "
+#~ "smaller as a lossless WebP. Some other comic readers cannot show WebP "
+#~ "pages."
+#~ msgstr ""
+#~ "Varje bok med PNG-sidor skrivs om, och varje sida som blir mindre som "
+#~ "förlustfri WebP lagras så. Vissa andra serieläsare kan inte visa WebP-"
+#~ "sidor."
+
+#~ msgid "_Store as WebP"
+#~ msgstr "_Lagra som WebP"
+
+#~ msgid "Storing PNG pages as WebP"
+#~ msgstr "Lagrar PNG-sidor som WebP"
 
 #~ msgid "a format MComix cannot write here"
 #~ msgstr "ett format som MComix inte kan skriva här"

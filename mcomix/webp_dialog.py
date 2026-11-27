@@ -1,4 +1,4 @@
-"""webp_dialog.py - "Store PNG pages as WebP...", in the library and
+"""webp_dialog.py - "Make pages smaller without loss...", in the library and
 the main window's File menu.
 
 The library's command may be given a few books or the whole of a large library,
@@ -94,13 +94,13 @@ def offer(parent: Gtk.Window, books: Sequence[str],
     dialog = message_dialog.MessageDialog(parent, modal=True)
     dialog.set_text(
         i18n.get_translation().ngettext(
-            'Store the PNG pages of %d book as WebP?',
-            'Store the PNG pages of %d books as WebP?', count) % count,
-        _('Each book with PNG pages is written again, with every page '
-          'that is smaller as a lossless WebP. Some other comic readers '
-          'cannot show WebP pages.'))
+            'Make the pages of %d book smaller?',
+            'Make the pages of %d books smaller?', count) % count,
+        _('Each book is written again, with every PNG or GIF page that is '
+          'smaller as a lossless WebP and every JPEG page optimised without '
+          'loss. Some other comic readers cannot show WebP pages.'))
     dialog.add_confirmation_buttons(_('_Cancel'), Response.CANCEL,
-                                    _('_Store as WebP'), Response.OK)
+                                    _('_Make Smaller'), Response.OK)
 
     def run() -> None:
         _ProgressDialog(parent, list(books), open_book, written, finished,
@@ -123,7 +123,7 @@ class _ProgressDialog(Dialog):
                  finished: Callable[[], None],
                  select: "Callable[[list[str]], None] | None" = None
                  ) -> None:
-        super().__init__(title=_('Storing PNG pages as WebP'),
+        super().__init__(title=_('Making pages smaller'),
                          transient_for=parent, modal=True,
                          destroy_with_parent=True)
         self._books = books
