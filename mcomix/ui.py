@@ -20,7 +20,7 @@ from mcomix import constants
 from mcomix import file_chooser_main_dialog
 from mcomix.preferences import prefs
 from mcomix.library import main_dialog as library_main_dialog
-from mcomix.i18n import _
+from mcomix.i18n import _, pgettext
 
 if TYPE_CHECKING:
     from mcomix import main
@@ -503,7 +503,9 @@ class MainUI:
             _Entry('zoom_original', 'zoom-original', _('_Normal size'), None, window.manual_zoom_original),
             _Entry('leave_fullscreen', 'view-restore-symbolic', _('Leave fullscreen'), None,
                    _action_lambda(self._leave_fullscreen)),
-            _Entry('close', 'window-close', _('_Close'), _('Closes all opened files.'), _action_lambda(window.filehandler.close_file)),
+            # TRANSLATORS: Closes the open book.  A dialog's Close button,
+            # which closes the dialog, is the "_Close" without a context.
+            _Entry('close', 'window-close', pgettext('File menu', '_Close'), _('Closes all opened files.'), _action_lambda(window.filehandler.close_file)),
             _Entry('quit', 'application-exit', _('_Quit'), None, window.close_program),
             _Entry('save_and_quit', 'application-exit', _('_Save and quit'), _('Quits and restores the currently opened file next time the program starts.'),
                    window.save_and_terminate_program),

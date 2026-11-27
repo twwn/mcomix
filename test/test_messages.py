@@ -74,7 +74,8 @@ class TemplateTest(MComixTest):
                 os.path.join(constants.BASE_PATH, pattern))))
         self.assertTrue(sources, 'no sources to extract from')
         subprocess.run(
-            ['xgettext', '-LPython', '-o', extracted, '--from-code=utf-8']
+            ['xgettext', '-LPython', '-o', extracted, '--from-code=utf-8',
+             '--keyword=pgettext:1c,2']
             + sources,
             check=True, capture_output=True)
         return read_msgids(extracted)
@@ -158,11 +159,17 @@ class MnemonicTest(MComixTest):
             if len(node.args) < 3:
                 continue
             label = node.args[2]
-            if (isinstance(label, ast.Call)
+            if not (isinstance(label, ast.Call)
                     and isinstance(label.func, ast.Name)
-                    and label.func.id == '_'
-                    and isinstance(label.args[0], ast.Constant)):
+                    and all(isinstance(arg, ast.Constant)
+                            for arg in label.args)):
+                continue
+            if label.func.id == '_':
                 msgids[node.args[0].value] = label.args[0].value
+            elif label.func.id == 'pgettext':
+                # A (context, msgid) pair, translated with its context.
+                msgids[node.args[0].value] = (label.args[0].value,
+                                              label.args[1].value)
         return msgids
 
     @classmethod
@@ -316,7 +323,9 @@ class MnemonicTest(MComixTest):
                 with self.subTest(language=language, menu=menu):
                     taken = {}
                     for msgid in msgids:
-                        label = catalogue.gettext(msgid)
+                        label = (catalogue.pgettext(*msgid)
+                                 if isinstance(msgid, tuple)
+                                 else catalogue.gettext(msgid))
                         key = self._mnemonic(label)
                         if key is None:
                             continue
@@ -325,6 +334,25 @@ class MnemonicTest(MComixTest):
                             '%r and %r both answer to Alt+%s'
                             % (taken.get(key), label, key))
                         taken[key] = label
+
+
+class CloseTest(MComixTest):
+
+    """The File menu's Close closes the book, a dialog's Close the
+    dialog.  They shared one msgid, and the Spanish, Swedish and
+    Indonesian catalogues, translating the menu's, put "close file" on
+    every dialog's Close button."""
+
+    def test_a_dialog_s_close_names_no_file(self):
+        for language, word in (('es', 'archivo'), ('sv', 'fil'),
+                               ('id', 'berkas')):
+            with self.subTest(language=language):
+                catalogue = gettext.translation(
+                    'mcomix', MESSAGES_PATH, languages=[language])
+                self.assertNotIn(
+                    word, catalogue.gettext('_Close').replace('_', ''))
+                self.assertIn(word, catalogue.pgettext(
+                    'File menu', '_Close').replace('_', ''))
 
 
 class DialogMnemonicTest(MComixTest):

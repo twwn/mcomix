@@ -257,6 +257,13 @@ def _(message: str) -> str:
     return get_translation().gettext(message)
 
 
+def pgettext(context: str, message: str) -> str:
+    """Translate <message> as it is meant in <context>: one English
+    word that needs two translations, such as the File menu's Close,
+    which closes the book, and a dialog's, which closes the dialog."""
+    return get_translation().pgettext(context, message)
+
+
 def to_display_string(string: str) -> str:
     """ Converts a string to a valid UTF-8 string at the expense of data accuracy. """
     return string.encode('utf-8', 'surrogateescape').decode('utf-8', 'replace')

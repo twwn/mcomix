@@ -149,6 +149,7 @@ VERSION=$(grep VERSION mcomix/constants.py | sed -e "s/VERSION = //" -e "s/'//g"
 MAINTAINER="https://github.com/twwn/mcomix/issues"
 
 xgettext -LPython -omcomix.pot -pmcomix/messages/ -cTRANSLATORS \
+	--keyword=pgettext:1c,2 \
 	--from-code=utf-8 --package-name=MComix --package-version=${VERSION} \
 	--msgid-bugs-address=${MAINTAINER} \
 	mcomix/*.py mcomix/archive/*.py mcomix/library/*.py
