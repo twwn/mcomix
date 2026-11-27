@@ -769,6 +769,15 @@ class _LibraryBackend:
                         archive_tools.cannot_open(path))
             return False
         format, pages, size = info
+        if pages == 0 and not withheld.wanted:
+            # An archive of videos, say, or of text: listed, but with
+            # nothing in it to read, so nothing a cover or a page could
+            # be drawn from.  One whose listing is encrypted counts its
+            # pages as 0 only for not knowing them, and is a book.
+            log.warning('%s %s', _('! Could not add book "%s" to the '
+                                   'library') % i18n.to_display_string(path),
+                        _("No images in '%s'") % name)
+            return False
 
         # Thumbnail for the newly added book will be generated once it
         # is actually needed with get_book_thumbnail().

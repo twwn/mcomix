@@ -348,6 +348,17 @@ class RefusedBookTest(LibraryDatabaseTest):
         self.assertIn(path, logged)
         self.assertIn('it needs', logged)
 
+    def test_an_archive_without_pictures(self):
+        """An archive of videos is read without error and lists nothing
+        a page could be drawn from: it is no book."""
+        path = os.path.join(self.tmp_dir, 'clips.cbz')
+        with zipfile.ZipFile(path, 'w') as book:
+            book.writestr('01.mp4', b'\x00\x00\x00\x18ftypmp42')
+            book.writestr('notes.txt', 'two clips')
+        logged = self._refused(path)
+        self.assertIn(path, logged)
+        self.assertIn("No images in 'clips.cbz'", logged)
+
 
 class NothingThereTest(OpenLibraryTest):
 
