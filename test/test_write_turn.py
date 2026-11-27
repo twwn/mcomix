@@ -134,6 +134,34 @@ class JpegTurnTest(MComixTest):
         with self.assertRaises(ValueError):
             jpeg_turn.with_orientation(b'\x89PNG\r\n\x1a\n', 6)
 
+    def test_a_damaged_exif_block_is_refused(self):
+        """Pillow, reading or writing the Exif block of a damaged
+        picture, raised SyntaxError, struct.error or TypeError, none of
+        which the window's "Save rotation to file" catches.  Each block
+        is one found by mutating a picture's bytes at random; the
+        orientation entry in each cannot be changed in place."""
+        damaged = (
+            # A TIFF header of 0x0f where 0x2a belongs (SyntaxError).
+            '4d4d000f000000080003010f000200000006000000320110000200000006'
+            '00000038011200030000ef0100030000000000004d616b6572004d6f6465'
+            '6c00',
+            # An entry of type 0xcd03 (struct.error, writing it back).
+            '4d4d002a000000080003010f000200000006000000320150000200000006'
+            '000000380112cd030000000100030000000000004d616b6572004d6f6465'
+            '6c00',
+            # An entry of type 0xf0 (TypeError, writing it back).
+            '4d4d002a000000080003011f000200000006000000320110000200000006'
+            '00000038011200f00000000100030000000000004d616b6572004d6f6465'
+            '6c00')
+        for block in damaged:
+            payload = b'Exif\x00\x00' + bytes.fromhex(block)
+            data = (b'\xff\xd8\xff\xe1' + (len(payload) + 2).to_bytes(2, 'big')
+                    + payload + b'\xff\xda\x00\x02')
+            for orientation in (1, 6):
+                with self.subTest(block=block[:24], orientation=orientation), \
+                        self.assertRaises(ValueError):
+                    jpeg_turn.with_orientation(data, orientation)
+
 
 class WriteTurnTest(MComixTest):
 

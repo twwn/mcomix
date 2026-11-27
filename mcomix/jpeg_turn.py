@@ -11,9 +11,11 @@ orientation tag, which leaves the pixels alone and which every common
 viewer follows.
 """
 
+import contextlib
 import io
 import struct
 import subprocess
+from collections.abc import Iterator
 
 from PIL import Image
 
@@ -48,9 +50,27 @@ class NotLossless(ValueError):
 def orientation_of(data: bytes) -> int:
     """The Exif orientation of the JPEG picture <data>, 1 where it has
     none or one that means nothing."""
-    with Image.open(io.BytesIO(data)) as image:
+    with Image.open(io.BytesIO(data)) as image, _damaged_exif():
         orientation = image.getexif().get(ORIENTATION, 1)
     return orientation if orientation in _TURNS else 1
+
+
+@contextlib.contextmanager
+def _damaged_exif() -> Iterator[None]:
+    """Raise ValueError for what Pillow raises over a damaged Exif
+    block, which the caller says the picture cannot be turned for.
+
+    Pillow parses and writes Exif with struct and its own TIFF code,
+    and a damaged block raises whatever those meet: SyntaxError for a
+    TIFF header that is not one, struct.error or TypeError for an entry
+    of the wrong type, among others.
+    """
+    try:
+        yield
+    except (OSError, ValueError):
+        raise
+    except Exception as error:
+        raise ValueError(f'damaged Exif block: {error}') from error
 
 
 def turned(orientation: int, degrees: int) -> int:
@@ -95,7 +115,8 @@ def with_orientation(data: bytes, orientation: int) -> bytes:
                 return changed
             # No tag to change: write the block anew with one.
             exif = Image.Exif()
-            exif.load(data[tiff:end])
+            with _damaged_exif():
+                exif.load(data[tiff:end])
             return _with_exif(data, start, end, exif, orientation)
     # None at all: a new block, after the JFIF one that has to come
     # first, where there is one.
@@ -129,7 +150,8 @@ def _with_exif(data: bytes, start: int, end: int, exif: Image.Exif,
     """<data> with the part from <start> to <end> replaced by an Exif
     block of <exif> whose orientation is <orientation>."""
     exif[ORIENTATION] = orientation
-    payload = exif.tobytes()
+    with _damaged_exif():
+        payload = exif.tobytes()
     if not payload.startswith(_EXIF):
         payload = _EXIF + payload
     if len(payload) + 2 > 0xffff:
