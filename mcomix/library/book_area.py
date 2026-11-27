@@ -378,7 +378,8 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable, LibraryPart):
             action.connect('change-state', handler)
             self._popup_actions.add_action(action)
         for name, handler in (('select-all', self._select_all),
-                              ('select-no-pages', self._select_no_pages)):
+                              ('select-no-pages', self._select_no_pages),
+                              ('select-absent', self._select_absent)):
             action = Gio.SimpleAction.new(name, None)
             action.connect('activate', handler)
             self._popup_actions.add_action(action)
@@ -453,6 +454,8 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable, LibraryPart):
                                                   'books.select-all'))
         select_menu.append_item(widgets.menu_item(_('Books with no pages'),
                                                   'books.select-no-pages'))
+        select_menu.append_item(widgets.menu_item(
+            _('Books whose file is not there'), 'books.select-absent'))
 
         submenus = Gio.Menu()
         submenus.append_submenu(_('Select books'), select_menu)
@@ -1757,6 +1760,18 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable, LibraryPart):
         self._covers.select_positions(
             position for position, item in enumerate(self._each_item())
             if item.pages == 0)
+
+    def _select_absent(self, *args: object) -> None:
+        """Select the books on show whose file is not where the library
+        has it - deleted or moved outside MComix, or on a drive not
+        connected - and nothing else.
+
+        Each is looked for now, on the main thread, as Clean up looks:
+        the faded covers are only those a worker has drawn so far.
+        """
+        self._covers.select_positions(
+            position for position, item in enumerate(self._each_item())
+            if not os.path.exists(item.path))
 
     def _set_sensitive(self, action: str, sensitive: bool) -> None:
         """ Enables the popup menu action <action> based on <sensitive>. """

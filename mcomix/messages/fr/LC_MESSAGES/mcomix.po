@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix 0.93\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-27 23:58+0100\n"
+"POT-Creation-Date: 2026-11-28 00:01+0100\n"
 "PO-Revision-Date: 2015-04-05 08:54+0100\n"
 "Last-Translator: Benoit Pierre <benoit.pierre@gmail.com>\n"
 "Language-Team: \n"
@@ -52,7 +52,7 @@ msgid "! Could not read %s"
 msgstr "! Impossible de lire %s"
 
 #: mcomix/archive_packer.py:542 mcomix/file_actions.py:1473
-#: mcomix/library/book_area.py:1425
+#: mcomix/library/book_area.py:1428
 #, python-format
 msgid "! Could not remove %(file)s: %(error)s"
 msgstr "! Impossible de supprimer %(file)s : %(error)s"
@@ -570,12 +570,12 @@ msgstr "Le fichier est mis à la corbeille."
 msgid "_Move to Trash"
 msgstr "_Mettre à la corbeille"
 
-#: mcomix/file_actions.py:1317 mcomix/library/book_area.py:1362
+#: mcomix/file_actions.py:1317 mcomix/library/book_area.py:1365
 msgid "It does not go to the trash and cannot be restored."
 msgstr ""
 "Le fichier n'est pas mis à la corbeille et ne pourra pas être restauré."
 
-#: mcomix/file_actions.py:1325 mcomix/library/book_area.py:1354
+#: mcomix/file_actions.py:1325 mcomix/library/book_area.py:1357
 #, python-format
 msgid "Delete \"%s\" permanently?"
 msgstr "Supprimer \"%s\" définitivement ?"
@@ -585,7 +585,7 @@ msgstr "Supprimer \"%s\" définitivement ?"
 msgid "Could not move \"%s\" to the trash"
 msgstr "Impossible de mettre « %s » à la corbeille"
 
-#: mcomix/file_actions.py:1436 mcomix/library/book_area.py:1439
+#: mcomix/file_actions.py:1436 mcomix/library/book_area.py:1442
 #, python-format
 msgid "%d book could not be moved to the trash."
 msgid_plural "%d books could not be moved to the trash."
@@ -2315,7 +2315,7 @@ msgstr "Nom de fichier"
 msgid "File name (GLib)"
 msgstr "Nom de fichier (GLib)"
 
-#: mcomix/preferences_dialog.py:800 mcomix/library/book_area.py:424
+#: mcomix/preferences_dialog.py:800 mcomix/library/book_area.py:425
 msgid "File size"
 msgstr "Taille du fichier"
 
@@ -2357,11 +2357,11 @@ msgstr ""
 "5). L'ordre GLib triera les fichiers à l'aide des clés de collation générées "
 "par GLib/GTK, utilisées par de nombreuses autres applications GTK."
 
-#: mcomix/preferences_dialog.py:831 mcomix/library/book_area.py:432
+#: mcomix/preferences_dialog.py:831 mcomix/library/book_area.py:433
 msgid "Ascending"
 msgstr "Ascendant"
 
-#: mcomix/preferences_dialog.py:832 mcomix/library/book_area.py:433
+#: mcomix/preferences_dialog.py:832 mcomix/library/book_area.py:434
 msgid "Descending"
 msgstr "Descendant"
 
@@ -2478,7 +2478,7 @@ msgstr ""
 "les couleurs en proportion ; colorimétrie relative garde exactes celles que "
 "l'écran peut afficher."
 
-#: mcomix/preferences_dialog.py:975 mcomix/library/book_area.py:440
+#: mcomix/preferences_dialog.py:975 mcomix/library/book_area.py:441
 msgid "Normal"
 msgstr "Normale"
 
@@ -3645,7 +3645,7 @@ msgstr ""
 "Mise à jour de la version de la base de données de la bibliothèque de "
 "%(from)d vers %(to)d."
 
-#: mcomix/library/backend_types.py:431 mcomix/library/book_area.py:452
+#: mcomix/library/backend_types.py:431 mcomix/library/book_area.py:453
 #: mcomix/library/collection_area.py:201 mcomix/library/control_area.py:95
 #: mcomix/library/shelf.py:215
 msgid "All books"
@@ -3704,90 +3704,94 @@ msgstr "Chan_ger le nom"
 msgid "_Properties"
 msgstr "P_ropriétés"
 
-#: mcomix/library/book_area.py:398
+#: mcomix/library/book_area.py:399
 msgid "Library books"
 msgstr "Livres de la bibliothèque"
 
-#: mcomix/library/book_area.py:411
+#: mcomix/library/book_area.py:412
 msgid "Move _to"
 msgstr "_Déplacer vers"
 
-#: mcomix/library/book_area.py:422
+#: mcomix/library/book_area.py:423
 msgid "Book name"
 msgstr "Nom du livre"
 
-#: mcomix/library/book_area.py:423
+#: mcomix/library/book_area.py:424
 msgid "Full path"
 msgstr "Chemin complet"
 
-#: mcomix/library/book_area.py:425
+#: mcomix/library/book_area.py:426
 msgid "Pages"
 msgstr "Pages"
 
-#: mcomix/library/book_area.py:426 mcomix/library/book_properties.py:102
+#: mcomix/library/book_area.py:427 mcomix/library/book_properties.py:102
 msgid "Date added"
 msgstr "Date d'ajout"
 
-#: mcomix/library/book_area.py:427
+#: mcomix/library/book_area.py:428
 msgid "Date modified"
 msgstr "Date de modification"
 
-#: mcomix/library/book_area.py:428 mcomix/library/book_properties.py:106
+#: mcomix/library/book_area.py:429 mcomix/library/book_properties.py:106
 msgid "Last read"
 msgstr "Dernière lecture"
 
-#: mcomix/library/book_area.py:429
+#: mcomix/library/book_area.py:430
 msgid "By hand"
 msgstr "À la main"
 
-#: mcomix/library/book_area.py:438
+#: mcomix/library/book_area.py:439
 msgid "Huge"
 msgstr "Énorme"
 
-#: mcomix/library/book_area.py:439
+#: mcomix/library/book_area.py:440
 msgid "Large"
 msgstr "Grande"
 
-#: mcomix/library/book_area.py:441
+#: mcomix/library/book_area.py:442
 msgid "Small"
 msgstr "Petite"
 
-#: mcomix/library/book_area.py:442
+#: mcomix/library/book_area.py:443
 msgid "Tiny"
 msgstr "Minuscule"
 
-#: mcomix/library/book_area.py:446
+#: mcomix/library/book_area.py:447
 msgid "Custom..."
 msgstr "Personnalisée…"
 
-#: mcomix/library/book_area.py:454
+#: mcomix/library/book_area.py:455
 msgid "Books with no pages"
 msgstr "Livres sans pages"
 
 #: mcomix/library/book_area.py:458
+msgid "Books whose file is not there"
+msgstr "Livres dont le fichier n'est pas là"
+
+#: mcomix/library/book_area.py:461
 msgid "Select books"
 msgstr "Sélectionner des livres"
 
-#: mcomix/library/book_area.py:459
+#: mcomix/library/book_area.py:462
 msgid "_Sort"
 msgstr "_Trier par"
 
-#: mcomix/library/book_area.py:460
+#: mcomix/library/book_area.py:463
 msgid "Cover si_ze"
 msgstr "Taille de la cou_verture"
 
-#: mcomix/library/book_area.py:958
+#: mcomix/library/book_area.py:961
 msgid "Set library cover size"
 msgstr "Définir la taille des couvertures de la bibliothèque."
 
-#: mcomix/library/book_area.py:1266
+#: mcomix/library/book_area.py:1269
 #, python-format
 msgid "Removed %(num)d book from '%(collection)s'."
 msgid_plural "Removed %(num)d books from '%(collection)s'."
 msgstr[0] "Suppression de %(num)d livre de '%(collection)s'."
 msgstr[1] "Suppression de %(num)d livres de '%(collection)s'."
 
-#: mcomix/library/book_area.py:1289 mcomix/library/collection_area.py:283
+#: mcomix/library/book_area.py:1292 mcomix/library/collection_area.py:283
 #: mcomix/library/main_dialog.py:256
 #, python-format
 msgid "Removed %d book from the library."
@@ -3795,11 +3799,11 @@ msgid_plural "Removed %d books from the library."
 msgstr[0] "Suppression du livre %d de la bibliothèque."
 msgstr[1] "Suppression des livres %d de la bibliothèque."
 
-#: mcomix/library/book_area.py:1311 mcomix/library/book_area.py:1332
+#: mcomix/library/book_area.py:1314 mcomix/library/book_area.py:1335
 msgid "Remove books from the library?"
 msgstr "Effacer le livre de la bibliothèque ?"
 
-#: mcomix/library/book_area.py:1312
+#: mcomix/library/book_area.py:1315
 msgid ""
 "The selected books will be removed from the library. Any in a folder with no "
 "trash is deleted permanently and cannot be restored."
@@ -3808,28 +3812,28 @@ msgstr ""
 "trouvent dans un répertoire sans corbeille seront supprimés définitivement "
 "et ne pourront pas être restaurés."
 
-#: mcomix/library/book_area.py:1333
+#: mcomix/library/book_area.py:1336
 msgid ""
 "The selected books will be removed from the library and moved to the trash."
 msgstr ""
 "Les livres sélectionnés seront supprimés de la bibliothèque et mis à la "
 "corbeille."
 
-#: mcomix/library/book_area.py:1358
+#: mcomix/library/book_area.py:1361
 #, python-format
 msgid "Delete %d book permanently?"
 msgid_plural "Delete %d books permanently?"
 msgstr[0] "Supprimer %d livre définitivement ?"
 msgstr[1] "Supprimer %d livres définitivement ?"
 
-#: mcomix/library/book_area.py:1490
+#: mcomix/library/book_area.py:1493
 #, python-format
 msgid "Remove the bookmarks in the deleted book?"
 msgid_plural "Remove the bookmarks in the %(count)d deleted books?"
 msgstr[0] "Supprimer les signets du livre supprimé ?"
 msgstr[1] "Supprimer les signets des %(count)d livres supprimés ?"
 
-#: mcomix/library/book_area.py:1694
+#: mcomix/library/book_area.py:1697
 msgid "Open with"
 msgstr "Ouvrir avec"
 

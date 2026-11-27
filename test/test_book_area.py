@@ -3,6 +3,7 @@
 import contextlib
 import datetime
 import os
+import shutil
 import sqlite3
 import types
 import unittest.mock
@@ -1702,6 +1703,15 @@ class SelectBooksTest(_FourCoversTest):
 
     def test_all_books(self):
         self.assertEqual([0, 1, 2, 3], list(self._activate('select-all')))
+
+    def test_books_whose_file_is_not_there(self):
+        """Looked for when picked, not only the covers drawn faded."""
+        for index in range(4):
+            path = os.path.join(self.tmp_dir, '%d.cbz' % index)
+            self.area._covers.get_item(index).path = path
+            if index in (0, 3):
+                shutil.copy2(NORMAL_ZIP, path)
+        self.assertEqual([1, 2], list(self._activate('select-absent')))
 
 
 class StorePagesAsWebpEntryTest(_FourCoversTest):
