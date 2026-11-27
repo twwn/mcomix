@@ -194,6 +194,25 @@ def _turn_pixels(data: bytes, mirrored: bool, degrees: int) -> "bytes | None":
     return done.stdout
 
 
+def optimised(data: bytes) -> "bytes | None":
+    """The JPEG picture <data> with its Huffman tables made for it by
+    jpegtran (-optimize), every marker copied (-copy all) and no pixel
+    encoded again; or None where jpegtran is not installed or refuses
+    it.  Whether that is smaller is for the caller to see."""
+    exe = _jpegtran()
+    if exe is None:
+        return None
+    try:
+        done = subprocess.run([exe, '-copy', 'all', '-optimize'],
+                              input=data, capture_output=True, timeout=60,
+                              creationflags=process.CREATIONFLAGS)
+    except (OSError, subprocess.SubprocessError):
+        return None
+    if done.returncode != 0 or not done.stdout.startswith(_SOI):
+        return None
+    return done.stdout
+
+
 def turn(data: bytes, degrees: int, follow_exif: bool) -> bytes:
     """The JPEG picture <data> turned <degrees> further clockwise than
     it is shown, without encoding its pixels again.

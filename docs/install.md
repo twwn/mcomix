@@ -86,7 +86,7 @@ The [UnRAR library](https://www.rarlab.com/rar_add.htm) (`libunrar.so` or `UnRAR
 `lha` | LHA files, without `7z`.
 `ddjvu` and `djvused` from [DjVuLibre](https://djvu.sourceforge.net/) | DjVu files.
 `JxrDecApp` from jxrlib | Pictures a KFX book keeps in JPEG XR, its larger ones as often as not. Without it, a smaller one in JPEG or PNG is shown.
-`jpegtran` from [libjpeg-turbo](https://libjpeg-turbo.org/) | "Save rotation to file" turns a JPEG's pixels without loss where its size allows. Without it, only its Exif orientation is turned.
+`jpegtran` from [libjpeg-turbo](https://libjpeg-turbo.org/) | "Save rotation to file" turns a JPEG's pixels without loss where its size allows. Without it, only its Exif orientation is turned. Storing pages as WebP also uses it to make JPEG pages smaller without loss; without it, they stay as they are.
 `unzip` | ZIP files Python cannot read, without `7z`. Stored, deflated, bzip2 and LZMA members Python reads itself, and Zstandard from Python 3.14 on.
 `xz` | Writes an edited `.tar.xz` book on every core, not one.
 [chardet](https://pypi.org/project/chardet/) | Guesses the encoding of file names and comments that are not UTF-8.

@@ -72,8 +72,9 @@ class ConvertTest(_BookTest):
             return {name: book.read(name) for name in book.namelist()}
 
     def test_png_pages_become_webp_and_everything_else_stays(self):
+        """The JPEG is one jpegtran makes no smaller."""
         page = line_art_png()
-        with open(sample_pages()[0], 'rb') as jpeg:
+        with open(sample_pages()[1], 'rb') as jpeg:
             photo = jpeg.read()
         path = self.zip_book({'art/01.png': page, '02.jpg': photo,
                               'notes.txt': b'notes', '._01.png': b'finder'})
@@ -144,6 +145,20 @@ class ConvertTest(_BookTest):
         webp_books.convert(path, self.stop, done.append)
         self.assertEqual(sorted(done), done)
         self.assertAlmostEqual(1.0, done[-1])
+
+    def test_a_jpeg_page_is_optimised_under_its_own_name(self):
+        """sample_pages()[0] was written without optimised tables."""
+        if not archive_packer._optimises_jpegs():
+            self.skipTest('jpegtran is not installed')
+        with open(sample_pages()[0], 'rb') as jpeg:
+            photo = jpeg.read()
+        path = self.zip_book({'01.JPEG': photo})
+        converted = self.convert(path)
+        self.assertEqual({'01.JPEG': '01.JPEG'}, converted.renamed)
+        with zipfile.ZipFile(path) as book:
+            optimised = book.read('01.JPEG')
+        self.assertLess(len(optimised), len(photo))
+        self.assertEqual(pixels(photo), pixels(optimised))
 
     def test_gif_pages_become_webp_as_well(self):
         from PIL import Image
@@ -231,7 +246,10 @@ class DamagedTest(_BookTest):
 class SkippedTest(_BookTest):
 
     def test_a_book_without_png_pages(self):
-        path = self.zip_book({'01.jpg': open(sample_pages()[0], 'rb').read()})
+        """Nor GIF or JPEG pages: only pictures stored as they are."""
+        webp = io.BytesIO()
+        Image.new('RGB', (32, 32), 'white').save(webp, 'WEBP')
+        path = self.zip_book({'01.webp': webp.getvalue()})
         self.assertSkipped(path, 'no PNG pages')
 
     def test_a_book_whose_pngs_would_not_be_smaller(self):

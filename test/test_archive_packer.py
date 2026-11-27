@@ -5,6 +5,7 @@ them, and the files that came with them keep the names they had unless
 one of the pages has taken it.
 """
 
+import contextlib
 import io
 import os
 import random
@@ -23,6 +24,7 @@ from . import MComixTest, line_art_png, replace_held_once, sample_pages
 from mcomix import archive_packer
 from mcomix import archive_tools
 from mcomix import constants
+from mcomix import jpeg_turn
 from mcomix import log
 from mcomix import tools
 
@@ -722,6 +724,12 @@ def _drawing(path, **options):
     return path
 
 
+def _needs_jpegtran(test):
+    """Skip <test> where jpegtran is not installed, as on the CI."""
+    if jpeg_turn._jpegtran() is None:
+        test.skipTest('jpegtran is not installed')
+
+
 def _pixels(path, mode='RGBA'):
     from PIL import Image
     with Image.open(path) as picture:
@@ -876,6 +884,56 @@ class WebpPagesTest(_PackingTest):
         self.assertIsNone(archive_packer._gif_header(self._png()))
         self.assertEqual(archive_packer._webp_cost(240, 320, 3),
                          archive_packer.webp_cost(gif))
+
+    def _jpeg(self, name='page.jpg', **options):
+        """A JPEG of line art at <name>, written with <options>; its
+        path."""
+        from PIL import Image
+        with Image.open(io.BytesIO(line_art_png())) as art:
+            path = os.path.join(self.tmp_dir, name)
+            art.convert('RGB').save(path, 'JPEG', quality=90, **options)
+        return path
+
+    def test_a_jpeg_is_optimised_and_keeps_every_marker(self):
+        """Its Huffman tables made for it: the pixels and the Exif are
+        as they were."""
+        _needs_jpegtran(self)
+        from PIL import Image
+        exif = Image.Exif()
+        exif[0x0112] = 6
+        jpeg = self._jpeg(exif=exif.tobytes())
+        optimised = archive_packer.jpeg_instead(jpeg, self.work, 'page.jpg')
+        self.assertEqual(os.path.join(self.work, 'page.jpg'), optimised)
+        self.assertLess(os.path.getsize(optimised), os.path.getsize(jpeg))
+        self.assertEqual(_pixels(jpeg, 'RGB'), _pixels(optimised, 'RGB'))
+        with Image.open(optimised) as written:
+            self.assertEqual(6, written.getexif()[0x0112])
+
+    def test_a_jpeg_is_left_where_nothing_is_gained(self):
+        """Written with optimised tables already, or with no jpegtran
+        to optimise it."""
+        for name, path, patch in (
+                ('optimised', self._jpeg('done.jpg', optimize=True), None),
+                ('no jpegtran', self._jpeg(), unittest.mock.patch.object(
+                    jpeg_turn, '_jpegtran', return_value=None))):
+            with self.subTest(name), contextlib.ExitStack() as stack:
+                if patch is not None:
+                    stack.enter_context(patch)
+                stack.enter_context(self.assertLogs('mcomix', 'DEBUG'))
+                self.assertIsNone(archive_packer.jpeg_instead(
+                    path, self.work, 'page.jpg'))
+                self.assertEqual([], os.listdir(self.work))
+
+    def test_a_save_optimises_a_jpeg_page_under_its_own_name(self):
+        _needs_jpegtran(self)
+        jpeg = self._jpeg('photo.JPEG')
+        written = archive_packer.write_archive(
+            self.archive, [jpeg], [], webp_pages=True,
+            page_names={jpeg: 'cover.JPEG'})
+        self.assertEqual({jpeg: 'cover.JPEG'}, written)
+        with zipfile.ZipFile(self.archive) as packed:
+            size = packed.getinfo('cover.JPEG').file_size
+        self.assertLess(size, os.path.getsize(jpeg))
 
     def test_an_animation_too_large_to_hold_stays_a_png(self):
         """Its frames, counted from its acTL chunk, would take more

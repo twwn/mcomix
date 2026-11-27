@@ -3,6 +3,8 @@
 import concurrent.futures
 import contextlib
 import errno
+import functools
+import io
 import os
 import struct
 import shutil
@@ -156,6 +158,72 @@ def may_become_webp(name: str) -> bool:
     return os.path.splitext(name)[1].lower() in ('.png', '.gif')
 
 
+#: The extensions of a JPEG page, which jpeg_instead() optimises.
+_JPEG_EXTENSIONS = ('.jpg', '.jpeg', '.jpe', '.jfif')
+
+#: The bytes a pixel of a JPEG page costs while it is optimised: the
+#: picture decoded twice, before and after, to compare, and jpegtran's
+#: coefficients.
+_JPEG_BYTES_PER_PIXEL = 16
+
+
+def may_shrink(name: str) -> bool:
+    """Whether the page <name> is of a format a save that stores pages
+    as WebP makes smaller where it can, by its extension: a PNG or GIF,
+    made a WebP, or a JPEG, optimised where jpegtran is installed."""
+    return may_become_webp(name) \
+        or (os.path.splitext(name)[1].lower() in _JPEG_EXTENSIONS
+            and _optimises_jpegs())
+
+
+@functools.cache
+def _optimises_jpegs() -> bool:
+    """Whether jpegtran is there to optimise JPEG pages: looked for
+    once, as the menus ask for every page of the open book."""
+    return process.find_executable(('jpegtran',)) is not None
+
+
+def jpeg_instead(path: str, directory: str, name: str) -> "str | None":
+    """Write the JPEG picture at <path> again into <directory> as
+    <name>, its Huffman coding made for it by jpegtran and nothing else
+    changed, and answer with its path; or answer None, writing nothing,
+    where jpegtran is not installed, or the result is no smaller or
+    does not decode to exactly the same pixels.
+
+    Every marker goes along - Exif, colour profile, comments - and the
+    coefficients are not touched, so nothing of the picture is lost.  A
+    JPEG written with optimised tables, as most cameras and editors
+    write them now, comes out the same size and is left as it was.
+    """
+    from PIL import Image
+
+    from mcomix import jpeg_turn
+
+    if not jpeg_turn.is_jpeg(path):
+        return None
+    with open(path, 'rb') as file:
+        data = file.read()
+    smaller = jpeg_turn.optimised(data)
+    why = None
+    if smaller is None:
+        why = 'jpegtran is not installed, or refused it'
+    elif len(smaller) >= len(data):
+        why = 'optimised, it was no smaller'
+    else:
+        with Image.open(io.BytesIO(data)) as before, \
+                Image.open(io.BytesIO(smaller)) as after:
+            if (before.mode, before.size, before.tobytes()) \
+                    != (after.mode, after.size, after.tobytes()):
+                why = 'optimised, it was not the same pixels'
+    if why is not None or smaller is None:
+        _kept_as_it_was(path, 'JPEG', why or '')
+        return None
+    target = os.path.join(directory, name)
+    with open(target, 'wb') as file:
+        file.write(smaller)
+    return target
+
+
 def _webp_cost(width: int, height: int, frames: int) -> int:
     """The bytes making a WebP of a PNG or GIF of <width> by <height>
     pixels and <frames> frames costs."""
@@ -302,9 +370,9 @@ def _seen(picture: "Image.Image") -> bytes:
 
 
 def _kept_as_it_was(path: str, kind: str, reason: str) -> None:
-    """Say at debug level why the picture at <path>, a <kind> (PNG or
-    GIF), stays one, for a reader who asked for WebP pages and finds
-    PNGs in the archive."""
+    """Say at debug level why the picture at <path>, a <kind> (PNG, GIF
+    or JPEG), stays as it was, for a reader who asked for WebP pages and
+    finds PNGs in the archive."""
     log.debug('Kept "%s" as a %s: %s', path, kind, reason)
 
 
@@ -316,11 +384,20 @@ def webp_threads(paths: Sequence[str]) -> int:
 
 
 def webp_cost(path: str) -> int:
-    """The bytes making a WebP of the picture at <path> costs: 0 for
-    one that is no PNG or GIF, which is left as it is."""
+    """The bytes making a WebP of the picture at <path>, or optimising
+    a JPEG, costs: 0 for any other picture, which is left as it is."""
     try:
         found = _picture_header(path)
-    except OSError:
+        if found is None and may_shrink(path):
+            from PIL import Image
+            # The size only, from the header: nothing is decoded.
+            with Image.open(path) as picture:
+                if picture.format != 'JPEG':
+                    return 0
+                width, height = picture.size
+            return width * height * _JPEG_BYTES_PER_PIXEL
+    except Exception:
+        # Pillow refuses a broken picture with whatever it found.
         return 0
     if found is None:
         return 0
@@ -1122,7 +1199,8 @@ class Packer:
             extension = os.path.splitext(self._webps.get(path, path))[1]
             name = self._page_names.get(
                 path, f'{number:0{digits}d} - {self._base_name}{extension}')
-            if path in self._webps:
+            if os.path.splitext(path)[1].lower() != extension.lower():
+                # Made a WebP; an optimised JPEG keeps its name.
                 name = os.path.splitext(name)[0] + extension
             while name in taken:
                 name = '_%s' % name
@@ -1151,7 +1229,12 @@ class Packer:
                 if not held or self._stop.is_set():
                     return None
                 try:
-                    return webp_instead(path, directory, '%d.webp' % number)
+                    if may_become_webp(path):
+                        return webp_instead(path, directory,
+                                            '%d.webp' % number)
+                    # A JPEG keeps its extension.
+                    return jpeg_instead(path, directory, '%d%s' % (
+                        number, os.path.splitext(path)[1]))
                 except Exception as error:
                     # Pillow refuses a broken PNG with whatever it
                     # found; the page is then written as it was.

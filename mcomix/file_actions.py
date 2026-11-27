@@ -986,7 +986,7 @@ class FileActions:
                 or not archive_packer.can_write(archive_type) \
                 or archive_password.remembered(path) is not None:
             return False
-        if not any(archive_packer.may_become_webp(page)
+        if not any(archive_packer.may_shrink(page)
                    for page in self._window.imagehandler.get_image_files()):
             return False
         return not archive_tools.is_later_volume(path) \

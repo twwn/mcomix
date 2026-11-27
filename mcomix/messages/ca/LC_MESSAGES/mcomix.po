@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Comix 3.2\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-28 00:20+0100\n"
+"POT-Creation-Date: 2026-11-28 00:33+0100\n"
 "PO-Revision-Date: 2009-01-25 22:33+0100\n"
 "Last-Translator: Carles Escrig i Royo <simkin@ono.com>\n"
 "Language-Team: CA <gentoo@softcatala.net>\n"
@@ -54,18 +54,18 @@ msgstr "! No s'ha pogut llegir %s"
 
 #
 # File: src/comment.py, line: 53
-#: mcomix/archive_packer.py:623 mcomix/file_actions.py:1473
+#: mcomix/archive_packer.py:700 mcomix/file_actions.py:1473
 #: mcomix/library/book_area.py:1428
 #, python-format
 msgid "! Could not remove %(file)s: %(error)s"
 msgstr "! No s'ha pogut suprimir %(file)s: %(error)s"
 
-#: mcomix/archive_packer.py:1190 mcomix/archive_packer.py:1225
+#: mcomix/archive_packer.py:1273 mcomix/archive_packer.py:1308
 #, python-format
 msgid "! Could not create archive at path \"%s\""
 msgstr "! No s'ha pogut crear l'arxiu al camí «%s»"
 
-#: mcomix/archive_packer.py:1215
+#: mcomix/archive_packer.py:1298
 #, python-format
 msgid ""
 "! Could not add file %(sourcefile)s to archive %(archivefile)s, aborting..."
@@ -3862,12 +3862,12 @@ msgstr "cap pàgina més petita en WebP"
 msgid "archives inside"
 msgstr "arxius a dins"
 
-#. TRANSLATORS: Neither PNG nor GIF pages, which become WebP.
-#: mcomix/webp_books.py:208
+#. TRANSLATORS: No PNG, GIF or JPEG pages, the kinds made smaller.
+#: mcomix/webp_books.py:207
 msgid "no PNG pages"
 msgstr "sense pàgines PNG"
 
-#: mcomix/webp_books.py:240 mcomix/webp_books.py:246 mcomix/webp_books.py:266
+#: mcomix/webp_books.py:239 mcomix/webp_books.py:245 mcomix/webp_books.py:265
 msgid "encrypted"
 msgstr "xifrat"
 

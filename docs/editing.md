@@ -67,7 +67,8 @@ The archive on disk is untouched until the changes are written.
   - Lossless: a page becomes a WebP only where that decodes to exactly the same pixels and is smaller. The drawn and painted pages it was tried on took a quarter to three fifths less room; a page that would not shrink stays as it was.
   - Pages that WebP cannot hold exactly stay PNGs: 16 bits a channel, wider or higher than 16383 pixels, or with a gamma other than sRGB's. A colour profile and Exif go along with the page.
   - An animated PNG or GIF becomes an animated WebP where every frame shows the same pixels for as long, to the millisecond, and it plays as often (a GIF that does not say how often plays once); the colour under a wholly transparent pixel, which nothing shows, is not kept. An animated PNG stays a PNG where its own picture is not a frame of the animation, or where its frames would take more than a sixteenth of the memory to hold at once.
-  - Other formats are left as they are: a JPEG made a WebP again would lose more of the picture each time. A GIF's comment is not carried over.
+  - A JPEG page is not made a WebP, which would lose more of the picture each time. Its Huffman tables are optimised by `jpegtran` instead, where that is smaller: the pixels and every marker, Exif included, stay as they were, and so does its name. Most JPEGs from cameras and editors are optimised already and stay as they were; scans written with standard tables shrink by a few percent.
+  - Other formats are left as they are. A GIF's comment is not carried over.
   - The pages are converted on all processors at once, as far as memory allows, and the save's progress counts them.
   - Some other comic readers and older devices cannot show WebP.
 

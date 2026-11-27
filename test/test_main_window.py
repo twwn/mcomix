@@ -4823,13 +4823,19 @@ class MainWindowTest(MComixTest):
         self._png_book()
         self.assertTrue(store.get_sensitive())
         picture = io.BytesIO()
-        Image.new('RGB', (64, 64), 'white').save(picture, 'JPEG')
-        self._book_of({'01.jpg': picture.getvalue()}, 'Photos.cbz')
+        Image.new('RGB', (64, 64), 'white').save(picture, 'WEBP')
+        self._book_of({'01.webp': picture.getvalue()}, 'Photos.cbz')
         self.assertFalse(store.get_sensitive(), 'offered with no PNG page')
         picture = io.BytesIO()
         Image.new('P', (64, 64)).save(picture, 'GIF')
         self._book_of({'01.gif': picture.getvalue()}, 'Drawn.cbz')
         self.assertTrue(store.get_sensitive(), 'not offered for a GIF page')
+        picture = io.BytesIO()
+        Image.new('RGB', (64, 64), 'white').save(picture, 'JPEG')
+        self._book_of({'01.jpg': picture.getvalue()}, 'Scans.cbz')
+        # Only where jpegtran is there to optimise it.
+        self.assertEqual(archive_packer._optimises_jpegs(),
+                         store.get_sensitive())
         # Nor for a book opened with a password: the command asks for none.
         path = self._png_book()
         archive_password.remember(path, 'secret')
