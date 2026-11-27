@@ -145,6 +145,18 @@ class ConvertTest(_BookTest):
         self.assertEqual(sorted(done), done)
         self.assertAlmostEqual(1.0, done[-1])
 
+    def test_gif_pages_become_webp_as_well(self):
+        from PIL import Image
+        with Image.open(io.BytesIO(line_art_png())) as art:
+            gif = io.BytesIO()
+            art.convert('P').save(gif, 'GIF')
+        path = self.zip_book({'01.gif': gif.getvalue()})
+        converted = self.convert(path)
+        self.assertEqual({'01.gif': '01.webp'}, converted.renamed)
+        with zipfile.ZipFile(path) as book:
+            self.assertEqual(pixels(gif.getvalue()),
+                             pixels(book.read('01.webp')))
+
 
 class DamagedTest(_BookTest):
 

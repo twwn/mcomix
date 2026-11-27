@@ -973,7 +973,7 @@ class FileActions:
         """Whether "Store PNG pages as WebP..." applies to the open book.
 
         To an archive MComix can write back in its own format, one file
-        rather than a RAR set in volumes, that has a PNG page and was
+        rather than a RAR set in volumes, that has a PNG or GIF page and was
         not opened with a password: webp_books.convert() leaves those
         alone, and asks for no password.  What else it leaves alone - a
         book of archives, one none of whose pages is smaller as a WebP -
@@ -986,7 +986,7 @@ class FileActions:
                 or not archive_packer.can_write(archive_type) \
                 or archive_password.remembered(path) is not None:
             return False
-        if not any(os.path.splitext(page)[1].lower() == '.png'
+        if not any(archive_packer.may_become_webp(page)
                    for page in self._window.imagehandler.get_image_files()):
             return False
         return not archive_tools.is_later_volume(path) \

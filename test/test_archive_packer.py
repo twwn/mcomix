@@ -807,6 +807,76 @@ class WebpPagesTest(_PackingTest):
                 self.assertEqual(archive_packer._seen(frame),
                                  archive_packer._seen(written))
 
+    def _gif(self, name='page.gif', frames=1, **options):
+        """A GIF of line art at <name>, of <frames> frames each moved a
+        little, saved with <options>; its path."""
+        from PIL import Image
+        with Image.open(io.BytesIO(line_art_png())) as art:
+            pictures = [art.transform(
+                art.size, Image.Transform.AFFINE, (1, 0, 4 * shift, 0, 1, 0),
+                fillcolor=(255, 255, 255)).convert('P')
+                for shift in range(frames)]
+        path = os.path.join(self.tmp_dir, name)
+        pictures[0].save(path, save_all=frames > 1,
+                         append_images=pictures[1:], **options)
+        return path
+
+    def test_a_gif_is_made_a_smaller_webp_of_the_same_pixels(self):
+        gif = self._gif(transparency=0)
+        webp = archive_packer.webp_instead(gif, self.work, 'page.webp')
+        self.assertIsNotNone(webp)
+        self.assertLess(os.path.getsize(webp), os.path.getsize(gif))
+        self.assertEqual(_pixels(gif), _pixels(webp))
+
+    def test_an_animated_gif_becomes_an_animated_webp(self):
+        """Every frame shows what the GIF shows, for as long; one that
+        names no number of plays plays once."""
+        from PIL import Image
+        for options, loop in (({}, 1), ({'loop': 0}, 0), ({'loop': 3}, 3)):
+            with self.subTest(options=options):
+                gif = self._gif(frames=3, duration=[100, 30, 250], **options)
+                webp = archive_packer.webp_instead(gif, self.work,
+                                                   'page.webp')
+                self.assertIsNotNone(webp)
+                self.assertLess(os.path.getsize(webp), os.path.getsize(gif))
+                with Image.open(webp) as written, Image.open(gif) as shown:
+                    self.assertEqual(3, written.n_frames)
+                    self.assertEqual(loop, written.info['loop'])
+                    for index in range(3):
+                        written.seek(index)
+                        written.load()
+                        shown.seek(index)
+                        shown.load()
+                        self.assertEqual([100, 30, 250][index],
+                                         written.info['duration'])
+                        self.assertEqual(archive_packer._seen(shown),
+                                         archive_packer._seen(written))
+                os.remove(webp)
+
+    def test_a_gif_header_counts_its_frames(self):
+        """From its image descriptors, past colour tables and
+        extensions, without decoding a frame; a cut one counts the
+        frames it has."""
+        gif = self._gif(frames=3, duration=50, loop=0, comment=b'note')
+        self.assertEqual((240, 320, 8, 3), archive_packer._gif_header(gif))
+        with open(gif, 'rb') as file:
+            data = file.read()
+        cut = os.path.join(self.tmp_dir, 'cut.gif')
+        for length, frames in ((13, 1), (len(data) // 2, None)):
+            with self.subTest(length=length):
+                with open(cut, 'wb') as file:
+                    file.write(data[:length])
+                width, height, depth, counted = \
+                    archive_packer._gif_header(cut)
+                self.assertEqual((240, 320, 8), (width, height, depth))
+                if frames is None:
+                    self.assertIn(counted, (1, 2))
+                else:
+                    self.assertEqual(frames, counted)
+        self.assertIsNone(archive_packer._gif_header(self._png()))
+        self.assertEqual(archive_packer._webp_cost(240, 320, 3),
+                         archive_packer.webp_cost(gif))
+
     def test_an_animation_too_large_to_hold_stays_a_png(self):
         """Its frames, counted from its acTL chunk, would take more
         than a sixteenth of the memory, decoded all at once."""

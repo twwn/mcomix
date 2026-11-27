@@ -219,6 +219,10 @@ def pictures_seeds():
     write('pictures', 'png', saved(page, 'PNG'))
     write('pictures', 'apng', saved(page, 'PNG', save_all=True,
                                     append_images=[Image.new('RGB', (16, 16))]))
+    write('pictures', 'gif', saved(page, 'GIF', comment=b'seed'))
+    write('pictures', 'gif-animated', saved(
+        page, 'GIF', save_all=True, loop=0, duration=[50, 70],
+        append_images=[Image.new('RGB', (16, 16))]))
 
 
 if __name__ == '__main__':

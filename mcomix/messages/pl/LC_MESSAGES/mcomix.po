@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-28 00:10+0100\n"
+"POT-Creation-Date: 2026-11-28 00:20+0100\n"
 "PO-Revision-Date: 2009-02-02 14:19+0100\n"
 "Last-Translator: Dariusz Jakoniuk <pipaceliny@gmail.com>\n"
 "Language-Team: \n"
@@ -55,18 +55,18 @@ msgstr "! Nie udało się odczytać %s"
 
 #
 # File: src/comment.py, line: 53
-#: mcomix/archive_packer.py:542 mcomix/file_actions.py:1473
+#: mcomix/archive_packer.py:623 mcomix/file_actions.py:1473
 #: mcomix/library/book_area.py:1428
 #, python-format
 msgid "! Could not remove %(file)s: %(error)s"
 msgstr "! Nie udało się usunąć %(file)s: %(error)s"
 
-#: mcomix/archive_packer.py:1109 mcomix/archive_packer.py:1144
+#: mcomix/archive_packer.py:1190 mcomix/archive_packer.py:1225
 #, python-format
 msgid "! Could not create archive at path \"%s\""
 msgstr "! Nie udało się utworzyć archiwum w ścieżce \"%s\""
 
-#: mcomix/archive_packer.py:1134
+#: mcomix/archive_packer.py:1215
 #, python-format
 msgid ""
 "! Could not add file %(sourcefile)s to archive %(archivefile)s, aborting..."
@@ -3867,11 +3867,12 @@ msgstr "żadna strona nie jest mniejsza jako WebP"
 msgid "archives inside"
 msgstr "zawiera inne archiwa"
 
-#: mcomix/webp_books.py:207
+#. TRANSLATORS: Neither PNG nor GIF pages, which become WebP.
+#: mcomix/webp_books.py:208
 msgid "no PNG pages"
 msgstr "brak stron PNG"
 
-#: mcomix/webp_books.py:239 mcomix/webp_books.py:245 mcomix/webp_books.py:265
+#: mcomix/webp_books.py:240 mcomix/webp_books.py:246 mcomix/webp_books.py:266
 msgid "encrypted"
 msgstr "zaszyfrowana"
 

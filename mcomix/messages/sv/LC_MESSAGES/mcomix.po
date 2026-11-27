@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix 0.90.4\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-28 00:10+0100\n"
+"POT-Creation-Date: 2026-11-28 00:20+0100\n"
 "PO-Revision-Date: 2018-02-24 08:43+0100\n"
 "Last-Translator: Jonatan Nyberg <jonatan@autistici.org>\n"
 "Language-Team: Swedish <LL@li.org>\n"
@@ -54,7 +54,7 @@ msgstr "! Kunde inte läsa %s"
 
 #
 # File: src/comment.py, line: 53
-#: mcomix/archive_packer.py:542 mcomix/file_actions.py:1473
+#: mcomix/archive_packer.py:623 mcomix/file_actions.py:1473
 #: mcomix/library/book_area.py:1428
 #, python-format
 msgid "! Could not remove %(file)s: %(error)s"
@@ -62,12 +62,12 @@ msgstr "! Kunde inte ta bort %(file)s: %(error)s"
 
 #
 # File: src/library.py, line: 271
-#: mcomix/archive_packer.py:1109 mcomix/archive_packer.py:1144
+#: mcomix/archive_packer.py:1190 mcomix/archive_packer.py:1225
 #, python-format
 msgid "! Could not create archive at path \"%s\""
 msgstr "! Kunde inte skapa arkivet i sökvägen: \"%s\""
 
-#: mcomix/archive_packer.py:1134
+#: mcomix/archive_packer.py:1215
 #, python-format
 msgid ""
 "! Could not add file %(sourcefile)s to archive %(archivefile)s, aborting..."
@@ -3868,11 +3868,12 @@ msgstr "ingen sida mindre som WebP"
 msgid "archives inside"
 msgstr "innehåller andra arkiv"
 
-#: mcomix/webp_books.py:207
+#. TRANSLATORS: Neither PNG nor GIF pages, which become WebP.
+#: mcomix/webp_books.py:208
 msgid "no PNG pages"
 msgstr "inga PNG-sidor"
 
-#: mcomix/webp_books.py:239 mcomix/webp_books.py:245 mcomix/webp_books.py:265
+#: mcomix/webp_books.py:240 mcomix/webp_books.py:246 mcomix/webp_books.py:266
 msgid "encrypted"
 msgstr "krypterad"
 

@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Comix 4.0.3\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-28 00:10+0100\n"
+"POT-Creation-Date: 2026-11-28 00:20+0100\n"
 "PO-Revision-Date: 2009-01-26 19:34+0100\n"
 "Last-Translator: Ernő Drabik <drerno@gmail.com>\n"
 "Language-Team: \n"
@@ -46,18 +46,18 @@ msgstr "! Kibontási hiba: %s"
 msgid "! Could not read %s"
 msgstr "! Nem sikerült beolvasni: %s"
 
-#: mcomix/archive_packer.py:542 mcomix/file_actions.py:1473
+#: mcomix/archive_packer.py:623 mcomix/file_actions.py:1473
 #: mcomix/library/book_area.py:1428
 #, python-format
 msgid "! Could not remove %(file)s: %(error)s"
 msgstr "! Nem sikerült törölni: %(file)s: %(error)s"
 
-#: mcomix/archive_packer.py:1109 mcomix/archive_packer.py:1144
+#: mcomix/archive_packer.py:1190 mcomix/archive_packer.py:1225
 #, python-format
 msgid "! Could not create archive at path \"%s\""
 msgstr "! Nem sikerült archívumot létrehozni ezen az útvonalon: „%s”"
 
-#: mcomix/archive_packer.py:1134
+#: mcomix/archive_packer.py:1215
 #, python-format
 msgid ""
 "! Could not add file %(sourcefile)s to archive %(archivefile)s, aborting..."
@@ -3405,11 +3405,12 @@ msgstr "egyik oldal sem kisebb WebP-ként"
 msgid "archives inside"
 msgstr "más archívumokat tartalmaz"
 
-#: mcomix/webp_books.py:207
+#. TRANSLATORS: Neither PNG nor GIF pages, which become WebP.
+#: mcomix/webp_books.py:208
 msgid "no PNG pages"
 msgstr "nincsenek PNG-oldalak"
 
-#: mcomix/webp_books.py:239 mcomix/webp_books.py:245 mcomix/webp_books.py:265
+#: mcomix/webp_books.py:240 mcomix/webp_books.py:246 mcomix/webp_books.py:266
 msgid "encrypted"
 msgstr "titkosított"
 

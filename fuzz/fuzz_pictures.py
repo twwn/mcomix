@@ -1,11 +1,11 @@
 """Fuzz target: the header code MComix runs on a page's own bytes, past
 the decoders - mcomix.jpeg_turn, which turns a JPEG page by its Exif
-orientation, and the PNG header read that tells whether a page can
-become a WebP (archive_packer._png_header()).
+orientation, and the PNG and GIF header reads that tell whether a page
+can become a WebP (archive_packer._png_header(), _gif_header()).
 
 with_orientation() and orientation_of() answer or raise ValueError,
-which "Save rotation to file" shows; _png_header() answers None or the
-size, depth and frame count.  Anything else, a hang or memory without
+which "Save rotation to file" shows; the header reads answer None or
+the size, depth and frame count.  Anything else, a hang or memory without
 bound is a finding.
 """
 
@@ -38,6 +38,7 @@ def TestOneInput(data: bytes) -> None:
     with open(PATH, 'wb') as fp:
         fp.write(data)
     archive_packer._png_header(PATH)
+    archive_packer._gif_header(PATH)
 
 
 if __name__ == '__main__':

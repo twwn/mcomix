@@ -30,6 +30,9 @@ if TYPE_CHECKING:
 #: What a PNG file starts with.
 _PNG_SIGNATURE = b'\x89PNG\r\n\x1a\n'
 
+#: What a GIF file starts with, in either version of the format.
+_GIF_SIGNATURES = (b'GIF87a', b'GIF89a')
+
 #: The widest and highest picture a WebP can hold.
 _WEBP_MAX_SIDE = 16383
 
@@ -80,21 +83,94 @@ def _png_frames(file: BinaryIO) -> int:
         file.seek(length + 4, os.SEEK_CUR)
 
 
+def _gif_header(path: str) -> "tuple[int, int, int, int] | None":
+    """The width, height, bit depth and frame count of the GIF at
+    <path>, or None where it is no GIF.
+
+    The size is its logical screen's, which every frame is drawn on;
+    the frames are the image descriptors before the trailer, or before
+    the file ends or stops making sense, and at least one.
+    """
+    with open(path, 'rb') as file:
+        head = file.read(13)
+        if len(head) < 13 or head[:6] not in _GIF_SIGNATURES:
+            return None
+        width, height, packed = struct.unpack('<HHB', head[6:11])
+        _skip_colour_table(file, packed)
+        frames = 0
+        while True:
+            kind = file.read(1)
+            if kind == b',':
+                descriptor = file.read(9)
+                if len(descriptor) < 9:
+                    break
+                frames += 1
+                _skip_colour_table(file, descriptor[8])
+                # The LZW code size, before the image data.
+                file.read(1)
+            elif kind == b'!':
+                # The extension's label, before its data.
+                file.read(1)
+            else:
+                # The trailer, the end, or something no GIF holds.
+                break
+            if not _skip_sub_blocks(file):
+                break
+        return width, height, 8, max(frames, 1)
+
+
+def _skip_colour_table(file: BinaryIO, packed: int) -> None:
+    """Pass over the colour table the <packed> fields of a GIF's screen
+    or image descriptor say follows, if any."""
+    if packed & 0x80:
+        file.seek(3 << ((packed & 0x07) + 1), os.SEEK_CUR)
+
+
+def _skip_sub_blocks(file: BinaryIO) -> bool:
+    """Pass over the data sub-blocks of a GIF from <file>, up to the
+    empty one that ends them: whether it was there."""
+    while True:
+        size = file.read(1)
+        if not size:
+            return False
+        if size == b'\x00':
+            return True
+        file.seek(size[0], os.SEEK_CUR)
+
+
+def _picture_header(path: str) -> "tuple[str, tuple[int, int, int, int]] | None":
+    """The format of the PNG or GIF at <path>, with what _png_header()
+    or _gif_header() reads of it; None for any other file."""
+    header = _png_header(path)
+    if header is not None:
+        return 'PNG', header
+    header = _gif_header(path)
+    if header is not None:
+        return 'GIF', header
+    return None
+
+
+def may_become_webp(name: str) -> bool:
+    """Whether the page <name> is of a format webp_instead() makes a
+    WebP of, by its extension: a PNG or a GIF."""
+    return os.path.splitext(name)[1].lower() in ('.png', '.gif')
+
+
 def _webp_cost(width: int, height: int, frames: int) -> int:
-    """The bytes making a WebP of a PNG of <width> by <height> pixels
-    and <frames> frames costs."""
+    """The bytes making a WebP of a PNG or GIF of <width> by <height>
+    pixels and <frames> frames costs."""
     return width * height * (_WEBP_BYTES_PER_PIXEL
                              + _WEBP_BYTES_PER_FRAME * (frames - 1))
 
 
 def webp_instead(path: str, directory: str, name: str) -> "str | None":
-    """Write a lossless WebP of the PNG picture at <path> into
+    """Write a lossless WebP of the PNG or GIF picture at <path> into
     <directory> as <name>, and answer with its path; or answer None,
     writing nothing, where that would lose anything or gain nothing.
 
-    Kept only where it is smaller than the PNG and decodes to the same
-    pixels, transparent ones included.  An animated PNG becomes an
-    animated WebP, kept where every frame shows the same pixels for as
+    Kept only where it is smaller than the picture and decodes to the
+    same pixels, transparent ones included.  An animated PNG or GIF
+    becomes an animated WebP, kept where every frame shows the same pixels for as
     long, to the millisecond a WebP counts in, and it plays as often:
     there the colour under a wholly transparent pixel, which no one
     sees, is not kept, since the WebP animation encoder cannot.  Left
@@ -103,14 +179,15 @@ def webp_instead(path: str, directory: str, name: str) -> "str | None":
     than a WebP can be, an animated one whose first picture is no frame
     of its animation, and one whose frames would take more than a
     sixteenth of the memory to hold.  A colour profile and Exif go
-    along; text a PNG carries does not.
+    along; text a PNG carries and a GIF's comment do not.  A GIF that
+    names no number of plays plays once, as browsers play one.
     """
     from PIL import Image, features
 
-    header = _png_header(path)
-    if header is None:
+    found = _picture_header(path)
+    if found is None:
         return None
-    width, height, depth, frames = header
+    kind, (width, height, depth, frames) = found
     memory = tools.physical_memory()
     if not features.check('webp'):
         why = 'this Pillow writes no WebP'
@@ -125,7 +202,7 @@ def webp_instead(path: str, directory: str, name: str) -> "str | None":
     else:
         why = None
     if why is not None:
-        _kept_a_png(path, why)
+        _kept_as_it_was(path, kind, why)
         return None
     target = os.path.join(directory, name)
     with Image.open(path) as picture:
@@ -135,7 +212,7 @@ def webp_instead(path: str, directory: str, name: str) -> "str | None":
         elif gamma is not None and abs(float(gamma) - 1 / 2.2) > 0.001:
             why = "its gamma, %s, is not sRGB's" % gamma
         if why is not None:
-            _kept_a_png(path, why)
+            _kept_as_it_was(path, kind, why)
             return None
         options = {key: picture.info[key]
                    for key in ('icc_profile', 'exif') if picture.info.get(key)}
@@ -151,7 +228,7 @@ def webp_instead(path: str, directory: str, name: str) -> "str | None":
                 raise ValueError('not the same pixels')
     except ValueError as reason:
         os.remove(target)
-        _kept_a_png(path, 'the WebP was %s' % reason)
+        _kept_as_it_was(path, kind, 'the WebP was %s' % reason)
         return None
     return target
 
@@ -159,7 +236,7 @@ def webp_instead(path: str, directory: str, name: str) -> "str | None":
 def _webp_picture(picture: "Image.Image", target: str,
                   options: "dict[str, bytes]"
                   ) -> "Callable[[Image.Image], bool]":
-    """Write <picture>, a still PNG, to <target> as a lossless WebP;
+    """Write <picture>, a still PNG or GIF, to <target> as a lossless WebP;
     answer with what tells whether a WebP read back is the same."""
     picture.load()
     mode = 'RGBA' if picture.has_transparency_data else 'RGB'
@@ -180,7 +257,7 @@ def _webp_picture(picture: "Image.Image", target: str,
 def _webp_animation(picture: "Image.Image", target: str,
                     options: "dict[str, bytes]"
                     ) -> "Callable[[Image.Image], bool]":
-    """Write <picture>, an animated PNG, to <target> as a lossless
+    """Write <picture>, an animated PNG or GIF, to <target> as a lossless
     animated WebP; answer with what tells whether a WebP read back has
     the same frames, shown as long, and plays as often."""
     frames = []
@@ -188,9 +265,12 @@ def _webp_animation(picture: "Image.Image", target: str,
     for index in range(getattr(picture, 'n_frames', 1)):
         picture.seek(index)
         frames.append(picture.convert('RGBA'))
-        # An APNG counts in fractions of a second, a WebP in ms.
+        # An APNG counts in fractions of a second, a GIF in hundredths,
+        # a WebP in ms.
         durations.append(round(picture.info.get('duration') or 0))
-    loop = picture.info.get('loop', 0)
+    # An APNG always says how often it plays, 0 for ever; a GIF without
+    # a loop extension plays once.
+    loop = picture.info.get('loop', 1)
     frames[0].save(target, 'WEBP', save_all=True, append_images=frames[1:],
                    duration=durations, loop=loop, lossless=True,
                    quality=100, method=4, **options)
@@ -221,10 +301,11 @@ def _seen(picture: "Image.Image") -> bytes:
         rgba, Image.new('RGBA', rgba.size), shown).tobytes())
 
 
-def _kept_a_png(path: str, reason: str) -> None:
-    """Say at debug level why the PNG at <path> stays one, for a reader
-    who asked for WebP pages and finds PNGs in the archive."""
-    log.debug('Kept "%s" as a PNG: %s', path, reason)
+def _kept_as_it_was(path: str, kind: str, reason: str) -> None:
+    """Say at debug level why the picture at <path>, a <kind> (PNG or
+    GIF), stays one, for a reader who asked for WebP pages and finds
+    PNGs in the archive."""
+    log.debug('Kept "%s" as a %s: %s', path, kind, reason)
 
 
 def webp_threads(paths: Sequence[str]) -> int:
@@ -236,14 +317,14 @@ def webp_threads(paths: Sequence[str]) -> int:
 
 def webp_cost(path: str) -> int:
     """The bytes making a WebP of the picture at <path> costs: 0 for
-    one that is no PNG, which is left as it is."""
+    one that is no PNG or GIF, which is left as it is."""
     try:
-        header = _png_header(path)
+        found = _picture_header(path)
     except OSError:
         return 0
-    if header is None:
+    if found is None:
         return 0
-    width, height, _depth, frames = header
+    _kind, (width, height, _depth, frames) = found
     return _webp_cost(width, height, frames)
 
 

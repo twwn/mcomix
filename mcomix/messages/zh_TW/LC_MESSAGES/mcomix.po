@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix zh_TW\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-28 00:10+0100\n"
+"POT-Creation-Date: 2026-11-28 00:20+0100\n"
 "PO-Revision-Date: 2013-07-05 21:37+0800\n"
 "Last-Translator: Wayne Su <mstarmstar@hotmail.com>\n"
 "Language-Team: \n"
@@ -58,18 +58,18 @@ msgstr "！ 解壓縮錯誤：%s"
 msgid "! Could not read %s"
 msgstr "！ 無法讀取 %s"
 
-#: mcomix/archive_packer.py:542 mcomix/file_actions.py:1473
+#: mcomix/archive_packer.py:623 mcomix/file_actions.py:1473
 #: mcomix/library/book_area.py:1428
 #, python-format
 msgid "! Could not remove %(file)s: %(error)s"
 msgstr "！ 無法移除 %(file)s：%(error)s"
 
-#: mcomix/archive_packer.py:1109 mcomix/archive_packer.py:1144
+#: mcomix/archive_packer.py:1190 mcomix/archive_packer.py:1225
 #, python-format
 msgid "! Could not create archive at path \"%s\""
 msgstr "！ 無法在 %s 路徑下建立壓縮檔"
 
-#: mcomix/archive_packer.py:1134
+#: mcomix/archive_packer.py:1215
 #, python-format
 msgid ""
 "! Could not add file %(sourcefile)s to archive %(archivefile)s, aborting..."
@@ -3288,11 +3288,12 @@ msgstr "沒有頁面存為 WebP 後更小"
 msgid "archives inside"
 msgstr "包含其他封存檔"
 
-#: mcomix/webp_books.py:207
+#. TRANSLATORS: Neither PNG nor GIF pages, which become WebP.
+#: mcomix/webp_books.py:208
 msgid "no PNG pages"
 msgstr "沒有 PNG 頁面"
 
-#: mcomix/webp_books.py:239 mcomix/webp_books.py:245 mcomix/webp_books.py:265
+#: mcomix/webp_books.py:240 mcomix/webp_books.py:246 mcomix/webp_books.py:266
 msgid "encrypted"
 msgstr "已加密"
 

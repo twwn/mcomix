@@ -4826,6 +4826,10 @@ class MainWindowTest(MComixTest):
         Image.new('RGB', (64, 64), 'white').save(picture, 'JPEG')
         self._book_of({'01.jpg': picture.getvalue()}, 'Photos.cbz')
         self.assertFalse(store.get_sensitive(), 'offered with no PNG page')
+        picture = io.BytesIO()
+        Image.new('P', (64, 64)).save(picture, 'GIF')
+        self._book_of({'01.gif': picture.getvalue()}, 'Drawn.cbz')
+        self.assertTrue(store.get_sensitive(), 'not offered for a GIF page')
         # Nor for a book opened with a password: the command asks for none.
         path = self._png_book()
         archive_password.remember(path, 'secret')

@@ -202,8 +202,9 @@ def _unpack(archive: archive_base.BaseArchive,
             pages = [name for name in names
                      if image_tools.is_image_file(name)
                      and not archive_tools.is_finder_file(name)]
-            if not any(os.path.splitext(name)[1].lower() == '.png'
+            if not any(archive_packer.may_become_webp(name)
                        for name in pages):
+                # TRANSLATORS: Neither PNG nor GIF pages, which become WebP.
                 raise Skipped(_('no PNG pages'))
             if unwritable is not None:
                 raise Skipped(unwritable)
