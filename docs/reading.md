@@ -20,7 +20,7 @@
 - Space and the mouse wheel scroll in reading order: across, down, across again, then to the next page.
 - [Keyboard and mouse](shortcuts.md) lists every binding.
 - L, or the middle mouse button, shows a magnifying lens.
-- The right-click menu leads with what can be done to the page it was opened on. It leaves out what cannot be done there.
+- The right-click menu leads with what can be done to the page it was opened on. It leaves out what cannot be done there. "Delete page" stands apart, below the rest.
 - "File → Properties" describes the page and its archive, with series, volume, issue, title, year, writer, artist and publisher from a ComicInfo.xml.
 - "Go → Go to page" (G) lists the chapters a book names, where it names any, and goes to the one picked. An EPUB names them in its table of contents, a PDF in its outline, a ComicInfo.xml by the bookmarks of its pages.
 - "Go → Back" (CTRL+[) returns to the page a jump left. Jumps are Home, End, Go to page, a thumbnail, a bookmark and a random page; page turns are not remembered.

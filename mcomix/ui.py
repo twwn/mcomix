@@ -378,12 +378,15 @@ _POPUP = (
     'leave_fullscreen',
     None,
     # The menu is opened on a page, so what is done to that page leads
-    # (upstream feature requests 98 and 105).
+    # (upstream feature requests 98 and 105).  Deleting it stands apart,
+    # where a slip of the pointer from its neighbours cannot reach it.
     'copy_page_popup', 'extract_page_popup',
-    'rename_page_popup', 'write_turn_popup', 'delete_page_popup',
+    'rename_page_popup', 'write_turn_popup',
     'skip_page_popup',
     'page_alone_popup', 'library_cover_popup', 'remove_bookmark_popup',
     'unpick_pages',
+    None,
+    'delete_page_popup',
     None,
     ('menu_go_popup', _GO),
     ('menu_view_popup', _VIEW),

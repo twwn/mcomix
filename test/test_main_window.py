@@ -5796,11 +5796,26 @@ class MainWindowTest(MComixTest):
         self.assertEqual(
             ['win.leave-fullscreen', 'win.copy-page-popup',
              'win.extract-page-popup', 'win.rename-page-popup',
-             'win.write-turn-popup', 'win.delete-page-popup',
-             'win.skip-page-popup', 'win.page-alone-popup',
-             'win.library-cover-popup', 'win.remove-bookmark-popup',
-             'win.unpick-pages', None],
+             'win.write-turn-popup', 'win.skip-page-popup',
+             'win.page-alone-popup', 'win.library-cover-popup',
+             'win.remove-bookmark-popup', 'win.unpick-pages',
+             'win.delete-page-popup', None],
             actions[:12])
+
+    def test_deleting_the_page_stands_apart_in_the_right_click_menu(self):
+        """It stood between "Save rotation to file" and "Skip this
+        page", a slip of the pointer from either."""
+        model = _popup_model(self.window)
+        sections = [model.get_item_link(number, Gio.MENU_LINK_SECTION)
+                    for number in range(model.get_n_items())]
+        alone = [section for section in sections
+                 if section.get_n_items() == 1
+                 and section.get_item_attribute_value(
+                     0, Gio.MENU_ATTRIBUTE_ACTION, None) is not None
+                 and section.get_item_attribute_value(
+                     0, Gio.MENU_ATTRIBUTE_ACTION, None).get_string()
+                 == 'win.delete-page-popup']
+        self.assertEqual(1, len(alone))
 
     def test_the_right_click_menu_leaves_out_what_cannot_be_done(self):
         """A greyed item says the menu could do it somewhere else; this
@@ -5810,7 +5825,7 @@ class MainWindowTest(MComixTest):
                 self.assertEqual('action-disabled', hidden, action)
         # A submenu keeps every item in its place, greyed or not.
         model = _popup_model(self.window)
-        go = model.get_item_link(2, Gio.MENU_LINK_SECTION).get_item_link(
+        go = model.get_item_link(3, Gio.MENU_LINK_SECTION).get_item_link(
             0, Gio.MENU_LINK_SUBMENU)
         self.assertIsNone(go.get_item_link(0, Gio.MENU_LINK_SECTION)
                           .get_item_attribute_value(0, 'hidden-when', None))
