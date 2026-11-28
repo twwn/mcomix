@@ -23,6 +23,7 @@ thread as soon as each book is written, so a stop or a crash later loses
 none of it.
 """
 
+import errno
 import math
 import os
 import threading
@@ -151,6 +152,11 @@ def left_line(reason: str, count: int) -> str:
         count) % {'count': count, 'reason': reason}
 
 
+#: What a write fails with once the disk has no room left for it, or the
+#: reader's quota none: every book after it would fail the same way.
+_NO_ROOM = frozenset((errno.ENOSPC, getattr(errno, 'EDQUOT', errno.ENOSPC)))
+
+
 def stopped_line(count: int) -> str:
     """The summary's line for <count> books a stop left unread."""
     return i18n.get_translation().ngettext(
@@ -198,6 +204,8 @@ class _ProgressDialog(Dialog):
         self._unreadable: set[str] = set()
         #: The books that could not be written, each with why.
         self._failed: list[tuple[str, str]] = []
+        #: Whether the books stopped at one there was no room to write.
+        self._disk_full = False
         self._started = time.monotonic()
         #: Whether the books are done, or stopped, and the summary shown.
         self.finished = False
@@ -269,7 +277,12 @@ class _ProgressDialog(Dialog):
                 log.warning(_('! Could not save the archive %(archivefile)s: '
                               '%(error)s'),
                             {'archivefile': path, 'error': failure})
+                # Each book after it would be unpacked only to fail the
+                # same way, filling the folder it is unpacked in too.
+                self._disk_full = failure.errno in _NO_ROOM
             GLib.idle_add(self._book_done, path, outcome, error, unreadable)
+            if self._disk_full:
+                break
         GLib.idle_add(self._finished)
 
     def _progress(self, fraction: float) -> None:
@@ -289,6 +302,14 @@ class _ProgressDialog(Dialog):
         else:
             self._failed.append((path, error))
         return GLib.SOURCE_REMOVE
+
+    def _disk_full_line(self) -> str:
+        """Why the books stopped, and what makes room."""
+        if self._shrink is not None and self._stored:
+            # A book moved to the trash keeps its room on the disk.
+            return _('The disk is full. The books as they were are in the '
+                     'trash, which holds their room until it is emptied.')
+        return _('The disk is full.')
 
     def _done_line(self) -> str:
         count = len(self._stored)
@@ -397,6 +418,8 @@ class _ProgressDialog(Dialog):
         left = len(self._not_looked_at())
         if left:
             lines.append(stopped_line(left))
+        if self._disk_full:
+            lines.append(self._disk_full_line())
         self._book.set_visible(False)
         self.finished = True
         self._bar.set_fraction(1.0 if not left else self._bar.get_fraction())
@@ -449,6 +472,8 @@ class _ProgressDialog(Dialog):
         if left:
             sections.append([stopped_line(len(left))]
                             + [book(path) for path in left])
+        if self._disk_full:
+            sections.append([self._disk_full_line()])
         return '\n\n'.join('\n'.join(section) for section in sections) + '\n'
 
     def _ask_where_to_save_the_log(self) -> None:

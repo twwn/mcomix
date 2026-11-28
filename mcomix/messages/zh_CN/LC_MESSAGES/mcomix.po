@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Comix 4.0.1\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-28 12:09+0100\n"
+"POT-Creation-Date: 2026-11-28 12:16+0100\n"
 "PO-Revision-Date: 2009-01-28 13:36+0800\n"
 "Last-Translator: Xie Yanbo <xieyanbo@gmail.com>\n"
 "Language-Team: Xie Yanbo <xieyanbo@gmail.com>\n"
@@ -102,7 +102,7 @@ msgid "! Could not save %(file)s to %(directory)s: %(error)s"
 msgstr "! 无法将 %(file)s 保存到 %(directory)s：%(error)s"
 
 #: mcomix/bookmark_backend.py:493 mcomix/file_actions.py:1304
-#: mcomix/webp_dialog.py:478
+#: mcomix/webp_dialog.py:503
 #, python-format
 msgid "Could not save \"%(file)s\" to \"%(directory)s\""
 msgstr "无法将 \"%(file)s\" 保存到 \"%(directory)s\""
@@ -122,7 +122,7 @@ msgstr "否(_N)"
 #: mcomix/file_chooser_library_dialog.py:42 mcomix/message_dialog.py:26
 #: mcomix/message_dialog.py:29 mcomix/pageselect.py:38
 #: mcomix/save_progress.py:121 mcomix/shrink_dialog.py:138
-#: mcomix/shrink_dialog.py:279 mcomix/webp_dialog.py:119
+#: mcomix/shrink_dialog.py:279 mcomix/webp_dialog.py:120
 #: mcomix/library/duplicates_dialog.py:237
 msgid "_Cancel"
 msgstr "取消(_C)"
@@ -178,7 +178,7 @@ msgstr "删除(_R)"
 #: mcomix/bookmark_dialog.py:34 mcomix/comment_dialog.py:29
 #: mcomix/message_dialog.py:25 mcomix/preferences_dialog.py:105
 #: mcomix/properties_dialog.py:38 mcomix/shrink_dialog.py:280
-#: mcomix/webp_dialog.py:406 mcomix/library/book_check_dialog.py:180
+#: mcomix/webp_dialog.py:429 mcomix/library/book_check_dialog.py:180
 #: mcomix/library/book_properties.py:60 mcomix/library/duplicates_dialog.py:292
 #: mcomix/library/watchlist.py:41
 msgid "_Close"
@@ -327,7 +327,7 @@ msgstr "注释文件"
 #
 # File: src/library.py, line: 271
 #: mcomix/edit_dialog.py:265 mcomix/file_actions.py:975
-#: mcomix/webp_dialog.py:269
+#: mcomix/webp_dialog.py:277
 #, python-format
 msgid "! Could not save the archive %(archivefile)s: %(error)s"
 msgstr "! 无法保存文件包 %(archivefile)s：%(error)s"
@@ -1745,7 +1745,11 @@ msgid ""
 "or tar book saved in place is replaced by the ZIP, named .cbz in place "
 "of .cbr, .cb7 or .cbt, and .zip in place of any other extension. This comes "
 "before keeping the format an archive was opened in."
-msgstr "MComix 保存的每个压缩包都写为 ZIP，不论打开时是什么格式：已压缩的页面直接存储，其余的压缩。原地保存的 RAR、7z 或 tar 格式的书会被 ZIP 取代，扩展名 .cbr、.cb7 或 .cbt 改为 .cbz，其他扩展名改为 .zip。此项优先于保持压缩包打开时的格式。"
+msgstr ""
+"MComix 保存的每个压缩包都写为 ZIP，不论打开时是什么格式：已压缩的页面直接存"
+"储，其余的压缩。原地保存的 RAR、7z 或 tar 格式的书会被 ZIP 取代，扩展"
+"名 .cbr、.cb7 或 .cbt 改为 .cbz，其他扩展名改为 .zip。此项优先于保持压缩包打"
+"开时的格式。"
 
 #: mcomix/preferences_dialog.py:287
 msgid "Comment file extensions:"
@@ -2645,14 +2649,14 @@ msgstr "WebP 质量(_Q)："
 msgid "_Find Books"
 msgstr "查找书籍(_F)"
 
-#: mcomix/shrink_dialog.py:178 mcomix/webp_dialog.py:205
+#: mcomix/shrink_dialog.py:178 mcomix/webp_dialog.py:213
 #: mcomix/library/add_progress_dialog.py:57
 #: mcomix/library/book_check_dialog.py:65
 #: mcomix/library/duplicates_dialog.py:112
 msgid "_Stop"
 msgstr "停止(_S)"
 
-#: mcomix/shrink_dialog.py:205 mcomix/webp_dialog.py:256
+#: mcomix/shrink_dialog.py:205 mcomix/webp_dialog.py:264
 msgid "open in the main window"
 msgstr "已在主窗口中打开"
 
@@ -3424,13 +3428,13 @@ msgstr "包含其他归档"
 msgid "no PNG, GIF or JPEG pages"
 msgstr "没有 PNG、GIF 或 JPEG 页面"
 
-#: mcomix/webp_dialog.py:101
+#: mcomix/webp_dialog.py:102
 #, python-format
 msgid "Repack %d book as a ZIP?"
 msgid_plural "Repack %d books as ZIP?"
 msgstr[0] "要将 %d 本书重新打包为 ZIP 吗？"
 
-#: mcomix/webp_dialog.py:103
+#: mcomix/webp_dialog.py:104
 msgid ""
 "Each book is written again as a ZIP, with every file in it as it was: pages "
 "already compressed are stored, the rest compressed. A RAR, 7z or tar book is "
@@ -3442,17 +3446,17 @@ msgstr ""
 "缩。RAR、7z 或 tar 格式的书会被 ZIP 取代，扩展名 .cbr、.cb7 或 .cbt 改"
 "为 .cbz，其他扩展名改为 .zip。ZIP 格式的书只有在变小时才会被取代。"
 
-#: mcomix/webp_dialog.py:109
+#: mcomix/webp_dialog.py:110
 msgid "_Repack"
 msgstr "重新打包(_R)"
 
-#: mcomix/webp_dialog.py:112
+#: mcomix/webp_dialog.py:113
 #, python-format
 msgid "Make the pages of %d book smaller?"
 msgid_plural "Make the pages of %d books smaller?"
 msgstr[0] "是否缩小 %d 本书的页面？"
 
-#: mcomix/webp_dialog.py:114
+#: mcomix/webp_dialog.py:115
 msgid ""
 "Each book is written again, with every PNG or GIF page that is smaller as a "
 "lossless WebP and every JPEG page optimised without loss. Some other comic "
@@ -3461,84 +3465,94 @@ msgstr ""
 "每本书都会重新写入：更小的 PNG 或 GIF 页面存为无损 WebP，JPEG 页面无损优化。"
 "有些其他漫画阅读器无法显示 WebP 页面。"
 
-#: mcomix/webp_dialog.py:118
+#: mcomix/webp_dialog.py:119
 msgid "_Make Smaller"
 msgstr "缩小(_S)"
 
-#: mcomix/webp_dialog.py:149
+#: mcomix/webp_dialog.py:150
 #, python-format
 msgid "%(count)d book left as it was: %(reason)s"
 msgid_plural "%(count)d books left as they were: %(reason)s"
 msgstr[0] "%(count)d 本书保持原样：%(reason)s"
 
-#: mcomix/webp_dialog.py:157
+#: mcomix/webp_dialog.py:163
 #, python-format
 msgid "Stopped with %d book not yet looked at"
 msgid_plural "Stopped with %d books not yet looked at"
 msgstr[0] "已停止，还有 %d 本书未查看"
 
-#: mcomix/webp_dialog.py:175
+#: mcomix/webp_dialog.py:181
 msgid "Repacking books as ZIP"
 msgstr "正在将书重新打包为 ZIP"
 
-#: mcomix/webp_dialog.py:176
+#: mcomix/webp_dialog.py:182
 msgid "Making pages smaller"
 msgstr "正在缩小页面"
 
-#: mcomix/webp_dialog.py:177
+#: mcomix/webp_dialog.py:183
 msgid "Shrinking pages"
 msgstr "正在缩小大页面"
 
-#: mcomix/webp_dialog.py:298
+#: mcomix/webp_dialog.py:310
+msgid ""
+"The disk is full. The books as they were are in the trash, which holds their "
+"room until it is emptied."
+msgstr "磁盘已满。原来的书在回收站中，清空回收站之前仍占用其空间。"
+
+#: mcomix/webp_dialog.py:312
+msgid "The disk is full."
+msgstr "磁盘已满。"
+
+#: mcomix/webp_dialog.py:319
 #, python-format
 msgid "%(count)d book repacked as ZIP, %(size)s larger"
 msgid_plural "%(count)d books repacked as ZIP, %(size)s larger"
 msgstr[0] "已将 %(count)d 本书重新打包为 ZIP，增大 %(size)s"
 
-#: mcomix/webp_dialog.py:304
+#: mcomix/webp_dialog.py:325
 #, python-format
 msgid "%(count)d book repacked as ZIP, %(size)s smaller"
 msgid_plural "%(count)d books repacked as ZIP, %(size)s smaller"
 msgstr[0] "已将 %(count)d 本书重新打包为 ZIP，减小 %(size)s"
 
-#: mcomix/webp_dialog.py:308
+#: mcomix/webp_dialog.py:329
 #, python-format
 msgid "%(count)d book shrunk, %(size)s smaller"
 msgid_plural "%(count)d books shrunk, %(size)s smaller"
 msgstr[0] "已缩小 %(count)d 本书，减小 %(size)s"
 
-#: mcomix/webp_dialog.py:312
+#: mcomix/webp_dialog.py:333
 #, python-format
 msgid "%(count)d book stored with WebP pages, %(size)s smaller"
 msgid_plural "%(count)d books stored with WebP pages, %(size)s smaller"
 msgstr[0] "%(count)d 本书已存为 WebP 页面，减小了 %(size)s"
 
-#: mcomix/webp_dialog.py:325
+#: mcomix/webp_dialog.py:346
 #, python-format
 msgid "%d book stored without its damaged files"
 msgid_plural "%d books stored without their damaged files"
 msgstr[0] "%d 本书已存储，不含其损坏的文件"
 
-#: mcomix/webp_dialog.py:362
+#: mcomix/webp_dialog.py:383
 #, python-format
 msgid "About %d minute left"
 msgid_plural "About %d minutes left"
 msgstr[0] "大约还剩 %d 分钟"
 
-#: mcomix/webp_dialog.py:393 mcomix/webp_dialog.py:445
+#: mcomix/webp_dialog.py:414 mcomix/webp_dialog.py:468
 #, python-format
 msgid "Could not be written: %s"
 msgstr "无法写入：%s"
 
-#: mcomix/webp_dialog.py:409
+#: mcomix/webp_dialog.py:432
 msgid "_Save Log…"
 msgstr "保存日志(_S)…"
 
-#: mcomix/webp_dialog.py:414
+#: mcomix/webp_dialog.py:437
 msgid "Select Books with _Errors"
 msgstr "选择有错误的书籍(_E)"
 
-#: mcomix/webp_dialog.py:458
+#: mcomix/webp_dialog.py:483
 msgid "Save the log as"
 msgstr "日志另存为"
 

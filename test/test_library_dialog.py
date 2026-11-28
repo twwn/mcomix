@@ -71,6 +71,17 @@ class _LibraryWindowTest(MComixTest):
         super().setUp()
         self.open_main_window_on_a_book()
 
+    def _written(self, asked):
+        """Answer <asked>, a window that offers to write books, with OK,
+        and the progress window once they are done."""
+        asked.response(Response.OK)
+        pump()
+        progress, = [window for window in Gtk.Window.list_toplevels()
+                     if isinstance(window, webp_dialog._ProgressDialog)]
+        self.addCleanup(progress.destroy)
+        self.assertTrue(wait_for(lambda: progress.finished, seconds=20))
+        return progress
+
     def tearDown(self):
         main_dialog._close_dialog()
         for window in Gtk.Window.list_toplevels():
@@ -2702,13 +2713,7 @@ class StorePagesAsWebpTest(_LibraryWindowTest):
         self.dialog.book_area.repack_as_zip()
         pump()
         prompt, = visible_prompts()
-        prompt.response(Response.OK)
-        pump()
-        progress, = [window for window in Gtk.Window.list_toplevels()
-                     if isinstance(window, webp_dialog._ProgressDialog)]
-        self.addCleanup(progress.destroy)
-        self.assertTrue(wait_for(lambda: progress.finished, seconds=20))
-        return progress
+        return self._written(prompt)
 
     def test_a_tar_repacked_as_a_zip_keeps_its_library_book(self):
         """"Repack as ZIP...": the book takes the ZIP's name, and what the

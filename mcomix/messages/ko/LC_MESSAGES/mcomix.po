@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-28 12:09+0100\n"
+"POT-Creation-Date: 2026-11-28 12:16+0100\n"
 "PO-Revision-Date: 2018-05-10 22:46+0900\n"
 "Last-Translator: Minho Jeung <jeungmh@gmail.com>\n"
 "Language-Team: \n"
@@ -95,7 +95,7 @@ msgid "! Could not save %(file)s to %(directory)s: %(error)s"
 msgstr "! %(file)s을(를) %(directory)s(으)로 저장할 수 없습니다: %(error)s"
 
 #: mcomix/bookmark_backend.py:493 mcomix/file_actions.py:1304
-#: mcomix/webp_dialog.py:478
+#: mcomix/webp_dialog.py:503
 #, python-format
 msgid "Could not save \"%(file)s\" to \"%(directory)s\""
 msgstr "\"%(file)s\"을(를) \"%(directory)s\"(으)로 저장할 수 없습니다"
@@ -115,7 +115,7 @@ msgstr "아니요(_N)"
 #: mcomix/file_chooser_library_dialog.py:42 mcomix/message_dialog.py:26
 #: mcomix/message_dialog.py:29 mcomix/pageselect.py:38
 #: mcomix/save_progress.py:121 mcomix/shrink_dialog.py:138
-#: mcomix/shrink_dialog.py:279 mcomix/webp_dialog.py:119
+#: mcomix/shrink_dialog.py:279 mcomix/webp_dialog.py:120
 #: mcomix/library/duplicates_dialog.py:237
 msgid "_Cancel"
 msgstr "취소(_C)"
@@ -168,7 +168,7 @@ msgstr "제거(_R)"
 #: mcomix/bookmark_dialog.py:34 mcomix/comment_dialog.py:29
 #: mcomix/message_dialog.py:25 mcomix/preferences_dialog.py:105
 #: mcomix/properties_dialog.py:38 mcomix/shrink_dialog.py:280
-#: mcomix/webp_dialog.py:406 mcomix/library/book_check_dialog.py:180
+#: mcomix/webp_dialog.py:429 mcomix/library/book_check_dialog.py:180
 #: mcomix/library/book_properties.py:60 mcomix/library/duplicates_dialog.py:292
 #: mcomix/library/watchlist.py:41
 msgid "_Close"
@@ -315,7 +315,7 @@ msgid "Comment files"
 msgstr "주석 파일"
 
 #: mcomix/edit_dialog.py:265 mcomix/file_actions.py:975
-#: mcomix/webp_dialog.py:269
+#: mcomix/webp_dialog.py:277
 #, python-format
 msgid "! Could not save the archive %(archivefile)s: %(error)s"
 msgstr "! 압축 파일 %(archivefile)s을(를) 저장할 수 없습니다: %(error)s"
@@ -1744,7 +1744,11 @@ msgid ""
 "or tar book saved in place is replaced by the ZIP, named .cbz in place "
 "of .cbr, .cb7 or .cbt, and .zip in place of any other extension. This comes "
 "before keeping the format an archive was opened in."
-msgstr "MComix가 저장하는 각 압축 파일을 연 형식과 관계없이 ZIP으로 씁니다. 이미 압축된 페이지는 그대로 저장하고 나머지는 압축합니다. 제자리에 저장한 RAR, 7z, tar 책은 ZIP으로 바뀌며, 확장자는 .cbr, .cb7, .cbt 대신 .cbz, 그 밖의 확장자 대신 .zip이 됩니다. 연 형식을 유지하는 설정보다 우선합니다."
+msgstr ""
+"MComix가 저장하는 각 압축 파일을 연 형식과 관계없이 ZIP으로 씁니다. 이미 압축"
+"된 페이지는 그대로 저장하고 나머지는 압축합니다. 제자리에 저장한 RAR, 7z, "
+"tar 책은 ZIP으로 바뀌며, 확장자는 .cbr, .cb7, .cbt 대신 .cbz, 그 밖의 확장자 "
+"대신 .zip이 됩니다. 연 형식을 유지하는 설정보다 우선합니다."
 
 #: mcomix/preferences_dialog.py:287
 msgid "Comment file extensions:"
@@ -2685,14 +2689,14 @@ msgstr "WebP 품질(_Q):"
 msgid "_Find Books"
 msgstr "책 찾기(_F)"
 
-#: mcomix/shrink_dialog.py:178 mcomix/webp_dialog.py:205
+#: mcomix/shrink_dialog.py:178 mcomix/webp_dialog.py:213
 #: mcomix/library/add_progress_dialog.py:57
 #: mcomix/library/book_check_dialog.py:65
 #: mcomix/library/duplicates_dialog.py:112
 msgid "_Stop"
 msgstr "중지(_S)"
 
-#: mcomix/shrink_dialog.py:205 mcomix/webp_dialog.py:256
+#: mcomix/shrink_dialog.py:205 mcomix/webp_dialog.py:264
 msgid "open in the main window"
 msgstr "기본 창에서 열려 있음"
 
@@ -3468,13 +3472,13 @@ msgstr "안에 다른 아카이브가 있음"
 msgid "no PNG, GIF or JPEG pages"
 msgstr "PNG, GIF 또는 JPEG 페이지 없음"
 
-#: mcomix/webp_dialog.py:101
+#: mcomix/webp_dialog.py:102
 #, python-format
 msgid "Repack %d book as a ZIP?"
 msgid_plural "Repack %d books as ZIP?"
 msgstr[0] "책 %d권을 ZIP으로 다시 묶을까요?"
 
-#: mcomix/webp_dialog.py:103
+#: mcomix/webp_dialog.py:104
 msgid ""
 "Each book is written again as a ZIP, with every file in it as it was: pages "
 "already compressed are stored, the rest compressed. A RAR, 7z or tar book is "
@@ -3487,17 +3491,17 @@ msgstr ""
 "장자는 .cbr, .cb7, .cbt 대신 .cbz, 그 밖의 확장자 대신 .zip이 됩니다. ZIP은 "
 "더 작아질 때만 바뀝니다."
 
-#: mcomix/webp_dialog.py:109
+#: mcomix/webp_dialog.py:110
 msgid "_Repack"
 msgstr "다시 묶기(_R)"
 
-#: mcomix/webp_dialog.py:112
+#: mcomix/webp_dialog.py:113
 #, python-format
 msgid "Make the pages of %d book smaller?"
 msgid_plural "Make the pages of %d books smaller?"
 msgstr[0] "책 %d권의 페이지를 줄이시겠습니까?"
 
-#: mcomix/webp_dialog.py:114
+#: mcomix/webp_dialog.py:115
 msgid ""
 "Each book is written again, with every PNG or GIF page that is smaller as a "
 "lossless WebP and every JPEG page optimised without loss. Some other comic "
@@ -3507,84 +3511,94 @@ msgstr ""
 "이지는 손실 없이 최적화됩니다. 일부 다른 만화 뷰어는 WebP 페이지를 표시하지 "
 "못합니다."
 
-#: mcomix/webp_dialog.py:118
+#: mcomix/webp_dialog.py:119
 msgid "_Make Smaller"
 msgstr "줄이기(_S)"
 
-#: mcomix/webp_dialog.py:149
+#: mcomix/webp_dialog.py:150
 #, python-format
 msgid "%(count)d book left as it was: %(reason)s"
 msgid_plural "%(count)d books left as they were: %(reason)s"
 msgstr[0] "책 %(count)d권은 그대로 둠: %(reason)s"
 
-#: mcomix/webp_dialog.py:157
+#: mcomix/webp_dialog.py:163
 #, python-format
 msgid "Stopped with %d book not yet looked at"
 msgid_plural "Stopped with %d books not yet looked at"
 msgstr[0] "중지됨, 아직 살펴보지 않은 책 %d권"
 
-#: mcomix/webp_dialog.py:175
+#: mcomix/webp_dialog.py:181
 msgid "Repacking books as ZIP"
 msgstr "책을 ZIP으로 다시 묶는 중"
 
-#: mcomix/webp_dialog.py:176
+#: mcomix/webp_dialog.py:182
 msgid "Making pages smaller"
 msgstr "페이지를 줄이는 중"
 
-#: mcomix/webp_dialog.py:177
+#: mcomix/webp_dialog.py:183
 msgid "Shrinking pages"
 msgstr "큰 페이지를 줄이는 중"
 
-#: mcomix/webp_dialog.py:298
+#: mcomix/webp_dialog.py:310
+msgid ""
+"The disk is full. The books as they were are in the trash, which holds their "
+"room until it is emptied."
+msgstr "디스크가 가득 찼습니다. 원래의 책은 휴지통에 있으며, 휴지통을 비울 때까지 그 공간을 차지합니다."
+
+#: mcomix/webp_dialog.py:312
+msgid "The disk is full."
+msgstr "디스크가 가득 찼습니다."
+
+#: mcomix/webp_dialog.py:319
 #, python-format
 msgid "%(count)d book repacked as ZIP, %(size)s larger"
 msgid_plural "%(count)d books repacked as ZIP, %(size)s larger"
 msgstr[0] "책 %(count)d권을 ZIP으로 다시 묶음, %(size)s 커짐"
 
-#: mcomix/webp_dialog.py:304
+#: mcomix/webp_dialog.py:325
 #, python-format
 msgid "%(count)d book repacked as ZIP, %(size)s smaller"
 msgid_plural "%(count)d books repacked as ZIP, %(size)s smaller"
 msgstr[0] "책 %(count)d권을 ZIP으로 다시 묶음, %(size)s 줄어듦"
 
-#: mcomix/webp_dialog.py:308
+#: mcomix/webp_dialog.py:329
 #, python-format
 msgid "%(count)d book shrunk, %(size)s smaller"
 msgid_plural "%(count)d books shrunk, %(size)s smaller"
 msgstr[0] "책 %(count)d권 줄임, %(size)s 작아짐"
 
-#: mcomix/webp_dialog.py:312
+#: mcomix/webp_dialog.py:333
 #, python-format
 msgid "%(count)d book stored with WebP pages, %(size)s smaller"
 msgid_plural "%(count)d books stored with WebP pages, %(size)s smaller"
 msgstr[0] "책 %(count)d권을 WebP 페이지로 저장, %(size)s 절약"
 
-#: mcomix/webp_dialog.py:325
+#: mcomix/webp_dialog.py:346
 #, python-format
 msgid "%d book stored without its damaged files"
 msgid_plural "%d books stored without their damaged files"
 msgstr[0] "책 %d권을 손상된 파일을 빼고 저장"
 
-#: mcomix/webp_dialog.py:362
+#: mcomix/webp_dialog.py:383
 #, python-format
 msgid "About %d minute left"
 msgid_plural "About %d minutes left"
 msgstr[0] "약 %d분 남음"
 
-#: mcomix/webp_dialog.py:393 mcomix/webp_dialog.py:445
+#: mcomix/webp_dialog.py:414 mcomix/webp_dialog.py:468
 #, python-format
 msgid "Could not be written: %s"
 msgstr "쓸 수 없음: %s"
 
-#: mcomix/webp_dialog.py:409
+#: mcomix/webp_dialog.py:432
 msgid "_Save Log…"
 msgstr "로그 저장(_S)…"
 
-#: mcomix/webp_dialog.py:414
+#: mcomix/webp_dialog.py:437
 msgid "Select Books with _Errors"
 msgstr "오류가 있는 책 선택(_E)"
 
-#: mcomix/webp_dialog.py:458
+#: mcomix/webp_dialog.py:483
 msgid "Save the log as"
 msgstr "로그를 다른 이름으로 저장"
 

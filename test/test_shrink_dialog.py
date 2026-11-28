@@ -1,6 +1,7 @@
 """"Shrink oversized pages..." in the library (mcomix.shrink_dialog), from
 the limit asked for to the books written smaller."""
 
+import errno
 import os
 import unittest.mock
 import zipfile
@@ -85,12 +86,7 @@ class ShrinkPagesTest(_LibraryWindowTest):
         asked.ticks[self.larger].set_active(False)
         before = {path: os.path.getsize(path)
                   for path in (self.large, self.larger, self.small)}
-        asked.response(Response.OK)
-        pump()
-        progress, = [window for window in Gtk.Window.list_toplevels()
-                     if isinstance(window, webp_dialog._ProgressDialog)]
-        self.addCleanup(progress.destroy)
-        self.assertTrue(wait_for(lambda: progress.finished, seconds=20))
+        progress = self._written(asked)
         with zipfile.ZipFile(self.large) as book:
             self.assertEqual(['01.webp', '02.png'], sorted(book.namelist()))
             with book.open('01.webp') as member, Image.open(member) as page:
@@ -100,6 +96,30 @@ class ShrinkPagesTest(_LibraryWindowTest):
         self.assertEqual(1, len(os.listdir(self.trash_dir)))
         self.assertTrue(progress._status.get_text().startswith(
             '1 book shrunk'))
+
+    def test_a_full_disk_stops_the_books_left(self):
+        """Every book after the one with no room would be unpacked only
+        to fail; the summary says why, and where the room went."""
+        third = self._book('largest.cbz', (1500, 2200))
+        asked = self._found(self.large, self.larger, third)
+        real = webp_dialog.webp_books.convert
+        calls = []
+
+        def convert(path, *args, **kwargs):
+            calls.append(path)
+            if len(calls) == 1:
+                return real(path, *args, **kwargs)
+            raise OSError(errno.ENOSPC, os.strerror(errno.ENOSPC), path)
+
+        with unittest.mock.patch.object(webp_dialog.webp_books, 'convert',
+                                        convert), \
+                self.assertLogs('mcomix', level='WARNING'):
+            progress = self._written(asked)
+        self.assertEqual(2, len(calls), 'the third book was still tried')
+        text = progress._status.get_text()
+        self.assertIn('not yet looked at', text)
+        self.assertIn('in the trash', text)
+        self.assertIn('The disk is full', progress.log_text())
 
     def test_nothing_over_the_limit_offers_only_to_close(self):
         asked = self._found(self.small)

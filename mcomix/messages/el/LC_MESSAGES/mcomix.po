@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-28 12:09+0100\n"
+"POT-Creation-Date: 2026-11-28 12:16+0100\n"
 "PO-Revision-Date: 2006-09-27 10:18+0200\n"
 "Last-Translator: Paul Chatzidimitriou <paulmedic555@gmail.com>\n"
 "Language-Team: \n"
@@ -101,7 +101,7 @@ msgstr ""
 "! Δεν ήταν δυνατή η αποθήκευση του %(file)s στο %(directory)s: %(error)s"
 
 #: mcomix/bookmark_backend.py:493 mcomix/file_actions.py:1304
-#: mcomix/webp_dialog.py:478
+#: mcomix/webp_dialog.py:503
 #, python-format
 msgid "Could not save \"%(file)s\" to \"%(directory)s\""
 msgstr "Δεν ήταν δυνατή η αποθήκευση του «%(file)s» στο «%(directory)s»"
@@ -122,7 +122,7 @@ msgstr "Ό_χι"
 #: mcomix/file_chooser_library_dialog.py:42 mcomix/message_dialog.py:26
 #: mcomix/message_dialog.py:29 mcomix/pageselect.py:38
 #: mcomix/save_progress.py:121 mcomix/shrink_dialog.py:138
-#: mcomix/shrink_dialog.py:279 mcomix/webp_dialog.py:119
+#: mcomix/shrink_dialog.py:279 mcomix/webp_dialog.py:120
 #: mcomix/library/duplicates_dialog.py:237
 msgid "_Cancel"
 msgstr "_Ακύρωση"
@@ -184,7 +184,7 @@ msgstr "Α_φαίρεση"
 #: mcomix/bookmark_dialog.py:34 mcomix/comment_dialog.py:29
 #: mcomix/message_dialog.py:25 mcomix/preferences_dialog.py:105
 #: mcomix/properties_dialog.py:38 mcomix/shrink_dialog.py:280
-#: mcomix/webp_dialog.py:406 mcomix/library/book_check_dialog.py:180
+#: mcomix/webp_dialog.py:429 mcomix/library/book_check_dialog.py:180
 #: mcomix/library/book_properties.py:60 mcomix/library/duplicates_dialog.py:292
 #: mcomix/library/watchlist.py:41
 msgid "_Close"
@@ -355,7 +355,7 @@ msgstr "Αρχεία σχολίων"
 
 #
 #: mcomix/edit_dialog.py:265 mcomix/file_actions.py:975
-#: mcomix/webp_dialog.py:269
+#: mcomix/webp_dialog.py:277
 #, python-format
 msgid "! Could not save the archive %(archivefile)s: %(error)s"
 msgstr "! Δεν ήταν δυνατή η αποθήκευση του αρχείου %(archivefile)s: %(error)s"
@@ -1987,7 +1987,8 @@ msgstr ""
 
 #: mcomix/preferences_dialog.py:283
 msgid "Save every archive as a ZIP, replacing other formats"
-msgstr "Αποθήκευση κάθε αρχείου συμπίεσης ως ZIP, με αντικατάσταση άλλων μορφών"
+msgstr ""
+"Αποθήκευση κάθε αρχείου συμπίεσης ως ZIP, με αντικατάσταση άλλων μορφών"
 
 #: mcomix/preferences_dialog.py:285
 msgid ""
@@ -1996,7 +1997,13 @@ msgid ""
 "or tar book saved in place is replaced by the ZIP, named .cbz in place "
 "of .cbr, .cb7 or .cbt, and .zip in place of any other extension. This comes "
 "before keeping the format an archive was opened in."
-msgstr "Κάθε αρχείο συμπίεσης που αποθηκεύει το MComix γράφεται ως ZIP, με τις ήδη συμπιεσμένες σελίδες ως έχουν και τα υπόλοιπα συμπιεσμένα, σε όποια μορφή κι αν άνοιξε. Ένα βιβλίο RAR, 7z ή tar που αποθηκεύεται στη θέση του αντικαθίσταται από το ZIP, με .cbz αντί για .cbr, .cb7 ή .cbt και .zip αντί για κάθε άλλη κατάληξη. Αυτό προηγείται της διατήρησης της μορφής στην οποία άνοιξε ένα αρχείο."
+msgstr ""
+"Κάθε αρχείο συμπίεσης που αποθηκεύει το MComix γράφεται ως ZIP, με τις ήδη "
+"συμπιεσμένες σελίδες ως έχουν και τα υπόλοιπα συμπιεσμένα, σε όποια μορφή κι "
+"αν άνοιξε. Ένα βιβλίο RAR, 7z ή tar που αποθηκεύεται στη θέση του "
+"αντικαθίσταται από το ZIP, με .cbz αντί για .cbr, .cb7 ή .cbt και .zip αντί "
+"για κάθε άλλη κατάληξη. Αυτό προηγείται της διατήρησης της μορφής στην οποία "
+"άνοιξε ένα αρχείο."
 
 #: mcomix/preferences_dialog.py:287
 msgid "Comment file extensions:"
@@ -3019,14 +3026,14 @@ msgstr "_Ποιότητα WebP:"
 msgid "_Find Books"
 msgstr "_Εύρεση βιβλίων"
 
-#: mcomix/shrink_dialog.py:178 mcomix/webp_dialog.py:205
+#: mcomix/shrink_dialog.py:178 mcomix/webp_dialog.py:213
 #: mcomix/library/add_progress_dialog.py:57
 #: mcomix/library/book_check_dialog.py:65
 #: mcomix/library/duplicates_dialog.py:112
 msgid "_Stop"
 msgstr "_Διακοπή"
 
-#: mcomix/shrink_dialog.py:205 mcomix/webp_dialog.py:256
+#: mcomix/shrink_dialog.py:205 mcomix/webp_dialog.py:264
 msgid "open in the main window"
 msgstr "ανοιχτό στο κύριο παράθυρο"
 
@@ -3960,14 +3967,14 @@ msgstr "περιέχει άλλα αρχεία"
 msgid "no PNG, GIF or JPEG pages"
 msgstr "καμία σελίδα PNG, GIF ή JPEG"
 
-#: mcomix/webp_dialog.py:101
+#: mcomix/webp_dialog.py:102
 #, python-format
 msgid "Repack %d book as a ZIP?"
 msgid_plural "Repack %d books as ZIP?"
 msgstr[0] "Νέα συσκευασία %d βιβλίου ως ZIP;"
 msgstr[1] "Νέα συσκευασία %d βιβλίων ως ZIP;"
 
-#: mcomix/webp_dialog.py:103
+#: mcomix/webp_dialog.py:104
 msgid ""
 "Each book is written again as a ZIP, with every file in it as it was: pages "
 "already compressed are stored, the rest compressed. A RAR, 7z or tar book is "
@@ -3981,18 +3988,18 @@ msgstr ""
 "ή .cbt και .zip αντί για κάθε άλλη κατάληξη. Ένα ZIP αντικαθίσταται μόνο "
 "όπου βγαίνει μικρότερο."
 
-#: mcomix/webp_dialog.py:109
+#: mcomix/webp_dialog.py:110
 msgid "_Repack"
 msgstr "_Συσκευασία"
 
-#: mcomix/webp_dialog.py:112
+#: mcomix/webp_dialog.py:113
 #, python-format
 msgid "Make the pages of %d book smaller?"
 msgid_plural "Make the pages of %d books smaller?"
 msgstr[0] "Σμίκρυνση των σελίδων %d βιβλίου;"
 msgstr[1] "Σμίκρυνση των σελίδων %d βιβλίων;"
 
-#: mcomix/webp_dialog.py:114
+#: mcomix/webp_dialog.py:115
 msgid ""
 "Each book is written again, with every PNG or GIF page that is smaller as a "
 "lossless WebP and every JPEG page optimised without loss. Some other comic "
@@ -4003,92 +4010,102 @@ msgstr ""
 "απώλειες. Ορισμένα άλλα προγράμματα ανάγνωσης κόμικ δεν μπορούν να "
 "εμφανίσουν σελίδες WebP."
 
-#: mcomix/webp_dialog.py:118
+#: mcomix/webp_dialog.py:119
 msgid "_Make Smaller"
 msgstr "_Σμίκρυνση"
 
-#: mcomix/webp_dialog.py:149
+#: mcomix/webp_dialog.py:150
 #, python-format
 msgid "%(count)d book left as it was: %(reason)s"
 msgid_plural "%(count)d books left as they were: %(reason)s"
 msgstr[0] "%(count)d βιβλίο έμεινε όπως ήταν: %(reason)s"
 msgstr[1] "%(count)d βιβλία έμειναν όπως ήταν: %(reason)s"
 
-#: mcomix/webp_dialog.py:157
+#: mcomix/webp_dialog.py:163
 #, python-format
 msgid "Stopped with %d book not yet looked at"
 msgid_plural "Stopped with %d books not yet looked at"
 msgstr[0] "Διακόπηκε με %d βιβλίο που δεν εξετάστηκε ακόμη"
 msgstr[1] "Διακόπηκε με %d βιβλία που δεν εξετάστηκαν ακόμη"
 
-#: mcomix/webp_dialog.py:175
+#: mcomix/webp_dialog.py:181
 msgid "Repacking books as ZIP"
 msgstr "Νέα συσκευασία βιβλίων ως ZIP"
 
-#: mcomix/webp_dialog.py:176
+#: mcomix/webp_dialog.py:182
 msgid "Making pages smaller"
 msgstr "Σμίκρυνση σελίδων"
 
-#: mcomix/webp_dialog.py:177
+#: mcomix/webp_dialog.py:183
 msgid "Shrinking pages"
 msgstr "Γίνεται σμίκρυνση μεγάλων σελίδων"
 
-#: mcomix/webp_dialog.py:298
+#: mcomix/webp_dialog.py:310
+msgid ""
+"The disk is full. The books as they were are in the trash, which holds their "
+"room until it is emptied."
+msgstr "Ο δίσκος είναι γεμάτος. Τα βιβλία όπως ήταν βρίσκονται στον κάδο, που κρατά τον χώρο τους μέχρι να αδειάσει."
+
+#: mcomix/webp_dialog.py:312
+msgid "The disk is full."
+msgstr "Ο δίσκος είναι γεμάτος."
+
+#: mcomix/webp_dialog.py:319
 #, python-format
 msgid "%(count)d book repacked as ZIP, %(size)s larger"
 msgid_plural "%(count)d books repacked as ZIP, %(size)s larger"
 msgstr[0] "%(count)d βιβλίο ως ZIP, %(size)s μεγαλύτερο"
 msgstr[1] "%(count)d βιβλία ως ZIP, %(size)s μεγαλύτερα"
 
-#: mcomix/webp_dialog.py:304
+#: mcomix/webp_dialog.py:325
 #, python-format
 msgid "%(count)d book repacked as ZIP, %(size)s smaller"
 msgid_plural "%(count)d books repacked as ZIP, %(size)s smaller"
 msgstr[0] "%(count)d βιβλίο ως ZIP, %(size)s μικρότερο"
 msgstr[1] "%(count)d βιβλία ως ZIP, %(size)s μικρότερα"
 
-#: mcomix/webp_dialog.py:308
+#: mcomix/webp_dialog.py:329
 #, python-format
 msgid "%(count)d book shrunk, %(size)s smaller"
 msgid_plural "%(count)d books shrunk, %(size)s smaller"
 msgstr[0] "%(count)d βιβλίο σμικρύνθηκε, %(size)s μικρότερο"
 msgstr[1] "%(count)d βιβλία σμικρύνθηκαν, %(size)s μικρότερα"
 
-#: mcomix/webp_dialog.py:312
+#: mcomix/webp_dialog.py:333
 #, python-format
 msgid "%(count)d book stored with WebP pages, %(size)s smaller"
 msgid_plural "%(count)d books stored with WebP pages, %(size)s smaller"
 msgstr[0] "%(count)d βιβλίο αποθηκεύτηκε με σελίδες WebP, %(size)s μικρότερο"
 msgstr[1] "%(count)d βιβλία αποθηκεύτηκαν με σελίδες WebP, %(size)s μικρότερα"
 
-#: mcomix/webp_dialog.py:325
+#: mcomix/webp_dialog.py:346
 #, python-format
 msgid "%d book stored without its damaged files"
 msgid_plural "%d books stored without their damaged files"
 msgstr[0] "%d βιβλίο αποθηκεύτηκε χωρίς τα κατεστραμμένα αρχεία του"
 msgstr[1] "%d βιβλία αποθηκεύτηκαν χωρίς τα κατεστραμμένα αρχεία τους"
 
-#: mcomix/webp_dialog.py:362
+#: mcomix/webp_dialog.py:383
 #, python-format
 msgid "About %d minute left"
 msgid_plural "About %d minutes left"
 msgstr[0] "Απομένει περίπου %d λεπτό"
 msgstr[1] "Απομένουν περίπου %d λεπτά"
 
-#: mcomix/webp_dialog.py:393 mcomix/webp_dialog.py:445
+#: mcomix/webp_dialog.py:414 mcomix/webp_dialog.py:468
 #, python-format
 msgid "Could not be written: %s"
 msgstr "Δεν ήταν δυνατή η εγγραφή: %s"
 
-#: mcomix/webp_dialog.py:409
+#: mcomix/webp_dialog.py:432
 msgid "_Save Log…"
 msgstr "Απ_οθήκευση καταγραφής…"
 
-#: mcomix/webp_dialog.py:414
+#: mcomix/webp_dialog.py:437
 msgid "Select Books with _Errors"
 msgstr "Επιλογή βιβλίων με σ_φάλματα"
 
-#: mcomix/webp_dialog.py:458
+#: mcomix/webp_dialog.py:483
 msgid "Save the log as"
 msgstr "Αποθήκευση καταγραφής ως"
 
