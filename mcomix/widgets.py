@@ -224,6 +224,22 @@ def lay_out_as_menu(popover: Gtk.Popover) -> None:
         popover.set_position(Gtk.PositionType.RIGHT)
 
 
+def context_menu(model: Gio.MenuModel) -> Gtk.PopoverMenu:
+    """A right-click menu on <model>, for popup_at() to open.
+
+    NESTED: a submenu opens as a popover of its own beside its item, as
+    the menu bar's do, rather than sliding in over the menu it came from.
+    Every right-click menu is built here, so all of them open their
+    submenus the same way.  A sliding menu is also as wide as the widest
+    item on any of its pages, so a short top level was laid out to fit
+    the longest entry of a submenu three pages down.
+    """
+    menu = Gtk.PopoverMenu.new_from_model_full(
+        model, Gtk.PopoverMenuFlags.NESTED)
+    lay_out_as_menu(menu)
+    return menu
+
+
 def popup_at(popover: Gtk.Popover, widget: Gtk.Widget,
              x: float, y: float) -> None:
     """Show <popover> over <widget>, pointing at (<x>, <y>) within it.

@@ -120,7 +120,7 @@ class _ImageArea(Gtk.ScrolledWindow, widgets.Releasable):
         history.append(_('_Undo'), 'imagearea.undo')
         history.append(_('_Redo'), 'imagearea.redo')
         model.append_section(None, history)
-        return Gtk.PopoverMenu.new_from_model(model)
+        return widgets.context_menu(model)
 
     def _rename_page(self, *args: object) -> None:
         """Ask what to call the page that is selected.

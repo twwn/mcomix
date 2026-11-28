@@ -1714,6 +1714,16 @@ class SelectBooksTest(_FourCoversTest):
         self.assertEqual([1, 2], list(self._activate('select-absent')))
 
 
+class SubmenusOpenBesideTheMenuTest(_FourCoversTest):
+
+    def test_a_submenu_opens_beside_its_item_as_the_page_menu_s_do(self):
+        """The covers' submenus slid in over the menu they came from,
+        while the main window's opened beside it, for no reason a
+        reader could see."""
+        self.assertTrue(self.area._book_menu.get_flags()
+                        & Gtk.PopoverMenuFlags.NESTED)
+
+
 class StorePagesAsWebpEntryTest(_FourCoversTest):
 
     def test_offered_only_for_a_book_mcomix_can_write_back(self):

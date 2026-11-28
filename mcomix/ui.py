@@ -646,14 +646,10 @@ class MainUI:
         # until build_menus(): a model is built with the keys its items
         # show, and those are known once the window has registered them.
         self.menubar = Gtk.PopoverMenuBar.new_from_model(None)
-        # NESTED: a submenu opens as a popover of its own.  A sliding
-        # popover menu keeps every page in one stack and is as wide as
-        # the widest item on any of them, so the eight short entries of
-        # the top level would be laid out to fit "Previous archive" and its
-        # accelerator, three pages down.
-        self.popup = Gtk.PopoverMenu.new_from_model_full(
-            Gio.Menu(), Gtk.PopoverMenuFlags.NESTED)
-        widgets.lay_out_as_menu(self.popup)
+        # A sliding menu would lay the short entries of the top level
+        # out to fit "Previous archive" and its accelerator, three pages
+        # down (widgets.context_menu()).
+        self.popup = widgets.context_menu(Gio.Menu())
         self.popup.set_parent(window)
         self.toolbar = self._build_toolbar()
 

@@ -479,8 +479,7 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable, LibraryPart):
         self._view_menu = submenus
         self._before_popup: Callable[[], None] | None = None
 
-        menu = Gtk.PopoverMenu.new_from_model(model)
-        return menu
+        return widgets.context_menu(model)
 
     def add_view_submenu(self, label: str, menu: Gio.MenuModel,
                          before_popup: Callable[[], None]) -> None:

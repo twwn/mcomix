@@ -358,7 +358,7 @@ class Statusbar(Gtk.Box, widgets.Releasable):
         model.append_section(None, fields)
         model.append_section(None, copies)
         self.insert_action_group('statusbar', self._field_actions)
-        return Gtk.PopoverMenu.new_from_model(model)
+        return widgets.context_menu(model)
 
     #: The entries that copy what the bar knows of the file being read.
     COPIES = (('copy-filename', _('Copy file name')),

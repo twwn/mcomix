@@ -119,7 +119,7 @@ class _CommentArea(Gtk.Box, widgets.Releasable):
         history.append(_('_Undo'), 'commentarea.undo')
         history.append(_('_Redo'), 'commentarea.redo')
         model.append_section(None, history)
-        return Gtk.PopoverMenu.new_from_model(model)
+        return widgets.context_menu(model)
 
     def _undo(self, *args: object) -> None:
         self._edit_dialog.undo()

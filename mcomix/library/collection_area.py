@@ -158,8 +158,7 @@ class _CollectionArea(Gtk.ScrolledWindow, widgets.Releasable,
                 section.append_item(item)
             model.append_section(heading, section)
 
-        menu = Gtk.PopoverMenu.new_from_model(model)
-        return menu
+        return widgets.context_menu(model)
 
     def _collection_name(self, collection: int | None) -> str:
         """The name of <collection>, or nothing if it has gone.
