@@ -88,11 +88,6 @@ class Box:
             result += edge * edge
         return result
 
-    def translate(self, delta: Sequence[int]) -> 'Box':
-        """ Returns a new Box of this size, moved by <delta>. """
-        return Box(self.get_size(),
-                   tools.vector_add(self.get_position(), delta))
-
     def translate_opposite(self, delta: Sequence[int]) -> 'Box':
         """ Returns a new Box of this size, moved by -<delta>. """
         return Box(self.get_size(),
