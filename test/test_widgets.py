@@ -51,6 +51,26 @@ class PopupAtTest(MComixTest):
             pump()
             self.window.allocate(400, 300, -1, None)
 
+    def test_a_popover_laid_out_as_a_menu_is_not_changed_when_it_opens(self):
+        """GTK 4.14 crashed twice inside set_position() on the main
+        window's popup, made as it opened over a mapped window; laid out
+        where it is built, the popover is left as it is."""
+        widgets.lay_out_as_menu(self.popover)
+        self.assertEqual(Gtk.PositionType.RIGHT, self.popover.get_position())
+        self.assertFalse(self.popover.get_has_arrow())
+        self.assertEqual(Gtk.Align.START, self.popover.get_valign())
+        self.popover.set_parent(self.inner)
+        with unittest.mock.patch.object(
+                Gtk.Popover, 'set_position') as set_position, \
+                unittest.mock.patch.object(
+                    Gtk.Popover, 'set_has_arrow') as set_has_arrow, \
+                unittest.mock.patch.object(
+                    Gtk.Widget, 'set_valign') as set_valign:
+            widgets.popup_at(self.popover, self.inner, 20.0, 40.0)
+        set_position.assert_not_called()
+        set_has_arrow.assert_not_called()
+        set_valign.assert_not_called()
+
     def test_it_points_at_the_place_the_pointer_was(self):
         self.popover.set_parent(self.inner)
         widgets.popup_at(self.popover, self.inner, 20.0, 40.0)

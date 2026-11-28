@@ -647,6 +647,7 @@ class MainUI:
         # accelerator, three pages down.
         self.popup = Gtk.PopoverMenu.new_from_model_full(
             Gio.Menu(), Gtk.PopoverMenuFlags.NESTED)
+        widgets.lay_out_as_menu(self.popup)
         self.popup.set_parent(window)
         self.toolbar = self._build_toolbar()
 

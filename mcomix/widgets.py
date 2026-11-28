@@ -206,6 +206,24 @@ def set_chooser_file(chooser: Gtk.FileChooser, path: str) -> None:
 _parented: "weakref.WeakSet[Gtk.Popover]" = weakref.WeakSet()
 
 
+def lay_out_as_menu(popover: Gtk.Popover) -> None:
+    """Have <popover> open the way popup_at() opens a menu: no arrow,
+    its top at the point, beside it (popup_at() says why).
+
+    Each property is set only where it differs.  Called where a popover
+    is built, before its window is mapped, it leaves popup_at() nothing
+    to change on a window on screen: the floors job's GTK 4.14 crashed
+    twice inside set_position() on the main window's popup, opened over
+    a mapped window, and no newer GTK has.
+    """
+    if popover.get_has_arrow():
+        popover.set_has_arrow(False)
+    if popover.get_valign() != Gtk.Align.START:
+        popover.set_valign(Gtk.Align.START)
+    if popover.get_position() != Gtk.PositionType.RIGHT:
+        popover.set_position(Gtk.PositionType.RIGHT)
+
+
 def popup_at(popover: Gtk.Popover, widget: Gtk.Widget,
              x: float, y: float) -> None:
     """Show <popover> over <widget>, pointing at (<x>, <y>) within it.
@@ -243,9 +261,7 @@ def popup_at(popover: Gtk.Popover, widget: Gtk.Widget,
     area = Gdk.Rectangle()
     area.x, area.y, area.width, area.height = int(x), int(y), 1, 1
     popover.set_pointing_to(area)
-    popover.set_has_arrow(False)
-    popover.set_valign(Gtk.Align.START)
-    popover.set_position(Gtk.PositionType.RIGHT)
+    lay_out_as_menu(popover)
 
     def open_now() -> bool:
         if popover.get_parent() is not None:
