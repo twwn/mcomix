@@ -78,6 +78,11 @@ class ForPagesTest(MComixTest):
         root = self._written(b'<ComicInfo><PageCount>7</PageCount></ComicInfo>')
         self.assertEqual('3', root.findtext('PageCount'))
 
+    def test_a_count_that_is_no_number_is_written_again(self):
+        root = self._written(
+            b'<ComicInfo><PageCount>three</PageCount></ComicInfo>')
+        self.assertEqual('3', root.findtext('PageCount'))
+
     def test_a_page_list_a_deletion_has_invalidated_is_written_again(self):
         """The count and the list can disagree, and a reader may believe
         either of them."""
@@ -156,7 +161,11 @@ class CarriedTest(MComixTest):
             ('/tmp/a', 'ComicInfo.xml'),
             comicinfo.carried({'/tmp/b': 'meta/ComicInfo.xml',
                                '/tmp/a': 'ComicInfo.xml'}))
-
+        # By the name in the archive, not where it was unpacked to.
+        self.assertEqual(
+            ('/tmp/b', 'ComicInfo.xml'),
+            comicinfo.carried({'/tmp/a': 'meta/ComicInfo.xml',
+                               '/tmp/b': 'ComicInfo.xml'}))
 
 
 class DescribeTest(MComixTest):
@@ -244,10 +253,17 @@ class DescribeTest(MComixTest):
             os.path.join(self.tmp_dir, 'missing.xml')))
 
     def test_a_file_too_large_to_be_metadata_is_not_read(self):
-        padding = b'<!--' + b'x' * comicinfo.LARGEST + b'-->'
-        self.assertEqual([], self._describe(
-            b'<ComicInfo><Series>Night Watch</Series>' + padding
-            + b'</ComicInfo>'))
+        document = b'<ComicInfo><Series>Night Watch</Series></ComicInfo>'
+
+        def padded(size):
+            # A comment that makes the file <size> bytes long.
+            filler = size - len(document) - len(b'<!---->')
+            return document[:-len(b'</ComicInfo>')] + b'<!--' \
+                + b'x' * filler + b'--></ComicInfo>'
+
+        self.assertEqual([], self._describe(padded(comicinfo.LARGEST + 1)))
+        self.assertEqual(self._describe(document),
+                         self._describe(padded(comicinfo.LARGEST)))
 
 
 class ChaptersTest(MComixTest):
@@ -291,6 +307,17 @@ class ChaptersTest(MComixTest):
             '<Page Image="-1" Bookmark="Before"/><Page Bookmark="Nowhere"/>'
             '<Page Image="x" Bookmark="Odd"/></Pages></ComicInfo>'))
 
+    def test_the_chapters_come_in_the_order_of_their_pages(self):
+        """Whatever order the entries are in, an entry the file got
+        wrong among them, and up to the last page."""
+        self.assertEqual(
+            [('Zed', 1), ('Bee', 2), ('Ant', 4)], self._chapters(
+                '<ComicInfo><PageCount>4</PageCount><Pages>'
+                '<Page Image="3" Bookmark="Ant"/><Page Bookmark="Nowhere"/>'
+                '<Page Image="1" Bookmark="Bee"/>'
+                '<Page Image="4" Bookmark="Past"/>'
+                '<Page Image="0" Bookmark="Zed"/></Pages></ComicInfo>'))
+
     def test_no_file_no_list_or_no_comicinfo_names_none(self):
         self.assertEqual([], self._chapters('<ComicInfo/>'))
         self.assertEqual([], self._chapters('<Other><Pages><Page Image="0"'
@@ -298,6 +325,80 @@ class ChaptersTest(MComixTest):
         self.assertEqual([], self._chapters('not xml'))
         self.assertEqual([], comicinfo.chapters(
             os.path.join(self.tmp_dir, 'missing.xml'), 4))
+
+
+class RightToLeftTest(MComixTest):
+
+    """reads_right_to_left() takes only Manga YesAndRightToLeft for a
+    comic read right to left."""
+
+    def test_only_yes_and_right_to_left_says_so(self):
+        path = os.path.join(self.tmp_dir, 'ComicInfo.xml')
+        for manga, expected in (('YesAndRightToLeft', True),
+                                (' YesAndRightToLeft\n', True),
+                                ('Yes', False), ('No', False), (None, False)):
+            with self.subTest(manga=manga):
+                with open(path, 'w', encoding='utf-8') as handle:
+                    handle.write('<ComicInfo><Title>T</Title>%s</ComicInfo>'
+                                 % ('' if manga is None else
+                                    '<Manga>%s</Manga>' % manga))
+                self.assertIs(expected, comicinfo.reads_right_to_left(path))
+        self.assertFalse(comicinfo.reads_right_to_left(
+            os.path.join(self.tmp_dir, 'missing.xml')))
+
+
+class OfBookTest(MComixTest):
+
+    """of_book(), the ComicInfo.xml of what an ebook says of itself."""
+
+    def _of_book(self, **fields):
+        given = {'title': None, 'year': None, 'writers': (),
+                 'publisher': None, 'right_to_left': False}
+        document = comicinfo.of_book(**(given | fields))
+        return None if document is None else ElementTree.fromstring(document)
+
+    def test_the_fields_in_the_schema_order(self):
+        root = self._of_book(title='Night Watch', year='1998',
+                             writers=('Ann', 'Bob'), publisher='House',
+                             right_to_left=True)
+        self.assertEqual([('Title', 'Night Watch'), ('Year', '1998'),
+                          ('Writer', 'Ann, Bob'), ('Publisher', 'House'),
+                          ('Manga', 'YesAndRightToLeft')],
+                         [(element.tag, element.text) for element in root])
+
+    def test_the_document_says_it_is_a_utf_8_xml_file(self):
+        document = comicinfo.of_book('Ünter', None, (), None, False)
+        self.assertTrue(document.startswith(b"<?xml version='1.0' "
+                                            b"encoding='utf-8'?>"))
+        self.assertIn('Ünter'.encode('utf-8'), document)
+
+    def test_a_year_that_is_no_number_is_left_out(self):
+        root = self._of_book(title='T', year='1998-04')
+        self.assertEqual(['Title'], [element.tag for element in root])
+
+    def test_a_book_that_says_nothing_has_none(self):
+        self.assertIsNone(self._of_book())
+        self.assertIsNone(self._of_book(title='', publisher='', year='',
+                                        bookmarks=[(0, 'Past the book')]))
+
+    def test_the_chapters_go_in_the_page_list_with_the_count(self):
+        root = self._of_book(page_count=3, bookmarks=[
+            (0, 'Prologue'), (2, ' The \n Night '), (1, '  '), (3, 'Past'),
+            (-1, 'Before')])
+        self.assertEqual(['PageCount', 'Pages'],
+                         [element.tag for element in root])
+        self.assertEqual('3', root.findtext('PageCount'))
+        self.assertEqual([{'Image': '0', 'Bookmark': 'Prologue'},
+                          {'Image': '2', 'Bookmark': 'The Night'}],
+                         [page.attrib for page in root.find('Pages')])
+
+    def test_what_it_writes_names_the_same_chapters(self):
+        path = os.path.join(self.tmp_dir, 'ComicInfo.xml')
+        with open(path, 'wb') as handle:
+            handle.write(comicinfo.of_book(
+                None, None, (), None, False, 4, [(0, 'One'), (2, 'Three')]))
+        self.assertEqual([('One', 1), ('Three', 3)],
+                         comicinfo.chapters(path, 4))
 
 
 class SampleComicTest(MComixTest):

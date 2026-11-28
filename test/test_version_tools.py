@@ -23,9 +23,16 @@ class TestVersion(unittest.TestCase):
         self.assertOrdered(['1.8dev1', '1.8a1', '1.8b1', '1.8rc1', '1.8'])
         self.assertOrdered(['1.24.9-rc1', '1.24.9'])
 
+    def test_a_word_no_pre_release_marker_sorts_after_them(self) -> None:
+        self.assertOrdered(['1.8dev1', '1.8rc1', '1.8unknown', '1.8',
+                            '1.8.1'])
+
     def test_trailing_zeroes_are_insignificant(self) -> None:
         self.assertEqual(Version('1.8'), Version('1.8.0'))
         self.assertEqual(Version('1'), Version('1.0.0'))
+        # Though not the last of them.
+        self.assertEqual(Version('0'), Version('0.0'))
+        self.assertLess(Version(''), Version('0'))
         self.assertEqual(hash(Version('1.8')), hash(Version('1.8.0')))
 
     def test_minimum_version_checks(self) -> None:
