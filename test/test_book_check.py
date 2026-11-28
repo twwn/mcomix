@@ -10,6 +10,7 @@ import zipfile
 from . import (MComixTest, NORMAL_ZIP, copy_rar_set, damage_member,
                get_testfile_path, line_art_png, refuse_passwords,
                skip_unless_rar_reads)
+from mcomix.archive import password as archive_password
 from mcomix.archive import zip as zip_archive
 from mcomix.library import book_check
 from mcomix.library.book_check import Fault
@@ -53,6 +54,13 @@ class CheckTest(MComixTest):
         self.assertIsNone(self.check(NORMAL_ZIP))
         self.assertEqual([], os.listdir(work))
         self.assertTrue(removed)
+        for path in removed:
+            folder = os.path.relpath(path, work).split(os.sep)[0]
+            self.assertTrue(folder.startswith('mcomix-check.'), path)
+
+    def test_a_book_not_there_is_none_to_read(self):
+        """"Books whose file is not there" selects those."""
+        self.assertIsNone(self.check(os.path.join(self.tmp_dir, 'gone.cbz')))
 
     def test_a_damaged_file_is_named(self):
         path = self.zip_book({'01.png': line_art_png(),
@@ -70,6 +78,39 @@ class CheckTest(MComixTest):
         damage_member(path, 'notes.txt')
         self.assertEqual(['notes.txt'],
                          list(self.check(path).unreadable))
+
+    def test_a_file_that_does_not_come_out(self):
+        """A file the handler passes over without an error, as one whose
+        name cannot be written here, cannot be read from the book."""
+        def extracted(archive, names, directory):
+            yield from names
+
+        with unittest.mock.patch.object(zip_archive.ZipArchive,
+                                        'iter_extract', extracted):
+            checked = self.check(NORMAL_ZIP)
+        self.assertEqual(Fault.DAMAGED, checked.fault)
+        with zipfile.ZipFile(NORMAL_ZIP) as book:
+            files = [name for name in book.namelist()
+                     if not name.endswith('/')]
+        self.assertEqual(sorted(files), sorted(checked.unreadable))
+
+    def test_a_listing_that_fails(self):
+        with unittest.mock.patch.object(
+                zip_archive.ZipArchive, 'iter_contents',
+                side_effect=zipfile.BadZipFile('Bad magic number')):
+            self.assertEqual(Fault.NOT_AN_ARCHIVE,
+                             self.check(NORMAL_ZIP).fault)
+
+    def test_a_password_withheld_without_an_error(self):
+        """As a handler that gives nothing where the password is not
+        given, rather than failing."""
+        def extracted(archive, names, directory):
+            archive_password.withheld_here()
+            return iter(())
+
+        with unittest.mock.patch.object(zip_archive.ZipArchive,
+                                        'iter_extract', extracted):
+            self.assertEqual(Fault.ENCRYPTED, self.check(NORMAL_ZIP).fault)
 
     def test_an_encrypted_book_asks_nothing(self):
         asked = refuse_passwords(self)
