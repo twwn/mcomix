@@ -177,4 +177,67 @@ class ZoomDistributionTest(MComixTest):
         self.assertEqual(ZoomModel._scale_distributed([], PageAxis.WIDTH, 100,
                                                       False, []), [])
 
+class ZoomedSizeTest(MComixTest):
+
+    """get_zoomed_size() on pages worked out by hand, where the random
+    cases above promise only bounds."""
+
+    def _zoomed(self, sizes, screen, mode, scale_up=False, steps=0,
+                same=False, fit_same=False):
+        model = ZoomModel()
+        model.set_fit_mode(int(mode))
+        model.set_scale_up(scale_up)
+        for _step in range(abs(steps)):
+            if steps > 0:
+                model.zoom_in()
+            else:
+                model.zoom_out()
+        return model.get_zoomed_size(sizes, screen, PageAxis.WIDTH,
+                                     [False] * len(sizes), same, fit_same)
+
+    def test_four_steps_in_double_the_page_and_one_out_takes_a_fourth_root(self):
+        self.assertEqual(([[800, 600]], [False]),
+                         self._zoomed([[400, 300]], (1024, 768), ZoomMode.MANUAL,
+                                      steps=4))
+        # 400 and 300 times 2 ** -0.25, 0.8409.
+        self.assertEqual(([[336, 252]], [False]),
+                         self._zoomed([[400, 300]], (1024, 768), ZoomMode.MANUAL,
+                                      steps=-1))
+
+    def test_a_small_page_is_enlarged_to_fit_only_where_that_is_allowed(self):
+        for scale_up, size in ((False, [200, 100]), (True, [1000, 500])):
+            with self.subTest(scale_up=scale_up):
+                self.assertEqual(
+                    ([size], [False]),
+                    self._zoomed([[200, 100]], (1000, 1000), ZoomMode.BEST,
+                                 scale_up))
+
+    def test_pages_fit_to_the_width_share_it_and_to_the_screen_its_height(self):
+        """Fit to width, no other axis has a say, so the pages fill the
+        width between them, however high that makes them; best fit, the
+        height has its say as well."""
+        for mode, drawn in ((ZoomMode.WIDTH, [[200, 600], [400, 600]]),
+                            (ZoomMode.BEST, [[33, 100], [67, 100]])):
+            with self.subTest(mode=mode):
+                self.assertEqual(
+                    (drawn, [False, False]),
+                    self._zoomed([[100, 300], [200, 300]], (600, 100), mode,
+                                 True))
+
+    def test_pages_made_one_size_are_stretched_only_where_asked(self):
+        """Two pages scaled to one height round to 307 and 308 pixels
+        high; forced to one size, the one that came out lower is
+        stretched, and said to be.  Forcing alone, without scaling them
+        to one another first, does nothing."""
+        sizes, screen = [[302, 147], [62, 126]], (931, 450)
+        for same, fit_same, distorted in ((True, False, [False, False]),
+                                          (False, True, [False, False]),
+                                          (True, True, [True, False])):
+            with self.subTest(same=same, fit_same=fit_same):
+                drawn, stretched = self._zoomed(
+                    sizes, screen, ZoomMode.BEST, True, -1, same, fit_same)
+                self.assertEqual(distorted, stretched)
+        self.assertEqual([[632, 308], [151, 308]], drawn)
+
+
 # vim: expandtab:sw=4:ts=4
