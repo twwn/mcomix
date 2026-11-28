@@ -10,6 +10,7 @@ import io
 import itertools
 import os
 import shutil
+import struct
 import unittest
 import zipfile
 from unittest import mock
@@ -51,6 +52,28 @@ def _shown(data, follow_exif=True):
 def _scan(data):
     """The compressed pixels of the JPEG picture <data>."""
     return data[data.index(b'\xff\xda'):]
+
+
+def _tiff(order, entries, next_directory=True):
+    """A TIFF header in the byte <order> of struct ('<' or '>') and one
+    directory of <entries>, each a tag, a type, a count and a value of
+    two bytes, followed by the offset of no next directory where
+    <next_directory>."""
+    tiff = (b'II' if order == '<' else b'MM') + struct.pack(
+        order + 'HIH', 42, 8, len(entries))
+    for tag, kind, count, value in entries:
+        tiff += struct.pack(order + 'HHIHH', tag, kind, count, value, 0)
+    return tiff + (struct.pack(order + 'I', 0) if next_directory else b'')
+
+
+def _with_tiff(tiff):
+    """A JPEG picture whose one Exif block holds <tiff>."""
+    written = io.BytesIO()
+    Image.new('RGB', (8, 8), 'red').save(written, 'JPEG')
+    data = written.getvalue()
+    payload = b'Exif\0\0' + tiff
+    return (data[:2] + b'\xff\xe1' + struct.pack('>H', len(payload) + 2)
+            + payload + data[2:])
 
 
 def _without_jpegtran():
@@ -105,7 +128,7 @@ class JpegTurnTest(MComixTest):
                 jpeg_turn.turn(data, 90, follow_exif=True)))
 
     def test_jpegtran_turns_the_blocks_where_the_size_lets_it(self):
-        if jpeg_turn._jpegtran() is None:
+        if shutil.which('jpegtran') is None:
             self.skipTest('jpegtran is not installed')
         data = _picture(64, 48, orientation=3)
         for follow_exif in (True, False):
@@ -123,12 +146,53 @@ class JpegTurnTest(MComixTest):
                                                shown.tobytes())), 3)
 
     def test_a_part_block_falls_back_to_the_tag(self):
-        if jpeg_turn._jpegtran() is None:
+        if shutil.which('jpegtran') is None:
             self.skipTest('jpegtran is not installed')
         data = _picture(64, 37)
         turned = jpeg_turn.turn(data, 90, follow_exif=True)
         self.assertEqual(_scan(data), _scan(turned))
         self.assertEqual(6, jpeg_turn.orientation_of(turned))
+
+    def test_an_orientation_tag_is_changed_where_it_stands(self):
+        """In either byte order, and with nothing else of the picture
+        changed: the one byte of the value."""
+        for order in ('<', '>'):
+            with self.subTest(order):
+                data = _with_tiff(_tiff(order, [
+                    (0x0100, 3, 1, 8), (jpeg_turn.ORIENTATION, 3, 1, 1)]))
+                turned = jpeg_turn.with_orientation(data, 6)
+                self.assertEqual(6, jpeg_turn.orientation_of(turned))
+                self.assertEqual(len(data), len(turned))
+                self.assertEqual(1, sum(a != b for a, b in zip(data, turned)))
+
+    def test_only_a_tag_of_one_short_is_changed_in_place(self):
+        """Anything else under the tag is rewritten as a block of its
+        own."""
+        for kind, count in ((4, 1), (3, 2)):
+            with self.subTest(kind=kind, count=count):
+                tiff = _tiff('>', [(jpeg_turn.ORIENTATION, kind, count, 1)])
+                self.assertIsNone(
+                    jpeg_turn._set_in_place(tiff, 0, len(tiff), 6))
+
+    def test_an_entry_is_changed_only_where_the_block_holds_all_of_it(self):
+        tiff = _tiff('>', [(jpeg_turn.ORIENTATION, 3, 1, 1)],
+                     next_directory=False)
+        self.assertEqual(tiff[:-4] + b'\0\x06\0\0',
+                         jpeg_turn._set_in_place(tiff, 0, len(tiff), 6))
+        self.assertIsNone(jpeg_turn._set_in_place(tiff, 0, len(tiff) - 1, 6))
+        # And only as many entries as the directory counts.
+        two = _tiff('>', [(0x0100, 3, 1, 8), (jpeg_turn.ORIENTATION, 3, 1, 1)])
+        uncounted = two[:8] + b'\0\x01' + two[10:]
+        self.assertIsNone(
+            jpeg_turn._set_in_place(uncounted, 0, len(uncounted), 6))
+
+    def test_a_directory_beyond_the_block_is_damage(self):
+        tiff = _tiff('>', [])[:10]
+        self.assertIsNone(jpeg_turn._set_in_place(tiff, 0, 10, 6))
+        with self.assertRaises(ValueError):
+            jpeg_turn._set_in_place(tiff, 0, 9, 6)
+        with self.assertRaises(ValueError):
+            jpeg_turn._set_in_place(b'XX' + tiff[2:], 0, 10, 6)
 
     def test_what_is_no_jpeg_is_refused(self):
         with self.assertRaises(ValueError):
