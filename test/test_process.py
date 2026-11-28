@@ -152,6 +152,83 @@ class ProcessTest(MComixTest):
             self.assertEqual(0, proc.wait())
             self.assertEqual([name], os.listdir(tmp_dir))
 
+    def test_a_candidate_is_found_only_where_it_runs_and_is_accepted(self):
+        folder = os.path.abspath(tempfile.mkdtemp(dir=self.tmp_dir))
+        name = 'tool.exe' if sys.platform == 'win32' else 'tool'
+        _create_file(os.path.join(folder, name), 'rx')
+        self.enterContext(unittest.mock.patch.dict(os.environ, PATH=folder))
+        asked = []
+
+        def accept(answer):
+            def candidate(path):
+                asked.append(path)
+                return answer
+            return candidate
+
+        found = os.path.join(folder, name)
+        self.assertEqual(found, process.find_executable(
+            ('tool',), is_valid_candidate=accept(True)))
+        self.assertEqual([found], asked)
+        self.assertIsNone(process.find_executable(
+            ('tool',), is_valid_candidate=accept(False)))
+
+    @unittest.skipIf(sys.platform == 'win32', 'every file is runnable there')
+    def test_an_accepted_candidate_still_has_to_run(self):
+        folder = os.path.abspath(tempfile.mkdtemp(dir=self.tmp_dir))
+        _create_file(os.path.join(folder, 'tool'), 'r')
+        self.enterContext(unittest.mock.patch.dict(os.environ, PATH=folder))
+        self.assertIsNone(process.find_executable(
+            ('tool',), is_valid_candidate=lambda path: True))
+
+
+#: A child that writes where it runs, what its environment says, what it
+#: was handed and something on its error stream.
+_REPORTER = ("import os, sys; sys.stdout.write(os.getcwd() + '|' + "
+             "os.environ.get('MCOMIX_PROBE', '') + '|' + sys.stdin.read()); "
+             "sys.stderr.write('complaint')")
+
+
+class StreamsTest(MComixTest):
+
+    """call() and popen() hand the child the streams, the folder and
+    the environment they are given."""
+
+    def _assert_reported(self, folder, out, err):
+        where, probe, given = out.decode().split('|')
+        self.assertTrue(os.path.samefile(folder, where), where)
+        self.assertEqual(('set', 'handed'), (probe, given))
+        self.assertEqual(b'complaint', err)
+
+    def test_popen(self):
+        folder = tempfile.mkdtemp(dir=self.tmp_dir)
+        child = process.popen(
+            [sys.executable, '-c', _REPORTER], stdin=process.PIPE,
+            stdout=process.PIPE, stderr=process.PIPE, workdir=folder,
+            env=dict(os.environ, MCOMIX_PROBE='set'))
+        out, err = child.communicate(b'handed', timeout=60)
+        self._assert_reported(folder, out, err)
+
+    def test_call(self):
+        folder = tempfile.mkdtemp(dir=self.tmp_dir)
+        given = os.path.join(self.tmp_dir, 'given')
+        with open(given, 'wb') as stream:
+            stream.write(b'handed')
+        with open(given, 'rb') as stdin, \
+                tempfile.TemporaryFile(dir=self.tmp_dir) as stdout, \
+                tempfile.TemporaryFile(dir=self.tmp_dir) as stderr:
+            self.assertTrue(process.call(
+                [sys.executable, '-c', _REPORTER], stdin=stdin,
+                stdout=stdout, stderr=stderr, workdir=folder,
+                env=dict(os.environ, MCOMIX_PROBE='set')))
+            stdout.seek(0)
+            stderr.seek(0)
+            self._assert_reported(folder, stdout.read(), stderr.read())
+
+    def test_call_says_whether_the_child_succeeded(self):
+        self.assertTrue(process.call([sys.executable, '-c', 'pass']))
+        self.assertFalse(process.call(
+            [sys.executable, '-c', 'raise SystemExit(3)']))
+
 
 class LaunchTest(MComixTest):
 
@@ -203,6 +280,15 @@ class LaunchTest(MComixTest):
         with self._as_main('mcomix.__main__'):
             process.launch_mcomix('/books/one.cbz')
         self.assertIn('--new-window', self.spawned[0])
+
+    @unittest.skipIf(sys.platform == 'win32', 'Win32Popen is used there')
+    def test_its_output_goes_nowhere(self):
+        """Not to the pipe popen() makes by default, which nobody reads:
+        filled, it stops the new program at its next line of log."""
+        with unittest.mock.patch.object(process, 'popen') as spawn, \
+                self._as_main('mcomix.__main__'):
+            process.launch_mcomix('/books/one.cbz')
+        self.assertEqual({'stdout': process.NULL}, spawn.call_args.kwargs)
 
     @unittest.skipIf(sys.platform == 'win32', 'Win32Popen is used there')
     def test_the_file_is_the_last_argument(self):
