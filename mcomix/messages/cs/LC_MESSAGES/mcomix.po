@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-28 13:01+0100\n"
+"POT-Creation-Date: 2026-11-28 13:09+0100\n"
 "PO-Revision-Date: 2009-01-25 21:54+0100\n"
 "Last-Translator: Jan Nekvasil <jan.nekvasil@gmail.com>\n"
 "Language-Team: \n"
@@ -52,7 +52,7 @@ msgstr "! Nepodařilo se přečíst %s"
 
 #
 # File: src/comment.py, line: 53
-#: mcomix/archive_packer.py:731 mcomix/file_actions.py:1542
+#: mcomix/archive_packer.py:731 mcomix/file_actions.py:1545
 #: mcomix/library/book_area.py:1448
 #, python-format
 msgid "! Could not remove %(file)s: %(error)s"
@@ -92,12 +92,12 @@ msgid "! Could not parse bookmarks file %s"
 msgstr "! Nepodařilo se zpracovat soubor záložek %s"
 
 #: mcomix/bookmark_backend.py:487 mcomix/book_store.py:83
-#: mcomix/file_actions.py:1304
+#: mcomix/file_actions.py:1307
 #, python-format
 msgid "! Could not save %(file)s to %(directory)s: %(error)s"
 msgstr "! Nepodařilo se uložit %(file)s do %(directory)s: %(error)s"
 
-#: mcomix/bookmark_backend.py:493 mcomix/file_actions.py:1314
+#: mcomix/bookmark_backend.py:493 mcomix/file_actions.py:1317
 #: mcomix/webp_dialog.py:527
 #, python-format
 msgid "Could not save \"%(file)s\" to \"%(directory)s\""
@@ -116,8 +116,8 @@ msgstr "_Ne"
 #
 # File: src/preferences.py, line: 230
 #: mcomix/bookmark_backend.py:510 mcomix/edit_dialog.py:65
-#: mcomix/file_actions.py:900 mcomix/file_actions.py:1355
-#: mcomix/file_actions.py:1528 mcomix/file_chooser_base_dialog.py:237
+#: mcomix/file_actions.py:900 mcomix/file_actions.py:1358
+#: mcomix/file_actions.py:1531 mcomix/file_chooser_base_dialog.py:237
 #: mcomix/file_chooser_base_dialog.py:242
 #: mcomix/file_chooser_library_dialog.py:42 mcomix/message_dialog.py:26
 #: mcomix/message_dialog.py:29 mcomix/pageselect.py:38
@@ -245,7 +245,7 @@ msgstr "_Odebrat záložky této knihy..."
 msgid "_Edit bookmarks..."
 msgstr "_Upravit záložky..."
 
-#: mcomix/bookmark_menu.py:202 mcomix/file_actions.py:1588
+#: mcomix/bookmark_menu.py:202 mcomix/file_actions.py:1591
 #, python-format
 msgid "Remove the bookmarks in \"%s\"?"
 msgstr "Smazat záložky v „%s“?"
@@ -517,8 +517,8 @@ msgstr "_Invertovat barvy obrázku"
 msgid "Invert (negate) image colors."
 msgstr "Invertuje (neguje) barvy obrázku."
 
-#: mcomix/file_actions.py:378 mcomix/file_actions.py:1731
-#: mcomix/file_actions.py:1861
+#: mcomix/file_actions.py:378 mcomix/file_actions.py:1734
+#: mcomix/file_actions.py:1864
 msgid "A file of that name is there already."
 msgstr "Soubor s tímto názvem už tam je."
 
@@ -605,52 +605,57 @@ msgstr ""
 "Zapsal jej jiný program. Uložení jej nahradí knihou tak, jak ji ukazuje "
 "MComix, a to, co onen program změnil, se ztratí."
 
-#: mcomix/file_actions.py:1198
+#: mcomix/file_actions.py:1041
+#, python-format
+msgid "Saved as %s"
+msgstr "Uloženo jako %s"
+
+#: mcomix/file_actions.py:1201
 #, python-format
 msgid "Could not show the folder: %s"
 msgstr "Složku se nepodařilo zobrazit: %s"
 
-#: mcomix/file_actions.py:1245 mcomix/keybindings.py:167
+#: mcomix/file_actions.py:1248 mcomix/keybindings.py:167
 msgid "Save page as"
 msgstr "Uložit stránku jako"
 
-#: mcomix/file_actions.py:1308 mcomix/file_actions.py:1863
+#: mcomix/file_actions.py:1311 mcomix/file_actions.py:1866
 #, python-format
 msgid "There is not enough room there: the file is %s."
 msgstr "Není tam dost místa: soubor má %s."
 
-#: mcomix/file_actions.py:1345
+#: mcomix/file_actions.py:1348
 msgid "There is no trash for this folder, so it cannot be restored."
 msgstr "Tato složka nemá koš, takže nepůjde obnovit."
 
-#: mcomix/file_actions.py:1353
+#: mcomix/file_actions.py:1356
 #, python-format
 msgid "Delete \"%s\"?"
 msgstr "Smazat „%s“?"
 
-#: mcomix/file_actions.py:1354
+#: mcomix/file_actions.py:1357
 msgid "The file is moved to the trash."
 msgstr "Soubor bude přesunut do koše."
 
-#: mcomix/file_actions.py:1356
+#: mcomix/file_actions.py:1359
 msgid "_Move to Trash"
 msgstr "Pře_sunout do koše"
 
-#: mcomix/file_actions.py:1386 mcomix/library/book_area.py:1385
+#: mcomix/file_actions.py:1389 mcomix/library/book_area.py:1385
 msgid "It does not go to the trash and cannot be restored."
 msgstr "Nepřesune se do koše a nepůjde obnovit."
 
-#: mcomix/file_actions.py:1394 mcomix/library/book_area.py:1377
+#: mcomix/file_actions.py:1397 mcomix/library/book_area.py:1377
 #, python-format
 msgid "Delete \"%s\" permanently?"
 msgstr "Trvale smazat „%s“?"
 
-#: mcomix/file_actions.py:1501
+#: mcomix/file_actions.py:1504
 #, python-format
 msgid "Could not move \"%s\" to the trash"
 msgstr "Nepodařilo se přesunout „%s“ do koše"
 
-#: mcomix/file_actions.py:1505 mcomix/library/book_area.py:1462
+#: mcomix/file_actions.py:1508 mcomix/library/book_area.py:1462
 #, python-format
 msgid "%d book could not be moved to the trash."
 msgid_plural "%d books could not be moved to the trash."
@@ -658,23 +663,23 @@ msgstr[0] "Nepodařilo se přesunout %d knihu do koše."
 msgstr[1] "Nepodařilo se přesunout %d knihy do koše."
 msgstr[2] "Nepodařilo se přesunout %d knih do koše."
 
-#: mcomix/file_actions.py:1509
+#: mcomix/file_actions.py:1512
 msgid "Delete it permanently instead? It cannot be restored."
 msgid_plural "Delete them permanently instead? They cannot be restored."
 msgstr[0] "Smazat jej místo toho trvale? Nepůjde jej obnovit."
 msgstr[1] "Smazat je místo toho trvale? Nepůjde je obnovit."
 msgstr[2] "Smazat je místo toho trvale? Nepůjde je obnovit."
 
-#: mcomix/file_actions.py:1529
+#: mcomix/file_actions.py:1532
 msgid "_Delete Permanently"
 msgstr "_Smazat trvale"
 
-#: mcomix/file_actions.py:1552
+#: mcomix/file_actions.py:1555
 #, python-format
 msgid "Could not delete \"%s\""
 msgstr "Nepodařilo se smazat „%s“"
 
-#: mcomix/file_actions.py:1558
+#: mcomix/file_actions.py:1561
 #, python-format
 msgid "%d book could not be deleted."
 msgid_plural "%d books could not be deleted."
@@ -682,7 +687,7 @@ msgstr[0] "Nepodařilo se smazat %d knihu."
 msgstr[1] "Nepodařilo se smazat %d knihy."
 msgstr[2] "Nepodařilo se smazat %d knih."
 
-#: mcomix/file_actions.py:1584
+#: mcomix/file_actions.py:1587
 #, python-format
 msgid "The file is gone, and its %d bookmark cannot be opened any more."
 msgid_plural ""
@@ -691,21 +696,21 @@ msgstr[0] "Soubor je pryč a jeho %d záložku už nelze otevřít."
 msgstr[1] "Soubor je pryč a jeho %d záložky už nelze otevřít."
 msgstr[2] "Soubor je pryč a jeho %d záložek už nelze otevřít."
 
-#: mcomix/file_actions.py:1684 mcomix/file_actions.py:1857
+#: mcomix/file_actions.py:1687 mcomix/file_actions.py:1860
 #: mcomix/thumbnail_tools.py:385
 #, python-format
 msgid "! Could not move %(file)s to %(directory)s: %(error)s"
 msgstr "! Nepodařilo se přesunout %(file)s do %(directory)s: %(error)s"
 
-#: mcomix/file_actions.py:1735
+#: mcomix/file_actions.py:1738
 msgid "Rename archive?"
 msgstr "Přejmenovat archiv?"
 
-#: mcomix/file_actions.py:1736
+#: mcomix/file_actions.py:1739
 msgid "Please enter a new name for this archive."
 msgstr "Zadejte nové jméno tohoto archivu."
 
-#: mcomix/file_actions.py:1869
+#: mcomix/file_actions.py:1872
 #, python-format
 msgid "Could not move \"%(file)s\" to \"%(directory)s\""
 msgstr "Nepodařilo se přesunout „%(file)s“ do „%(directory)s“"
@@ -2718,7 +2723,9 @@ msgstr ""
 msgid ""
 "Every archive is written as a ZIP, and a RAR, 7z or tar book saved in place "
 "is replaced by a ZIP of its name ending in .cbz or .zip."
-msgstr "Každý archiv se zapíše jako ZIP a kniha RAR, 7z nebo tar uložená na místě se nahradí ZIPem svého jména s koncovkou .cbz nebo .zip."
+msgstr ""
+"Každý archiv se zapíše jako ZIP a kniha RAR, 7z nebo tar uložená na místě se "
+"nahradí ZIPem svého jména s koncovkou .cbz nebo .zip."
 
 #: mcomix/preferences_dialog.py:940
 msgid "For a few seconds after a page turn"

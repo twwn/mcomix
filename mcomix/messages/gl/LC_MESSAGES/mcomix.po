@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-28 13:01+0100\n"
+"POT-Creation-Date: 2026-11-28 13:09+0100\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Marcelo Góes <vanquirius@gentoo.org>\n"
 "Language-Team: \n"
@@ -46,7 +46,7 @@ msgstr "! Erro de extracción: %s"
 msgid "! Could not read %s"
 msgstr "! Non foi posible ler %s"
 
-#: mcomix/archive_packer.py:731 mcomix/file_actions.py:1542
+#: mcomix/archive_packer.py:731 mcomix/file_actions.py:1545
 #: mcomix/library/book_area.py:1448
 #, python-format
 msgid "! Could not remove %(file)s: %(error)s"
@@ -86,12 +86,12 @@ msgid "! Could not parse bookmarks file %s"
 msgstr "! Non foi posible analizar o ficheiro de favoritos %s"
 
 #: mcomix/bookmark_backend.py:487 mcomix/book_store.py:83
-#: mcomix/file_actions.py:1304
+#: mcomix/file_actions.py:1307
 #, python-format
 msgid "! Could not save %(file)s to %(directory)s: %(error)s"
 msgstr "! Non foi posible gardar %(file)s en %(directory)s: %(error)s"
 
-#: mcomix/bookmark_backend.py:493 mcomix/file_actions.py:1314
+#: mcomix/bookmark_backend.py:493 mcomix/file_actions.py:1317
 #: mcomix/webp_dialog.py:527
 #, python-format
 msgid "Could not save \"%(file)s\" to \"%(directory)s\""
@@ -106,8 +106,8 @@ msgid "_No"
 msgstr "_Non"
 
 #: mcomix/bookmark_backend.py:510 mcomix/edit_dialog.py:65
-#: mcomix/file_actions.py:900 mcomix/file_actions.py:1355
-#: mcomix/file_actions.py:1528 mcomix/file_chooser_base_dialog.py:237
+#: mcomix/file_actions.py:900 mcomix/file_actions.py:1358
+#: mcomix/file_actions.py:1531 mcomix/file_chooser_base_dialog.py:237
 #: mcomix/file_chooser_base_dialog.py:242
 #: mcomix/file_chooser_library_dialog.py:42 mcomix/message_dialog.py:26
 #: mcomix/message_dialog.py:29 mcomix/pageselect.py:38
@@ -216,7 +216,7 @@ msgstr "_Retirar os favoritos deste libro..."
 msgid "_Edit bookmarks..."
 msgstr "_Editar os favoritos..."
 
-#: mcomix/bookmark_menu.py:202 mcomix/file_actions.py:1588
+#: mcomix/bookmark_menu.py:202 mcomix/file_actions.py:1591
 #, python-format
 msgid "Remove the bookmarks in \"%s\"?"
 msgstr "Eliminar os favoritos de «%s»?"
@@ -447,8 +447,8 @@ msgstr "_Inverter as cores da imaxe"
 msgid "Invert (negate) image colors."
 msgstr "Inverte (nega) as cores da imaxe."
 
-#: mcomix/file_actions.py:378 mcomix/file_actions.py:1731
-#: mcomix/file_actions.py:1861
+#: mcomix/file_actions.py:378 mcomix/file_actions.py:1734
+#: mcomix/file_actions.py:1864
 msgid "A file of that name is there already."
 msgstr "Xa existe un ficheiro con ese nome."
 
@@ -536,81 +536,86 @@ msgstr ""
 "Outro programa escribiuno. Gardar substitúeo polo libro tal como o mostra "
 "MComix, e pérdese o que cambiou ese programa."
 
-#: mcomix/file_actions.py:1198
+#: mcomix/file_actions.py:1041
+#, python-format
+msgid "Saved as %s"
+msgstr "Gardado como %s"
+
+#: mcomix/file_actions.py:1201
 #, python-format
 msgid "Could not show the folder: %s"
 msgstr "Non foi posible mostrar o directorio: %s"
 
-#: mcomix/file_actions.py:1245 mcomix/keybindings.py:167
+#: mcomix/file_actions.py:1248 mcomix/keybindings.py:167
 msgid "Save page as"
 msgstr "Gardar a páxina como"
 
-#: mcomix/file_actions.py:1308 mcomix/file_actions.py:1863
+#: mcomix/file_actions.py:1311 mcomix/file_actions.py:1866
 #, python-format
 msgid "There is not enough room there: the file is %s."
 msgstr "Non hai espazo abondo: o ficheiro ocupa %s."
 
-#: mcomix/file_actions.py:1345
+#: mcomix/file_actions.py:1348
 msgid "There is no trash for this folder, so it cannot be restored."
 msgstr "Este directorio non ten lixo, así que non se poderá recuperar."
 
-#: mcomix/file_actions.py:1353
+#: mcomix/file_actions.py:1356
 #, python-format
 msgid "Delete \"%s\"?"
 msgstr "Quere eliminar «%s»?"
 
-#: mcomix/file_actions.py:1354
+#: mcomix/file_actions.py:1357
 msgid "The file is moved to the trash."
 msgstr "O ficheiro móvese ao lixo."
 
-#: mcomix/file_actions.py:1356
+#: mcomix/file_actions.py:1359
 msgid "_Move to Trash"
 msgstr "_Mover ao lixo"
 
-#: mcomix/file_actions.py:1386 mcomix/library/book_area.py:1385
+#: mcomix/file_actions.py:1389 mcomix/library/book_area.py:1385
 msgid "It does not go to the trash and cannot be restored."
 msgstr "Non se move ao lixo e non se poderá recuperar."
 
-#: mcomix/file_actions.py:1394 mcomix/library/book_area.py:1377
+#: mcomix/file_actions.py:1397 mcomix/library/book_area.py:1377
 #, python-format
 msgid "Delete \"%s\" permanently?"
 msgstr "Quere eliminar «%s» permanentemente?"
 
-#: mcomix/file_actions.py:1501
+#: mcomix/file_actions.py:1504
 #, python-format
 msgid "Could not move \"%s\" to the trash"
 msgstr "Non foi posible mover «%s» ao lixo"
 
-#: mcomix/file_actions.py:1505 mcomix/library/book_area.py:1462
+#: mcomix/file_actions.py:1508 mcomix/library/book_area.py:1462
 #, python-format
 msgid "%d book could not be moved to the trash."
 msgid_plural "%d books could not be moved to the trash."
 msgstr[0] "Non foi posible mover %d libro ao lixo."
 msgstr[1] "Non foi posible mover %d libros ao lixo."
 
-#: mcomix/file_actions.py:1509
+#: mcomix/file_actions.py:1512
 msgid "Delete it permanently instead? It cannot be restored."
 msgid_plural "Delete them permanently instead? They cannot be restored."
 msgstr[0] "Quere eliminalo permanentemente? Non se poderá recuperar."
 msgstr[1] "Quere eliminalos permanentemente? Non se poderán recuperar."
 
-#: mcomix/file_actions.py:1529
+#: mcomix/file_actions.py:1532
 msgid "_Delete Permanently"
 msgstr "_Eliminar permanentemente"
 
-#: mcomix/file_actions.py:1552
+#: mcomix/file_actions.py:1555
 #, python-format
 msgid "Could not delete \"%s\""
 msgstr "Non foi posible eliminar «%s»"
 
-#: mcomix/file_actions.py:1558
+#: mcomix/file_actions.py:1561
 #, python-format
 msgid "%d book could not be deleted."
 msgid_plural "%d books could not be deleted."
 msgstr[0] "Non foi posible eliminar %d libro."
 msgstr[1] "Non foi posible eliminar %d libros."
 
-#: mcomix/file_actions.py:1584
+#: mcomix/file_actions.py:1587
 #, python-format
 msgid "The file is gone, and its %d bookmark cannot be opened any more."
 msgid_plural ""
@@ -618,21 +623,21 @@ msgid_plural ""
 msgstr[0] "O ficheiro xa non está, e o seu %d favorito non se pode abrir."
 msgstr[1] "O ficheiro xa non está, e os seus %d favoritos non se poden abrir."
 
-#: mcomix/file_actions.py:1684 mcomix/file_actions.py:1857
+#: mcomix/file_actions.py:1687 mcomix/file_actions.py:1860
 #: mcomix/thumbnail_tools.py:385
 #, python-format
 msgid "! Could not move %(file)s to %(directory)s: %(error)s"
 msgstr "! Non foi posible mover %(file)s a %(directory)s: %(error)s"
 
-#: mcomix/file_actions.py:1735
+#: mcomix/file_actions.py:1738
 msgid "Rename archive?"
 msgstr "Renomear o arquivo?"
 
-#: mcomix/file_actions.py:1736
+#: mcomix/file_actions.py:1739
 msgid "Please enter a new name for this archive."
 msgstr "Por favor, introduza un novo nome para este arquivo."
 
-#: mcomix/file_actions.py:1869
+#: mcomix/file_actions.py:1872
 #, python-format
 msgid "Could not move \"%(file)s\" to \"%(directory)s\""
 msgstr "Non foi posible mover «%(file)s» a «%(directory)s»"
@@ -2413,7 +2418,9 @@ msgstr ""
 msgid ""
 "Every archive is written as a ZIP, and a RAR, 7z or tar book saved in place "
 "is replaced by a ZIP of its name ending in .cbz or .zip."
-msgstr "Cada arquivo escríbese como ZIP, e un libro RAR, 7z ou tar gardado no seu sitio substitúese por un ZIP do seu nome rematado en .cbz ou .zip."
+msgstr ""
+"Cada arquivo escríbese como ZIP, e un libro RAR, 7z ou tar gardado no seu "
+"sitio substitúese por un ZIP do seu nome rematado en .cbz ou .zip."
 
 #: mcomix/preferences_dialog.py:940
 msgid "For a few seconds after a page turn"

@@ -1037,6 +1037,9 @@ class FileActions:
         follow_book(path, target)
         follow_pages(target, renamed)
         self._book_moved(path, target, followed=True)
+        # The reader asked for a save, not a new name: say where it went.
+        self._window.osd.show(_('Saved as %s') % i18n.to_display_string(
+            os.path.basename(target)))
 
     def can_store_pages_as_webp(self) -> bool:
         """Whether "Make pages smaller without loss..." applies to the open book.

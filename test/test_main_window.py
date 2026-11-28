@@ -2988,7 +2988,9 @@ class MainWindowTest(MComixTest):
         prefs['save archive format'] = constants.SAVE_ALL_AS_ZIP
         self.assertEqual(constants.ZIP, actions.writeable_archive_type())
         self._remove_first_page_quietly()
-        self.assertTrue(actions.save_archive(), 'the save failed')
+        with unittest.mock.patch.object(self.window.osd, 'show') as shown:
+            self.assertTrue(actions.save_archive(), 'the save failed')
+        shown.assert_called_once_with('Saved as Book.cbz')
         target = os.path.join(self.tmp_dir, 'Book.cbz')
         self.assertFalse(os.path.exists(source))
         with zipfile.ZipFile(target) as written:
