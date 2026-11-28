@@ -144,7 +144,82 @@ class OpenWithCommandTest(MComixTest):
         self.assertTrue(quoted.is_valid_workdir(
             _StubWindow('page.jpg', '/books/page.jpg')))
 
-# vim: expandtab:sw=4:ts=4
+    def test_a_working_directory_left_empty_is_valid_only_where_allowed(self):
+        command = openwith.OpenWithCommand('test', 'viewer', '  ', False)
+        window = _StubWindow('page.jpg', '/books/page.jpg')
+        self.assertFalse(command.is_valid_workdir(window))
+        self.assertTrue(command.is_valid_workdir(window, allow_empty=True))
+
+    @unittest.skipIf(sys.platform == 'win32', 'no file to run at a known path')
+    def test_a_working_directory_that_is_a_program_is_not_valid(self):
+        command = openwith.OpenWithCommand('test', 'viewer', sys.executable, False)
+        self.assertFalse(command.is_valid_workdir(
+            _StubWindow('page.jpg', '/books/page.jpg')))
+
+    def test_spaces_and_tabs_between_arguments_make_no_empty_ones(self):
+        self.assertEqual(['viewer', 'page.jpg'], self._parse('viewer  %f'))
+        self.assertEqual(['viewer', '-x', 'page.jpg'],
+                         self._parse('viewer\t-x\t\t%f'))
+
+    def test_a_variable_inside_an_argument_keeps_what_stands_around_it(self):
+        self.assertEqual(['viewer', '--file=page.jpg;'],
+                         self._parse('viewer --file=%f;'))
+
+    def test_another_text_than_the_command_is_parsed_where_given(self):
+        command = openwith.OpenWithCommand('test', 'viewer %f', '', False)
+        self.assertEqual(['other', os.path.normpath('/books/page.jpg')], command.parse(
+            _StubWindow('page.jpg', '/books/page.jpg'), text='other %F'))
+
+    def test_a_label_of_dashes_alone_is_a_separator(self):
+        for label, separator in (('---', True), (' - ', True),
+                                 ('-x-', False), ('', False)):
+            with self.subTest(label=label):
+                self.assertEqual(separator, openwith.OpenWithCommand(
+                    label, '', '', False).is_separator())
+
+
+class _StubEmptyImageHandler(_StubImageHandler):
+
+    """An archive that holds no page: there is a path, but no page."""
+
+    def get_current_page(self):
+        return 0
+
+
+class ContextTest(MComixTest):
+
+    """What a variable may stand for depends on what is open, and not
+    only on whether it has a path to answer with."""
+
+    def _expand(self, variable, window):
+        return openwith.OpenWithCommand(
+            'test', 'viewer %' + variable, '', False).parse(window)[1]
+
+    def test_an_archive_without_pages_has_a_name_but_no_page(self):
+        window = _StubWindow('cats.jpg', '/tmp/extracted/cats.jpg')
+        window.filehandler = _StubArchiveHandler('/home/user/comic.zip')
+        window.imagehandler = _StubEmptyImageHandler(
+            'cats.jpg', '/tmp/extracted/cats.jpg')
+        self.assertEqual('comic.zip', self._expand('a', window))
+        self.assertEqual('/home/user/comic.zip', self._expand('A', window))
+        for variable in 'fdbsFDBS':
+            with self.subTest(variable=variable):
+                with self.assertRaisesRegex(openwith.OpenWithException,
+                                            'File-related'):
+                    self._expand(variable, window)
+
+    def test_nothing_open_has_neither(self):
+        window = _StubWindow('cats.jpg', '/tmp/extracted/cats.jpg')
+        window.filehandler = _StubArchiveHandler('/home/user/comic.zip')
+        window.filehandler.file_loaded = False
+        self.assertEqual(os.sep, self._expand('/', window))
+        for variable, complaint in (('f', 'File-related'), ('F', 'File-related'),
+                                    ('a', 'Archive-related'),
+                                    ('C', 'Archive-related')):
+            with self.subTest(variable=variable):
+                with self.assertRaisesRegex(openwith.OpenWithException,
+                                            complaint):
+                    self._expand(variable, window)
 
 
 class _Osd:
@@ -393,7 +468,8 @@ class DocumentedVariablesTest(MComixTest):
         window = _StubWindow('cats.jpg', '/home/user/Downloads/cats.jpg')
         for row in self.page['Archive']:
             with self.subTest(variable=row[0]):
-                with self.assertRaises(openwith.OpenWithException):
+                with self.assertRaisesRegex(openwith.OpenWithException,
+                                            'Archive-related'):
                     self._expand(row[0], window)
 
 
@@ -429,3 +505,5 @@ class WorkingDirectoryTest(MComixTest):
         with open(written) as where:
             self.assertEqual(os.path.realpath(workdir),
                              os.path.realpath(where.read().strip()))
+
+# vim: expandtab:sw=4:ts=4
