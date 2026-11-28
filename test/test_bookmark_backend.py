@@ -442,6 +442,117 @@ class MovedBookTest(_StoreTest):
         self.assertEqual(written, [])
 
 
+class OpenBookTest(_StoreTest):
+
+    """The store's bookmarks of the archive open in its window: found
+    there by their page's name within it, followed when the archive is
+    written again, moved or its pages removed."""
+
+    BOOK = os.path.abspath('/books/a.cbz')
+
+    def setUp(self):
+        super().setUp()
+        self.window = mock.Mock()
+        handler = self.window.filehandler
+        handler.archive_type = constants.ZIP
+        self.base = self.BOOK
+        handler.get_path_to_base.side_effect = lambda: self.base
+        self.members = {'01.png': 1, '02.png': 2, '05.png': 5}
+        handler.page_of_member.side_effect = self.members.get
+        self.store.initialize(self.window)
+        self.addCleanup(self.store.forget, self.window)
+        self.written = 0
+        save = self.store._save
+
+        def counted():
+            self.written += 1
+            save()
+        self.enterContext(mock.patch.object(self.store, '_save', counted))
+
+    def _add(self, page, member=None, path=BOOK, note=''):
+        self.store.add_bookmark_by_values(
+            os.path.basename(path), path, page, 20, constants.ZIP,
+            datetime.datetime(2026, 1, 1), member=member, note=note)
+        return self.store._bookmarks[-1]
+
+    def test_a_bookmark_added_by_its_values_keeps_every_one(self):
+        bookmark = self._add(3, member='05.png', note='a note')
+        self.assertEqual(('a.cbz', self.BOOK, 3, 20, constants.ZIP,
+                          datetime.datetime(2026, 1, 1)), bookmark.pack())
+        self.assertEqual('05.png', bookmark.get_member())
+        self.assertEqual('a note', bookmark.get_note())
+        # Found in the book open in the store's window, by its name.
+        self.assertEqual(5, bookmark.page_in_open_book())
+        self.assertEqual('', self._add(4).get_note())
+
+    def test_a_moved_book_s_bookmarks_keep_their_page_s_name(self):
+        self._add(3, member='05.png', note='a note')
+        moved = os.path.abspath('/elsewhere/a.cbz')
+        self.store.update_path(self.BOOK, moved)
+        bookmark, = self.store._bookmarks
+        self.assertEqual((moved, constants.ZIP),
+                         (bookmark.pack()[1], bookmark.pack()[4]))
+        self.assertEqual('05.png', bookmark.get_member())
+        self.base = moved
+        self.assertEqual(5, bookmark.page_in_open_book())
+
+    def test_a_book_written_again_takes_its_pages_new_names(self):
+        renamed = self._add(1, member='01.png', note='kept')
+        same = self._add(2, member='02.png')
+        gone = self._add(4, member='04.png')
+        numbered = self._add(6)
+        other = self._add(1, member='01.png',
+                          path=os.path.abspath('/books/b.cbz'))
+        self.written = 0
+        self.store.rename_members(self.BOOK, {
+            '01.png': '05.png', '02.png': '02.png'})
+        self.assertEqual(1, self.written)
+        follows, kept, lost, by_number, untouched = self.store._bookmarks
+        self.assertEqual(('05.png', 'kept'),
+                         (follows.get_member(), follows.get_note()))
+        self.assertEqual(renamed.pack(), follows.pack())
+        self.assertEqual(5, follows.page_in_open_book())
+        self.assertIs(same, kept)
+        # Its page is not in the archive any more: it goes by its number.
+        self.assertIsNone(lost.get_member())
+        self.assertEqual(gone.pack(), lost.pack())
+        self.assertEqual(4, lost.page_in_open_book())
+        self.assertIs(numbered, by_number)
+        self.assertIs(other, untouched)
+
+    def test_a_book_written_again_with_no_page_renamed_writes_nothing(self):
+        self._add(2, member='02.png')
+        self._add(3)
+        self.written = 0
+        self.store.rename_members(self.BOOK, {'02.png': '02.png'})
+        self.assertEqual(0, self.written)
+
+    def test_the_pages_marked_are_those_of_the_book_open(self):
+        self._add(1, member='05.png')
+        self._add(2)
+        self._add(2, member='02.png')
+        other = self._add(3, path=os.path.abspath('/books/b.cbz'))
+        self.assertEqual({2, 5}, self.store.pages_marked())
+        self.store.remove_for_page(2)
+        self.assertEqual({5}, self.store.pages_marked())
+        self.assertEqual(2, len(self.store._bookmarks))
+        self.store.remove_for_path(self.BOOK)
+        self.assertEqual([other], self.store._bookmarks)
+        self.assertFalse(self.store.is_empty())
+        self.store.remove_for_path(other.pack()[1])
+        self.assertTrue(self.store.is_empty())
+
+    def test_the_store_stays_with_the_window_that_took_it(self):
+        self.store.initialize(mock.Mock())
+        self.assertIs(self.window, self.store._window)
+        self.assertIs(self.window.filehandler, self.store._file_handler)
+        self.assertIs(self.window.imagehandler, self.store._image_handler)
+
+    def test_a_bookmark_added_with_no_window_is_in_no_open_book(self):
+        self.store.forget(self.window)
+        self.assertIsNone(self._add(1, member='01.png').page_in_open_book())
+
+
 class WindowAfterWindowTest(_StoreTest):
 
     """The store is one for the process, and outlives the window that
