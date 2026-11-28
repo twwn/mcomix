@@ -339,13 +339,14 @@ class KfxTest(MComixTest):
         self.addCleanup(patch.stop)
 
     def tiled(self, padding, primary=False, missing=(), stored_as=PNG,
-              encode=lambda image: picture(image=image, format='PNG')):
-        """A comic of one page whose picture, 23 by 17, is cut into tiles
-        of 10 by 6 overlapping by <padding>, the resolution shown or
-        the page's own; and the picture.  The tiles are <stored_as>,
-        each written by <encode>."""
-        image = gradient(23, 17)
-        width, height, size = 23, 17, (10, 6)
+              encode=lambda image: picture(image=image, format='PNG'),
+              width=23, height=17):
+        """A comic of one page whose picture, <width> by <height>, is cut
+        into tiles of 10 by 6 overlapping by <padding>, the resolution
+        shown or the page's own; and the picture.  The tiles are
+        <stored_as>, each written by <encode>."""
+        image = gradient(width, height)
+        size = (10, 6)
         book = Book()
         rows = []
         for top in range(0, height, size[1]):
@@ -397,6 +398,18 @@ class KfxTest(MComixTest):
         shown = Image.open(io.BytesIO(self.extracted(archive, 'page00001.png')))
         self.assertEqual((10, 6, 20, 12), ImageChops.difference(
             image, shown.convert('RGB')).getbbox())
+        self.assertEqual((255, 255, 255), shown.convert('RGB').getpixel((15, 9)))
+
+    def test_tiles_in_grey_and_a_last_cell_one_pixel_wide(self):
+        """Tiles in grey make a picture in grey, and a last column or row
+        of the grid one pixel across is drawn as any other."""
+        archive, image = self.tiled(
+            2, width=21, height=13,
+            encode=lambda image: picture(image=image.convert('L'), format='PNG'))
+        shown = Image.open(io.BytesIO(self.extracted(archive, 'page00001.png')))
+        self.assertEqual('L', shown.mode)
+        self.assertEqual((21, 13), shown.size)
+        self.assertIsNone(ImageChops.difference(image.convert('L'), shown).getbbox())
 
     @with_jxrlib
     def test_jpeg_xr(self):
@@ -843,6 +856,28 @@ class SplitBookTest(MComixTest):
             self.assertTrue(archive_tools.is_later_volume(meta))
             self.assertEqual(2, read.call_count)
 
+    def test_the_folders_under_it_are_indexed_too(self):
+        """A folder of the apps' kind is indexed with its assets,
+        attachables and assets/attachables, which need not all be there;
+        a change in one of them is seen as one in the folder itself is,
+        and a file there that is no container hides none of the rest."""
+        main, metadata, resources = split_book([picture()])
+        self.write({'apps/CR!META.kfx': metadata,
+                    'apps/assets/CR!RES.kfx': resources,
+                    'apps/assets/attachables/CR!JUNK.kfx': b'no container'})
+        folder = os.path.join(self.tmp_dir, 'apps')
+        folders = [folder, os.path.join(folder, 'assets'),
+                   os.path.join(folder, 'assets', 'attachables')]
+        written = os.stat(folder).st_mtime_ns - 3_600_000_000_000
+        for each in folders:
+            os.utime(each, ns=(written, written))
+        meta = os.path.join(folder, 'CR!META.kfx')
+        self.assertFalse(archive_tools.is_later_volume(meta))
+        self.write({'apps/assets/attachables/CR!MAIN.kfx': main})
+        written += 1_000_000_000
+        os.utime(folders[2], ns=(written, written))
+        self.assertTrue(archive_tools.is_later_volume(meta))
+
     def test_a_book_of_one_container_looks_no_further(self):
         """A book in one container is that container, whatever lies
         beside it."""
@@ -867,6 +902,8 @@ class SplitBookTest(MComixTest):
             ({'meta.kfx': metadata, 'res.kfx': resources,
               'main.kfx': kfx.DRM_SIGNATURE + bytes(100)}, True),
             ({'meta.kfx': metadata, 'res.kfx': resources, 'voucher': b''}, True),
+            ({'meta.kfx': metadata, 'res.kfx': resources,
+              'B000000001_EBOK.voucher': b''}, True),
             ({'meta.kfx': metadata, 'res.kfx': resources}, False),
         )
         for number, (files, refused) in enumerate(cases):
