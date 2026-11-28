@@ -262,9 +262,13 @@ class ConvertTest(_BookTest):
 
 class DamagedTest(_BookTest):
 
-    """A file in the archive that cannot be read is left out of it,
-    rather than costing the whole book: every other page was lost with
-    it before, the book reported as not written."""
+    """A file in the archive that cannot be read leaves the book as it
+    was: written over, the archive would lose what can still be got out
+    of the file.  A shrink, whose old archive goes to the trash, leaves
+    the file out instead and writes the rest of the book, rather than
+    costing all of it."""
+
+    SHRINK = Shrink(limit=100, quality=80)
 
     def damaged_book(self, damaged='02.png'):
         """A ZIP of three PNG pages and a text, the bytes of <damaged>
@@ -275,9 +279,39 @@ class DamagedTest(_BookTest):
         damage_member(path, damaged)
         return path
 
-    def test_a_damaged_page_is_left_out(self):
+    def shrunk(self, path):
+        return webp_books.convert(path, self.stop, shrink=self.SHRINK)
+
+    def test_a_book_with_a_damaged_page_is_left_as_it_was(self):
+        """Converted or repacked: the repack replaces a ZIP in place,
+        or removes the old archive once the ZIP takes its place."""
         path = self.damaged_book()
-        converted = self.convert(path)
+        with open(path, 'rb') as book:
+            before = book.read()
+        for repack in (False, True):
+            with self.subTest(repack=repack), \
+                    self.assertRaises(webp_books.Skipped) as skipped:
+                webp_books.convert(path, self.stop, repack=repack)
+            self.assertTrue(skipped.exception.damaged)
+        with open(path, 'rb') as book:
+            self.assertEqual(before, book.read())
+        self.assertEqual(['book.cbz'], os.listdir(self.directory))
+
+    def test_asked_to_the_book_is_written_without_the_damaged_page(self):
+        for repack in (False, True):
+            with self.subTest(repack=repack):
+                path = self.damaged_book()
+                converted = webp_books.convert(path, self.stop,
+                                               repack=repack,
+                                               without_damaged=True)
+                self.assertEqual(['02.png'], list(converted.left_out))
+                with zipfile.ZipFile(path) as book:
+                    self.assertNotIn('02.png', book.namelist())
+                    self.assertEqual(b'notes', book.read('notes.txt'))
+
+    def test_a_damaged_page_is_left_out_of_a_shrunk_book(self):
+        path = self.damaged_book()
+        converted = self.shrunk(path)
         with zipfile.ZipFile(path) as book:
             self.assertEqual(['01.webp', '03.webp', 'notes.txt'],
                              sorted(book.namelist()))
@@ -287,6 +321,7 @@ class DamagedTest(_BookTest):
         self.assertEqual({'01.png': '01.webp', '03.png': '03.webp'},
                          converted.renamed)
         self.assertEqual(['book.cbz'], os.listdir(self.directory))
+        self.assertEqual(1, len(os.listdir(self.trash_dir)))
 
     def test_a_file_that_comes_out_as_nothing_is_left_out(self):
         """The reader's book failed with "[Errno 2] No such file or
@@ -302,7 +337,7 @@ class DamagedTest(_BookTest):
 
         with unittest.mock.patch.object(zip_archive.ZipArchive, 'extract',
                                         missing):
-            converted = self.convert(path)
+            converted = self.shrunk(path)
         self.assertEqual(['01.png', '02.png'], sorted(converted.left_out))
         with zipfile.ZipFile(path) as book:
             self.assertEqual(['03.webp', 'notes.txt'],
@@ -321,7 +356,7 @@ class DamagedTest(_BookTest):
 
         with unittest.mock.patch.object(zip_archive.ZipArchive,
                                         'iter_extract', losing):
-            converted = self.convert(path)
+            converted = self.shrunk(path)
         self.assertEqual({'01.png': 'nothing came out of it'},
                          converted.left_out)
         self.assertEqual({'02.png': '02.webp'}, converted.renamed)
@@ -590,22 +625,6 @@ class RepackTest(_BookTest):
                         else zipfile.ZIP_STORED) for name in members},
                 {info.filename: info.compress_type
                  for info in book.infolist()})
-
-    def test_a_book_with_a_damaged_file_is_left_alone(self):
-        """The old archive is removed once the ZIP takes its place: one
-        written without the damaged file would lose it for good."""
-        path = self.zip_book({name: line_art_png() for name in
-                              ('01.png', '02.png')}
-                             | {'notes.txt': self.TEXT})
-        damage_member(path, '02.png')
-        with open(path, 'rb') as book:
-            before = book.read()
-        with self.assertRaises(webp_books.Skipped) as skipped:
-            self.convert(path)
-        self.assertTrue(skipped.exception.damaged)
-        with open(path, 'rb') as book:
-            self.assertEqual(before, book.read())
-        self.assertEqual(['book.cbz'], os.listdir(self.directory))
 
     def test_a_tar_becomes_a_zip_of_its_name(self):
         members = {'01.png': line_art_png(),

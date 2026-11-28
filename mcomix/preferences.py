@@ -66,6 +66,7 @@ Preferences = TypedDict('Preferences', {
     'keep archive format when saving': bool,
     'png pages as webp when saving': bool,
     'zip when saving': bool,
+    'write without damaged files': bool,
     'shrink page height': int,
     'shrink page quality': int,
     'auto load last file': bool,
@@ -230,6 +231,7 @@ _DEFAULTS: Preferences = {
     'keep archive format when saving': False,
     'png pages as webp when saving': False,
     'zip when saving': False,
+    'write without damaged files': False,
     # "Shrink oversized pages...": twice the height of a 4K screen,
     # which leaves room to zoom in, and a quality at
     # which a page's lines and lettering show no blocks.

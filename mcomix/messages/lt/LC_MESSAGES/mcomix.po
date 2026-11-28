@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix 1.2.1\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-28 12:23+0100\n"
+"POT-Creation-Date: 2026-11-28 12:34+0100\n"
 "PO-Revision-Date: 2016-09-18 15:30+0300\n"
 "Last-Translator: Zygimantus <zygimantus@gmail.com>\n"
 "Language-Team: \n"
@@ -99,7 +99,7 @@ msgid "! Could not save %(file)s to %(directory)s: %(error)s"
 msgstr "! Nepavyko įrašyti %(file)s į %(directory)s: %(error)s"
 
 #: mcomix/bookmark_backend.py:493 mcomix/file_actions.py:1304
-#: mcomix/webp_dialog.py:503
+#: mcomix/webp_dialog.py:515
 #, python-format
 msgid "Could not save \"%(file)s\" to \"%(directory)s\""
 msgstr "Nepavyko įrašyti „%(file)s“ į „%(directory)s“"
@@ -119,7 +119,7 @@ msgstr "_Ne"
 #: mcomix/file_chooser_library_dialog.py:42 mcomix/message_dialog.py:26
 #: mcomix/message_dialog.py:29 mcomix/pageselect.py:38
 #: mcomix/save_progress.py:121 mcomix/shrink_dialog.py:138
-#: mcomix/shrink_dialog.py:279 mcomix/webp_dialog.py:120
+#: mcomix/shrink_dialog.py:279 mcomix/webp_dialog.py:127
 #: mcomix/library/duplicates_dialog.py:237
 msgid "_Cancel"
 msgstr "Atšau_kti"
@@ -173,7 +173,7 @@ msgstr "Pa_šalinti"
 #: mcomix/bookmark_dialog.py:34 mcomix/comment_dialog.py:29
 #: mcomix/message_dialog.py:25 mcomix/preferences_dialog.py:105
 #: mcomix/properties_dialog.py:38 mcomix/shrink_dialog.py:280
-#: mcomix/webp_dialog.py:429 mcomix/library/book_check_dialog.py:180
+#: mcomix/webp_dialog.py:441 mcomix/library/book_check_dialog.py:180
 #: mcomix/library/book_properties.py:60 mcomix/library/duplicates_dialog.py:292
 #: mcomix/library/watchlist.py:41
 msgid "_Close"
@@ -320,7 +320,7 @@ msgid "Comment files"
 msgstr "Komentuoti failus"
 
 #: mcomix/edit_dialog.py:265 mcomix/file_actions.py:975
-#: mcomix/webp_dialog.py:277
+#: mcomix/webp_dialog.py:289
 #, python-format
 msgid "! Could not save the archive %(archivefile)s: %(error)s"
 msgstr "! Nepavyko išsaugoti archyvo %(archivefile)s: %(error)s"
@@ -2732,14 +2732,14 @@ msgstr "WebP k_okybė:"
 msgid "_Find Books"
 msgstr "_Ieškoti knygų"
 
-#: mcomix/shrink_dialog.py:178 mcomix/webp_dialog.py:213
+#: mcomix/shrink_dialog.py:178 mcomix/webp_dialog.py:224
 #: mcomix/library/add_progress_dialog.py:57
 #: mcomix/library/book_check_dialog.py:65
 #: mcomix/library/duplicates_dialog.py:112
 msgid "_Stop"
 msgstr "_Sustabdyti"
 
-#: mcomix/shrink_dialog.py:205 mcomix/webp_dialog.py:264
+#: mcomix/shrink_dialog.py:205 mcomix/webp_dialog.py:275
 msgid "open in the main window"
 msgstr "atverta pagrindiniame lange"
 
@@ -3469,59 +3469,59 @@ msgid "nothing installed here reads the format"
 msgstr "neįdiegta nieko, kas skaitytų šį formatą"
 
 #. TRANSLATORS: Why a book was left as it was, as the others.
-#: mcomix/webp_books.py:179 mcomix/webp_books.py:186 mcomix/webp_books.py:258
+#: mcomix/webp_books.py:179 mcomix/webp_books.py:186 mcomix/webp_books.py:261
 msgid "no page over the limit"
 msgstr "nė vieno puslapio virš ribos"
 
-#: mcomix/webp_books.py:246
+#: mcomix/webp_books.py:249
 msgid "the trash takes no files from its folder"
 msgstr "šiukšlinė nepriima failų iš savo aplanko"
 
-#: mcomix/webp_books.py:259
+#: mcomix/webp_books.py:262
 msgid "no pages"
 msgstr "nėra puslapių"
 
 #. TRANSLATORS: Why a book was left as it was, as the others.
-#: mcomix/webp_books.py:266
+#: mcomix/webp_books.py:271
 msgid "a file in it could not be read, and would be lost"
 msgstr "vieno jos failo nepavyko perskaityti, ir jis būtų prarastas"
 
-#: mcomix/webp_books.py:298
+#: mcomix/webp_books.py:303
 msgid "no page made smaller"
 msgstr "nė vienas puslapis nesumažintas"
 
-#: mcomix/webp_books.py:307
+#: mcomix/webp_books.py:312
 #, python-format
 msgid "the trash refused it: %s"
 msgstr "šiukšlinė jį atmetė: %s"
 
 #. TRANSLATORS: Why a book was left as it was, as the others.
-#: mcomix/webp_books.py:365
+#: mcomix/webp_books.py:370
 msgid "a symbolic link, which would no longer lead to it"
 msgstr "simbolinė nuoroda, kuri nebevestų į jį"
 
 #. TRANSLATORS: Why a book was left as it was, as the others; %s is
 #. a file name, such as "Book.cbz".
-#: mcomix/webp_books.py:369 mcomix/webp_books.py:393
+#: mcomix/webp_books.py:374 mcomix/webp_books.py:398
 #, python-format
 msgid "%s is there already"
 msgstr "%s jau yra"
 
 #. TRANSLATORS: Why a book was left as it was, as the others.
-#: mcomix/webp_books.py:387
+#: mcomix/webp_books.py:392
 msgid "a ZIP already, no smaller packed again"
 msgstr "jau ZIP, perpakuotas nebūtų mažesnis"
 
-#: mcomix/webp_books.py:443 mcomix/webp_books.py:472 mcomix/webp_books.py:478
-#: mcomix/webp_books.py:498 mcomix/library/book_check.py:38
+#: mcomix/webp_books.py:448 mcomix/webp_books.py:477 mcomix/webp_books.py:483
+#: mcomix/webp_books.py:503 mcomix/library/book_check.py:38
 msgid "encrypted"
 msgstr "užšifruota"
 
-#: mcomix/webp_books.py:445
+#: mcomix/webp_books.py:450
 msgid "archives inside"
 msgstr "viduje yra kitų archyvų"
 
-#: mcomix/webp_books.py:453
+#: mcomix/webp_books.py:458
 msgid "no PNG, GIF or JPEG pages"
 msgstr "nėra PNG, GIF ar JPEG puslapių"
 
@@ -3573,7 +3573,11 @@ msgstr ""
 msgid "_Make Smaller"
 msgstr "_Sumažinti"
 
-#: mcomix/webp_dialog.py:150
+#: mcomix/webp_dialog.py:123
+msgid "Also write books that have damaged files, leaving those files out"
+msgstr "Rašyti ir knygas su sugadintais failais, be tų failų"
+
+#: mcomix/webp_dialog.py:159
 #, python-format
 msgid "%(count)d book left as it was: %(reason)s"
 msgid_plural "%(count)d books left as they were: %(reason)s"
@@ -3581,7 +3585,7 @@ msgstr[0] "%(count)d knyga palikta kaip buvo: %(reason)s"
 msgstr[1] "%(count)d knygos paliktos kaip buvo: %(reason)s"
 msgstr[2] "%(count)d knygų palikta kaip buvo: %(reason)s"
 
-#: mcomix/webp_dialog.py:163
+#: mcomix/webp_dialog.py:172
 #, python-format
 msgid "Stopped with %d book not yet looked at"
 msgid_plural "Stopped with %d books not yet looked at"
@@ -3589,19 +3593,19 @@ msgstr[0] "Sustabdyta, %d knyga dar neperžiūrėta"
 msgstr[1] "Sustabdyta, %d knygos dar neperžiūrėtos"
 msgstr[2] "Sustabdyta, %d knygų dar neperžiūrėta"
 
-#: mcomix/webp_dialog.py:181
+#: mcomix/webp_dialog.py:191
 msgid "Repacking books as ZIP"
 msgstr "Knygos perpakuojamos kaip ZIP"
 
-#: mcomix/webp_dialog.py:182
+#: mcomix/webp_dialog.py:192
 msgid "Making pages smaller"
 msgstr "Puslapiai mažinami"
 
-#: mcomix/webp_dialog.py:183
+#: mcomix/webp_dialog.py:193
 msgid "Shrinking pages"
 msgstr "Dideli puslapiai mažinami"
 
-#: mcomix/webp_dialog.py:310
+#: mcomix/webp_dialog.py:322
 msgid ""
 "The disk is full. The books as they were are in the trash, which holds their "
 "room until it is emptied."
@@ -3609,11 +3613,11 @@ msgstr ""
 "Diskas pilnas. Knygos, kokios buvo, yra šiukšlinėje, kuri užima jų vietą, "
 "kol bus ištuštinta."
 
-#: mcomix/webp_dialog.py:312
+#: mcomix/webp_dialog.py:324
 msgid "The disk is full."
 msgstr "Diskas pilnas."
 
-#: mcomix/webp_dialog.py:319
+#: mcomix/webp_dialog.py:331
 #, python-format
 msgid "%(count)d book repacked as ZIP, %(size)s larger"
 msgid_plural "%(count)d books repacked as ZIP, %(size)s larger"
@@ -3621,7 +3625,7 @@ msgstr[0] "%(count)d knyga perpakuota kaip ZIP, %(size)s didesnė"
 msgstr[1] "%(count)d knygos perpakuotos kaip ZIP, %(size)s didesnės"
 msgstr[2] "%(count)d knygų perpakuota kaip ZIP, %(size)s didesnės"
 
-#: mcomix/webp_dialog.py:325
+#: mcomix/webp_dialog.py:337
 #, python-format
 msgid "%(count)d book repacked as ZIP, %(size)s smaller"
 msgid_plural "%(count)d books repacked as ZIP, %(size)s smaller"
@@ -3629,7 +3633,7 @@ msgstr[0] "%(count)d knyga perpakuota kaip ZIP, %(size)s mažesnė"
 msgstr[1] "%(count)d knygos perpakuotos kaip ZIP, %(size)s mažesnės"
 msgstr[2] "%(count)d knygų perpakuota kaip ZIP, %(size)s mažesnės"
 
-#: mcomix/webp_dialog.py:329
+#: mcomix/webp_dialog.py:341
 #, python-format
 msgid "%(count)d book shrunk, %(size)s smaller"
 msgid_plural "%(count)d books shrunk, %(size)s smaller"
@@ -3637,7 +3641,7 @@ msgstr[0] "%(count)d knyga sumažinta, %(size)s mažiau"
 msgstr[1] "%(count)d knygos sumažintos, %(size)s mažiau"
 msgstr[2] "%(count)d knygų sumažinta, %(size)s mažiau"
 
-#: mcomix/webp_dialog.py:333
+#: mcomix/webp_dialog.py:345
 #, python-format
 msgid "%(count)d book stored with WebP pages, %(size)s smaller"
 msgid_plural "%(count)d books stored with WebP pages, %(size)s smaller"
@@ -3645,7 +3649,7 @@ msgstr[0] "%(count)d knyga laikoma su WebP puslapiais, %(size)s mažiau"
 msgstr[1] "%(count)d knygos laikomos su WebP puslapiais, %(size)s mažiau"
 msgstr[2] "%(count)d knygų laikoma su WebP puslapiais, %(size)s mažiau"
 
-#: mcomix/webp_dialog.py:346
+#: mcomix/webp_dialog.py:358
 #, python-format
 msgid "%d book stored without its damaged files"
 msgid_plural "%d books stored without their damaged files"
@@ -3653,7 +3657,7 @@ msgstr[0] "%d knyga laikoma be savo sugadintų failų"
 msgstr[1] "%d knygos laikomos be savo sugadintų failų"
 msgstr[2] "%d knygų laikoma be savo sugadintų failų"
 
-#: mcomix/webp_dialog.py:383
+#: mcomix/webp_dialog.py:395
 #, python-format
 msgid "About %d minute left"
 msgid_plural "About %d minutes left"
@@ -3661,20 +3665,20 @@ msgstr[0] "Liko apie %d minutę"
 msgstr[1] "Liko apie %d minutes"
 msgstr[2] "Liko apie %d minučių"
 
-#: mcomix/webp_dialog.py:414 mcomix/webp_dialog.py:468
+#: mcomix/webp_dialog.py:426 mcomix/webp_dialog.py:480
 #, python-format
 msgid "Could not be written: %s"
 msgstr "Nepavyko įrašyti: %s"
 
-#: mcomix/webp_dialog.py:432
+#: mcomix/webp_dialog.py:444
 msgid "_Save Log…"
 msgstr "Į_rašyti žurnalą…"
 
-#: mcomix/webp_dialog.py:437
+#: mcomix/webp_dialog.py:449
 msgid "Select Books with _Errors"
 msgstr "Pažymėti knygas su _klaidomis"
 
-#: mcomix/webp_dialog.py:483
+#: mcomix/webp_dialog.py:495
 msgid "Save the log as"
 msgstr "Įrašyti žurnalą taip"
 

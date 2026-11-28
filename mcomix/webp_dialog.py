@@ -117,15 +117,24 @@ def offer(parent: Gtk.Window, books: Sequence[str],
               'without loss. Some other comic readers cannot show WebP '
               'pages.'))
         do = _('_Make Smaller')
+    # Left alone by default: the archive written over, or removed for its
+    # ZIP, would take with it what can still be got out of the file.
+    without_damaged = Gtk.CheckButton(
+        label=_('Also write books that have damaged files, leaving those '
+                'files out'),
+        active=prefs['write without damaged files'])
+    dialog.get_content_area().append(without_damaged)
     dialog.add_confirmation_buttons(_('_Cancel'), Response.CANCEL,
                                     do, Response.OK)
 
     def run() -> None:
         _ProgressDialog(parent, list(books), open_book, written, finished,
-                        select, repack=repack)
+                        select, repack=repack,
+                        without_damaged=prefs['write without damaged files'])
 
     def answered(response: int) -> None:
         if response == Response.OK:
+            prefs['write without damaged files'] = without_damaged.get_active()
             start(run)
     dialog.run_async(answered)
 
@@ -177,7 +186,8 @@ class _ProgressDialog(Dialog):
                  finished: Callable[[], None],
                  select: "Callable[[list[str]], None] | None" = None,
                  shrink: "page_shrink.Shrink | None" = None,
-                 repack: bool = False) -> None:
+                 repack: bool = False,
+                 without_damaged: bool = False) -> None:
         super().__init__(title=_('Repacking books as ZIP') if repack
                          else _('Making pages smaller') if shrink is None
                          else _('Shrinking pages'),
@@ -185,6 +195,7 @@ class _ProgressDialog(Dialog):
                          destroy_with_parent=True)
         self._shrink = shrink
         self._repack = repack
+        self._without_damaged = without_damaged
         self._books = books
         self._open_book = open_book
         self._written = written
@@ -264,7 +275,8 @@ class _ProgressDialog(Dialog):
                     raise webp_books.Skipped(_('open in the main window'))
                 outcome = webp_books.convert(path, self._stop,
                                              self._progress, self._shrink,
-                                             self._repack)
+                                             self._repack,
+                                             self._without_damaged)
             except archive_packer.Cancelled:
                 break
             except webp_books.Skipped as reason:

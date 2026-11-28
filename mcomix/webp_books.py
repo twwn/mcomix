@@ -219,7 +219,8 @@ def _over(file: str, limit: int) -> bool:
 def convert(path: str, stop: threading.Event,
             progress: Callable[[float], None] = _ignore_progress,
             shrink: "page_shrink.Shrink | None" = None,
-            repack: bool = False) -> Converted:
+            repack: bool = False,
+            without_damaged: bool = False) -> Converted:
     """Store the PNG pages of the archive at <path> as lossless WebP;
     or, given <shrink>, the pages over its limit shrunk, the archive as
     it was going to the trash; or, with <repack>, the whole archive as a
@@ -230,10 +231,12 @@ def convert(path: str, stop: threading.Event,
     PNG page.  <stop>, once set, stops it before the next file, and
     <progress> is called with how much of the book is done, from 0 to 1.
 
-    A file in the archive that cannot be read, being damaged, is left
-    out of it, and named in what is answered: the rest of the book is
-    not lost with it.  A repack leaves such a book alone instead, since
-    it would remove the archive the file was in.
+    A book with a file that cannot be read, being damaged, is left
+    alone (Skipped, damaged): the archive written over or removed would
+    take with it what can still be got out of the file.  A shrink, whose
+    old archive goes to the trash, or a call with <without_damaged>,
+    leaves the file out instead, names it in what is answered, and
+    writes the rest of the book.
 
     Raises Skipped for a book it leaves alone, archive_packer.Cancelled
     where <stop> was set, and OSError where reading or writing failed;
@@ -259,9 +262,11 @@ def convert(path: str, stop: threading.Event,
                           else _('no pages') if repack else ''))
         finally:
             archive.close()
-        if repack and left_out:
-            # The old archive is removed once the ZIP takes its place, and
-            # what could still be got out of a damaged file with it.
+        if left_out and shrink is None and not without_damaged:
+            # Written over, or removed once the ZIP takes its place, the
+            # archive would take with it what could still be got out of
+            # a damaged file.  A shrunk book's old archive goes to the
+            # trash, which keeps it.
             # TRANSLATORS: Why a book was left as it was, as the others.
             raise Skipped(_('a file in it could not be read, and would be '
                             'lost'), damaged=True)

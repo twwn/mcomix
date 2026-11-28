@@ -2643,16 +2643,24 @@ class StorePagesAsWebpTest(_LibraryWindowTest):
             book.writestr('01.png', line_art_png())
             book.writestr('02.png', line_art_png(size=(200, 300)))
 
-    def _store(self, *paths, response=Response.OK, done=True):
+    def _store(self, *paths, response=Response.OK, done=True, damaged=None):
         """Hold <paths> in the library, select every cover, give the
-        command and answer its question with <response>; answer with
-        the progress dialog, once it is <done> where that is True, or
-        None where there is none."""
+        command and answer its question with <response>, its check
+        button for books with damaged files set to <damaged> where that
+        is not None; answer with the progress dialog, once it is <done>
+        where that is True, or None where there is none."""
         self._held(self.dialog, *paths)
         self.dialog.book_area._covers.select_all()
         self.dialog.book_area.store_pages_as_webp()
         pump()
         prompt, = visible_prompts()
+        check, = [widget for widget in descendants(prompt)
+                  if isinstance(widget, Gtk.CheckButton)
+                  and widget.get_visible()]
+        self.assertFalse(check.get_active() and damaged is None,
+                         'books with damaged files are written unasked')
+        if damaged is not None:
+            check.set_active(damaged)
         prompt.response(response)
         pump()
         progress = [window for window in Gtk.Window.list_toplevels()
@@ -2670,6 +2678,25 @@ class StorePagesAsWebpTest(_LibraryWindowTest):
     def _names(path):
         with zipfile.ZipFile(path) as book:
             return sorted(book.namelist())
+
+    def test_books_with_damaged_files_are_written_only_when_asked(self):
+        """Unticked, the check leaves them alone; ticked, it is kept
+        for the next time."""
+        asked = []
+
+        def convert(path, stop, progress, shrink=None, repack=False,
+                    without_damaged=False):
+            asked.append(without_damaged)
+            raise webp_books.Skipped('looked at')
+
+        with unittest.mock.patch.object(webp_dialog.webp_books, 'convert',
+                                        convert):
+            self._store(self.book).destroy()
+            self._store(self.book, damaged=True).destroy()
+            self.assertTrue(prefs['write without damaged files'])
+            self._store(self.book, damaged=False).destroy()
+        self.assertEqual([False, True, False], asked)
+        self.assertFalse(prefs['write without damaged files'])
 
     def test_the_pages_are_stored_as_webp(self):
         progress = self._store(self.book)
@@ -2769,7 +2796,8 @@ class StorePagesAsWebpTest(_LibraryWindowTest):
             before = book.read()
         real = webp_books.convert
 
-        def first_then_stop(path, stop, progress, shrink=None, repack=False):
+        def first_then_stop(path, stop, progress, shrink=None, repack=False,
+                    without_damaged=False):
             converted = real(path, stop, progress, shrink)
             stop.set()
             return converted
@@ -2788,7 +2816,8 @@ class StorePagesAsWebpTest(_LibraryWindowTest):
     def test_closing_the_window_stops_and_shows_the_summary(self):
         started = threading.Event()
 
-        def until_stopped(path, stop, progress, shrink=None, repack=False):
+        def until_stopped(path, stop, progress, shrink=None, repack=False,
+                    without_damaged=False):
             started.set()
             stop.wait(10)
             raise archive_packer.Cancelled()
@@ -2818,7 +2847,8 @@ class StorePagesAsWebpTest(_LibraryWindowTest):
         that it left out <left_out>."""
         real = webp_books.convert
 
-        def convert(path, stop, progress, shrink=None, repack=False):
+        def convert(path, stop, progress, shrink=None, repack=False,
+                    without_damaged=False):
             if path in failing:
                 raise OSError('the disk went away')
             converted = real(path, stop, progress, shrink)
@@ -2888,7 +2918,8 @@ class StorePagesAsWebpTest(_LibraryWindowTest):
                       left_out={'02.png': 'Bad CRC-32'})
         failing_convert = webp_books.convert
 
-        def spoilt(path, stop, progress, shrink=None, repack=False):
+        def spoilt(path, stop, progress, shrink=None, repack=False,
+                    without_damaged=False):
             # Spoilt once the library holds it, which it would not take.
             if path == unreadable:
                 with open(unreadable, 'wb') as book:
