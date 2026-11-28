@@ -410,6 +410,14 @@ class CheckZipTest(_PackingTest):
     def test_a_whole_zip_with_every_name_passes(self):
         archive_packer.check_zip(self.archive, ['01.png'])
 
+    def test_a_name_in_a_folder_is_found_as_windows_writes_it(self):
+        """"Repack as ZIP..." refused every book with a folder in it on
+        Windows: it asked for sub\\02.png, and the ZIP lists sub/02.png."""
+        with zipfile.ZipFile(self.archive, 'a') as made:
+            made.writestr('sub/02.png', self.DATA)
+        with unittest.mock.patch.object(archive_packer.os, 'sep', '\\'):
+            archive_packer.check_zip(self.archive, ['01.png', 'sub\\02.png'])
+
     def test_a_name_it_lacks_fails(self):
         with self.assertRaises(OSError) as raised:
             archive_packer.check_zip(self.archive, ['01.png', '02.png'])

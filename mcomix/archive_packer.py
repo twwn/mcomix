@@ -495,10 +495,15 @@ def check_zip(path: str, names: "Iterable[str]") -> None:
     which is then removed for good: a fault in writing it, or in the
     disk under it, would otherwise be found only once the book is gone.
     Reading it back costs about what reading the book does.
+
+    <names> are as this system writes them; the ZIP lists them with
+    '/' between folders, as zipfile writes them everywhere.  Compared
+    as given, every book with a folder in it failed on Windows.
     """
+    wanted = {name.replace(os.sep, '/') for name in names}
     try:
         with zipfile.ZipFile(path) as written:
-            missing = set(names).difference(written.namelist())
+            missing = wanted.difference(written.namelist())
             bad = written.testzip()
     except (zipfile.BadZipFile, zipfile.LargeZipFile, EOFError,
             RuntimeError) as failure:
