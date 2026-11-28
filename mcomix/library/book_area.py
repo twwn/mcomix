@@ -407,22 +407,43 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable, LibraryPart):
         # popover draws as a title over it.
         model = Gio.Menu()
         entries = self._menu_entries()
-        for heading, group in ((_('Library books'), entries[0:4]),
-                               (None, entries[4:6]), (None, entries[6:7]),
-                               (None, entries[7:12]), (None, entries[12:16]),
-                               (None, entries[16:20])):
-            section = Gio.Menu()
-            for name, label, _handler in group:
-                item = widgets.menu_item(label, 'books.' + name,
-                                         self._MENU_KEYS.get(name))
-                section.append_item(item)
-                if name == 'rename':
-                    # The main window's, for the books selected; not
-                    # its "Mo_ve to", whose letter is taken here in
-                    # many languages.
-                    section.append_submenu(_('Move _to'),
-                                           self._move_to.model)
-            model.append_section(heading, section)
+
+        def sections(menu: Gio.Menu, groups: "tuple[tuple[str | None, tuple[tuple[str, str, Callable[..., None]], ...]], ...]") -> None:  # type: ignore[explicit-any]  # as _menu_entries()
+            for heading, group in groups:
+                section = Gio.Menu()
+                for name, label, _handler in group:
+                    item = widgets.menu_item(label, 'books.' + name,
+                                             self._MENU_KEYS.get(name))
+                    section.append_item(item)
+                    if name == 'rename':
+                        # The main window's, for the books selected; not
+                        # its "Mo_ve to", whose letter is taken here in
+                        # many languages.
+                        section.append_submenu(_('Move _to'),
+                                               self._move_to.model)
+                menu.append_section(heading, section)
+
+        sections(model, ((_('Library books'), entries[0:4]),
+                         (None, entries[4:6]), (None, entries[6:7]),
+                         (None, entries[12:16])))
+        # Five ways to take books out, and four commands that go through
+        # many books to make them smaller, each in a submenu: listed
+        # among the rest, they made the menu twenty-one items long.
+        # Deleting for good and cleaning up stand apart from the three
+        # that keep the file or the trash keeps.
+        remove = Gio.Menu()
+        sections(remove, ((None, entries[7:10]), (None, entries[10:11]),
+                          (None, entries[11:12])))
+        # The three that write each book selected again, and the search
+        # that finds books to remove.
+        smaller = Gio.Menu()
+        sections(smaller, ((None, entries[16:19]), (None, entries[19:20])))
+        # Without a letter: the module's own items take every letter
+        # they could have in several languages.
+        commands = Gio.Menu()
+        commands.append_submenu(_('Remove'), remove)
+        commands.append_submenu(_('Free up space'), smaller)
+        model.append_section(None, commands)
 
         # Filled each time the menu opens: the commands are edited in the
         # main window, and which can run depends on the books selected.

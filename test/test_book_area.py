@@ -1714,6 +1714,29 @@ class SelectBooksTest(_FourCoversTest):
         self.assertEqual([1, 2], list(self._activate('select-absent')))
 
 
+def _section_actions(model):
+    """The actions of <model>'s items, section by section."""
+    sections = [model.get_item_link(index, Gio.MENU_LINK_SECTION)
+                for index in range(model.get_n_items())]
+    return [[section.get_item_attribute_value(
+                 index, 'action', None).get_string()
+             for index in range(section.get_n_items())
+             if section.get_item_attribute_value(
+                 index, 'action', None) is not None]
+            for section in sections if section is not None]
+
+
+def _submenu(model, label):
+    """The submenu of <model> labelled <label>, in any of its sections."""
+    for number in range(model.get_n_items()):
+        section = model.get_item_link(number, Gio.MENU_LINK_SECTION)
+        for index in range(section.get_n_items()):
+            text = section.get_item_attribute_value(index, 'label', None)
+            if text is not None and text.get_string() == label:
+                return section.get_item_link(index, Gio.MENU_LINK_SUBMENU)
+    raise AssertionError('no submenu %r' % label)
+
+
 class SubmenusOpenBesideTheMenuTest(_FourCoversTest):
 
     def test_a_submenu_opens_beside_its_item_as_the_page_menu_s_do(self):
@@ -1754,17 +1777,26 @@ class StorePagesAsWebpEntryTest(_FourCoversTest):
         Properties, which only name or describe one.  "Shrink oversized
         pages" beside it does too, and "Find duplicates" goes through
         many books."""
+        self.assertEqual([['books.store-webp', 'books.shrink-pages',
+                           'books.repack-zip'], ['books.find-duplicates']],
+                         _section_actions(_submenu(
+                             self.area._book_menu.get_menu_model(),
+                             'Free up space')))
+
+    def test_the_ways_to_take_books_out_are_a_submenu_of_their_own(self):
+        """Five of them stood among the rest of the menu, which made it
+        twenty-one items long.  Deleting for good and cleaning up stand
+        apart from the three a book or the trash keeps the file for."""
         model = self.area._book_menu.get_menu_model()
-        sections = [model.get_item_link(index, Gio.MENU_LINK_SECTION)
-                    for index in range(model.get_n_items())]
-        actions = [[section.get_item_attribute_value(
-                        index, 'action', None).get_string()
-                    for index in range(section.get_n_items())
-                    if section.get_item_attribute_value(
-                        index, 'action', None) is not None]
-                   for section in sections if section is not None]
-        self.assertIn(['books.store-webp', 'books.shrink-pages',
-                       'books.repack-zip', 'books.find-duplicates'], actions)
+        self.assertEqual(
+            [['books.remove-from-collection', 'books.remove-from-library',
+              'books.completely-remove'], ['books.delete-permanently'],
+             ['books.cleanup']],
+            _section_actions(_submenu(model, 'Remove')))
+        top = [action for section in _section_actions(model)
+               for action in section]
+        for name in ('books.cleanup', 'books.store-webp'):
+            self.assertNotIn(name, top)
 
     def test_repacking_is_offered_for_a_rar_without_rar(self):
         """A ZIP is what it writes, which needs nothing installed; only
