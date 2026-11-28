@@ -250,22 +250,17 @@ class _ImageArea(Gtk.ScrolledWindow, widgets.Releasable):
 
     def _key_press(self, controller: Gtk.EventControllerKey, keyval: int,
                    keycode: int, state: Gdk.ModifierType) -> bool:
-        """Handle key presses on the thumbnail area."""
-        if keyval in (Gdk.KEY_Delete, Gdk.KEY_KP_Delete):
-            self._remove_pages()
-            return Gdk.EVENT_STOP
-        if keyval == Gdk.KEY_F2:
-            # The key a file manager renames with, and the same rename
-            # the list's own menu offers: one page, the one selected.
-            self._rename_page()
-            return Gdk.EVENT_STOP
-        # A GTK4 widget has no popup-menu signal, so the keys that asked
-        # for a menu through it are heard here.  The menu names what the
-        # keyboard can do with the pages, and was reachable with the
-        # pointer alone.  It opens at the corner of the view, which has
-        # no position of its own to open at.
-        if widgets.menu_key(keyval, state):
-            widgets.popup_at(self._popup_menu, self._grid, 0, 0)
+        """Handle key presses on the thumbnail area.
+
+        F2 is the rename the list's own menu offers: one page, the one
+        selected.  The menu names what the keyboard can do with the
+        pages, and was reachable with the pointer alone; from the
+        keyboard it opens at the corner of the view, which has no
+        position of its own to open at.
+        """
+        if widgets.list_key(
+                keyval, state, self._remove_pages, self._rename_page,
+                lambda: widgets.popup_at(self._popup_menu, self._grid, 0, 0)):
             return Gdk.EVENT_STOP
         return Gdk.EVENT_PROPAGATE
 

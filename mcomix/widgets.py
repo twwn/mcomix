@@ -304,6 +304,28 @@ def menu_key(keyval: int, state: Gdk.ModifierType) -> bool:
             and modifiers == Gdk.ModifierType.SHIFT_MASK)
 
 
+def list_key(keyval: int, state: Gdk.ModifierType,
+             remove: Callable[[], object], rename: Callable[[], object],
+             popup: Callable[[], object]) -> bool:
+    """Answer the keys a list the reader edits answers to, as a file
+    manager's does: Delete, either one, calls <remove>, F2 <rename>,
+    and the keys that ask for a context menu (menu_key()) <popup>.
+    Whether <keyval> was one of them, and so handled.
+
+    The archive editor's lists of pages and of other files, and the
+    library's collections, answer the same keys, here alone.
+    """
+    if keyval in (Gdk.KEY_Delete, Gdk.KEY_KP_Delete):
+        remove()
+    elif keyval == Gdk.KEY_F2:
+        rename()
+    elif menu_key(keyval, state):
+        popup()
+    else:
+        return False
+    return True
+
+
 def display() -> Gdk.Display:
     """The display MComix is running on.
 

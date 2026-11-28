@@ -291,19 +291,11 @@ class _CommentArea(Gtk.Box, widgets.Releasable):
 
     def _key_press(self, controller: Gtk.EventControllerKey, keyval: int,
                    keycode: int, state: Gdk.ModifierType) -> bool:
-        """Handle key presses on the area."""
-        if keyval in (Gdk.KEY_Delete, Gdk.KEY_KP_Delete):
-            self._remove_file()
-            return Gdk.EVENT_STOP
-        if keyval == Gdk.KEY_F2:
-            # The key a file manager renames with, as in the list of
-            # pages beside this one.
-            self._rename_file()
-            return Gdk.EVENT_STOP
-        # As in the page area beside it: the menu key and Shift+F10 open
-        # the popup, which a GTK4 widget is not told about by a signal.
-        if widgets.menu_key(keyval, state):
-            widgets.popup_at(self._popup_menu, self._list, 0, 0)
+        """Handle key presses on the area: the keys of the list of
+        pages beside it."""
+        if widgets.list_key(
+                keyval, state, self._remove_file, self._rename_file,
+                lambda: widgets.popup_at(self._popup_menu, self._list, 0, 0)):
             return Gdk.EVENT_STOP
         return Gdk.EVENT_PROPAGATE
 

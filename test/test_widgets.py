@@ -304,6 +304,36 @@ class MenuKeyTest(MComixTest):
             Gdk.ModifierType.SHIFT_MASK | Gdk.ModifierType.LOCK_MASK))
 
 
+class ListKeyTest(MComixTest):
+
+    """The keys the editor's lists and the library's collections answer
+    to, each calling the one thing it asks for."""
+
+    def _pressed(self, keyval, state=Gdk.ModifierType(0)):
+        called = []
+        handled = widgets.list_key(
+            keyval, state, *(lambda name=name: called.append(name)
+                             for name in ('remove', 'rename', 'popup')))
+        return handled, called
+
+    def test_each_key_calls_its_own(self):
+        shift = Gdk.ModifierType.SHIFT_MASK
+        for keyval, state, wanted in (
+                (Gdk.KEY_Delete, Gdk.ModifierType(0), 'remove'),
+                (Gdk.KEY_KP_Delete, Gdk.ModifierType(0), 'remove'),
+                (Gdk.KEY_F2, Gdk.ModifierType(0), 'rename'),
+                (Gdk.KEY_Menu, Gdk.ModifierType(0), 'popup'),
+                (Gdk.KEY_F10, shift, 'popup')):
+            with self.subTest(Gdk.keyval_name(keyval)):
+                self.assertEqual((True, [wanted]),
+                                 self._pressed(keyval, state))
+
+    def test_any_other_key_is_left_to_the_widget(self):
+        for keyval in (Gdk.KEY_F10, Gdk.KEY_BackSpace, Gdk.KEY_a):
+            with self.subTest(Gdk.keyval_name(keyval)):
+                self.assertEqual((False, []), self._pressed(keyval))
+
+
 class TimerTest(MComixTest):
 
     """Timer, the one wait at a time that the delayed hides share."""

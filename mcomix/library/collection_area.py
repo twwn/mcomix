@@ -448,16 +448,8 @@ class _CollectionArea(Gtk.ScrolledWindow, widgets.Releasable,
                    keyval: int, keycode: int,
                    state: Gdk.ModifierType) -> bool:
         """Handle key presses on the _CollectionArea."""
-        if keyval in (Gdk.KEY_Delete, Gdk.KEY_KP_Delete):
-            self._remove_collection()
-            return Gdk.EVENT_STOP
-        if keyval == Gdk.KEY_F2:
-            self._rename_collection()
-            return Gdk.EVENT_STOP
-        # A GTK4 widget has no popup-menu signal, so the keys that
-        # asked for a menu through it are heard here.
-        if widgets.menu_key(keyval, state):
-            self._popup_menu()
+        if widgets.list_key(keyval, state, self._remove_collection,
+                            self._rename_collection, self._popup_menu):
             return Gdk.EVENT_STOP
         return Gdk.EVENT_PROPAGATE
 
