@@ -154,11 +154,13 @@ class ClipboardTest(MComixTest):
         nothing about where two pages would go."""
         pages = [solid_pixbuf(4, 6, self.RED), solid_pixbuf(4, 6, self.GREEN)]
         dummy = [box.Box((1, 1), (0, 0))]
-        for manga, left in ((False, (255, 0, 0)), (True, (0, 255, 0))):
+        red, green = (255, 0, 0), (0, 255, 0)
+        for manga, left, right in ((False, red, green), (True, green, red)):
             with self.subTest(is_manga_mode=manga):
                 _text, pixbuf = self._copied(pages, boxes=dummy,
                                              is_manga_mode=manga)
                 self.assertEqual(left, pixel(pixbuf, 1, 1))
+                self.assertEqual(right, pixel(pixbuf, 5, 1))
 
     def test_two_pages_drawn_at_the_same_place_go_side_by_side(self):
         """A window with no size in it lays both boxes out at the origin,
@@ -168,6 +170,18 @@ class ClipboardTest(MComixTest):
             pages, [Transform.ID] * 2,
             boxes=[box.Box((0, 0), (0, 0)), box.Box((0, 0), (0, 0))])
         self.assertEqual((8, 6), (pixbuf.get_width(), pixbuf.get_height()))
+        # In the order they were given: neither is placed before the other.
+        self.assertEqual((255, 0, 0), pixel(pixbuf, 1, 1))
+
+    def test_only_the_pages_being_read_are_copied(self):
+        """A single page shown where the handler could give two."""
+        pages = [solid_pixbuf(4, 6, self.RED), solid_pixbuf(4, 6, self.GREEN)]
+        window = self._window(pages)
+        window.pages_read = lambda: [1]
+        self.clipboard._window = window
+        self.clipboard.copy_page()
+        _text, pixbuf = self.copied
+        self.assertEqual((4, 6), (pixbuf.get_width(), pixbuf.get_height()))
 
     def test_a_page_with_no_file_behind_it_copies_an_empty_path(self):
         _text, _pixbuf = self._copied([solid_pixbuf(4, 6, self.RED)],
