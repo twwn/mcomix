@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Comix 4.0.3\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-28 12:34+0100\n"
+"POT-Creation-Date: 2026-11-28 12:39+0100\n"
 "PO-Revision-Date: 2009-01-26 19:34+0100\n"
 "Last-Translator: Ernő Drabik <drerno@gmail.com>\n"
 "Language-Team: \n"
@@ -94,7 +94,7 @@ msgstr ""
 "! Nem sikerült menteni a(z) %(file)s fájlt ide: %(directory)s: %(error)s"
 
 #: mcomix/bookmark_backend.py:493 mcomix/file_actions.py:1304
-#: mcomix/webp_dialog.py:515
+#: mcomix/webp_dialog.py:519
 #, python-format
 msgid "Could not save \"%(file)s\" to \"%(directory)s\""
 msgstr "Nem sikerült menteni: „%(file)s” ide: „%(directory)s”"
@@ -113,9 +113,9 @@ msgstr "_Nem"
 #: mcomix/file_chooser_base_dialog.py:242
 #: mcomix/file_chooser_library_dialog.py:42 mcomix/message_dialog.py:26
 #: mcomix/message_dialog.py:29 mcomix/pageselect.py:38
-#: mcomix/save_progress.py:121 mcomix/shrink_dialog.py:138
-#: mcomix/shrink_dialog.py:279 mcomix/webp_dialog.py:127
-#: mcomix/library/duplicates_dialog.py:237
+#: mcomix/save_progress.py:121 mcomix/shrink_dialog.py:140
+#: mcomix/shrink_dialog.py:281 mcomix/shrink_dialog.py:316
+#: mcomix/webp_dialog.py:127 mcomix/library/duplicates_dialog.py:237
 msgid "_Cancel"
 msgstr "Mé_gse"
 
@@ -167,8 +167,8 @@ msgstr "_Eltávolítás"
 
 #: mcomix/bookmark_dialog.py:34 mcomix/comment_dialog.py:29
 #: mcomix/message_dialog.py:25 mcomix/preferences_dialog.py:105
-#: mcomix/properties_dialog.py:38 mcomix/shrink_dialog.py:280
-#: mcomix/webp_dialog.py:441 mcomix/library/book_check_dialog.py:180
+#: mcomix/properties_dialog.py:38 mcomix/shrink_dialog.py:282
+#: mcomix/webp_dialog.py:445 mcomix/library/book_check_dialog.py:180
 #: mcomix/library/book_properties.py:60 mcomix/library/duplicates_dialog.py:292
 #: mcomix/library/watchlist.py:41
 msgid "_Close"
@@ -315,7 +315,7 @@ msgid "Comment files"
 msgstr "Megjegyzésfájlok"
 
 #: mcomix/edit_dialog.py:265 mcomix/file_actions.py:975
-#: mcomix/webp_dialog.py:289
+#: mcomix/webp_dialog.py:293
 #, python-format
 msgid "! Could not save the archive %(archivefile)s: %(error)s"
 msgstr "! Nem sikerült menteni a(z) %(archivefile)s archívumot: %(error)s"
@@ -2715,11 +2715,11 @@ msgstr ""
 msgid "Writing \"%s\""
 msgstr "„%s” írása"
 
-#: mcomix/shrink_dialog.py:69
+#: mcomix/shrink_dialog.py:71
 msgid "Shrink oversized pages"
 msgstr "Túl nagy oldalak kicsinyítése"
 
-#: mcomix/shrink_dialog.py:102
+#: mcomix/shrink_dialog.py:104
 msgid ""
 "Each page taller than the limit is made as high as the limit and stored as a "
 "WebP at the quality set here. Such pages lose detail. A long strip, far "
@@ -2732,30 +2732,30 @@ msgstr ""
 "szélessége alapján ítéli meg. Minden megírt könyv eredeti formájában a "
 "Kukába kerül, ahonnan visszaállítható."
 
-#: mcomix/shrink_dialog.py:114
+#: mcomix/shrink_dialog.py:116
 msgid "Page _height limit, in pixels:"
 msgstr "Oldal_magasság határa, képpontban:"
 
-#: mcomix/shrink_dialog.py:115
+#: mcomix/shrink_dialog.py:117
 msgid "WebP _quality:"
 msgstr "WebP-_minőség:"
 
-#: mcomix/shrink_dialog.py:139
+#: mcomix/shrink_dialog.py:141
 msgid "_Find Books"
 msgstr "Könyvek k_eresése"
 
-#: mcomix/shrink_dialog.py:178 mcomix/webp_dialog.py:224
+#: mcomix/shrink_dialog.py:180 mcomix/webp_dialog.py:227
 #: mcomix/library/add_progress_dialog.py:57
 #: mcomix/library/book_check_dialog.py:65
 #: mcomix/library/duplicates_dialog.py:112
 msgid "_Stop"
 msgstr "_Leállítás"
 
-#: mcomix/shrink_dialog.py:205 mcomix/webp_dialog.py:275
+#: mcomix/shrink_dialog.py:207 mcomix/webp_dialog.py:278
 msgid "open in the main window"
 msgstr "meg van nyitva a főablakban"
 
-#: mcomix/shrink_dialog.py:248
+#: mcomix/shrink_dialog.py:250
 #, python-format
 msgid "%(count)d book has pages over the limit, about %(size)s to save"
 msgid_plural ""
@@ -2765,16 +2765,33 @@ msgstr[0] ""
 msgstr[1] ""
 "%(count)d könyvben vannak a határ feletti oldalak, kb. %(size)s megtakarítás"
 
-#: mcomix/shrink_dialog.py:263
+#: mcomix/shrink_dialog.py:265
 #, python-format
 msgid "%(book)s: %(pages)d page over the limit, about %(size)s smaller"
 msgid_plural "%(book)s: %(pages)d pages over the limit, about %(size)s smaller"
 msgstr[0] "%(book)s: %(pages)d oldal a határ felett, kb. %(size)s megtakarítás"
 msgstr[1] "%(book)s: %(pages)d oldal a határ felett, kb. %(size)s megtakarítás"
 
-#: mcomix/shrink_dialog.py:283
+#: mcomix/shrink_dialog.py:285
 msgid "_Shrink"
 msgstr "_Kicsinyítés"
+
+#: mcomix/shrink_dialog.py:308
+msgid "Not enough room to keep the books as they were"
+msgstr "Nincs elég hely a könyvek eredeti formájának megtartására"
+
+#: mcomix/shrink_dialog.py:309
+#, python-format
+msgid ""
+"The books shrunk take about %(needed)s on the disk, which has %(free)s free: "
+"the books as they were stay in the trash, and keep their room until it is "
+"emptied. Deleting them permanently instead frees their room as each book is "
+"written."
+msgstr "A kicsinyített könyvek kb. %(needed)s helyet foglalnak a lemezen, amelyen %(free)s szabad: az eredeti könyvek a kukában maradnak, és annak kiürítéséig foglalják a helyüket. Végleges törlésük minden könyv megírásakor felszabadítja a helyüket."
+
+#: mcomix/shrink_dialog.py:317
+msgid "_Delete Originals Permanently"
+msgstr "Az eredetik _végleges törlése"
 
 #: mcomix/slideshow.py:56
 msgid "Stop slideshow"
@@ -3491,59 +3508,59 @@ msgid "nothing installed here reads the format"
 msgstr "nincs telepítve semmi, ami olvasná a formátumot"
 
 #. TRANSLATORS: Why a book was left as it was, as the others.
-#: mcomix/webp_books.py:179 mcomix/webp_books.py:186 mcomix/webp_books.py:261
+#: mcomix/webp_books.py:179 mcomix/webp_books.py:186 mcomix/webp_books.py:264
 msgid "no page over the limit"
 msgstr "nincs a határ feletti oldal"
 
-#: mcomix/webp_books.py:249
+#: mcomix/webp_books.py:252
 msgid "the trash takes no files from its folder"
 msgstr "a Kuka nem fogad el fájlokat a saját mappájából"
 
-#: mcomix/webp_books.py:262
+#: mcomix/webp_books.py:265
 msgid "no pages"
 msgstr "nincs oldala"
 
 #. TRANSLATORS: Why a book was left as it was, as the others.
-#: mcomix/webp_books.py:271
+#: mcomix/webp_books.py:274
 msgid "a file in it could not be read, and would be lost"
 msgstr "egy fájlja nem olvasható, és elveszne"
 
-#: mcomix/webp_books.py:303
+#: mcomix/webp_books.py:306
 msgid "no page made smaller"
 msgstr "egyik oldal sem lett kisebb"
 
-#: mcomix/webp_books.py:312
+#: mcomix/webp_books.py:321
 #, python-format
 msgid "the trash refused it: %s"
 msgstr "a Kuka elutasította: %s"
 
 #. TRANSLATORS: Why a book was left as it was, as the others.
-#: mcomix/webp_books.py:370
+#: mcomix/webp_books.py:379
 msgid "a symbolic link, which would no longer lead to it"
 msgstr "szimbolikus hivatkozás, amely már nem vezetne hozzá"
 
 #. TRANSLATORS: Why a book was left as it was, as the others; %s is
 #. a file name, such as "Book.cbz".
-#: mcomix/webp_books.py:374 mcomix/webp_books.py:398
+#: mcomix/webp_books.py:383 mcomix/webp_books.py:407
 #, python-format
 msgid "%s is there already"
 msgstr "%s már létezik"
 
 #. TRANSLATORS: Why a book was left as it was, as the others.
-#: mcomix/webp_books.py:392
+#: mcomix/webp_books.py:401
 msgid "a ZIP already, no smaller packed again"
 msgstr "már ZIP, újracsomagolva sem kisebb"
 
-#: mcomix/webp_books.py:448 mcomix/webp_books.py:477 mcomix/webp_books.py:483
-#: mcomix/webp_books.py:503 mcomix/library/book_check.py:38
+#: mcomix/webp_books.py:457 mcomix/webp_books.py:486 mcomix/webp_books.py:492
+#: mcomix/webp_books.py:512 mcomix/library/book_check.py:38
 msgid "encrypted"
 msgstr "titkosított"
 
-#: mcomix/webp_books.py:450
+#: mcomix/webp_books.py:459
 msgid "archives inside"
 msgstr "más archívumokat tartalmaz"
 
-#: mcomix/webp_books.py:458
+#: mcomix/webp_books.py:467
 msgid "no PNG, GIF or JPEG pages"
 msgstr "nincsenek PNG-, GIF- vagy JPEG-oldalak"
 
@@ -3598,33 +3615,33 @@ msgstr "_Kicsinyítés"
 msgid "Also write books that have damaged files, leaving those files out"
 msgstr "A sérült fájlokat tartalmazó könyveket is írja, e fájlok nélkül"
 
-#: mcomix/webp_dialog.py:159
+#: mcomix/webp_dialog.py:160
 #, python-format
 msgid "%(count)d book left as it was: %(reason)s"
 msgid_plural "%(count)d books left as they were: %(reason)s"
 msgstr[0] "%(count)d könyv változatlan maradt: %(reason)s"
 msgstr[1] "%(count)d könyv változatlan maradt: %(reason)s"
 
-#: mcomix/webp_dialog.py:172
+#: mcomix/webp_dialog.py:173
 #, python-format
 msgid "Stopped with %d book not yet looked at"
 msgid_plural "Stopped with %d books not yet looked at"
 msgstr[0] "Leállítva, %d könyv még nincs megvizsgálva"
 msgstr[1] "Leállítva, %d könyv még nincs megvizsgálva"
 
-#: mcomix/webp_dialog.py:191
+#: mcomix/webp_dialog.py:193
 msgid "Repacking books as ZIP"
 msgstr "Könyvek újracsomagolása ZIP-ként"
 
-#: mcomix/webp_dialog.py:192
+#: mcomix/webp_dialog.py:194
 msgid "Making pages smaller"
 msgstr "Oldalak kicsinyítése"
 
-#: mcomix/webp_dialog.py:193
+#: mcomix/webp_dialog.py:195
 msgid "Shrinking pages"
 msgstr "Nagy oldalak kicsinyítése"
 
-#: mcomix/webp_dialog.py:322
+#: mcomix/webp_dialog.py:326
 msgid ""
 "The disk is full. The books as they were are in the trash, which holds their "
 "room until it is emptied."
@@ -3632,66 +3649,66 @@ msgstr ""
 "A lemez megtelt. A könyvek eredeti formájukban a kukában vannak, amely "
 "kiürítéséig foglalja a helyüket."
 
-#: mcomix/webp_dialog.py:324
+#: mcomix/webp_dialog.py:328
 msgid "The disk is full."
 msgstr "A lemez megtelt."
 
-#: mcomix/webp_dialog.py:331
+#: mcomix/webp_dialog.py:335
 #, python-format
 msgid "%(count)d book repacked as ZIP, %(size)s larger"
 msgid_plural "%(count)d books repacked as ZIP, %(size)s larger"
 msgstr[0] "%(count)d könyv ZIP-ként újracsomagolva, %(size)s-tal nagyobb"
 msgstr[1] "%(count)d könyv ZIP-ként újracsomagolva, %(size)s-tal nagyobb"
 
-#: mcomix/webp_dialog.py:337
+#: mcomix/webp_dialog.py:341
 #, python-format
 msgid "%(count)d book repacked as ZIP, %(size)s smaller"
 msgid_plural "%(count)d books repacked as ZIP, %(size)s smaller"
 msgstr[0] "%(count)d könyv ZIP-ként újracsomagolva, %(size)s-tal kisebb"
 msgstr[1] "%(count)d könyv ZIP-ként újracsomagolva, %(size)s-tal kisebb"
 
-#: mcomix/webp_dialog.py:341
+#: mcomix/webp_dialog.py:345
 #, python-format
 msgid "%(count)d book shrunk, %(size)s smaller"
 msgid_plural "%(count)d books shrunk, %(size)s smaller"
 msgstr[0] "%(count)d könyv kicsinyítve, %(size)s megtakarítás"
 msgstr[1] "%(count)d könyv kicsinyítve, %(size)s megtakarítás"
 
-#: mcomix/webp_dialog.py:345
+#: mcomix/webp_dialog.py:349
 #, python-format
 msgid "%(count)d book stored with WebP pages, %(size)s smaller"
 msgid_plural "%(count)d books stored with WebP pages, %(size)s smaller"
 msgstr[0] "%(count)d könyv tárolva WebP-oldalakkal, megtakarítva: %(size)s"
 msgstr[1] "%(count)d könyv tárolva WebP-oldalakkal, megtakarítva: %(size)s"
 
-#: mcomix/webp_dialog.py:358
+#: mcomix/webp_dialog.py:362
 #, python-format
 msgid "%d book stored without its damaged files"
 msgid_plural "%d books stored without their damaged files"
 msgstr[0] "%d könyv tárolva a sérült fájljai nélkül"
 msgstr[1] "%d könyv tárolva a sérült fájljaik nélkül"
 
-#: mcomix/webp_dialog.py:395
+#: mcomix/webp_dialog.py:399
 #, python-format
 msgid "About %d minute left"
 msgid_plural "About %d minutes left"
 msgstr[0] "Kb. %d perc van hátra"
 msgstr[1] "Kb. %d perc van hátra"
 
-#: mcomix/webp_dialog.py:426 mcomix/webp_dialog.py:480
+#: mcomix/webp_dialog.py:430 mcomix/webp_dialog.py:484
 #, python-format
 msgid "Could not be written: %s"
 msgstr "Nem sikerült írni: %s"
 
-#: mcomix/webp_dialog.py:444
+#: mcomix/webp_dialog.py:448
 msgid "_Save Log…"
 msgstr "Napló m_entése…"
 
-#: mcomix/webp_dialog.py:449
+#: mcomix/webp_dialog.py:453
 msgid "Select Books with _Errors"
 msgstr "_Hibás könyvek kijelölése"
 
-#: mcomix/webp_dialog.py:495
+#: mcomix/webp_dialog.py:499
 msgid "Save the log as"
 msgstr "Napló mentése másként"
 

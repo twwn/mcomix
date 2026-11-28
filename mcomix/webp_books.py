@@ -220,7 +220,8 @@ def convert(path: str, stop: threading.Event,
             progress: Callable[[float], None] = _ignore_progress,
             shrink: "page_shrink.Shrink | None" = None,
             repack: bool = False,
-            without_damaged: bool = False) -> Converted:
+            without_damaged: bool = False,
+            trash: bool = True) -> Converted:
     """Store the PNG pages of the archive at <path> as lossless WebP;
     or, given <shrink>, the pages over its limit shrunk, the archive as
     it was going to the trash; or, with <repack>, the whole archive as a
@@ -236,7 +237,9 @@ def convert(path: str, stop: threading.Event,
     take with it what can still be got out of the file.  A shrink, whose
     old archive goes to the trash, or a call with <without_damaged>,
     leaves the file out instead, names it in what is answered, and
-    writes the rest of the book.
+    writes the rest of the book.  A shrink with <trash> false replaces
+    the book as it was in place instead of moving it to the trash, for
+    a disk that has no room left to keep both.
 
     Raises Skipped for a book it leaves alone, archive_packer.Cancelled
     where <stop> was set, and OSError where reading or writing failed;
@@ -245,7 +248,7 @@ def convert(path: str, stop: threading.Event,
     archive, archive_type, unwritable = _opened(path, repack)
     try:
         becomes = _zip_target(path, archive_type) if repack else path
-        if shrink is not None and tools.trash_refuses(path):
+        if shrink is not None and trash and tools.trash_refuses(path):
             raise Skipped(_('the trash takes no files from its folder'))
     except Skipped:
         archive.close()
@@ -303,6 +306,12 @@ def convert(path: str, stop: threading.Event,
             raise Skipped(_('no page made smaller')) from None
         if repack:
             _repacked_in_place(path, target, becomes, before)
+            target = path
+        elif target != path and not trash:
+            # One rename: the book as it was is gone once it is done, and
+            # still there if it fails.
+            portability.rename_once_closed(os.replace, target,
+                                           tools.replaced_path(path))
             target = path
         elif target != path:
             book = tools.replaced_path(path)

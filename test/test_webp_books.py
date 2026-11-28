@@ -561,6 +561,19 @@ class ShrinkTest(_BookTest):
             self.assertEqual(before, book.read())
         self.assertEqual(['book.cbz'], os.listdir(self.directory))
 
+    def test_a_book_not_trashed_is_replaced_in_place(self):
+        """For a disk without room for both: a trash that would refuse
+        it is never asked."""
+        with unittest.mock.patch.object(tools, 'trash_refuses',
+                                        return_value=True):
+            converted = webp_books.convert(self.book, self.stop,
+                                           shrink=self.SHRINK, trash=False)
+        self.assertEqual(os.path.getsize(self.book), converted.after)
+        with zipfile.ZipFile(self.book) as book:
+            self.assertIn('sub/03.webp', book.namelist())
+        self.assertFalse(os.path.exists(self.trash_dir), 'trashed')
+        self.assertEqual(['book.cbz'], os.listdir(self.directory))
+
     def test_a_book_the_trash_refuses_is_left_as_it_was(self):
         with unittest.mock.patch.object(tools, 'move_to_trash',
                                         side_effect=GLib.Error('no trash')):

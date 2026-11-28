@@ -144,13 +144,14 @@ def write(parent: Gtk.Window, books: list[str],
           written: "Callable[[str, webp_books.Converted], None]",
           finished: Callable[[], None],
           select: "Callable[[list[str]], None] | None" = None,
-          shrink: "page_shrink.Shrink | None" = None) -> None:
+          shrink: "page_shrink.Shrink | None" = None,
+          trash: bool = True) -> None:
     """Write <books> again, showing how far it is, as offer() does once
     the reader has said yes; with the pages over the limit of <shrink>
     shrunk, where it is given (mcomix.shrink_dialog), instead of made
     smaller without loss."""
     _ProgressDialog(parent, books, open_book, written, finished, select,
-                    shrink)
+                    shrink, trash=trash)
 
 
 def left_line(reason: str, count: int) -> str:
@@ -187,7 +188,8 @@ class _ProgressDialog(Dialog):
                  select: "Callable[[list[str]], None] | None" = None,
                  shrink: "page_shrink.Shrink | None" = None,
                  repack: bool = False,
-                 without_damaged: bool = False) -> None:
+                 without_damaged: bool = False,
+                 trash: bool = True) -> None:
         super().__init__(title=_('Repacking books as ZIP') if repack
                          else _('Making pages smaller') if shrink is None
                          else _('Shrinking pages'),
@@ -196,6 +198,7 @@ class _ProgressDialog(Dialog):
         self._shrink = shrink
         self._repack = repack
         self._without_damaged = without_damaged
+        self._trash = trash
         self._books = books
         self._open_book = open_book
         self._written = written
@@ -276,7 +279,8 @@ class _ProgressDialog(Dialog):
                 outcome = webp_books.convert(path, self._stop,
                                              self._progress, self._shrink,
                                              self._repack,
-                                             self._without_damaged)
+                                             self._without_damaged,
+                                             self._trash)
             except archive_packer.Cancelled:
                 break
             except webp_books.Skipped as reason:
@@ -317,7 +321,7 @@ class _ProgressDialog(Dialog):
 
     def _disk_full_line(self) -> str:
         """Why the books stopped, and what makes room."""
-        if self._shrink is not None and self._stored:
+        if self._shrink is not None and self._trash and self._stored:
             # A book moved to the trash keeps its room on the disk.
             return _('The disk is full. The books as they were are in the '
                      'trash, which holds their room until it is emptied.')

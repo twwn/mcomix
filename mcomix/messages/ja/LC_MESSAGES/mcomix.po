@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix 1.00-SVN\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-28 12:34+0100\n"
+"POT-Creation-Date: 2026-11-28 12:39+0100\n"
 "PO-Revision-Date: 2012-08-16 13:10+0900\n"
 "Last-Translator: Toshiharu Kudoh <toshi.kd2@gmail.com>\n"
 "Language-Team: Japanese\n"
@@ -100,7 +100,7 @@ msgid "! Could not save %(file)s to %(directory)s: %(error)s"
 msgstr "! %(file)s を %(directory)s に保存できませんでした: %(error)s"
 
 #: mcomix/bookmark_backend.py:493 mcomix/file_actions.py:1304
-#: mcomix/webp_dialog.py:515
+#: mcomix/webp_dialog.py:519
 #, python-format
 msgid "Could not save \"%(file)s\" to \"%(directory)s\""
 msgstr "\"%(file)s\" を \"%(directory)s\" に保存できませんでした"
@@ -119,9 +119,9 @@ msgstr "いいえ(_N)"
 #: mcomix/file_chooser_base_dialog.py:242
 #: mcomix/file_chooser_library_dialog.py:42 mcomix/message_dialog.py:26
 #: mcomix/message_dialog.py:29 mcomix/pageselect.py:38
-#: mcomix/save_progress.py:121 mcomix/shrink_dialog.py:138
-#: mcomix/shrink_dialog.py:279 mcomix/webp_dialog.py:127
-#: mcomix/library/duplicates_dialog.py:237
+#: mcomix/save_progress.py:121 mcomix/shrink_dialog.py:140
+#: mcomix/shrink_dialog.py:281 mcomix/shrink_dialog.py:316
+#: mcomix/webp_dialog.py:127 mcomix/library/duplicates_dialog.py:237
 msgid "_Cancel"
 msgstr "キャンセル(_C)"
 
@@ -173,8 +173,8 @@ msgstr "削除(_R)"
 
 #: mcomix/bookmark_dialog.py:34 mcomix/comment_dialog.py:29
 #: mcomix/message_dialog.py:25 mcomix/preferences_dialog.py:105
-#: mcomix/properties_dialog.py:38 mcomix/shrink_dialog.py:280
-#: mcomix/webp_dialog.py:441 mcomix/library/book_check_dialog.py:180
+#: mcomix/properties_dialog.py:38 mcomix/shrink_dialog.py:282
+#: mcomix/webp_dialog.py:445 mcomix/library/book_check_dialog.py:180
 #: mcomix/library/book_properties.py:60 mcomix/library/duplicates_dialog.py:292
 #: mcomix/library/watchlist.py:41
 msgid "_Close"
@@ -321,7 +321,7 @@ msgid "Comment files"
 msgstr "コメントファイル"
 
 #: mcomix/edit_dialog.py:265 mcomix/file_actions.py:975
-#: mcomix/webp_dialog.py:289
+#: mcomix/webp_dialog.py:293
 #, python-format
 msgid "! Could not save the archive %(archivefile)s: %(error)s"
 msgstr "! アーカイブファイル %(archivefile)s を保存できませんでした: %(error)s"
@@ -2689,11 +2689,11 @@ msgstr ""
 msgid "Writing \"%s\""
 msgstr "「%s」を書き込んでいます"
 
-#: mcomix/shrink_dialog.py:69
+#: mcomix/shrink_dialog.py:71
 msgid "Shrink oversized pages"
 msgstr "大きすぎるページの縮小"
 
-#: mcomix/shrink_dialog.py:102
+#: mcomix/shrink_dialog.py:104
 msgid ""
 "Each page taller than the limit is made as high as the limit and stored as a "
 "WebP at the quality set here. Such pages lose detail. A long strip, far "
@@ -2705,45 +2705,62 @@ msgstr ""
 "みページは、幅だけで判断されます。書き込まれた各書籍は元のままゴミ箱に移さ"
 "れ、そこから戻せます。"
 
-#: mcomix/shrink_dialog.py:114
+#: mcomix/shrink_dialog.py:116
 msgid "Page _height limit, in pixels:"
 msgstr "ページの高さの上限 (ピクセル)(_H):"
 
-#: mcomix/shrink_dialog.py:115
+#: mcomix/shrink_dialog.py:117
 msgid "WebP _quality:"
 msgstr "WebP の品質(_Q):"
 
-#: mcomix/shrink_dialog.py:139
+#: mcomix/shrink_dialog.py:141
 msgid "_Find Books"
 msgstr "書籍を検索(_F)"
 
-#: mcomix/shrink_dialog.py:178 mcomix/webp_dialog.py:224
+#: mcomix/shrink_dialog.py:180 mcomix/webp_dialog.py:227
 #: mcomix/library/add_progress_dialog.py:57
 #: mcomix/library/book_check_dialog.py:65
 #: mcomix/library/duplicates_dialog.py:112
 msgid "_Stop"
 msgstr "停止(_S)"
 
-#: mcomix/shrink_dialog.py:205 mcomix/webp_dialog.py:275
+#: mcomix/shrink_dialog.py:207 mcomix/webp_dialog.py:278
 msgid "open in the main window"
 msgstr "メインウィンドウで開いている"
 
-#: mcomix/shrink_dialog.py:248
+#: mcomix/shrink_dialog.py:250
 #, python-format
 msgid "%(count)d book has pages over the limit, about %(size)s to save"
 msgid_plural ""
 "%(count)d books have pages over the limit, about %(size)s to save"
 msgstr[0] "上限を超えるページのある書籍 %(count)d 冊、約 %(size)s 節約"
 
-#: mcomix/shrink_dialog.py:263
+#: mcomix/shrink_dialog.py:265
 #, python-format
 msgid "%(book)s: %(pages)d page over the limit, about %(size)s smaller"
 msgid_plural "%(book)s: %(pages)d pages over the limit, about %(size)s smaller"
 msgstr[0] "%(book)s: 上限を超えるページ %(pages)d 枚、約 %(size)s 縮小"
 
-#: mcomix/shrink_dialog.py:283
+#: mcomix/shrink_dialog.py:285
 msgid "_Shrink"
 msgstr "縮小(_S)"
+
+#: mcomix/shrink_dialog.py:308
+msgid "Not enough room to keep the books as they were"
+msgstr "元の本を残しておく空き容量がありません"
+
+#: mcomix/shrink_dialog.py:309
+#, python-format
+msgid ""
+"The books shrunk take about %(needed)s on the disk, which has %(free)s free: "
+"the books as they were stay in the trash, and keep their room until it is "
+"emptied. Deleting them permanently instead frees their room as each book is "
+"written."
+msgstr "縮小した本はディスクで約 %(needed)s を使いますが、空きは %(free)s です。元の本はゴミ箱に残り、空にするまでその容量を使います。代わりに完全に削除すると、本を書き出すたびにその容量が空きます。"
+
+#: mcomix/shrink_dialog.py:317
+msgid "_Delete Originals Permanently"
+msgstr "元の本を完全に削除(_D)"
 
 #: mcomix/slideshow.py:56
 msgid "Stop slideshow"
@@ -3454,59 +3471,59 @@ msgid "nothing installed here reads the format"
 msgstr "この形式を読み込むものがインストールされていない"
 
 #. TRANSLATORS: Why a book was left as it was, as the others.
-#: mcomix/webp_books.py:179 mcomix/webp_books.py:186 mcomix/webp_books.py:261
+#: mcomix/webp_books.py:179 mcomix/webp_books.py:186 mcomix/webp_books.py:264
 msgid "no page over the limit"
 msgstr "上限を超えるページなし"
 
-#: mcomix/webp_books.py:249
+#: mcomix/webp_books.py:252
 msgid "the trash takes no files from its folder"
 msgstr "ゴミ箱は自身のフォルダーのファイルを受け付けません"
 
-#: mcomix/webp_books.py:262
+#: mcomix/webp_books.py:265
 msgid "no pages"
 msgstr "ページがありません"
 
 #. TRANSLATORS: Why a book was left as it was, as the others.
-#: mcomix/webp_books.py:271
+#: mcomix/webp_books.py:274
 msgid "a file in it could not be read, and would be lost"
 msgstr "中のファイルが読めず、失われてしまう"
 
-#: mcomix/webp_books.py:303
+#: mcomix/webp_books.py:306
 msgid "no page made smaller"
 msgstr "小さくなったページがない"
 
-#: mcomix/webp_books.py:312
+#: mcomix/webp_books.py:321
 #, python-format
 msgid "the trash refused it: %s"
 msgstr "ゴミ箱が拒否しました: %s"
 
 #. TRANSLATORS: Why a book was left as it was, as the others.
-#: mcomix/webp_books.py:370
+#: mcomix/webp_books.py:379
 msgid "a symbolic link, which would no longer lead to it"
 msgstr "シンボリックリンク(名前を変えるとリンク切れになります)"
 
 #. TRANSLATORS: Why a book was left as it was, as the others; %s is
 #. a file name, such as "Book.cbz".
-#: mcomix/webp_books.py:374 mcomix/webp_books.py:398
+#: mcomix/webp_books.py:383 mcomix/webp_books.py:407
 #, python-format
 msgid "%s is there already"
 msgstr "%s がすでにあります"
 
 #. TRANSLATORS: Why a book was left as it was, as the others.
-#: mcomix/webp_books.py:392
+#: mcomix/webp_books.py:401
 msgid "a ZIP already, no smaller packed again"
 msgstr "すでに ZIP で、詰め直しても小さくなりません"
 
-#: mcomix/webp_books.py:448 mcomix/webp_books.py:477 mcomix/webp_books.py:483
-#: mcomix/webp_books.py:503 mcomix/library/book_check.py:38
+#: mcomix/webp_books.py:457 mcomix/webp_books.py:486 mcomix/webp_books.py:492
+#: mcomix/webp_books.py:512 mcomix/library/book_check.py:38
 msgid "encrypted"
 msgstr "暗号化されている"
 
-#: mcomix/webp_books.py:450
+#: mcomix/webp_books.py:459
 msgid "archives inside"
 msgstr "中に他のアーカイブがある"
 
-#: mcomix/webp_books.py:458
+#: mcomix/webp_books.py:467
 msgid "no PNG, GIF or JPEG pages"
 msgstr "PNG・GIF・JPEG ページがない"
 
@@ -3556,31 +3573,31 @@ msgstr "縮小(_S)"
 msgid "Also write books that have damaged files, leaving those files out"
 msgstr "壊れたファイルを含む本も、そのファイルを除いて書き出す"
 
-#: mcomix/webp_dialog.py:159
+#: mcomix/webp_dialog.py:160
 #, python-format
 msgid "%(count)d book left as it was: %(reason)s"
 msgid_plural "%(count)d books left as they were: %(reason)s"
 msgstr[0] "%(count)d 冊はそのまま: %(reason)s"
 
-#: mcomix/webp_dialog.py:172
+#: mcomix/webp_dialog.py:173
 #, python-format
 msgid "Stopped with %d book not yet looked at"
 msgid_plural "Stopped with %d books not yet looked at"
 msgstr[0] "停止しました。未確認の本が %d 冊あります"
 
-#: mcomix/webp_dialog.py:191
+#: mcomix/webp_dialog.py:193
 msgid "Repacking books as ZIP"
 msgstr "本を ZIP に詰め直しています"
 
-#: mcomix/webp_dialog.py:192
+#: mcomix/webp_dialog.py:194
 msgid "Making pages smaller"
 msgstr "ページを縮小しています"
 
-#: mcomix/webp_dialog.py:193
+#: mcomix/webp_dialog.py:195
 msgid "Shrinking pages"
 msgstr "大きなページを縮小しています"
 
-#: mcomix/webp_dialog.py:322
+#: mcomix/webp_dialog.py:326
 msgid ""
 "The disk is full. The books as they were are in the trash, which holds their "
 "room until it is emptied."
@@ -3588,60 +3605,60 @@ msgstr ""
 "ディスクがいっぱいです。元の本はゴミ箱にあり、ゴミ箱を空にするまでその容量を"
 "使い続けます。"
 
-#: mcomix/webp_dialog.py:324
+#: mcomix/webp_dialog.py:328
 msgid "The disk is full."
 msgstr "ディスクがいっぱいです。"
 
-#: mcomix/webp_dialog.py:331
+#: mcomix/webp_dialog.py:335
 #, python-format
 msgid "%(count)d book repacked as ZIP, %(size)s larger"
 msgid_plural "%(count)d books repacked as ZIP, %(size)s larger"
 msgstr[0] "%(count)d 冊を ZIP に詰め直しました、%(size)s 増加"
 
-#: mcomix/webp_dialog.py:337
+#: mcomix/webp_dialog.py:341
 #, python-format
 msgid "%(count)d book repacked as ZIP, %(size)s smaller"
 msgid_plural "%(count)d books repacked as ZIP, %(size)s smaller"
 msgstr[0] "%(count)d 冊を ZIP に詰め直しました、%(size)s 削減"
 
-#: mcomix/webp_dialog.py:341
+#: mcomix/webp_dialog.py:345
 #, python-format
 msgid "%(count)d book shrunk, %(size)s smaller"
 msgid_plural "%(count)d books shrunk, %(size)s smaller"
 msgstr[0] "%(count)d 冊を縮小、%(size)s 削減"
 
-#: mcomix/webp_dialog.py:345
+#: mcomix/webp_dialog.py:349
 #, python-format
 msgid "%(count)d book stored with WebP pages, %(size)s smaller"
 msgid_plural "%(count)d books stored with WebP pages, %(size)s smaller"
 msgstr[0] "%(count)d 冊を WebP ページで格納、%(size)s 削減"
 
-#: mcomix/webp_dialog.py:358
+#: mcomix/webp_dialog.py:362
 #, python-format
 msgid "%d book stored without its damaged files"
 msgid_plural "%d books stored without their damaged files"
 msgstr[0] "%d 冊を破損したファイルを除いて格納"
 
-#: mcomix/webp_dialog.py:395
+#: mcomix/webp_dialog.py:399
 #, python-format
 msgid "About %d minute left"
 msgid_plural "About %d minutes left"
 msgstr[0] "残り約 %d 分"
 
-#: mcomix/webp_dialog.py:426 mcomix/webp_dialog.py:480
+#: mcomix/webp_dialog.py:430 mcomix/webp_dialog.py:484
 #, python-format
 msgid "Could not be written: %s"
 msgstr "書き込めませんでした: %s"
 
-#: mcomix/webp_dialog.py:444
+#: mcomix/webp_dialog.py:448
 msgid "_Save Log…"
 msgstr "ログを保存(_S)…"
 
-#: mcomix/webp_dialog.py:449
+#: mcomix/webp_dialog.py:453
 msgid "Select Books with _Errors"
 msgstr "エラーのある本を選択(_E)"
 
-#: mcomix/webp_dialog.py:495
+#: mcomix/webp_dialog.py:499
 msgid "Save the log as"
 msgstr "ログを別名で保存"
 

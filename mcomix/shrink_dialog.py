@@ -15,6 +15,7 @@ closing the window, ends the reading; what was found so far is listed.
 """
 
 import os
+import shutil
 import threading
 
 from gi.repository import GLib, Gtk, Pango
@@ -22,6 +23,7 @@ from gi.repository import GLib, Gtk, Pango
 from mcomix import archive_packer
 from mcomix import i18n
 from mcomix import log
+from mcomix import message_dialog
 from mcomix import page_shrink
 from mcomix import webp_books
 from mcomix import webp_dialog
@@ -290,13 +292,64 @@ class ShrinkDialog(Dialog):
                 if self.ticks[path].get_active()]
 
     def _write(self) -> None:
-        """Shrink the books left ticked, in a window of their own."""
+        """Shrink the books left ticked, in a window of their own; first
+        asking, where the disk has no room to keep the books as they were
+        in the trash, whether to delete them instead."""
         books = self.ticked()
         if not books:
             return
+        short = self._short_of_room(books)
+        if short is None:
+            self._shrink_books(books, trash=True)
+            return
+        needed, free = short
+        dialog = message_dialog.MessageDialog(self, modal=True)
+        dialog.set_text(
+            _('Not enough room to keep the books as they were'),
+            _('The books shrunk take about %(needed)s on the disk, which '
+              'has %(free)s free: the books as they were stay in the trash, '
+              'and keep their room until it is emptied. Deleting them '
+              'permanently instead frees their room as each book is '
+              'written.') % {'needed': GLib.format_size(needed),
+                             'free': GLib.format_size(free)})
+        dialog.add_confirmation_buttons(
+            _('_Cancel'), Response.CANCEL,
+            _('_Delete Originals Permanently'), Response.OK)
+
+        def answered(response: int) -> None:
+            if response == Response.OK:
+                self._shrink_books(books, trash=False)
+        dialog.run_async(answered)
+
+    def _short_of_room(self, books: list[str]) -> "tuple[int, int] | None":
+        """Where the disk of any of <books> has less room free than the
+        books shrunk will take beside the books as they were, kept in
+        the trash, which is on the same disk: how much they take there,
+        and how much is free.  None where every disk has room."""
+        surveyed = dict(self.found)
+        disks: dict[int, tuple[str, int]] = {}
+        for path in books:
+            folder = os.path.dirname(os.path.abspath(path))
+            try:
+                disk = os.stat(folder).st_dev
+            except OSError:
+                continue
+            taken = surveyed[path].size - surveyed[path].saved
+            disks[disk] = (folder, disks.get(disk, (folder, 0))[1] + taken)
+        for folder, needed in disks.values():
+            try:
+                free = shutil.disk_usage(folder).free
+            except OSError:
+                continue
+            if needed > free:
+                return needed, free
+        return None
+
+    def _shrink_books(self, books: list[str], trash: bool) -> None:
         shrink = self.shrink
         self.destroy()
         webp_dialog.write(self._parent, books, self._open_book,
-                          self._written, lambda: None, self._select, shrink)
+                          self._written, lambda: None, self._select, shrink,
+                          trash=trash)
 
 # vim: expandtab:sw=4:ts=4

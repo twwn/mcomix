@@ -2685,7 +2685,7 @@ class StorePagesAsWebpTest(_LibraryWindowTest):
         asked = []
 
         def convert(path, stop, progress, shrink=None, repack=False,
-                    without_damaged=False):
+                    without_damaged=False, trash=True):
             asked.append(without_damaged)
             raise webp_books.Skipped('looked at')
 
@@ -2797,7 +2797,7 @@ class StorePagesAsWebpTest(_LibraryWindowTest):
         real = webp_books.convert
 
         def first_then_stop(path, stop, progress, shrink=None, repack=False,
-                    without_damaged=False):
+                    without_damaged=False, trash=True):
             converted = real(path, stop, progress, shrink)
             stop.set()
             return converted
@@ -2817,7 +2817,7 @@ class StorePagesAsWebpTest(_LibraryWindowTest):
         started = threading.Event()
 
         def until_stopped(path, stop, progress, shrink=None, repack=False,
-                    without_damaged=False):
+                    without_damaged=False, trash=True):
             started.set()
             stop.wait(10)
             raise archive_packer.Cancelled()
@@ -2848,7 +2848,7 @@ class StorePagesAsWebpTest(_LibraryWindowTest):
         real = webp_books.convert
 
         def convert(path, stop, progress, shrink=None, repack=False,
-                    without_damaged=False):
+                    without_damaged=False, trash=True):
             if path in failing:
                 raise OSError('the disk went away')
             converted = real(path, stop, progress, shrink)
@@ -2919,7 +2919,7 @@ class StorePagesAsWebpTest(_LibraryWindowTest):
         failing_convert = webp_books.convert
 
         def spoilt(path, stop, progress, shrink=None, repack=False,
-                    without_damaged=False):
+                    without_damaged=False, trash=True):
             # Spoilt once the library holds it, which it would not take.
             if path == unreadable:
                 with open(unreadable, 'wb') as book:

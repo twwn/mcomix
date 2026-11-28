@@ -3,13 +3,14 @@ the limit asked for to the books written smaller."""
 
 import errno
 import os
+import types
 import unittest.mock
 import zipfile
 
 from gi.repository import Gtk
 from PIL import Image
 
-from . import drawn_page, encoded, pump, wait_for
+from . import drawn_page, encoded, pump, visible_prompts, wait_for
 from .test_library_dialog import _LibraryWindowTest
 from mcomix import shrink_dialog
 from mcomix import webp_dialog
@@ -120,6 +121,43 @@ class ShrinkPagesTest(_LibraryWindowTest):
         self.assertIn('not yet looked at', text)
         self.assertIn('in the trash', text)
         self.assertIn('The disk is full', progress.log_text())
+
+    def _short_of_room(self):
+        """Found and asked to shrink with no room on the disk; answer
+        with the window that found them and the question."""
+        asked = self._found(self.large, self.larger)
+        room = types.SimpleNamespace(free=1)
+        with unittest.mock.patch.object(shrink_dialog.shutil, 'disk_usage',
+                                        return_value=room):
+            asked.response(Response.OK)
+        pump()
+        prompt, = visible_prompts()
+        self.addCleanup(prompt.destroy)
+        self.assertIs(prompt.get_default_widget(),
+                      prompt.get_widget_for_response(Response.CANCEL))
+        return asked, prompt
+
+    def test_short_of_room_asks_before_writing_and_cancel_writes_nothing(
+            self):
+        before = {path: os.path.getsize(path)
+                  for path in (self.large, self.larger)}
+        _asked, prompt = self._short_of_room()
+        prompt.response(Response.CANCEL)
+        pump()
+        self.assertEqual([], [window for window in Gtk.Window.list_toplevels()
+                              if isinstance(window,
+                                            webp_dialog._ProgressDialog)])
+        self.assertEqual(before, {path: os.path.getsize(path)
+                                  for path in before})
+
+    def test_short_of_room_the_originals_can_be_deleted_instead(self):
+        asked, prompt = self._short_of_room()
+        progress = self._written(prompt)
+        self.assertTrue(progress._status.get_text().startswith(
+            '2 books shrunk'))
+        self.assertFalse(os.path.exists(self.trash_dir), 'trashed')
+        with zipfile.ZipFile(self.larger) as book:
+            self.assertIn('01.webp', book.namelist())
 
     def test_nothing_over_the_limit_offers_only_to_close(self):
         asked = self._found(self.small)
