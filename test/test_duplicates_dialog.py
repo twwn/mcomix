@@ -13,7 +13,6 @@ from . import (drawn_page, encoded, pump, stop_on_the_second, visible_prompts,
                wait_for)
 from .test_library_dialog import _LibraryWindowTest
 from mcomix.dialog import Response
-from mcomix.library import duplicates
 from mcomix.library import duplicates_dialog
 from mcomix.library import fingerprint
 from mcomix.preferences import prefs
@@ -132,16 +131,6 @@ class FindDuplicatesTest(_LibraryWindowTest):
         stop_on_the_second(found, reads, go)
         self.assertIn('Stopped with 1 book not yet read.',
                       found._status.get_text())
-
-    def test_the_copy_to_keep(self):
-        def made(pages, width, size):
-            return fingerprint.Fingerprint(size, 0, pages, (
-                fingerprint.Sample(b'', b'', width, width),))
-        books = {1: made(10, 100, 500), 2: made(12, 100, 900),
-                 3: made(12, 200, 900), 4: made(12, 200, 800)}
-        self.assertEqual(4, duplicates.to_keep((1, 2, 3, 4), books))
-        self.assertEqual(3, duplicates.to_keep((1, 2, 3), books))
-        self.assertEqual(2, duplicates.to_keep((1, 2), books))
 
     def test_a_row_activated_opens_its_book(self):
         found = self._found(self.first, self.same, self.longer, self.other)

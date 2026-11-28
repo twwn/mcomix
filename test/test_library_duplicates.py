@@ -97,6 +97,8 @@ class FindTest(MComixTest):
                 90, expand=True)),
             'with a page in front': _pngs((99, 1, 2, 3)),
             'with its cover only': _pngs((1,)),
+            'with its first two pages only': _pngs((1, 2)),
+            'with two pages swapped': _pngs((2, 1, 3, 4)),
         }
         for name, files in copies.items():
             with self.subTest(name):
@@ -111,6 +113,7 @@ class FindTest(MComixTest):
         look_alikes = {
             'the same cover': _pngs((1, 10, 11, 12)),
             'the same pages out of order': _pngs((4, 3, 2, 1)),
+            'its cover over and over': _pngs((1, 1, 1, 1)),
             'white pages': _pngs((20,)) + [white] * 3,
         }
         for name, files in look_alikes.items():
@@ -131,6 +134,20 @@ class FindTest(MComixTest):
                   for book in range(duplicates._COMMON + 2)]
         self.assertEqual([], self._found(books))
 
+    def test_a_page_many_books_share_as_files_of_their_own(self):
+        """The credits saved again in each book: the same page, though
+        no two books hold the same file of it."""
+        quality = iter(range(50, 100))
+
+        def credits():
+            return encoded(drawn_page(50), 'JPEG', quality=next(quality))
+
+        books = [_book(_pngs((1,)) + [credits()] + _pngs((60 + book,)))
+                 for book in range(3)]
+        books += [_book(_pngs((100 + book,)) + [credits()])
+                  for book in range(duplicates._COMMON + 2)]
+        self.assertEqual([], self._found(books))
+
     def test_a_group_is_as_sure_as_its_least_sure_link(self):
         book = _book(self.pages, size=5000)
         found = self._found([
@@ -140,6 +157,40 @@ class FindTest(MComixTest):
             _book(_pngs((30, 31))), _book(_pngs((30, 31)), size=10)])
         self.assertEqual([Group((0, 1, 2), Likeness.SIMILAR),
                           Group((3, 4), Likeness.SAME_PAGES)], found)
+
+    def test_two_copies_of_one_file(self):
+        """After a book whose size no other has."""
+        found = self._found([
+            fingerprint.Fingerprint(4000, 0, 4, (), b'alone'),
+            fingerprint.Fingerprint(5000, 0, 4, (), b'digest'),
+            fingerprint.Fingerprint(5000, 0, 4, (), b'digest')])
+        self.assertEqual([Group((1, 2), Likeness.SAME_FILE)], found)
+        self.assertEqual([1, 2], self.digests_asked)
+
+    def test_a_stopped_search_compares_no_pictures(self):
+        books = [_book(self.pages),
+                 _book(_pngs((1, 2, 3, 4), ImageOps.mirror))]
+        stop = threading.Event()
+        self.assertEqual([Group((0, 1), Likeness.SIMILAR)],
+                         self._found(books, stop))
+        stop.set()
+        self.assertEqual([], self._found(books, stop))
+
+    def test_the_same_files_pillow_cannot_read(self):
+        """Pages of the same files are the same pages, pictures or
+        none, as long as no more than _COMMON other books hold them."""
+        unread = [fingerprint.Sample(bytes([page]) * 8, b'')
+                  for page in (1, 2)]
+
+        def books(count):
+            return [fingerprint.Fingerprint(1000 + book, 0, 2 + book,
+                                            tuple(unread))
+                    for book in range(count)]
+
+        for count in (2, duplicates._COMMON + 1):
+            self.assertEqual([Group(tuple(range(count)), Likeness.SIMILAR)],
+                             self._found(books(count)))
+        self.assertEqual([], self._found(books(duplicates._COMMON + 2)))
 
     def test_a_stopped_search_reads_no_file(self):
         """What the fingerprints say without one is found all the same."""
@@ -169,3 +220,26 @@ class FindTest(MComixTest):
         started = time.perf_counter()
         self.assertEqual([], duplicates.find(books, self._digest))
         self.assertLess(time.perf_counter() - started, 5)
+
+
+class ToKeepTest(MComixTest):
+
+    """The copy to keep: most pages, then the largest first page, then
+    the smallest file."""
+
+    def test_the_copy_to_keep(self):
+        def made(pages, width, size):
+            return fingerprint.Fingerprint(size, 0, pages, (
+                fingerprint.Sample(b'', b'', width, width),))
+        books = {1: made(10, 100, 500), 2: made(12, 100, 900),
+                 3: made(12, 200, 900), 4: made(12, 200, 800)}
+        self.assertEqual(4, duplicates.to_keep((1, 2, 3, 4), books))
+        self.assertEqual(3, duplicates.to_keep((1, 2, 3), books))
+        self.assertEqual(2, duplicates.to_keep((1, 2), books))
+
+    def test_a_book_with_no_page_sampled(self):
+        """Its first page counts as the smallest there is."""
+        books = {1: fingerprint.Fingerprint(900, 0, 12, (
+                     fingerprint.Sample(b'', b'', 1, 1),)),
+                 2: fingerprint.Fingerprint(500, 0, 12, ())}
+        self.assertEqual(1, duplicates.to_keep((1, 2), books))

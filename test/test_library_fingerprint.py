@@ -11,8 +11,8 @@ from unittest import mock
 
 from PIL import Image, ImageOps
 
-from . import (MComixTest, drawn_page, encoded, get_testfile_path,
-               refuse_passwords)
+from . import (MComixTest, damage_member, drawn_page, encoded,
+               get_testfile_path, refuse_passwords)
 from mcomix.library import fingerprint
 
 
@@ -70,6 +70,15 @@ class PictureTest(MComixTest):
         white = Image.new('RGB', clear.size, 'white')
         self.assertEqual(_picture(encoded(white, 'PNG')),
                          _picture(encoded(clear, 'PNG')))
+        # Black under the clear parts, in the other transparent modes.
+        grey = Image.new('LA', clear.size, (0, 0))
+        indexed = Image.new('P', clear.size, 0)
+        for name, page, options in (('grey with alpha', grey, {}),
+                                    ('a palette with a clear colour',
+                                     indexed, {'transparency': 0})):
+            with self.subTest(name):
+                self.assertEqual(_picture(encoded(white, 'PNG')),
+                                 _picture(encoded(page, 'PNG', **options)))
 
     def test_a_plain_page_keeps_its_picture(self):
         """Nothing to cut, and nothing to stretch."""
@@ -138,6 +147,26 @@ class MakeTest(MComixTest):
         self.assertEqual(zipped.samples, tarred.samples)
         self.assertEqual(zipped.pages, tarred.pages)
         self.assertNotEqual(zipped.size, tarred.size)
+
+    def test_only_pages_are_counted_and_sampled(self):
+        """Not a text, nor the file macOS keeps beside each page, though
+        both sort before the pages."""
+        pages = self._pages(3)
+        made = fingerprint.make(self._zip(pages))
+        with_others = fingerprint.make(self._zip(
+            pages | {'._01.jpg': b'resource fork', '00 notes.txt': b'notes'},
+            'others.cbz'))
+        self.assertEqual(made.pages, with_others.pages)
+        self.assertEqual(made.samples, with_others.samples)
+
+    def test_a_damaged_page_leaves_the_next_ones_sampled(self):
+        pages = self._pages(3)
+        path = self._zip(pages)
+        damage_member(path, '01.jpg')
+        made = fingerprint.make(path)
+        self.assertEqual(3, made.pages)
+        self.assertEqual([_picture(pages['02.png']), _picture(pages['03.jpg'])],
+                         [sample.picture for sample in made.samples])
 
     def test_a_page_pillow_cannot_read_has_no_picture(self):
         made = fingerprint.make(self._zip({'01.png': b'not a picture'}))
