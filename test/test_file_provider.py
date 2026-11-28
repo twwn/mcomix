@@ -131,6 +131,16 @@ class OrderedFileProviderTest(MComixTest):
             self._walk(provider, OrderedFileProvider.previous_directory),
             ['b', 'a'])
 
+    def test_a_hidden_folder_named_like_the_start_of_the_book_s_is_hidden(
+            self) -> None:
+        """The book's folder is .cx; .c, before it, is not one it is in."""
+        self._hide('.c')
+        self._hide('.cx')
+        provider = self._provider('.cx')
+        self.assertEqual(
+            self._walk(provider, OrderedFileProvider.previous_directory),
+            ['.cx'])
+
     def test_directories_not_accepted_are_passed_over(self) -> None:
         provider = self._provider('a')
         self.assertTrue(provider.next_directory(
@@ -552,7 +562,19 @@ class PreDefinedFileProviderTest(MComixTest):
         self.assertEqual(os.path.abspath(os.getcwd()),
                          provider.get_directory())
 
-# vim: expandtab:sw=4:ts=4
+    def test_a_file_moved_is_listed_where_it_was(self) -> None:
+        """Renamed or moved, a book keeps its place among the others,
+        which stay as they were; one not listed is said not to be."""
+        archives = [NORMAL_ZIP, get_testfile_path('archives', '02-TAR-Normal.tar')]
+        image = get_testfile_path('images', 'red.png')
+        provider = PreDefinedFileProvider(archives + [image])
+        moved = os.path.join(self.tmp_dir, 'renamed.zip')
+        self.assertTrue(provider.moved(archives[0], moved))
+        self.assertEqual([moved, archives[1]],
+                         provider.list_files(PreDefinedFileProvider.ARCHIVES))
+        self.assertEqual([image],
+                         provider.list_files(PreDefinedFileProvider.IMAGES))
+        self.assertFalse(provider.moved(archives[0], moved))
 
 
 class GetFileProviderTest(MComixTest):
