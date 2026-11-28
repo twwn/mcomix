@@ -13,6 +13,7 @@ information into the reader's data directory.
 import os
 import tempfile
 import threading
+import time
 import unittest.mock
 
 from gi.repository import GLib, Gtk
@@ -132,6 +133,24 @@ class MainWindowClosedTest(MComixTest):
         for thread in threads:
             thread.join(5)
             self.assertFalse(thread.is_alive())
+
+    def test_the_wait_for_stuck_pools_is_one_for_the_whole_close(self):
+        """Each pool left running was waited for in turn, its full
+        QUIT_JOIN_SECONDS, so eight of them made every close in that
+        process take minutes and the Windows run its full hour."""
+        window = self.open_main_window()
+        pools = [worker_thread.WorkerThread(lambda order: None,
+                                            name='left%d' % n)
+                 for n in range(4)]
+        for pool in pools:
+            pool.append_order(1)
+        self.assertTrue(wait_for(lambda: all(
+            pool._threads and pool._in_hand == 0 for pool in pools)))
+        started = time.monotonic()
+        with unittest.mock.patch(__package__ + '.QUIT_JOIN_SECONDS', 0.5), \
+                self.assertRaisesRegex(AssertionError, 'left3'):
+            close_a_main_window(window)
+        self.assertLess(time.monotonic() - started, 1.5)
 
     def _no_worker_thread_left(self, before):
         self.assertEqual(

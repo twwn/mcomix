@@ -229,17 +229,22 @@ def _quit_without_waiting_for_good(window):
     never stopped waits for orders for good, and quitting waited for it
     until the CI cancelled the whole run, its failures unreported.  So
     a thread still running after QUIT_JOIN_SECONDS is named, and its
-    pool, if it is a WorkerThread's, let go."""
+    pool, if it is a WorkerThread's, let go.  The seconds are for the
+    whole quit, not each thread: the Windows CI's dumps showed eight
+    such threads at a time, each waited for in turn, so every close
+    took minutes and the run its full hour."""
+    import time
     import unittest.mock
     from mcomix.worker_thread import WorkerThread
     join = threading.Thread.join
     caller = threading.current_thread()
     stuck = []
+    deadline = time.monotonic() + QUIT_JOIN_SECONDS
 
     def bounded_join(thread, timeout=None):
         if timeout is not None or threading.current_thread() is not caller:
             return join(thread, timeout)
-        join(thread, QUIT_JOIN_SECONDS)
+        join(thread, max(0.0, deadline - time.monotonic()))
         if thread.is_alive():
             stuck.append(thread.name)
             pool = getattr(getattr(thread, '_target', None), '__self__', None)
