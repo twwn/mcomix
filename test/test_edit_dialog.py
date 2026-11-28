@@ -963,6 +963,15 @@ class EditArchiveDialogTest(MComixTest):
             self.assertEqual(self.dialog._save_format(),
                              (constants.ZIP, '.cbz'))
 
+    def test_saving_every_archive_as_a_zip_comes_first(self):
+        """A tar, which MComix writes, is still saved as a CBZ."""
+        prefs['keep archive format when saving'] = True
+        prefs['zip when saving'] = True
+        with unittest.mock.patch.object(self.dialog.file_handler,
+                                        'archive_type', constants.TAR):
+            self.assertEqual(self.dialog._save_format(),
+                             (constants.ZIP, '.cbz'))
+
     def test_a_format_is_only_offered_where_its_program_is_installed(self):
         """A 7z needs 7-Zip and a RAR needs rar, neither of which
         MComix installs; unrar, which is what a RAR is read with, only

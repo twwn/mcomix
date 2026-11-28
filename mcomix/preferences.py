@@ -65,6 +65,7 @@ Preferences = TypedDict('Preferences', {
     'comment extensions': list[str],
     'keep archive format when saving': bool,
     'png pages as webp when saving': bool,
+    'zip when saving': bool,
     'shrink page height': int,
     'shrink page quality': int,
     'auto load last file': bool,
@@ -228,6 +229,7 @@ _DEFAULTS: Preferences = {
     'comment extensions': constants.ACCEPTED_COMMENT_EXTENSIONS,
     'keep archive format when saving': False,
     'png pages as webp when saving': False,
+    'zip when saving': False,
     # "Shrink oversized pages...": twice the height of a 4K screen,
     # which leaves room to zoom in, and a quality at
     # which a page's lines and lettering show no blocks.

@@ -37,6 +37,7 @@ Remember recently opened files | Keeps File → Recent and each book's last page
 Save page as opens at the last folder saved into | Instead of the book's own directory.
 Save an edited archive in the format it was opened in | Write it back as the ZIP, tar, 7z or RAR it was read as. 7z and RAR need the `7z` and `rar` programs, which MComix does not install; a format it cannot write is saved as ZIP.
 Make pages smaller without loss when saving an archive | Each PNG or GIF page is written as a WebP, and each JPEG page with optimised tables, where that keeps every pixel and is smaller; see [Saved archives](editing.md#saved-archives). Off by default, since some other comic readers cannot show WebP.
+Save every archive as a ZIP, replacing other formats | Each archive MComix saves is written as a ZIP, whatever it was opened as; see [Saved archives](editing.md#saved-archives). A RAR, 7z or tar book saved in place is replaced by a ZIP of its name ending in .cbz or .zip. Comes before "Save an edited archive in the format it was opened in". Off by default.
 Comment file extensions | Which files in an archive count as comments. txt, nfo and xml by default.
 Prompts answered for good | Every prompt whose answer can be remembered, with its answer: reopening a part-read book, deleting the open file, bookmarking a book that has bookmarks, deleting books removed from the library, deleting a bookmarked file, changing the pages of the open book, leaving a book with pages picked out. "Do not ask again" sets an answer here; "Ask every time" takes it back.
 

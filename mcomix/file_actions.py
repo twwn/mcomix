@@ -678,14 +678,37 @@ class FileActions:
         format other than ZIP is only written where the reader has asked
         for the format to be kept, since otherwise a save would put a
         ZIP inside a file still called .cbt.
+
+        Where the reader has asked for every archive to be saved as a
+        ZIP, any archive of files is written as one, which then takes
+        the place of a RAR, 7z or tar under the name zip_name() gives
+        it - save_archive() sees to that.  A book in volumes, or one
+        reached through a symbolic link that a new name would break, is
+        written as before.
         """
         archive_type = self._window.filehandler.archive_type
-        if archive_type is None or not archive_packer.can_write(archive_type):
+        if archive_type is None:
+            return None
+        if prefs['zip when saving'] and self._saves_as_zip(archive_type):
+            return constants.ZIP
+        if not archive_packer.can_write(archive_type):
             return None
         if archive_type in (constants.ZIP, constants.ZIP_EXTERNAL) \
                 or prefs['keep archive format when saving']:
             return archive_type
         return None
+
+    def _saves_as_zip(self, archive_type: int) -> bool:
+        """Whether the open book, of <archive_type>, can be saved as a
+        ZIP over itself or in its place."""
+        path = self._window.filehandler.get_path_to_base()
+        if path is None or not webp_books.can_repack(archive_type):
+            return False
+        if archive_type in (constants.ZIP, constants.ZIP_EXTERNAL):
+            return True
+        return not os.path.islink(path) \
+            and not archive_tools.is_later_volume(path) \
+            and len(archive_tools.volume_set(path)) == 1
 
     def has_unsaved_changes(self) -> bool:
         """Whether the book on screen differs from the archive on disk.
@@ -907,6 +930,14 @@ class FileActions:
         # hidden one part way through a save that takes longer than that.
         self._window.cursor_handler.set_busy(True)
         try:
+            # A RAR, say, written as a ZIP, under a name that says so.
+            target = webp_books.zip_name(path) \
+                if archive_type == constants.ZIP \
+                and self._window.filehandler.archive_type not in (
+                    constants.ZIP, constants.ZIP_EXTERNAL) else path
+            if target != path and os.path.lexists(target):
+                raise FileExistsError(errno.EEXIST, os.strerror(errno.EEXIST),
+                                      target)
             image_files = self._window.imagehandler.get_image_files()
             comment_files = [self._window.filehandler.get_comment_name(number)
                              for number in range(
@@ -920,14 +951,17 @@ class FileActions:
             carried_files = self._window.filehandler.get_other_files()
             self._window.filehandler.release_archive()
             written = archive_packer.write_archive(
-                path, image_files, comment_files,
+                target, image_files, comment_files,
                 carried_files=carried_files,
                 archive_type=archive_type, permissions_from=path,
                 page_names=self._page_names,
                 waiting=save_progress.waiting(self._window, path),
                 webp_pages=prefs['png pages as webp when saving'])
-            self.pages_written(path, written)
             self._written_as = (image_files, dict(self._page_names))
+            if target != path:
+                self._replaced_by(path, target, written)
+                return True
+            self.pages_written(path, written)
             # What the archive holds now: an undo past this point is a
             # change to the book as written, turns and all.
             self._turns_written.clear()
@@ -968,6 +1002,31 @@ class FileActions:
                    for page, name in written.items()}
         handler.members_written(written)
         follow_pages(path, renamed)
+
+    def _replaced_by(self, path: str, target: str,
+                     written: "Mapping[str, str]") -> None:
+        """Read the book at <path> at <target> from now on, where it has
+        just been written as a ZIP of all of it, its pages named as
+        <written> says: the file at <path> goes, and what is kept by
+        its path and its pages' names follows it.
+
+        It is opened again there, as a book renamed is: what was
+        unpacked, its listing and its undo history were the old
+        file's.
+        """
+        handler = self._window.filehandler
+        renamed = {handler.member_of(page): name
+                   for page, name in written.items()}
+        try:
+            portability.rename_once_closed(
+                lambda old, _new: tools.remove_file(old), path, path)
+        except OSError as failure:
+            log.warning('"%s" was saved as "%s", but could not be removed: '
+                        '%s', i18n.to_display_string(path),
+                        i18n.to_display_string(target), failure)
+        follow_book(path, target)
+        follow_pages(target, renamed)
+        self._book_moved(path, target, followed=True)
 
     def can_store_pages_as_webp(self) -> bool:
         """Whether "Make pages smaller without loss..." applies to the open book.
@@ -1747,18 +1806,21 @@ class FileActions:
         self._close_offer_answered = False
         self._waiting_close = None
 
-    def _book_moved(self, current_file: str, target: str) -> None:
+    def _book_moved(self, current_file: str, target: str,
+                    followed: bool = False) -> None:
         """Go on reading the book that was at <current_file> at
         <target>, where it has just been moved or renamed to.
 
         Where the old path is recorded it is brought forward - the
         library holds one, and so do the bookmarks, the store of last
         read pages, the turns and marks given to single pages, and the
-        password typed for it this session.
+        password typed for it this session; <followed> says it has been
+        already.
         """
         in_archive = self._window.filehandler.archive_type is not None
         page = self._window.imagehandler.get_current_page()
-        follow_book(current_file, target)
+        if not followed:
+            follow_book(current_file, target)
         # The book is about to be opened where it landed, which records
         # that; the entry for where it was would open nothing.
         self._window.uimanager.recent.remove_path(current_file)

@@ -279,6 +279,11 @@ class _PreferencesDialog(Dialog):
             'png pages as webp when saving',
             _('Write each PNG or GIF page of an archive MComix saves as a lossless WebP, and each JPEG page with optimised tables, where that is smaller and keeps every pixel. Some other comic readers cannot show WebP.')))
 
+        page.add_row(self._create_pref_check_button(
+            _('Save every archive as a ZIP, replacing other formats'),
+            'zip when saving',
+            _('Write each archive MComix saves as a ZIP, with pages already compressed stored and the rest compressed, whatever format it was opened in. A RAR, 7z or tar book saved in place is replaced by the ZIP, named .cbz in place of .cbr, .cb7 or .cbt, and .zip in place of any other extension. This comes before keeping the format an archive was opened in.')))
+
         page.add_row(Gtk.Label(label=_('Comment file extensions:')),
                      self._create_extensions_entry())
 

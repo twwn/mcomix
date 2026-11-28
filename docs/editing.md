@@ -63,6 +63,10 @@ The archive on disk is untouched until the changes are written.
 - Comment files keep their names; one a page has taken gets an underscore in front.
 - The ComicInfo.xml MComix writes keeps its own name, whatever the list calls it.
 - In a CBZ, a page that is compressed already, such as a JPEG, PNG or WebP, is stored as it is: compressing it again saves a tenth of a percent or so, and makes the book slower to write and to read. Text files and uncompressed pictures, such as BMP, are compressed.
+- With "Save every archive as a ZIP, replacing other formats", a RAR, 7z, tar or LHA book is written as a ZIP when its changes are saved, and the ZIP takes its place: Book.cbr, Book.cb7 or Book.cbt becomes Book.cbz, and any other name ends in .zip. The old file is removed, and the book is read from the ZIP from then on, at the same page; the library, bookmarks and the page it was left at follow it.
+  - A book whose new name another file holds is not saved, and MComix says so. A RAR in volumes, and a book reached through a symbolic link, are saved as before.
+  - "Save As" in the archive editor writes a CBZ, whatever "Save an edited archive in the format it was opened in" says.
+  - The library's "Repack as ZIP..." does the same for books without changes; see [Library](library.md).
 - With "Make pages smaller without loss when saving an archive", each PNG or GIF page is written as a WebP instead, its name ending in .webp: "03 - Batman 01.webp".
   - Lossless: a page becomes a WebP only where that decodes to exactly the same pixels and is smaller. The drawn and painted pages it was tried on took a quarter to three fifths less room; a page that would not shrink stays as it was.
   - Pages that WebP cannot hold exactly stay PNGs: 16 bits a channel, wider or higher than 16383 pixels, or with a gamma other than sRGB's. A colour profile and Exif go along with the page.

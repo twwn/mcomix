@@ -187,9 +187,12 @@ class _EditArchiveDialog(Dialog):
         archive to come back in the format it was opened in and that is
         one MComix can write: a RAR is read with a program that cannot
         make one, a PDF is not a format a book of pages goes back into,
-        and a 7z needs 7-Zip installed.
+        and a 7z needs 7-Zip installed.  Asking for every archive to be
+        saved as a ZIP comes before that.
         """
         archive_type = self.file_handler.archive_type
+        if prefs['zip when saving']:
+            return constants.ZIP, '.cbz'
         if (prefs['keep archive format when saving']
                 and archive_type is not None
                 and archive_packer.can_write(archive_type)):

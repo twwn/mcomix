@@ -2963,6 +2963,80 @@ class MainWindowTest(MComixTest):
             self.assertEqual(self.window.file_actions.writeable_archive_type(),
                              constants.TAR)
 
+    def _open_a_tar(self):
+        """Open a copy of the fixture tar, Book.cbt in the test's folder,
+        held in the library, and return its path once its pages are
+        listed."""
+        source = os.path.join(self.tmp_dir, 'Book.cbt')
+        shutil.copy(get_testfile_path('archives', '02-TAR-Normal.tar'),
+                    source)
+        self.assertTrue(backend.LibraryBackend().add_book(source))
+        self.window.filehandler.open_file(source)
+        self.assertTrue(
+            wait_for(lambda: self.window.imagehandler
+                     .get_number_of_pages() > 2, seconds=20),
+            'the copied tar never listed its pages')
+        return source
+
+    def test_saving_as_a_zip_replaces_a_tar(self):
+        """With "Save every archive as a ZIP", the tar is written as
+        Book.cbz, which takes its place, and the book is read there."""
+        source = self._open_a_tar()
+        before = self.window.imagehandler.get_number_of_pages()
+        actions = self.window.file_actions
+        self.assertIsNone(actions.writeable_archive_type())
+        prefs['zip when saving'] = True
+        self.assertEqual(constants.ZIP, actions.writeable_archive_type())
+        self._remove_first_page_quietly()
+        self.assertTrue(actions.save_archive(), 'the save failed')
+        target = os.path.join(self.tmp_dir, 'Book.cbz')
+        self.assertFalse(os.path.exists(source))
+        with zipfile.ZipFile(target) as written:
+            pages = [name for name in written.namelist()
+                     if image_tools.is_image_file(name)]
+        self.assertEqual(before - 1, len(pages))
+        self.assertTrue(wait_for(
+            lambda: self.window.filehandler.get_path_to_base() == target
+            and self.window.imagehandler.get_number_of_pages() == before - 1,
+            seconds=20), 'the book was not read again where it was saved')
+        self.assertFalse(actions.has_unsaved_changes())
+        library = backend.LibraryBackend()
+        self.assertIsNone(library.get_book_by_path(source))
+        self.assertIsNotNone(library.get_book_by_path(target))
+
+    def test_saving_as_a_zip_over_a_name_taken_writes_nothing(self):
+        source = self._open_a_tar()
+        taken = os.path.join(self.tmp_dir, 'Book.cbz')
+        shutil.copy(NORMAL_ZIP, taken)
+        prefs['zip when saving'] = True
+        self._remove_first_page_quietly()
+        told = []
+        with unittest.mock.patch.object(
+                message_dialog.MessageDialog, 'run_async',
+                lambda dialog, answered: told.append(dialog)), \
+                self.assertLogs('mcomix', level='ERROR'):
+            self.assertFalse(self.window.file_actions.save_archive())
+        for dialog in told:
+            dialog.destroy()
+        self.assertEqual(1, len(told))
+        with open(NORMAL_ZIP, 'rb') as original, open(taken, 'rb') as file:
+            self.assertEqual(original.read(), file.read())
+        self.assertTrue(os.path.exists(source))
+        self.assertEqual(source, self.window.filehandler.get_path_to_base())
+
+    def test_a_book_in_volumes_is_not_saved_as_a_zip(self):
+        """Only its first volume would be replaced."""
+        self._ready()
+        prefs['zip when saving'] = True
+        with unittest.mock.patch.object(self.window.filehandler,
+                                        'archive_type', constants.RAR), \
+                unittest.mock.patch.object(
+                    file_actions.archive_tools, 'volume_set',
+                    return_value=['a.part1.rar', 'a.part2.rar']), \
+                unittest.mock.patch.object(archive_packer, 'rar_executable',
+                                           return_value=None):
+            self.assertIsNone(self.window.file_actions.writeable_archive_type())
+
     def test_a_remembered_save_does_not_write_the_book_opened_after_it(self):
         """A remembered answer comes back from the idle queue, and a key
         handled before it - Next archive, pressed straight after the
