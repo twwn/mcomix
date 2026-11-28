@@ -1743,7 +1743,9 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable, LibraryPart):
             self._library.window, self._library.backend, books,
             open_book=lambda book: self._library.open_book(
                 [book], keep_library_open=True),
-            select=self._select_paths, remove=self.remove_from_library)
+            select=self._select_paths, remove=self.remove_from_library,
+            collected=lambda collection:
+                self._library.collection_area.display_collections())
 
     def check_books(self, *args: object) -> None:
         """Read every file of each book on show, and list those that

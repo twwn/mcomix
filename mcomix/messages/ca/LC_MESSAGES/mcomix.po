@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Comix 3.2\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-28 02:20+0100\n"
+"POT-Creation-Date: 2026-11-28 10:40+0100\n"
 "PO-Revision-Date: 2009-01-25 22:33+0100\n"
 "Last-Translator: Carles Escrig i Royo <simkin@ono.com>\n"
 "Language-Team: CA <gentoo@softcatala.net>\n"
@@ -100,7 +100,7 @@ msgid "! Could not save %(file)s to %(directory)s: %(error)s"
 msgstr "! No s'ha pogut desar %(file)s a %(directory)s: %(error)s"
 
 #: mcomix/bookmark_backend.py:493 mcomix/file_actions.py:1245
-#: mcomix/webp_dialog.py:420
+#: mcomix/webp_dialog.py:417
 #, python-format
 msgid "Could not save \"%(file)s\" to \"%(directory)s\""
 msgstr "No s'ha pogut desar «%(file)s» a «%(directory)s»"
@@ -123,8 +123,8 @@ msgstr "_No"
 #: mcomix/file_chooser_base_dialog.py:242
 #: mcomix/file_chooser_library_dialog.py:42 mcomix/message_dialog.py:26
 #: mcomix/message_dialog.py:29 mcomix/pageselect.py:38
-#: mcomix/save_progress.py:119 mcomix/webp_dialog.py:102
-#: mcomix/library/duplicates_dialog.py:215
+#: mcomix/save_progress.py:121 mcomix/webp_dialog.py:102
+#: mcomix/library/duplicates_dialog.py:237
 msgid "_Cancel"
 msgstr "_Cancel·la"
 
@@ -176,7 +176,7 @@ msgstr "Esborra _tots els marcadors..."
 
 #: mcomix/bookmark_dialog.py:33 mcomix/main.py:1562 mcomix/openwith.py:429
 #: mcomix/library/collection_area.py:140
-#: mcomix/library/duplicates_dialog.py:216 mcomix/library/watchlist.py:69
+#: mcomix/library/duplicates_dialog.py:238 mcomix/library/watchlist.py:69
 msgid "_Remove"
 msgstr "E_limina"
 
@@ -184,9 +184,9 @@ msgstr "E_limina"
 # File: src/ui.py, line: 48
 #: mcomix/bookmark_dialog.py:34 mcomix/comment_dialog.py:29
 #: mcomix/message_dialog.py:25 mcomix/preferences_dialog.py:105
-#: mcomix/properties_dialog.py:38 mcomix/webp_dialog.py:351
-#: mcomix/library/book_check_dialog.py:183 mcomix/library/book_properties.py:60
-#: mcomix/library/duplicates_dialog.py:270 mcomix/library/watchlist.py:41
+#: mcomix/properties_dialog.py:38 mcomix/webp_dialog.py:348
+#: mcomix/library/book_check_dialog.py:180 mcomix/library/book_properties.py:60
+#: mcomix/library/duplicates_dialog.py:292 mcomix/library/watchlist.py:41
 msgid "_Close"
 msgstr "Tan_ca"
 
@@ -362,7 +362,7 @@ msgstr "Fitxers de comentaris"
 #
 # File: src/library.py, line: 271
 #: mcomix/edit_dialog.py:262 mcomix/file_actions.py:941
-#: mcomix/webp_dialog.py:215
+#: mcomix/webp_dialog.py:217
 #, python-format
 msgid "! Could not save the archive %(archivefile)s: %(error)s"
 msgstr "! No s'ha pogut desar l'arxiu %(archivefile)s: %(error)s"
@@ -708,7 +708,7 @@ msgstr "No s'ha pogut moure «%(file)s» a «%(directory)s»"
 #: mcomix/file_chooser_base_dialog.py:76 mcomix/file_chooser_base_dialog.py:893
 #: mcomix/properties_dialog.py:137 mcomix/library/book_properties.py:95
 #: mcomix/library/book_properties.py:158 mcomix/library/control_area.py:161
-#: mcomix/library/control_area.py:197 mcomix/library/duplicates_dialog.py:318
+#: mcomix/library/control_area.py:197 mcomix/library/duplicates_dialog.py:341
 #, python-format
 msgid "%d page"
 msgid_plural "%d pages"
@@ -3010,7 +3010,7 @@ msgstr "Cal Python Imaging Library Fork (Pillow) %s o superior."
 msgid "No version of the Python Imaging Library was found on your system."
 msgstr "No s'ha trobat cap versió de Python Imaging Library al sistema."
 
-#: mcomix/save_progress.py:115
+#: mcomix/save_progress.py:117
 #, python-format
 msgid "Writing \"%s\""
 msgstr "Escrivint «%s»"
@@ -3829,7 +3829,7 @@ msgstr "Mi_llora la imatge..."
 msgid "_Library..."
 msgstr "_Biblioteca..."
 
-#: mcomix/ui.py:750
+#: mcomix/ui.py:751
 #, python-format
 msgid "Could not open the manual: %s"
 msgstr "No s'ha pogut obrir el manual: %s"
@@ -3862,18 +3862,18 @@ msgstr "aquí no hi ha res instal·lat que llegeixi el format"
 msgid "no page made smaller"
 msgstr "cap pàgina feta més petita"
 
-#: mcomix/webp_books.py:192
+#: mcomix/webp_books.py:195 mcomix/webp_books.py:221 mcomix/webp_books.py:227
+#: mcomix/webp_books.py:247 mcomix/library/book_check.py:38
+msgid "encrypted"
+msgstr "xifrat"
+
+#: mcomix/webp_books.py:197
 msgid "archives inside"
 msgstr "arxius a dins"
 
-#: mcomix/webp_books.py:197
+#: mcomix/webp_books.py:202
 msgid "no PNG, GIF or JPEG pages"
 msgstr "cap pàgina PNG, GIF o JPEG"
-
-#: mcomix/webp_books.py:216 mcomix/webp_books.py:222 mcomix/webp_books.py:242
-#: mcomix/library/book_check.py:38
-msgid "encrypted"
-msgstr "xifrat"
 
 #: mcomix/webp_dialog.py:97
 #, python-format
@@ -3896,69 +3896,69 @@ msgstr ""
 msgid "_Make Smaller"
 msgstr "_Fes-les més petites"
 
-#: mcomix/webp_dialog.py:126
+#: mcomix/webp_dialog.py:128
 msgid "Making pages smaller"
 msgstr "S'estan fent més petites les pàgines"
 
-#: mcomix/webp_dialog.py:152 mcomix/library/add_progress_dialog.py:57
-#: mcomix/library/book_check_dialog.py:63
-#: mcomix/library/duplicates_dialog.py:104
+#: mcomix/webp_dialog.py:154 mcomix/library/add_progress_dialog.py:57
+#: mcomix/library/book_check_dialog.py:65
+#: mcomix/library/duplicates_dialog.py:112
 msgid "_Stop"
 msgstr "_Atura"
 
-#: mcomix/webp_dialog.py:203
+#: mcomix/webp_dialog.py:205
 msgid "open in the main window"
 msgstr "obert a la finestra principal"
 
-#: mcomix/webp_dialog.py:242
+#: mcomix/webp_dialog.py:244
 #, python-format
 msgid "%(count)d book stored with WebP pages, %(size)s smaller"
 msgid_plural "%(count)d books stored with WebP pages, %(size)s smaller"
 msgstr[0] "%(count)d llibre desat amb pàgines WebP, %(size)s més petit"
 msgstr[1] "%(count)d llibres desats amb pàgines WebP, %(size)s més petits"
 
-#: mcomix/webp_dialog.py:254
+#: mcomix/webp_dialog.py:256
 #, python-format
 msgid "%d book stored without its damaged files"
 msgid_plural "%d books stored without their damaged files"
 msgstr[0] "%d llibre desat sense els seus fitxers danyats"
 msgstr[1] "%d llibres desats sense els seus fitxers danyats"
 
-#: mcomix/webp_dialog.py:259
+#: mcomix/webp_dialog.py:261
 #, python-format
 msgid "%(count)d book left as it was: %(reason)s"
 msgid_plural "%(count)d books left as they were: %(reason)s"
 msgstr[0] "%(count)d llibre deixat tal com era: %(reason)s"
 msgstr[1] "%(count)d llibres deixats tal com eren: %(reason)s"
 
-#: mcomix/webp_dialog.py:282
+#: mcomix/webp_dialog.py:284
 #, python-format
 msgid "Stopped with %d book not yet looked at"
 msgid_plural "Stopped with %d books not yet looked at"
 msgstr[0] "Aturat amb %d llibre encara per mirar"
 msgstr[1] "Aturat amb %d llibres encara per mirar"
 
-#: mcomix/webp_dialog.py:302
+#: mcomix/webp_dialog.py:304
 #, python-format
 msgid "About %d minute left"
 msgid_plural "About %d minutes left"
 msgstr[0] "Queda %d minut aproximadament"
 msgstr[1] "Queden %d minuts aproximadament"
 
-#: mcomix/webp_dialog.py:338 mcomix/webp_dialog.py:390
+#: mcomix/webp_dialog.py:335 mcomix/webp_dialog.py:387
 #, python-format
 msgid "Could not be written: %s"
 msgstr "No s'ha pogut escriure: %s"
 
-#: mcomix/webp_dialog.py:354
+#: mcomix/webp_dialog.py:351
 msgid "_Save Log…"
 msgstr "_Desa el registre…"
 
-#: mcomix/webp_dialog.py:359
+#: mcomix/webp_dialog.py:356
 msgid "Select Books with _Errors"
 msgstr "Selecciona els llibres amb _errors"
 
-#: mcomix/webp_dialog.py:403
+#: mcomix/webp_dialog.py:400
 msgid "Save the log as"
 msgstr "Desa el registre com a"
 
@@ -4297,51 +4297,51 @@ msgstr[1] "Voleu suprimir els marcadors dels %(count)d llibres suprimits?"
 msgid "Open with"
 msgstr "Obre amb"
 
-#: mcomix/library/book_check_dialog.py:48
+#: mcomix/library/book_check_dialog.py:50
 msgid "Books that cannot be read in full"
 msgstr "Llibres que no es poden llegir sencers"
 
-#: mcomix/library/book_check_dialog.py:120
+#: mcomix/library/book_check_dialog.py:122
 #, python-format
 msgid "Checking %(done)d of %(count)d book"
 msgid_plural "Checking %(done)d of %(count)d books"
 msgstr[0] "S'està comprovant %(done)d de %(count)d llibre"
 msgstr[1] "S'està comprovant %(done)d de %(count)d llibres"
 
-#: mcomix/library/book_check_dialog.py:155
+#: mcomix/library/book_check_dialog.py:152
 #, python-format
 msgid "%d book cannot be read in full."
 msgid_plural "%d books cannot be read in full."
 msgstr[0] "%d llibre no es pot llegir sencer."
 msgstr[1] "%d llibres no es poden llegir sencers."
 
-#: mcomix/library/book_check_dialog.py:159
+#: mcomix/library/book_check_dialog.py:156
 msgid "Every book can be read in full."
 msgstr "Tots els llibres es poden llegir sencers."
 
-#: mcomix/library/book_check_dialog.py:162
-#: mcomix/library/duplicates_dialog.py:252
+#: mcomix/library/book_check_dialog.py:159
+#: mcomix/library/duplicates_dialog.py:274
 #, python-format
 msgid "Stopped with %d book not yet read."
 msgid_plural "Stopped with %d books not yet read."
 msgstr[0] "S'ha aturat amb %d llibre encara per llegir."
 msgstr[1] "S'ha aturat amb %d llibres encara per llegir."
 
-#: mcomix/library/book_check_dialog.py:167
+#: mcomix/library/book_check_dialog.py:164
 #, python-format
 msgid "%d book could not be checked: see the log."
 msgid_plural "%d books could not be checked: see the log."
 msgstr[0] "No s'ha pogut comprovar %d llibre: vegeu el registre."
 msgstr[1] "No s'han pogut comprovar %d llibres: vegeu el registre."
 
-#: mcomix/library/book_check_dialog.py:187
-#: mcomix/library/duplicates_dialog.py:276
+#: mcomix/library/book_check_dialog.py:184
+#: mcomix/library/duplicates_dialog.py:298
 msgid "_Select in Library"
 msgstr "_Selecciona a la biblioteca"
 
 #
 # File: src/edit.py, line: 99
-#: mcomix/library/book_check_dialog.py:201
+#: mcomix/library/book_check_dialog.py:198
 #, python-format
 msgid "%d file cannot be read"
 msgid_plural "%d files cannot be read"
@@ -4470,13 +4470,13 @@ msgstr "No s'ha pogut duplicar la col·lecció."
 
 #
 # File: src/library.py, line: 382
-#: mcomix/library/collection_area.py:614
+#: mcomix/library/collection_area.py:606
 msgid "Root"
 msgstr "Arrel"
 
 #
 # File: src/library.py, line: 386
-#: mcomix/library/collection_area.py:617
+#: mcomix/library/collection_area.py:609
 #, python-format
 msgid ""
 "Put the collection '%(subcollection)s' in the collection "
@@ -4487,12 +4487,12 @@ msgstr ""
 
 #
 # File: src/library.py, line: 407
-#: mcomix/library/collection_area.py:633
+#: mcomix/library/collection_area.py:625
 #, python-format
 msgid "Add books to '%s'."
 msgstr "Afegeix llibres a '%s'."
 
-#: mcomix/library/collection_area.py:636
+#: mcomix/library/collection_area.py:628
 #, python-format
 msgid ""
 "Copy books from '%(source collection)s' to '%(destination collection)s'."
@@ -4501,7 +4501,7 @@ msgstr ""
 
 #
 # File: src/library.py, line: 411
-#: mcomix/library/collection_area.py:643
+#: mcomix/library/collection_area.py:635
 #, python-format
 msgid ""
 "Move books from '%(source collection)s' to '%(destination collection)s'."
@@ -4561,62 +4561,67 @@ msgstr "Obre el llibre seleccionat."
 msgid "Finished reading on %(date)s, %(time)s"
 msgstr "Llegit del tot el %(date)s a les %(time)s"
 
-#: mcomix/library/duplicates_dialog.py:62
+#: mcomix/library/duplicates_dialog.py:65
 msgid "The same file"
 msgstr "El mateix fitxer"
 
-#: mcomix/library/duplicates_dialog.py:63
+#: mcomix/library/duplicates_dialog.py:66
 msgid "The same pages packed again"
 msgstr "Les mateixes pàgines empaquetades de nou"
 
 #
 # File: src/ui.py, line: 284
-#: mcomix/library/duplicates_dialog.py:64
+#: mcomix/library/duplicates_dialog.py:67
 msgid "Pages that look the same"
 msgstr "Pàgines que semblen iguals"
 
-#: mcomix/library/duplicates_dialog.py:82
+#: mcomix/library/duplicates_dialog.py:89
+#: mcomix/library/duplicates_dialog.py:216
 msgid "Duplicates"
 msgstr "Duplicats"
 
-#: mcomix/library/duplicates_dialog.py:171
+#: mcomix/library/duplicates_dialog.py:179
 msgid "Comparing the books..."
 msgstr "S'estan comparant els llibres..."
 
-#: mcomix/library/duplicates_dialog.py:176
+#: mcomix/library/duplicates_dialog.py:184
 #, python-format
 msgid "Reading %(done)d of %(count)d book"
 msgid_plural "Reading %(done)d of %(count)d books"
 msgstr[0] "Lectura: %(done)d de %(count)d llibre"
 msgstr[1] "Lectura: %(done)d de %(count)d llibres"
 
-#: mcomix/library/duplicates_dialog.py:211
+#: mcomix/library/duplicates_dialog.py:233
 #, python-format
 msgid "Remove %d book from the library?"
 msgid_plural "Remove %d books from the library?"
 msgstr[0] "Voleu treure %d llibre de la biblioteca?"
 msgstr[1] "Voleu treure %d llibres de la biblioteca?"
 
-#: mcomix/library/duplicates_dialog.py:214
+#: mcomix/library/duplicates_dialog.py:236
 msgid "Their files are left where they are."
 msgstr "Els fitxers es queden on són."
 
-#: mcomix/library/duplicates_dialog.py:245
+#: mcomix/library/duplicates_dialog.py:267
 msgid "No copies found."
 msgstr "No s'ha trobat cap còpia."
 
-#: mcomix/library/duplicates_dialog.py:248
+#: mcomix/library/duplicates_dialog.py:270
 #, python-format
 msgid "%d group of copies found."
 msgid_plural "%d groups of copies found."
 msgstr[0] "S'ha trobat %d grup de còpies."
 msgstr[1] "S'han trobat %d grups de còpies."
 
-#: mcomix/library/duplicates_dialog.py:277
+#: mcomix/library/duplicates_dialog.py:299
 msgid "_Remove from Library"
 msgstr "_Treu de la biblioteca"
 
-#: mcomix/library/duplicates_dialog.py:324
+#: mcomix/library/duplicates_dialog.py:300
+msgid "Put All in a Collection"
+msgstr "Posa-ho tot en una col·lecció"
+
+#: mcomix/library/duplicates_dialog.py:347
 msgid "the copy to keep"
 msgstr "la còpia que es conserva"
 

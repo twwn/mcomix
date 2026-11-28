@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix zh_TW\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-28 02:20+0100\n"
+"POT-Creation-Date: 2026-11-28 10:40+0100\n"
 "PO-Revision-Date: 2013-07-05 21:37+0800\n"
 "Last-Translator: Wayne Su <mstarmstar@hotmail.com>\n"
 "Language-Team: \n"
@@ -103,7 +103,7 @@ msgid "! Could not save %(file)s to %(directory)s: %(error)s"
 msgstr "！ 無法將 %(file)s 儲存到 %(directory)s：%(error)s"
 
 #: mcomix/bookmark_backend.py:493 mcomix/file_actions.py:1245
-#: mcomix/webp_dialog.py:420
+#: mcomix/webp_dialog.py:417
 #, python-format
 msgid "Could not save \"%(file)s\" to \"%(directory)s\""
 msgstr "無法將 \"%(file)s\" 儲存到 \"%(directory)s\""
@@ -122,8 +122,8 @@ msgstr "否(_N)"
 #: mcomix/file_chooser_base_dialog.py:242
 #: mcomix/file_chooser_library_dialog.py:42 mcomix/message_dialog.py:26
 #: mcomix/message_dialog.py:29 mcomix/pageselect.py:38
-#: mcomix/save_progress.py:119 mcomix/webp_dialog.py:102
-#: mcomix/library/duplicates_dialog.py:215
+#: mcomix/save_progress.py:121 mcomix/webp_dialog.py:102
+#: mcomix/library/duplicates_dialog.py:237
 msgid "_Cancel"
 msgstr "取消(_C)"
 
@@ -165,15 +165,15 @@ msgstr "清除書籤...(_L)"
 
 #: mcomix/bookmark_dialog.py:33 mcomix/main.py:1562 mcomix/openwith.py:429
 #: mcomix/library/collection_area.py:140
-#: mcomix/library/duplicates_dialog.py:216 mcomix/library/watchlist.py:69
+#: mcomix/library/duplicates_dialog.py:238 mcomix/library/watchlist.py:69
 msgid "_Remove"
 msgstr "移除(_R)"
 
 #: mcomix/bookmark_dialog.py:34 mcomix/comment_dialog.py:29
 #: mcomix/message_dialog.py:25 mcomix/preferences_dialog.py:105
-#: mcomix/properties_dialog.py:38 mcomix/webp_dialog.py:351
-#: mcomix/library/book_check_dialog.py:183 mcomix/library/book_properties.py:60
-#: mcomix/library/duplicates_dialog.py:270 mcomix/library/watchlist.py:41
+#: mcomix/properties_dialog.py:38 mcomix/webp_dialog.py:348
+#: mcomix/library/book_check_dialog.py:180 mcomix/library/book_properties.py:60
+#: mcomix/library/duplicates_dialog.py:292 mcomix/library/watchlist.py:41
 msgid "_Close"
 msgstr "關閉(_C)"
 
@@ -317,7 +317,7 @@ msgid "Comment files"
 msgstr "註解檔"
 
 #: mcomix/edit_dialog.py:262 mcomix/file_actions.py:941
-#: mcomix/webp_dialog.py:215
+#: mcomix/webp_dialog.py:217
 #, python-format
 msgid "! Could not save the archive %(archivefile)s: %(error)s"
 msgstr "！ 無法儲存壓縮檔 %(archivefile)s：%(error)s"
@@ -628,7 +628,7 @@ msgstr "無法將 \"%(file)s\" 移動到 \"%(directory)s\""
 #: mcomix/file_chooser_base_dialog.py:76 mcomix/file_chooser_base_dialog.py:893
 #: mcomix/properties_dialog.py:137 mcomix/library/book_properties.py:95
 #: mcomix/library/book_properties.py:158 mcomix/library/control_area.py:161
-#: mcomix/library/control_area.py:197 mcomix/library/duplicates_dialog.py:318
+#: mcomix/library/control_area.py:197 mcomix/library/duplicates_dialog.py:341
 #, python-format
 msgid "%d page"
 msgid_plural "%d pages"
@@ -2590,7 +2590,7 @@ msgstr "需要 Python Imaging Library Fork (Pillow) %s 版或更新的版本。"
 msgid "No version of the Python Imaging Library was found on your system."
 msgstr "在你的系統裏找不到任何版本的 Python Imaging 程式庫。"
 
-#: mcomix/save_progress.py:115
+#: mcomix/save_progress.py:117
 #, python-format
 msgid "Writing \"%s\""
 msgstr "正在寫入「%s」"
@@ -3256,7 +3256,7 @@ msgstr "圖片強化(_N)..."
 msgid "_Library..."
 msgstr "書庫(_L)..."
 
-#: mcomix/ui.py:750
+#: mcomix/ui.py:751
 #, python-format
 msgid "Could not open the manual: %s"
 msgstr "無法開啟使用手冊：%s"
@@ -3289,18 +3289,18 @@ msgstr "此處未安裝可讀取此格式的程式"
 msgid "no page made smaller"
 msgstr "沒有頁面變小"
 
-#: mcomix/webp_books.py:192
+#: mcomix/webp_books.py:195 mcomix/webp_books.py:221 mcomix/webp_books.py:227
+#: mcomix/webp_books.py:247 mcomix/library/book_check.py:38
+msgid "encrypted"
+msgstr "已加密"
+
+#: mcomix/webp_books.py:197
 msgid "archives inside"
 msgstr "包含其他封存檔"
 
-#: mcomix/webp_books.py:197
+#: mcomix/webp_books.py:202
 msgid "no PNG, GIF or JPEG pages"
 msgstr "沒有 PNG、GIF 或 JPEG 頁面"
-
-#: mcomix/webp_books.py:216 mcomix/webp_books.py:222 mcomix/webp_books.py:242
-#: mcomix/library/book_check.py:38
-msgid "encrypted"
-msgstr "已加密"
 
 #: mcomix/webp_dialog.py:97
 #, python-format
@@ -3321,64 +3321,64 @@ msgstr ""
 msgid "_Make Smaller"
 msgstr "縮小(_S)"
 
-#: mcomix/webp_dialog.py:126
+#: mcomix/webp_dialog.py:128
 msgid "Making pages smaller"
 msgstr "正在縮小頁面"
 
-#: mcomix/webp_dialog.py:152 mcomix/library/add_progress_dialog.py:57
-#: mcomix/library/book_check_dialog.py:63
-#: mcomix/library/duplicates_dialog.py:104
+#: mcomix/webp_dialog.py:154 mcomix/library/add_progress_dialog.py:57
+#: mcomix/library/book_check_dialog.py:65
+#: mcomix/library/duplicates_dialog.py:112
 msgid "_Stop"
 msgstr "停止(_S)"
 
-#: mcomix/webp_dialog.py:203
+#: mcomix/webp_dialog.py:205
 msgid "open in the main window"
 msgstr "已在主視窗中開啟"
 
-#: mcomix/webp_dialog.py:242
+#: mcomix/webp_dialog.py:244
 #, python-format
 msgid "%(count)d book stored with WebP pages, %(size)s smaller"
 msgid_plural "%(count)d books stored with WebP pages, %(size)s smaller"
 msgstr[0] "%(count)d 本書已存為 WebP 頁面，減少了 %(size)s"
 
-#: mcomix/webp_dialog.py:254
+#: mcomix/webp_dialog.py:256
 #, python-format
 msgid "%d book stored without its damaged files"
 msgid_plural "%d books stored without their damaged files"
 msgstr[0] "%d 本書已儲存，不含其損壞的檔案"
 
-#: mcomix/webp_dialog.py:259
+#: mcomix/webp_dialog.py:261
 #, python-format
 msgid "%(count)d book left as it was: %(reason)s"
 msgid_plural "%(count)d books left as they were: %(reason)s"
 msgstr[0] "%(count)d 本書保持原樣：%(reason)s"
 
-#: mcomix/webp_dialog.py:282
+#: mcomix/webp_dialog.py:284
 #, python-format
 msgid "Stopped with %d book not yet looked at"
 msgid_plural "Stopped with %d books not yet looked at"
 msgstr[0] "已停止，還有 %d 本書尚未檢查"
 
-#: mcomix/webp_dialog.py:302
+#: mcomix/webp_dialog.py:304
 #, python-format
 msgid "About %d minute left"
 msgid_plural "About %d minutes left"
 msgstr[0] "大約還剩 %d 分鐘"
 
-#: mcomix/webp_dialog.py:338 mcomix/webp_dialog.py:390
+#: mcomix/webp_dialog.py:335 mcomix/webp_dialog.py:387
 #, python-format
 msgid "Could not be written: %s"
 msgstr "無法寫入：%s"
 
-#: mcomix/webp_dialog.py:354
+#: mcomix/webp_dialog.py:351
 msgid "_Save Log…"
 msgstr "儲存記錄(_S)…"
 
-#: mcomix/webp_dialog.py:359
+#: mcomix/webp_dialog.py:356
 msgid "Select Books with _Errors"
 msgstr "選取有錯誤的書籍(_E)"
 
-#: mcomix/webp_dialog.py:403
+#: mcomix/webp_dialog.py:400
 msgid "Save the log as"
 msgstr "記錄另存為"
 
@@ -3685,45 +3685,45 @@ msgstr[0] "刪除已刪除的 %(count)d 本書中的書籤？"
 msgid "Open with"
 msgstr "用其他工具開啟"
 
-#: mcomix/library/book_check_dialog.py:48
+#: mcomix/library/book_check_dialog.py:50
 msgid "Books that cannot be read in full"
 msgstr "無法完整讀取的書"
 
-#: mcomix/library/book_check_dialog.py:120
+#: mcomix/library/book_check_dialog.py:122
 #, python-format
 msgid "Checking %(done)d of %(count)d book"
 msgid_plural "Checking %(done)d of %(count)d books"
 msgstr[0] "正在檢查第 %(done)d 本，共 %(count)d 本"
 
-#: mcomix/library/book_check_dialog.py:155
+#: mcomix/library/book_check_dialog.py:152
 #, python-format
 msgid "%d book cannot be read in full."
 msgid_plural "%d books cannot be read in full."
 msgstr[0] "%d 本書無法完整讀取。"
 
-#: mcomix/library/book_check_dialog.py:159
+#: mcomix/library/book_check_dialog.py:156
 msgid "Every book can be read in full."
 msgstr "每本書都能完整讀取。"
 
-#: mcomix/library/book_check_dialog.py:162
-#: mcomix/library/duplicates_dialog.py:252
+#: mcomix/library/book_check_dialog.py:159
+#: mcomix/library/duplicates_dialog.py:274
 #, python-format
 msgid "Stopped with %d book not yet read."
 msgid_plural "Stopped with %d books not yet read."
 msgstr[0] "已停止，還有 %d 本書尚未讀取。"
 
-#: mcomix/library/book_check_dialog.py:167
+#: mcomix/library/book_check_dialog.py:164
 #, python-format
 msgid "%d book could not be checked: see the log."
 msgid_plural "%d books could not be checked: see the log."
 msgstr[0] "%d 本書無法檢查：請查看日誌。"
 
-#: mcomix/library/book_check_dialog.py:187
-#: mcomix/library/duplicates_dialog.py:276
+#: mcomix/library/book_check_dialog.py:184
+#: mcomix/library/duplicates_dialog.py:298
 msgid "_Select in Library"
 msgstr "在書庫中選取(_S)"
 
-#: mcomix/library/book_check_dialog.py:201
+#: mcomix/library/book_check_dialog.py:198
 #, python-format
 msgid "%d file cannot be read"
 msgid_plural "%d files cannot be read"
@@ -3822,29 +3822,29 @@ msgstr "已有相同名稱的書集。"
 msgid "Could not duplicate collection."
 msgstr "無法備份書集。"
 
-#: mcomix/library/collection_area.py:614
+#: mcomix/library/collection_area.py:606
 msgid "Root"
 msgstr "Root"
 
-#: mcomix/library/collection_area.py:617
+#: mcomix/library/collection_area.py:609
 #, python-format
 msgid ""
 "Put the collection '%(subcollection)s' in the collection "
 "'%(supercollection)s'."
 msgstr "將 %(subcollection)s 書集放到 %(supercollection)s 書集。"
 
-#: mcomix/library/collection_area.py:633
+#: mcomix/library/collection_area.py:625
 #, python-format
 msgid "Add books to '%s'."
 msgstr "將書籍加入 %s 。"
 
-#: mcomix/library/collection_area.py:636
+#: mcomix/library/collection_area.py:628
 #, python-format
 msgid ""
 "Copy books from '%(source collection)s' to '%(destination collection)s'."
 msgstr "將書籍從 %(source collection)s 複製到 %(destination collection)s 。"
 
-#: mcomix/library/collection_area.py:643
+#: mcomix/library/collection_area.py:635
 #, python-format
 msgid ""
 "Move books from '%(source collection)s' to '%(destination collection)s'."
@@ -3893,57 +3893,62 @@ msgstr "開啟選取的書籍。"
 msgid "Finished reading on %(date)s, %(time)s"
 msgstr "在 %(date)s %(time)s 讀完"
 
-#: mcomix/library/duplicates_dialog.py:62
+#: mcomix/library/duplicates_dialog.py:65
 msgid "The same file"
 msgstr "同一個檔案"
 
-#: mcomix/library/duplicates_dialog.py:63
+#: mcomix/library/duplicates_dialog.py:66
 msgid "The same pages packed again"
 msgstr "重新封裝的相同頁面"
 
-#: mcomix/library/duplicates_dialog.py:64
+#: mcomix/library/duplicates_dialog.py:67
 msgid "Pages that look the same"
 msgstr "看起來相同的頁面"
 
-#: mcomix/library/duplicates_dialog.py:82
+#: mcomix/library/duplicates_dialog.py:89
+#: mcomix/library/duplicates_dialog.py:216
 msgid "Duplicates"
 msgstr "重複"
 
-#: mcomix/library/duplicates_dialog.py:171
+#: mcomix/library/duplicates_dialog.py:179
 msgid "Comparing the books..."
 msgstr "正在比較書籍..."
 
-#: mcomix/library/duplicates_dialog.py:176
+#: mcomix/library/duplicates_dialog.py:184
 #, python-format
 msgid "Reading %(done)d of %(count)d book"
 msgid_plural "Reading %(done)d of %(count)d books"
 msgstr[0] "正在讀取第 %(done)d 本，共 %(count)d 本"
 
-#: mcomix/library/duplicates_dialog.py:211
+#: mcomix/library/duplicates_dialog.py:233
 #, python-format
 msgid "Remove %d book from the library?"
 msgid_plural "Remove %d books from the library?"
 msgstr[0] "要從這個書庫中移除 %d 本書嗎？"
 
-#: mcomix/library/duplicates_dialog.py:214
+#: mcomix/library/duplicates_dialog.py:236
 msgid "Their files are left where they are."
 msgstr "檔案仍會留在原處。"
 
-#: mcomix/library/duplicates_dialog.py:245
+#: mcomix/library/duplicates_dialog.py:267
 msgid "No copies found."
 msgstr "找不到副本。"
 
-#: mcomix/library/duplicates_dialog.py:248
+#: mcomix/library/duplicates_dialog.py:270
 #, python-format
 msgid "%d group of copies found."
 msgid_plural "%d groups of copies found."
 msgstr[0] "找到 %d 組副本。"
 
-#: mcomix/library/duplicates_dialog.py:277
+#: mcomix/library/duplicates_dialog.py:299
 msgid "_Remove from Library"
 msgstr "從書庫中移除(_R)"
 
-#: mcomix/library/duplicates_dialog.py:324
+#: mcomix/library/duplicates_dialog.py:300
+msgid "Put All in a Collection"
+msgstr "全部放入一個書集"
+
+#: mcomix/library/duplicates_dialog.py:347
 msgid "the copy to keep"
 msgstr "要保留的副本"
 

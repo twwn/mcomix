@@ -75,6 +75,27 @@ class FindDuplicatesTest(_LibraryWindowTest):
             [self.same], [item.path for item in
                           self.library.book_area._selected_items()])
 
+    def test_every_book_found_is_put_in_the_duplicates_collection(self):
+        """Ticked or not, each book listed goes into "Duplicates", made
+        for it and shown among the collections; a second time adds no
+        second collection and no book twice."""
+        found = self._found(self.first, self.same, self.longer, self.other)
+        found._ticks[self._id(self.first)].set_active(False)
+        for _ in range(2):
+            found.response(duplicates_dialog._COLLECT)
+            pump()
+        backend = self.library.backend
+        collection = backend.get_collection_by_name('Duplicates')
+        self.assertIsNotNone(collection)
+        self.assertEqual(
+            sorted(self._id(path)
+                   for path in (self.first, self.same, self.longer)),
+            sorted(backend.get_books_in_collection(collection.id)))
+        self.assertEqual(['Duplicates'], [
+            name for name in map(backend.get_collection_name,
+                                 backend.get_all_collections())
+            if name == 'Duplicates'])
+
     def test_the_books_ticked_are_removed_once_asked(self):
         found = self._found(self.first, self.same, self.longer, self.other)
         found.response(duplicates_dialog._REMOVE)

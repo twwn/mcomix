@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix 0.93\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-28 02:20+0100\n"
+"POT-Creation-Date: 2026-11-28 10:40+0100\n"
 "PO-Revision-Date: 2015-04-05 08:54+0100\n"
 "Last-Translator: Benoit Pierre <benoit.pierre@gmail.com>\n"
 "Language-Team: \n"
@@ -97,7 +97,7 @@ msgid "! Could not save %(file)s to %(directory)s: %(error)s"
 msgstr "! Impossible d'enregistrer %(file)s dans %(directory)s : %(error)s"
 
 #: mcomix/bookmark_backend.py:493 mcomix/file_actions.py:1245
-#: mcomix/webp_dialog.py:420
+#: mcomix/webp_dialog.py:417
 #, python-format
 msgid "Could not save \"%(file)s\" to \"%(directory)s\""
 msgstr "Impossible d'enregistrer « %(file)s » dans « %(directory)s »"
@@ -116,8 +116,8 @@ msgstr "_Non"
 #: mcomix/file_chooser_base_dialog.py:242
 #: mcomix/file_chooser_library_dialog.py:42 mcomix/message_dialog.py:26
 #: mcomix/message_dialog.py:29 mcomix/pageselect.py:38
-#: mcomix/save_progress.py:119 mcomix/webp_dialog.py:102
-#: mcomix/library/duplicates_dialog.py:215
+#: mcomix/save_progress.py:121 mcomix/webp_dialog.py:102
+#: mcomix/library/duplicates_dialog.py:237
 msgid "_Cancel"
 msgstr "_Annuler"
 
@@ -164,15 +164,15 @@ msgstr "Effacer tous les _signets…"
 
 #: mcomix/bookmark_dialog.py:33 mcomix/main.py:1562 mcomix/openwith.py:429
 #: mcomix/library/collection_area.py:140
-#: mcomix/library/duplicates_dialog.py:216 mcomix/library/watchlist.py:69
+#: mcomix/library/duplicates_dialog.py:238 mcomix/library/watchlist.py:69
 msgid "_Remove"
 msgstr "_Effacer"
 
 #: mcomix/bookmark_dialog.py:34 mcomix/comment_dialog.py:29
 #: mcomix/message_dialog.py:25 mcomix/preferences_dialog.py:105
-#: mcomix/properties_dialog.py:38 mcomix/webp_dialog.py:351
-#: mcomix/library/book_check_dialog.py:183 mcomix/library/book_properties.py:60
-#: mcomix/library/duplicates_dialog.py:270 mcomix/library/watchlist.py:41
+#: mcomix/properties_dialog.py:38 mcomix/webp_dialog.py:348
+#: mcomix/library/book_check_dialog.py:180 mcomix/library/book_properties.py:60
+#: mcomix/library/duplicates_dialog.py:292 mcomix/library/watchlist.py:41
 msgid "_Close"
 msgstr "_Fermer"
 
@@ -318,7 +318,7 @@ msgid "Comment files"
 msgstr "Fichiers de commentaires"
 
 #: mcomix/edit_dialog.py:262 mcomix/file_actions.py:941
-#: mcomix/webp_dialog.py:215
+#: mcomix/webp_dialog.py:217
 #, python-format
 msgid "! Could not save the archive %(archivefile)s: %(error)s"
 msgstr "! Impossible d'enregistrer l'archive %(archivefile)s : %(error)s"
@@ -650,7 +650,7 @@ msgstr "Impossible de déplacer « %(file)s » vers « %(directory)s »"
 #: mcomix/file_chooser_base_dialog.py:76 mcomix/file_chooser_base_dialog.py:893
 #: mcomix/properties_dialog.py:137 mcomix/library/book_properties.py:95
 #: mcomix/library/book_properties.py:158 mcomix/library/control_area.py:161
-#: mcomix/library/control_area.py:197 mcomix/library/duplicates_dialog.py:318
+#: mcomix/library/control_area.py:197 mcomix/library/duplicates_dialog.py:341
 #, python-format
 msgid "%d page"
 msgid_plural "%d pages"
@@ -2721,7 +2721,7 @@ msgid "No version of the Python Imaging Library was found on your system."
 msgstr ""
 "Aucun version du Python Imaging Library n'a été détectée sur votre système."
 
-#: mcomix/save_progress.py:115
+#: mcomix/save_progress.py:117
 #, python-format
 msgid "Writing \"%s\""
 msgstr "Écriture de « %s »"
@@ -3404,7 +3404,7 @@ msgstr "Am_élioration de l'image…"
 msgid "_Library..."
 msgstr "_Bibliothèque…"
 
-#: mcomix/ui.py:750
+#: mcomix/ui.py:751
 #, python-format
 msgid "Could not open the manual: %s"
 msgstr "Impossible d'ouvrir le manuel : %s"
@@ -3437,18 +3437,18 @@ msgstr "rien d'installé ici ne lit ce format"
 msgid "no page made smaller"
 msgstr "aucune page réduite"
 
-#: mcomix/webp_books.py:192
+#: mcomix/webp_books.py:195 mcomix/webp_books.py:221 mcomix/webp_books.py:227
+#: mcomix/webp_books.py:247 mcomix/library/book_check.py:38
+msgid "encrypted"
+msgstr "chiffré"
+
+#: mcomix/webp_books.py:197
 msgid "archives inside"
 msgstr "contient d'autres archives"
 
-#: mcomix/webp_books.py:197
+#: mcomix/webp_books.py:202
 msgid "no PNG, GIF or JPEG pages"
 msgstr "aucune page PNG, GIF ou JPEG"
-
-#: mcomix/webp_books.py:216 mcomix/webp_books.py:222 mcomix/webp_books.py:242
-#: mcomix/library/book_check.py:38
-msgid "encrypted"
-msgstr "chiffré"
 
 #: mcomix/webp_dialog.py:97
 #, python-format
@@ -3471,69 +3471,69 @@ msgstr ""
 msgid "_Make Smaller"
 msgstr "_Réduire"
 
-#: mcomix/webp_dialog.py:126
+#: mcomix/webp_dialog.py:128
 msgid "Making pages smaller"
 msgstr "Réduction des pages"
 
-#: mcomix/webp_dialog.py:152 mcomix/library/add_progress_dialog.py:57
-#: mcomix/library/book_check_dialog.py:63
-#: mcomix/library/duplicates_dialog.py:104
+#: mcomix/webp_dialog.py:154 mcomix/library/add_progress_dialog.py:57
+#: mcomix/library/book_check_dialog.py:65
+#: mcomix/library/duplicates_dialog.py:112
 msgid "_Stop"
 msgstr "_Arrêter"
 
-#: mcomix/webp_dialog.py:203
+#: mcomix/webp_dialog.py:205
 msgid "open in the main window"
 msgstr "ouvert dans la fenêtre principale"
 
-#: mcomix/webp_dialog.py:242
+#: mcomix/webp_dialog.py:244
 #, python-format
 msgid "%(count)d book stored with WebP pages, %(size)s smaller"
 msgid_plural "%(count)d books stored with WebP pages, %(size)s smaller"
 msgstr[0] "%(count)d livre enregistré avec des pages WebP, %(size)s de moins"
 msgstr[1] "%(count)d livres enregistrés avec des pages WebP, %(size)s de moins"
 
-#: mcomix/webp_dialog.py:254
+#: mcomix/webp_dialog.py:256
 #, python-format
 msgid "%d book stored without its damaged files"
 msgid_plural "%d books stored without their damaged files"
 msgstr[0] "%d livre enregistré sans ses fichiers endommagés"
 msgstr[1] "%d livres enregistrés sans leurs fichiers endommagés"
 
-#: mcomix/webp_dialog.py:259
+#: mcomix/webp_dialog.py:261
 #, python-format
 msgid "%(count)d book left as it was: %(reason)s"
 msgid_plural "%(count)d books left as they were: %(reason)s"
 msgstr[0] "%(count)d livre laissé tel quel : %(reason)s"
 msgstr[1] "%(count)d livres laissés tels quels : %(reason)s"
 
-#: mcomix/webp_dialog.py:282
+#: mcomix/webp_dialog.py:284
 #, python-format
 msgid "Stopped with %d book not yet looked at"
 msgid_plural "Stopped with %d books not yet looked at"
 msgstr[0] "Arrêté avec %d livre pas encore examiné"
 msgstr[1] "Arrêté avec %d livres pas encore examinés"
 
-#: mcomix/webp_dialog.py:302
+#: mcomix/webp_dialog.py:304
 #, python-format
 msgid "About %d minute left"
 msgid_plural "About %d minutes left"
 msgstr[0] "Environ %d minute restante"
 msgstr[1] "Environ %d minutes restantes"
 
-#: mcomix/webp_dialog.py:338 mcomix/webp_dialog.py:390
+#: mcomix/webp_dialog.py:335 mcomix/webp_dialog.py:387
 #, python-format
 msgid "Could not be written: %s"
 msgstr "Impossible d'écrire : %s"
 
-#: mcomix/webp_dialog.py:354
+#: mcomix/webp_dialog.py:351
 msgid "_Save Log…"
 msgstr "_Enregistrer le journal…"
 
-#: mcomix/webp_dialog.py:359
+#: mcomix/webp_dialog.py:356
 msgid "Select Books with _Errors"
 msgstr "Sélectionner les livres en e_rreur"
 
-#: mcomix/webp_dialog.py:403
+#: mcomix/webp_dialog.py:400
 msgid "Save the log as"
 msgstr "Enregistrer le journal sous"
 
@@ -3856,49 +3856,49 @@ msgstr[1] "Supprimer les signets des %(count)d livres supprimés ?"
 msgid "Open with"
 msgstr "Ouvrir avec"
 
-#: mcomix/library/book_check_dialog.py:48
+#: mcomix/library/book_check_dialog.py:50
 msgid "Books that cannot be read in full"
 msgstr "Livres illisibles en entier"
 
-#: mcomix/library/book_check_dialog.py:120
+#: mcomix/library/book_check_dialog.py:122
 #, python-format
 msgid "Checking %(done)d of %(count)d book"
 msgid_plural "Checking %(done)d of %(count)d books"
 msgstr[0] "Vérification : %(done)d sur %(count)d livre"
 msgstr[1] "Vérification : %(done)d sur %(count)d livres"
 
-#: mcomix/library/book_check_dialog.py:155
+#: mcomix/library/book_check_dialog.py:152
 #, python-format
 msgid "%d book cannot be read in full."
 msgid_plural "%d books cannot be read in full."
 msgstr[0] "%d livre ne se lit pas en entier."
 msgstr[1] "%d livres ne se lisent pas en entier."
 
-#: mcomix/library/book_check_dialog.py:159
+#: mcomix/library/book_check_dialog.py:156
 msgid "Every book can be read in full."
 msgstr "Tous les livres se lisent en entier."
 
-#: mcomix/library/book_check_dialog.py:162
-#: mcomix/library/duplicates_dialog.py:252
+#: mcomix/library/book_check_dialog.py:159
+#: mcomix/library/duplicates_dialog.py:274
 #, python-format
 msgid "Stopped with %d book not yet read."
 msgid_plural "Stopped with %d books not yet read."
 msgstr[0] "Arrêté avec %d livre pas encore lu."
 msgstr[1] "Arrêté avec %d livres pas encore lus."
 
-#: mcomix/library/book_check_dialog.py:167
+#: mcomix/library/book_check_dialog.py:164
 #, python-format
 msgid "%d book could not be checked: see the log."
 msgid_plural "%d books could not be checked: see the log."
 msgstr[0] "%d livre n'a pas pu être vérifié : voir le journal."
 msgstr[1] "%d livres n'ont pas pu être vérifiés : voir le journal."
 
-#: mcomix/library/book_check_dialog.py:187
-#: mcomix/library/duplicates_dialog.py:276
+#: mcomix/library/book_check_dialog.py:184
+#: mcomix/library/duplicates_dialog.py:298
 msgid "_Select in Library"
 msgstr "_Sélectionner dans la bibliothèque"
 
-#: mcomix/library/book_check_dialog.py:201
+#: mcomix/library/book_check_dialog.py:198
 #, python-format
 msgid "%d file cannot be read"
 msgid_plural "%d files cannot be read"
@@ -4004,11 +4004,11 @@ msgstr "Une collection de ce nom existe déjà."
 msgid "Could not duplicate collection."
 msgstr "Impossible de dupliquer la collection"
 
-#: mcomix/library/collection_area.py:614
+#: mcomix/library/collection_area.py:606
 msgid "Root"
 msgstr "Racine"
 
-#: mcomix/library/collection_area.py:617
+#: mcomix/library/collection_area.py:609
 #, python-format
 msgid ""
 "Put the collection '%(subcollection)s' in the collection "
@@ -4017,12 +4017,12 @@ msgstr ""
 "Déplacer la collection '%(subcollection)s' dans la collection "
 "'%(supercollection)s'."
 
-#: mcomix/library/collection_area.py:633
+#: mcomix/library/collection_area.py:625
 #, python-format
 msgid "Add books to '%s'."
 msgstr "Ajouter des livres à '%s'."
 
-#: mcomix/library/collection_area.py:636
+#: mcomix/library/collection_area.py:628
 #, python-format
 msgid ""
 "Copy books from '%(source collection)s' to '%(destination collection)s'."
@@ -4030,7 +4030,7 @@ msgstr ""
 "Copier les livres de '%(source collection)s' vers "
 "'%(destination collection)s'."
 
-#: mcomix/library/collection_area.py:643
+#: mcomix/library/collection_area.py:635
 #, python-format
 msgid ""
 "Move books from '%(source collection)s' to '%(destination collection)s'."
@@ -4083,60 +4083,65 @@ msgstr "Ouvrir le livre sélectionné."
 msgid "Finished reading on %(date)s, %(time)s"
 msgstr "Achevé de lire le %(date)s, %(time)s"
 
-#: mcomix/library/duplicates_dialog.py:62
+#: mcomix/library/duplicates_dialog.py:65
 msgid "The same file"
 msgstr "Le même fichier"
 
-#: mcomix/library/duplicates_dialog.py:63
+#: mcomix/library/duplicates_dialog.py:66
 msgid "The same pages packed again"
 msgstr "Les mêmes pages réempaquetées"
 
-#: mcomix/library/duplicates_dialog.py:64
+#: mcomix/library/duplicates_dialog.py:67
 msgid "Pages that look the same"
 msgstr "Des pages qui se ressemblent"
 
-#: mcomix/library/duplicates_dialog.py:82
+#: mcomix/library/duplicates_dialog.py:89
+#: mcomix/library/duplicates_dialog.py:216
 msgid "Duplicates"
 msgstr "Doublons"
 
-#: mcomix/library/duplicates_dialog.py:171
+#: mcomix/library/duplicates_dialog.py:179
 msgid "Comparing the books..."
 msgstr "Comparaison des livres..."
 
-#: mcomix/library/duplicates_dialog.py:176
+#: mcomix/library/duplicates_dialog.py:184
 #, python-format
 msgid "Reading %(done)d of %(count)d book"
 msgid_plural "Reading %(done)d of %(count)d books"
 msgstr[0] "Lecture : %(done)d sur %(count)d livre"
 msgstr[1] "Lecture : %(done)d sur %(count)d livres"
 
-#: mcomix/library/duplicates_dialog.py:211
+#: mcomix/library/duplicates_dialog.py:233
 #, python-format
 msgid "Remove %d book from the library?"
 msgid_plural "Remove %d books from the library?"
 msgstr[0] "Retirer %d livre de la bibliothèque ?"
 msgstr[1] "Retirer %d livres de la bibliothèque ?"
 
-#: mcomix/library/duplicates_dialog.py:214
+#: mcomix/library/duplicates_dialog.py:236
 msgid "Their files are left where they are."
 msgstr "Leurs fichiers restent où ils sont."
 
-#: mcomix/library/duplicates_dialog.py:245
+#: mcomix/library/duplicates_dialog.py:267
 msgid "No copies found."
 msgstr "Aucune copie trouvée."
 
-#: mcomix/library/duplicates_dialog.py:248
+#: mcomix/library/duplicates_dialog.py:270
 #, python-format
 msgid "%d group of copies found."
 msgid_plural "%d groups of copies found."
 msgstr[0] "%d groupe de copies trouvé."
 msgstr[1] "%d groupes de copies trouvés."
 
-#: mcomix/library/duplicates_dialog.py:277
+#: mcomix/library/duplicates_dialog.py:299
 msgid "_Remove from Library"
 msgstr "_Retirer de la bibliothèque"
 
-#: mcomix/library/duplicates_dialog.py:324
+#: mcomix/library/duplicates_dialog.py:300
+msgid "Put All in a Collection"
+msgstr "Tout mettre dans une collection"
+
+#: mcomix/library/duplicates_dialog.py:347
 msgid "the copy to keep"
 msgstr "la copie à garder"
 

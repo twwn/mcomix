@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: comix 4.0.1\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-28 02:20+0100\n"
+"POT-Creation-Date: 2026-11-28 10:40+0100\n"
 "PO-Revision-Date: 2008-12-13 18:00+0100\n"
 "Last-Translator: Adrian C. <anrxc@sysphere.org>\n"
 "Language-Team: Croatian\n"
@@ -99,7 +99,7 @@ msgid "! Could not save %(file)s to %(directory)s: %(error)s"
 msgstr "! Nije moguće spremiti %(file)s u %(directory)s: %(error)s"
 
 #: mcomix/bookmark_backend.py:493 mcomix/file_actions.py:1245
-#: mcomix/webp_dialog.py:420
+#: mcomix/webp_dialog.py:417
 #, python-format
 msgid "Could not save \"%(file)s\" to \"%(directory)s\""
 msgstr "Nije moguće spremiti „%(file)s” u „%(directory)s”"
@@ -122,8 +122,8 @@ msgstr "_Ne"
 #: mcomix/file_chooser_base_dialog.py:242
 #: mcomix/file_chooser_library_dialog.py:42 mcomix/message_dialog.py:26
 #: mcomix/message_dialog.py:29 mcomix/pageselect.py:38
-#: mcomix/save_progress.py:119 mcomix/webp_dialog.py:102
-#: mcomix/library/duplicates_dialog.py:215
+#: mcomix/save_progress.py:121 mcomix/webp_dialog.py:102
+#: mcomix/library/duplicates_dialog.py:237
 msgid "_Cancel"
 msgstr "O_dustani"
 
@@ -175,7 +175,7 @@ msgstr "_Očisti oznake..."
 
 #: mcomix/bookmark_dialog.py:33 mcomix/main.py:1562 mcomix/openwith.py:429
 #: mcomix/library/collection_area.py:140
-#: mcomix/library/duplicates_dialog.py:216 mcomix/library/watchlist.py:69
+#: mcomix/library/duplicates_dialog.py:238 mcomix/library/watchlist.py:69
 msgid "_Remove"
 msgstr "_Ukloni"
 
@@ -183,9 +183,9 @@ msgstr "_Ukloni"
 # File: src/ui.py, line: 48
 #: mcomix/bookmark_dialog.py:34 mcomix/comment_dialog.py:29
 #: mcomix/message_dialog.py:25 mcomix/preferences_dialog.py:105
-#: mcomix/properties_dialog.py:38 mcomix/webp_dialog.py:351
-#: mcomix/library/book_check_dialog.py:183 mcomix/library/book_properties.py:60
-#: mcomix/library/duplicates_dialog.py:270 mcomix/library/watchlist.py:41
+#: mcomix/properties_dialog.py:38 mcomix/webp_dialog.py:348
+#: mcomix/library/book_check_dialog.py:180 mcomix/library/book_properties.py:60
+#: mcomix/library/duplicates_dialog.py:292 mcomix/library/watchlist.py:41
 msgid "_Close"
 msgstr "_Zatvori"
 
@@ -361,7 +361,7 @@ msgstr "Datoteke s komentarima"
 #
 # File: src/library.py, line: 271
 #: mcomix/edit_dialog.py:262 mcomix/file_actions.py:941
-#: mcomix/webp_dialog.py:215
+#: mcomix/webp_dialog.py:217
 #, python-format
 msgid "! Could not save the archive %(archivefile)s: %(error)s"
 msgstr "! Nije moguće spremiti arhivu %(archivefile)s: %(error)s"
@@ -713,7 +713,7 @@ msgstr "Nije moguće premjestiti „%(file)s” u „%(directory)s”"
 #: mcomix/file_chooser_base_dialog.py:76 mcomix/file_chooser_base_dialog.py:893
 #: mcomix/properties_dialog.py:137 mcomix/library/book_properties.py:95
 #: mcomix/library/book_properties.py:158 mcomix/library/control_area.py:161
-#: mcomix/library/control_area.py:197 mcomix/library/duplicates_dialog.py:318
+#: mcomix/library/control_area.py:197 mcomix/library/duplicates_dialog.py:341
 #, python-format
 msgid "%d page"
 msgid_plural "%d pages"
@@ -3007,7 +3007,7 @@ msgstr "Potreban je Python Imaging Library Fork (Pillow) %s ili noviji."
 msgid "No version of the Python Imaging Library was found on your system."
 msgstr "Na sustavu nije pronađena nijedna inačica Python Imaging Libraryja."
 
-#: mcomix/save_progress.py:115
+#: mcomix/save_progress.py:117
 #, python-format
 msgid "Writing \"%s\""
 msgstr "Zapisivanje „%s“"
@@ -3822,7 +3822,7 @@ msgstr "_Poboljšaj sliku..."
 msgid "_Library..."
 msgstr "_Biblioteka..."
 
-#: mcomix/ui.py:750
+#: mcomix/ui.py:751
 #, python-format
 msgid "Could not open the manual: %s"
 msgstr "Nije moguće otvoriti priručnik: %s"
@@ -3855,18 +3855,18 @@ msgstr "ovdje nije instalirano ništa što čita taj format"
 msgid "no page made smaller"
 msgstr "nijedna stranica nije smanjena"
 
-#: mcomix/webp_books.py:192
+#: mcomix/webp_books.py:195 mcomix/webp_books.py:221 mcomix/webp_books.py:227
+#: mcomix/webp_books.py:247 mcomix/library/book_check.py:38
+msgid "encrypted"
+msgstr "šifrirano"
+
+#: mcomix/webp_books.py:197
 msgid "archives inside"
 msgstr "sadrži druge arhive"
 
-#: mcomix/webp_books.py:197
+#: mcomix/webp_books.py:202
 msgid "no PNG, GIF or JPEG pages"
 msgstr "nema PNG, GIF ni JPEG stranica"
-
-#: mcomix/webp_books.py:216 mcomix/webp_books.py:222 mcomix/webp_books.py:242
-#: mcomix/library/book_check.py:38
-msgid "encrypted"
-msgstr "šifrirano"
 
 #: mcomix/webp_dialog.py:97
 #, python-format
@@ -3890,21 +3890,21 @@ msgstr ""
 msgid "_Make Smaller"
 msgstr "_Smanji"
 
-#: mcomix/webp_dialog.py:126
+#: mcomix/webp_dialog.py:128
 msgid "Making pages smaller"
 msgstr "Smanjivanje stranica"
 
-#: mcomix/webp_dialog.py:152 mcomix/library/add_progress_dialog.py:57
-#: mcomix/library/book_check_dialog.py:63
-#: mcomix/library/duplicates_dialog.py:104
+#: mcomix/webp_dialog.py:154 mcomix/library/add_progress_dialog.py:57
+#: mcomix/library/book_check_dialog.py:65
+#: mcomix/library/duplicates_dialog.py:112
 msgid "_Stop"
 msgstr "_Zaustavi"
 
-#: mcomix/webp_dialog.py:203
+#: mcomix/webp_dialog.py:205
 msgid "open in the main window"
 msgstr "otvoreno u glavnom prozoru"
 
-#: mcomix/webp_dialog.py:242
+#: mcomix/webp_dialog.py:244
 #, python-format
 msgid "%(count)d book stored with WebP pages, %(size)s smaller"
 msgid_plural "%(count)d books stored with WebP pages, %(size)s smaller"
@@ -3912,7 +3912,7 @@ msgstr[0] "%(count)d knjiga spremljena s WebP stranicama, %(size)s manja"
 msgstr[1] "%(count)d knjige spremljene s WebP stranicama, %(size)s manje"
 msgstr[2] "%(count)d knjiga spremljeno s WebP stranicama, %(size)s manje"
 
-#: mcomix/webp_dialog.py:254
+#: mcomix/webp_dialog.py:256
 #, python-format
 msgid "%d book stored without its damaged files"
 msgid_plural "%d books stored without their damaged files"
@@ -3920,7 +3920,7 @@ msgstr[0] "%d knjiga spremljena bez svojih oštećenih datoteka"
 msgstr[1] "%d knjige spremljene bez svojih oštećenih datoteka"
 msgstr[2] "%d knjiga spremljeno bez svojih oštećenih datoteka"
 
-#: mcomix/webp_dialog.py:259
+#: mcomix/webp_dialog.py:261
 #, python-format
 msgid "%(count)d book left as it was: %(reason)s"
 msgid_plural "%(count)d books left as they were: %(reason)s"
@@ -3928,7 +3928,7 @@ msgstr[0] "%(count)d knjiga ostavljena nepromijenjena: %(reason)s"
 msgstr[1] "%(count)d knjige ostavljene nepromijenjene: %(reason)s"
 msgstr[2] "%(count)d knjiga ostavljeno nepromijenjeno: %(reason)s"
 
-#: mcomix/webp_dialog.py:282
+#: mcomix/webp_dialog.py:284
 #, python-format
 msgid "Stopped with %d book not yet looked at"
 msgid_plural "Stopped with %d books not yet looked at"
@@ -3936,7 +3936,7 @@ msgstr[0] "Zaustavljeno, %d knjiga još nije pregledana"
 msgstr[1] "Zaustavljeno, %d knjige još nisu pregledane"
 msgstr[2] "Zaustavljeno, %d knjiga još nije pregledano"
 
-#: mcomix/webp_dialog.py:302
+#: mcomix/webp_dialog.py:304
 #, python-format
 msgid "About %d minute left"
 msgid_plural "About %d minutes left"
@@ -3944,20 +3944,20 @@ msgstr[0] "Preostala je otprilike %d minuta"
 msgstr[1] "Preostale su otprilike %d minute"
 msgstr[2] "Preostalo je otprilike %d minuta"
 
-#: mcomix/webp_dialog.py:338 mcomix/webp_dialog.py:390
+#: mcomix/webp_dialog.py:335 mcomix/webp_dialog.py:387
 #, python-format
 msgid "Could not be written: %s"
 msgstr "Nije bilo moguće zapisati: %s"
 
-#: mcomix/webp_dialog.py:354
+#: mcomix/webp_dialog.py:351
 msgid "_Save Log…"
 msgstr "_Spremi zapisnik…"
 
-#: mcomix/webp_dialog.py:359
+#: mcomix/webp_dialog.py:356
 msgid "Select Books with _Errors"
 msgstr "Odaberi knjige s _greškama"
 
-#: mcomix/webp_dialog.py:403
+#: mcomix/webp_dialog.py:400
 msgid "Save the log as"
 msgstr "Spremi zapisnik kao"
 
@@ -4295,11 +4295,11 @@ msgstr[2] "Ukloniti oznake u %(count)d obrisanih knjiga?"
 msgid "Open with"
 msgstr "Otvori pomoću"
 
-#: mcomix/library/book_check_dialog.py:48
+#: mcomix/library/book_check_dialog.py:50
 msgid "Books that cannot be read in full"
 msgstr "Knjige koje se ne mogu pročitati u cijelosti"
 
-#: mcomix/library/book_check_dialog.py:120
+#: mcomix/library/book_check_dialog.py:122
 #, python-format
 msgid "Checking %(done)d of %(count)d book"
 msgid_plural "Checking %(done)d of %(count)d books"
@@ -4307,7 +4307,7 @@ msgstr[0] "Provjerava se %(done)d od %(count)d knjige"
 msgstr[1] "Provjerava se %(done)d od %(count)d knjige"
 msgstr[2] "Provjerava se %(done)d od %(count)d knjiga"
 
-#: mcomix/library/book_check_dialog.py:155
+#: mcomix/library/book_check_dialog.py:152
 #, python-format
 msgid "%d book cannot be read in full."
 msgid_plural "%d books cannot be read in full."
@@ -4315,12 +4315,12 @@ msgstr[0] "%d knjiga ne može se pročitati u cijelosti."
 msgstr[1] "%d knjige ne mogu se pročitati u cijelosti."
 msgstr[2] "%d knjiga ne može se pročitati u cijelosti."
 
-#: mcomix/library/book_check_dialog.py:159
+#: mcomix/library/book_check_dialog.py:156
 msgid "Every book can be read in full."
 msgstr "Sve se knjige mogu pročitati u cijelosti."
 
-#: mcomix/library/book_check_dialog.py:162
-#: mcomix/library/duplicates_dialog.py:252
+#: mcomix/library/book_check_dialog.py:159
+#: mcomix/library/duplicates_dialog.py:274
 #, python-format
 msgid "Stopped with %d book not yet read."
 msgid_plural "Stopped with %d books not yet read."
@@ -4328,7 +4328,7 @@ msgstr[0] "Zaustavljeno, %d knjiga još nije pročitana."
 msgstr[1] "Zaustavljeno, %d knjige još nisu pročitane."
 msgstr[2] "Zaustavljeno, %d knjiga još nije pročitano."
 
-#: mcomix/library/book_check_dialog.py:167
+#: mcomix/library/book_check_dialog.py:164
 #, python-format
 msgid "%d book could not be checked: see the log."
 msgid_plural "%d books could not be checked: see the log."
@@ -4336,14 +4336,14 @@ msgstr[0] "%d knjiga nije se mogla provjeriti: pogledajte zapisnik."
 msgstr[1] "%d knjige nisu se mogle provjeriti: pogledajte zapisnik."
 msgstr[2] "%d knjiga nije se moglo provjeriti: pogledajte zapisnik."
 
-#: mcomix/library/book_check_dialog.py:187
-#: mcomix/library/duplicates_dialog.py:276
+#: mcomix/library/book_check_dialog.py:184
+#: mcomix/library/duplicates_dialog.py:298
 msgid "_Select in Library"
 msgstr "_Odaberi u biblioteci"
 
 #
 # File: src/edit.py, line: 99
-#: mcomix/library/book_check_dialog.py:201
+#: mcomix/library/book_check_dialog.py:198
 #, python-format
 msgid "%d file cannot be read"
 msgid_plural "%d files cannot be read"
@@ -4474,13 +4474,13 @@ msgstr "Nemoguće udvostručiti kolekciju."
 
 #
 # File: src/library.py, line: 382
-#: mcomix/library/collection_area.py:614
+#: mcomix/library/collection_area.py:606
 msgid "Root"
 msgstr "Korijen"
 
 #
 # File: src/library.py, line: 386
-#: mcomix/library/collection_area.py:617
+#: mcomix/library/collection_area.py:609
 #, python-format
 msgid ""
 "Put the collection '%(subcollection)s' in the collection "
@@ -4489,12 +4489,12 @@ msgstr "Stavi kolekciju '%(subcollection)s' u kolekciju '%(supercollection)s'."
 
 #
 # File: src/library.py, line: 407
-#: mcomix/library/collection_area.py:633
+#: mcomix/library/collection_area.py:625
 #, python-format
 msgid "Add books to '%s'."
 msgstr "Dodaj knjige u '%s'."
 
-#: mcomix/library/collection_area.py:636
+#: mcomix/library/collection_area.py:628
 #, python-format
 msgid ""
 "Copy books from '%(source collection)s' to '%(destination collection)s'."
@@ -4503,7 +4503,7 @@ msgstr ""
 
 #
 # File: src/library.py, line: 411
-#: mcomix/library/collection_area.py:643
+#: mcomix/library/collection_area.py:635
 #, python-format
 msgid ""
 "Move books from '%(source collection)s' to '%(destination collection)s'."
@@ -4563,29 +4563,30 @@ msgstr "Otvori označenu knjigu."
 msgid "Finished reading on %(date)s, %(time)s"
 msgstr "Pročitano %(date)s u %(time)s"
 
-#: mcomix/library/duplicates_dialog.py:62
+#: mcomix/library/duplicates_dialog.py:65
 msgid "The same file"
 msgstr "Ista datoteka"
 
-#: mcomix/library/duplicates_dialog.py:63
+#: mcomix/library/duplicates_dialog.py:66
 msgid "The same pages packed again"
 msgstr "Iste stranice ponovno pakirane"
 
 #
 # File: src/ui.py, line: 284
-#: mcomix/library/duplicates_dialog.py:64
+#: mcomix/library/duplicates_dialog.py:67
 msgid "Pages that look the same"
 msgstr "Stranice koje izgledaju isto"
 
-#: mcomix/library/duplicates_dialog.py:82
+#: mcomix/library/duplicates_dialog.py:89
+#: mcomix/library/duplicates_dialog.py:216
 msgid "Duplicates"
 msgstr "Duplikati"
 
-#: mcomix/library/duplicates_dialog.py:171
+#: mcomix/library/duplicates_dialog.py:179
 msgid "Comparing the books..."
 msgstr "Uspoređivanje knjiga..."
 
-#: mcomix/library/duplicates_dialog.py:176
+#: mcomix/library/duplicates_dialog.py:184
 #, python-format
 msgid "Reading %(done)d of %(count)d book"
 msgid_plural "Reading %(done)d of %(count)d books"
@@ -4593,7 +4594,7 @@ msgstr[0] "Čitanje %(done)d od %(count)d knjige"
 msgstr[1] "Čitanje %(done)d od %(count)d knjige"
 msgstr[2] "Čitanje %(done)d od %(count)d knjiga"
 
-#: mcomix/library/duplicates_dialog.py:211
+#: mcomix/library/duplicates_dialog.py:233
 #, python-format
 msgid "Remove %d book from the library?"
 msgid_plural "Remove %d books from the library?"
@@ -4601,15 +4602,15 @@ msgstr[0] "Ukloniti %d knjigu iz biblioteke?"
 msgstr[1] "Ukloniti %d knjige iz biblioteke?"
 msgstr[2] "Ukloniti %d knjiga iz biblioteke?"
 
-#: mcomix/library/duplicates_dialog.py:214
+#: mcomix/library/duplicates_dialog.py:236
 msgid "Their files are left where they are."
 msgstr "Njihove datoteke ostaju gdje jesu."
 
-#: mcomix/library/duplicates_dialog.py:245
+#: mcomix/library/duplicates_dialog.py:267
 msgid "No copies found."
 msgstr "Nisu pronađene kopije."
 
-#: mcomix/library/duplicates_dialog.py:248
+#: mcomix/library/duplicates_dialog.py:270
 #, python-format
 msgid "%d group of copies found."
 msgid_plural "%d groups of copies found."
@@ -4617,11 +4618,15 @@ msgstr[0] "Pronađena je %d grupa kopija."
 msgstr[1] "Pronađene su %d grupe kopija."
 msgstr[2] "Pronađeno je %d grupa kopija."
 
-#: mcomix/library/duplicates_dialog.py:277
+#: mcomix/library/duplicates_dialog.py:299
 msgid "_Remove from Library"
 msgstr "_Ukloni iz biblioteke"
 
-#: mcomix/library/duplicates_dialog.py:324
+#: mcomix/library/duplicates_dialog.py:300
+msgid "Put All in a Collection"
+msgstr "Stavi sve u zbirku"
+
+#: mcomix/library/duplicates_dialog.py:347
 msgid "the copy to keep"
 msgstr "kopija koja se zadržava"
 

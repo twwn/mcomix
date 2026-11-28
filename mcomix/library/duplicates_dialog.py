@@ -57,6 +57,9 @@ _SELECT = Response.ACCEPT
 #: What answers "Remove from Library".
 _REMOVE = Response.REJECT
 
+#: What answers "Put All in a Collection".
+_COLLECT = Response.APPLY
+
 #: What each likeness is called over its group.
 _LIKENESS = {
     duplicates.Likeness.SAME_FILE: lambda: _('The same file'),
@@ -76,11 +79,13 @@ class DuplicatesDialog(Dialog):
                  books: Mapping[int, str],
                  open_book: Callable[[int], None],
                  select: Callable[[list[str]], None],
-                 remove: Callable[[list[int]], None]) -> None:
+                 remove: Callable[[list[int]], None],
+                 collected: Callable[[int], None]) -> None:
         """Look for copies among <books> (id to path), with what is
         kept in <backend>.  <open_book> opens a book by its id,
-        <select> selects books in the library by their paths, and
-        <remove> removes books from it by their ids."""
+        <select> selects books in the library by their paths,
+        <remove> removes books from it by their ids, and <collected>
+        is told the collection the books found were put in."""
         super().__init__(title=_('Duplicates'), transient_for=parent,
                          destroy_with_parent=True)
         self._backend = backend
@@ -88,6 +93,7 @@ class DuplicatesDialog(Dialog):
         self._open_book = open_book
         self._select = select
         self._remove = remove
+        self._collected = collected
         #: Set by Stop: no other book is read.
         self._stop = threading.Event()
         #: Set as the window goes: nothing more is done at all.
@@ -192,11 +198,30 @@ class DuplicatesDialog(Dialog):
             self.destroy()
         elif response == _REMOVE:
             self._ask_to_remove()
+        elif response == _COLLECT:
+            self._collect()
         elif self._thread.is_alive():
             self._stop.set()
             self.set_response_sensitive(Response.CANCEL, False)
         else:
             self.destroy()
+
+    def _collect(self) -> None:
+        """Put every book still listed, ticked or not, into the
+        collection "Duplicates", made where there is none, so the copies
+        can be gone through in the library after the window is closed.
+        A book already in it stays there once."""
+        if not self._ticks:
+            return
+        name = _('Duplicates')
+        held = self._backend.get_collection_by_name(name)
+        collection = held.id if held is not None \
+            else self._backend.add_collection(name)
+        if collection is None:
+            return
+        for book in self._ticks:
+            self._backend.add_book_to_collection(book, collection)
+        self._collected(collection)
 
     def _ask_to_remove(self) -> None:
         books = self.ticked()
@@ -271,7 +296,8 @@ class DuplicatesDialog(Dialog):
                 row = stop.get_parent()
                 for label, response in (
                         (_('_Select in Library'), _SELECT),
-                        (_('_Remove from Library'), _REMOVE)):
+                        (_('_Remove from Library'), _REMOVE),
+                        (_('Put All in a Collection'), _COLLECT)):
                     button = self.add_button(label, response)
                     if isinstance(row, Gtk.Box):
                         row.reorder_child_after(button, None)
