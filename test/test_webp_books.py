@@ -591,6 +591,22 @@ class RepackTest(_BookTest):
                 {info.filename: info.compress_type
                  for info in book.infolist()})
 
+    def test_a_book_with_a_damaged_file_is_left_alone(self):
+        """The old archive is removed once the ZIP takes its place: one
+        written without the damaged file would lose it for good."""
+        path = self.zip_book({name: line_art_png() for name in
+                              ('01.png', '02.png')}
+                             | {'notes.txt': self.TEXT})
+        damage_member(path, '02.png')
+        with open(path, 'rb') as book:
+            before = book.read()
+        with self.assertRaises(webp_books.Skipped) as skipped:
+            self.convert(path)
+        self.assertTrue(skipped.exception.damaged)
+        with open(path, 'rb') as book:
+            self.assertEqual(before, book.read())
+        self.assertEqual(['book.cbz'], os.listdir(self.directory))
+
     def test_a_tar_becomes_a_zip_of_its_name(self):
         members = {'01.png': line_art_png(),
                    'sub/02.png': line_art_png(size=(200, 300)),

@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-28 12:16+0100\n"
+"POT-Creation-Date: 2026-11-28 12:23+0100\n"
 "PO-Revision-Date: 2009-01-25 21:54+0100\n"
 "Last-Translator: Jan Nekvasil <jan.nekvasil@gmail.com>\n"
 "Language-Team: \n"
@@ -3926,54 +3926,59 @@ msgid "nothing installed here reads the format"
 msgstr "není nainstalováno nic, co by tento formát četlo"
 
 #. TRANSLATORS: Why a book was left as it was, as the others.
-#: mcomix/webp_books.py:179 mcomix/webp_books.py:186 mcomix/webp_books.py:257
+#: mcomix/webp_books.py:179 mcomix/webp_books.py:186 mcomix/webp_books.py:258
 msgid "no page over the limit"
 msgstr "žádná stránka nad limitem"
 
-#: mcomix/webp_books.py:245
+#: mcomix/webp_books.py:246
 msgid "the trash takes no files from its folder"
 msgstr "koš nepřijímá soubory ze své složky"
 
-#: mcomix/webp_books.py:258
+#: mcomix/webp_books.py:259
 msgid "no pages"
 msgstr "žádné stránky"
 
-#: mcomix/webp_books.py:291
+#. TRANSLATORS: Why a book was left as it was, as the others.
+#: mcomix/webp_books.py:266
+msgid "a file in it could not be read, and would be lost"
+msgstr "jeden soubor v ní nelze přečíst a byl by ztracen"
+
+#: mcomix/webp_books.py:298
 msgid "no page made smaller"
 msgstr "žádná stránka nebyla zmenšena"
 
-#: mcomix/webp_books.py:300
+#: mcomix/webp_books.py:307
 #, python-format
 msgid "the trash refused it: %s"
 msgstr "koš ji odmítl: %s"
 
 #. TRANSLATORS: Why a book was left as it was, as the others.
-#: mcomix/webp_books.py:358
+#: mcomix/webp_books.py:365
 msgid "a symbolic link, which would no longer lead to it"
 msgstr "symbolický odkaz, který by na ni už nevedl"
 
 #. TRANSLATORS: Why a book was left as it was, as the others; %s is
 #. a file name, such as "Book.cbz".
-#: mcomix/webp_books.py:362 mcomix/webp_books.py:386
+#: mcomix/webp_books.py:369 mcomix/webp_books.py:393
 #, python-format
 msgid "%s is there already"
 msgstr "%s tam už je"
 
 #. TRANSLATORS: Why a book was left as it was, as the others.
-#: mcomix/webp_books.py:380
+#: mcomix/webp_books.py:387
 msgid "a ZIP already, no smaller packed again"
 msgstr "už je ZIP, po přebalení není menší"
 
-#: mcomix/webp_books.py:436 mcomix/webp_books.py:465 mcomix/webp_books.py:471
-#: mcomix/webp_books.py:491 mcomix/library/book_check.py:38
+#: mcomix/webp_books.py:443 mcomix/webp_books.py:472 mcomix/webp_books.py:478
+#: mcomix/webp_books.py:498 mcomix/library/book_check.py:38
 msgid "encrypted"
 msgstr "šifrováno"
 
-#: mcomix/webp_books.py:438
+#: mcomix/webp_books.py:445
 msgid "archives inside"
 msgstr "obsahuje další archivy"
 
-#: mcomix/webp_books.py:446
+#: mcomix/webp_books.py:453
 msgid "no PNG, GIF or JPEG pages"
 msgstr "žádné stránky PNG, GIF ani JPEG"
 
@@ -4056,7 +4061,9 @@ msgstr "Zmenšování velkých stránek"
 msgid ""
 "The disk is full. The books as they were are in the trash, which holds their "
 "room until it is emptied."
-msgstr "Disk je plný. Knihy v původní podobě jsou v koši, který zabírá jejich místo, dokud se nevysype."
+msgstr ""
+"Disk je plný. Knihy v původní podobě jsou v koši, který zabírá jejich místo, "
+"dokud se nevysype."
 
 #: mcomix/webp_dialog.py:312
 msgid "The disk is full."

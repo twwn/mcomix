@@ -232,7 +232,8 @@ def convert(path: str, stop: threading.Event,
 
     A file in the archive that cannot be read, being damaged, is left
     out of it, and named in what is answered: the rest of the book is
-    not lost with it.
+    not lost with it.  A repack leaves such a book alone instead, since
+    it would remove the archive the file was in.
 
     Raises Skipped for a book it leaves alone, archive_packer.Cancelled
     where <stop> was set, and OSError where reading or writing failed;
@@ -258,6 +259,12 @@ def convert(path: str, stop: threading.Event,
                           else _('no pages') if repack else ''))
         finally:
             archive.close()
+        if repack and left_out:
+            # The old archive is removed once the ZIP takes its place, and
+            # what could still be got out of a damaged file with it.
+            # TRANSLATORS: Why a book was left as it was, as the others.
+            raise Skipped(_('a file in it could not be read, and would be '
+                            'lost'), damaged=True)
         if shrink is not None or repack:
             # Written beside the book, whose place it takes once it is
             # whole.

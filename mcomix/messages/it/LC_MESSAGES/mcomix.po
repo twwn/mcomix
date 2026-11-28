@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-28 12:16+0100\n"
+"POT-Creation-Date: 2026-11-28 12:23+0100\n"
 "PO-Revision-Date: 2013-04-26 18:00+0100\n"
 "Last-Translator: Giovanni Scafora <giovanni@archlinux.org>\n"
 "Language-Team: Arch Linux Italian Team <giovanni@archlinux.org>\n"
@@ -3522,54 +3522,59 @@ msgid "nothing installed here reads the format"
 msgstr "qui non è installato nulla che legga il formato"
 
 #. TRANSLATORS: Why a book was left as it was, as the others.
-#: mcomix/webp_books.py:179 mcomix/webp_books.py:186 mcomix/webp_books.py:257
+#: mcomix/webp_books.py:179 mcomix/webp_books.py:186 mcomix/webp_books.py:258
 msgid "no page over the limit"
 msgstr "nessuna pagina oltre il limite"
 
-#: mcomix/webp_books.py:245
+#: mcomix/webp_books.py:246
 msgid "the trash takes no files from its folder"
 msgstr "il cestino non accetta file dalla sua cartella"
 
-#: mcomix/webp_books.py:258
+#: mcomix/webp_books.py:259
 msgid "no pages"
 msgstr "nessuna pagina"
 
-#: mcomix/webp_books.py:291
+#. TRANSLATORS: Why a book was left as it was, as the others.
+#: mcomix/webp_books.py:266
+msgid "a file in it could not be read, and would be lost"
+msgstr "un file al suo interno non si può leggere e andrebbe perso"
+
+#: mcomix/webp_books.py:298
 msgid "no page made smaller"
 msgstr "nessuna pagina ridotta"
 
-#: mcomix/webp_books.py:300
+#: mcomix/webp_books.py:307
 #, python-format
 msgid "the trash refused it: %s"
 msgstr "il cestino l'ha rifiutato: %s"
 
 #. TRANSLATORS: Why a book was left as it was, as the others.
-#: mcomix/webp_books.py:358
+#: mcomix/webp_books.py:365
 msgid "a symbolic link, which would no longer lead to it"
 msgstr "un collegamento simbolico, che non porterebbe più a esso"
 
 #. TRANSLATORS: Why a book was left as it was, as the others; %s is
 #. a file name, such as "Book.cbz".
-#: mcomix/webp_books.py:362 mcomix/webp_books.py:386
+#: mcomix/webp_books.py:369 mcomix/webp_books.py:393
 #, python-format
 msgid "%s is there already"
 msgstr "%s esiste già"
 
 #. TRANSLATORS: Why a book was left as it was, as the others.
-#: mcomix/webp_books.py:380
+#: mcomix/webp_books.py:387
 msgid "a ZIP already, no smaller packed again"
 msgstr "già uno ZIP, non più piccolo reimpacchettato"
 
-#: mcomix/webp_books.py:436 mcomix/webp_books.py:465 mcomix/webp_books.py:471
-#: mcomix/webp_books.py:491 mcomix/library/book_check.py:38
+#: mcomix/webp_books.py:443 mcomix/webp_books.py:472 mcomix/webp_books.py:478
+#: mcomix/webp_books.py:498 mcomix/library/book_check.py:38
 msgid "encrypted"
 msgstr "cifrato"
 
-#: mcomix/webp_books.py:438
+#: mcomix/webp_books.py:445
 msgid "archives inside"
 msgstr "contiene altri archivi"
 
-#: mcomix/webp_books.py:446
+#: mcomix/webp_books.py:453
 msgid "no PNG, GIF or JPEG pages"
 msgstr "nessuna pagina PNG, GIF o JPEG"
 
@@ -3649,7 +3654,9 @@ msgstr "Riduzione delle pagine grandi"
 msgid ""
 "The disk is full. The books as they were are in the trash, which holds their "
 "room until it is emptied."
-msgstr "Il disco è pieno. I libri com'erano sono nel cestino, che ne occupa lo spazio finché non viene svuotato."
+msgstr ""
+"Il disco è pieno. I libri com'erano sono nel cestino, che ne occupa lo "
+"spazio finché non viene svuotato."
 
 #: mcomix/webp_dialog.py:312
 msgid "The disk is full."

@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-28 12:16+0100\n"
+"POT-Creation-Date: 2026-11-28 12:23+0100\n"
 "PO-Revision-Date: 2018-05-10 22:46+0900\n"
 "Last-Translator: Minho Jeung <jeungmh@gmail.com>\n"
 "Language-Team: \n"
@@ -3421,54 +3421,59 @@ msgid "nothing installed here reads the format"
 msgstr "이 형식을 읽는 프로그램이 설치되지 않음"
 
 #. TRANSLATORS: Why a book was left as it was, as the others.
-#: mcomix/webp_books.py:179 mcomix/webp_books.py:186 mcomix/webp_books.py:257
+#: mcomix/webp_books.py:179 mcomix/webp_books.py:186 mcomix/webp_books.py:258
 msgid "no page over the limit"
 msgstr "한도를 넘는 페이지 없음"
 
-#: mcomix/webp_books.py:245
+#: mcomix/webp_books.py:246
 msgid "the trash takes no files from its folder"
 msgstr "휴지통은 자신의 폴더에 있는 파일을 받지 않습니다"
 
-#: mcomix/webp_books.py:258
+#: mcomix/webp_books.py:259
 msgid "no pages"
 msgstr "페이지 없음"
 
-#: mcomix/webp_books.py:291
+#. TRANSLATORS: Why a book was left as it was, as the others.
+#: mcomix/webp_books.py:266
+msgid "a file in it could not be read, and would be lost"
+msgstr "안의 파일 하나를 읽을 수 없어 잃게 됨"
+
+#: mcomix/webp_books.py:298
 msgid "no page made smaller"
 msgstr "줄어든 페이지 없음"
 
-#: mcomix/webp_books.py:300
+#: mcomix/webp_books.py:307
 #, python-format
 msgid "the trash refused it: %s"
 msgstr "휴지통이 거부함: %s"
 
 #. TRANSLATORS: Why a book was left as it was, as the others.
-#: mcomix/webp_books.py:358
+#: mcomix/webp_books.py:365
 msgid "a symbolic link, which would no longer lead to it"
 msgstr "심볼릭 링크(이름을 바꾸면 더 이상 가리키지 않음)"
 
 #. TRANSLATORS: Why a book was left as it was, as the others; %s is
 #. a file name, such as "Book.cbz".
-#: mcomix/webp_books.py:362 mcomix/webp_books.py:386
+#: mcomix/webp_books.py:369 mcomix/webp_books.py:393
 #, python-format
 msgid "%s is there already"
 msgstr "%s 파일이 이미 있음"
 
 #. TRANSLATORS: Why a book was left as it was, as the others.
-#: mcomix/webp_books.py:380
+#: mcomix/webp_books.py:387
 msgid "a ZIP already, no smaller packed again"
 msgstr "이미 ZIP이며 다시 묶어도 작아지지 않음"
 
-#: mcomix/webp_books.py:436 mcomix/webp_books.py:465 mcomix/webp_books.py:471
-#: mcomix/webp_books.py:491 mcomix/library/book_check.py:38
+#: mcomix/webp_books.py:443 mcomix/webp_books.py:472 mcomix/webp_books.py:478
+#: mcomix/webp_books.py:498 mcomix/library/book_check.py:38
 msgid "encrypted"
 msgstr "암호화됨"
 
-#: mcomix/webp_books.py:438
+#: mcomix/webp_books.py:445
 msgid "archives inside"
 msgstr "안에 다른 아카이브가 있음"
 
-#: mcomix/webp_books.py:446
+#: mcomix/webp_books.py:453
 msgid "no PNG, GIF or JPEG pages"
 msgstr "PNG, GIF 또는 JPEG 페이지 없음"
 
@@ -3543,7 +3548,9 @@ msgstr "큰 페이지를 줄이는 중"
 msgid ""
 "The disk is full. The books as they were are in the trash, which holds their "
 "room until it is emptied."
-msgstr "디스크가 가득 찼습니다. 원래의 책은 휴지통에 있으며, 휴지통을 비울 때까지 그 공간을 차지합니다."
+msgstr ""
+"디스크가 가득 찼습니다. 원래의 책은 휴지통에 있으며, 휴지통을 비울 때까지 그 "
+"공간을 차지합니다."
 
 #: mcomix/webp_dialog.py:312
 msgid "The disk is full."
