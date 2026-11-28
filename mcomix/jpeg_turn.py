@@ -179,19 +179,8 @@ def _turn_pixels(data: bytes, mirrored: bool, degrees: int) -> "bytes | None":
     <degrees> clockwise, by jpegtran, or None where jpegtran is not
     installed or the picture is not a whole number of blocks the way
     the turn needs."""
-    exe = _jpegtran()
-    if exe is None:
-        return None
-    command = [exe, '-copy', 'all', '-perfect', *_JPEGTRAN[mirrored, degrees]]
-    try:
-        done = subprocess.run(command, input=data, capture_output=True,
-                              timeout=60,
-                              creationflags=process.CREATIONFLAGS)
-    except (OSError, subprocess.SubprocessError):
-        return None
-    if done.returncode != 0 or not done.stdout.startswith(_SOI):
-        return None
-    return done.stdout
+    return _jpegtran_output(
+        ['-copy', 'all', '-perfect', *_JPEGTRAN[mirrored, degrees]], data)
 
 
 def optimised(data: bytes) -> "bytes | None":
@@ -199,12 +188,18 @@ def optimised(data: bytes) -> "bytes | None":
     jpegtran (-optimize), every marker copied (-copy all) and no pixel
     encoded again; or None where jpegtran is not installed or refuses
     it.  Whether that is smaller is for the caller to see."""
+    return _jpegtran_output(['-copy', 'all', '-optimize'], data)
+
+
+def _jpegtran_output(arguments: "list[str]", data: bytes) -> "bytes | None":
+    """What jpegtran run with <arguments> writes of the JPEG <data>; or
+    None where it is not installed, fails, or writes no JPEG."""
     exe = _jpegtran()
     if exe is None:
         return None
     try:
-        done = subprocess.run([exe, '-copy', 'all', '-optimize'],
-                              input=data, capture_output=True, timeout=60,
+        done = subprocess.run([exe, *arguments], input=data,
+                              capture_output=True, timeout=60,
                               creationflags=process.CREATIONFLAGS)
     except (OSError, subprocess.SubprocessError):
         return None
