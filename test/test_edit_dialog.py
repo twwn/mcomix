@@ -964,13 +964,38 @@ class EditArchiveDialogTest(MComixTest):
                              (constants.ZIP, '.cbz'))
 
     def test_saving_every_archive_as_a_zip_comes_first(self):
-        """A tar, which MComix writes, is still saved as a CBZ."""
-        prefs['save archive format'] = constants.SAVE_KEEP_FORMAT
+        """A tar, which MComix writes, is still saved as a ZIP, under
+        the name it takes as one."""
         prefs['save archive format'] = constants.SAVE_ALL_AS_ZIP
-        with unittest.mock.patch.object(self.dialog.file_handler,
-                                        'archive_type', constants.TAR):
-            self.assertEqual(self.dialog._save_format(),
-                             (constants.ZIP, '.cbz'))
+        for name, offered in (('Book.cbt', 'Book.cbz'),
+                              ('Book.tar.gz', 'Book.zip')):
+            with self.subTest(name), \
+                    unittest.mock.patch.object(
+                        self.dialog.file_handler, 'archive_type',
+                        constants.TAR), \
+                    unittest.mock.patch.object(
+                        self.dialog.file_handler, 'get_path_to_base',
+                        lambda name=name: os.path.join(self.tmp_dir, name)):
+                self.assertEqual(self.dialog._save_format(),
+                                 (constants.ZIP, offered[-4:]))
+                chooser = self._save_as_chooser()
+                self.assertEqual(chooser.save_name, offered)
+                self.assertEqual(chooser._note.get_text(),
+                                 'Archives are stored as ZIP files.')
+                chooser.destroy()
+                pump()
+
+    def test_saving_every_archive_as_a_zip_offers_a_zip_its_own_name(self):
+        """A ZIP is one already: Save as offered "Book.cbz" for
+        "Book.zip", which wrote a copy of the book beside it."""
+        prefs['save archive format'] = constants.SAVE_ALL_AS_ZIP
+        self.assertEqual(self.dialog._save_format(),
+                         (constants.ZIP, '.zip'))
+        chooser = self._save_as_chooser()
+        self.assertEqual(chooser.save_name, '01-ZIP-Normal.zip')
+        self.assertIsNone(chooser._note,
+                          'the book is a ZIP and stays one, so there is '
+                          'nothing to say about it')
 
     def test_a_format_is_only_offered_where_its_program_is_installed(self):
         """A 7z needs 7-Zip and a RAR needs rar, neither of which

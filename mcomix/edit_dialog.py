@@ -20,6 +20,7 @@ from mcomix import constants
 from mcomix import message_dialog
 from mcomix import preview
 from mcomix import save_progress
+from mcomix import webp_books
 from mcomix.i18n import _
 from mcomix.dialog import Response
 
@@ -188,20 +189,45 @@ class _EditArchiveDialog(Dialog):
         one MComix can write: a RAR is read with a program that cannot
         make one, a PDF is not a format a book of pages goes back into,
         and a 7z needs 7-Zip installed.  Asking for every archive to be
-        saved as a ZIP comes before that.
+        saved as a ZIP comes before that, and there the extension is the
+        one the book has as a ZIP: a ZIP keeps its own, so that Save as
+        offers the book under its own name rather than a copy beside it.
         """
         archive_type = self.file_handler.archive_type
+        source = self.file_handler.get_path_to_base() or ''
         chosen = prefs['save archive format']
         if chosen == constants.SAVE_ALL_AS_ZIP:
-            return constants.ZIP, '.cbz'
+            return constants.ZIP, os.path.splitext(
+                webp_books.zip_name(source))[1]
         if (chosen == constants.SAVE_KEEP_FORMAT
                 and archive_type is not None
                 and archive_packer.can_write(archive_type)):
-            source = self.file_handler.get_path_to_base() or ''
             extension = os.path.splitext(source)[1]
             if extension:
                 return archive_type, extension
         return constants.ZIP, '.cbz'
+
+    def _save_name(self, extension: str) -> str:
+        """The name Save as offers for the book written with <extension>:
+        its own, but for the extension.  Where the extension changes, a
+        tar's double one goes as a whole, so that "Book.tar.gz" is
+        offered as "Book.cbz" rather than "Book.tar.cbz"."""
+        source = os.path.basename(self.file_handler.get_path_to_base() or '')
+        stem, own = os.path.splitext(source)
+        if extension != own:
+            stem = os.path.splitext(webp_books.zip_name(source))[0]
+        return stem + extension
+
+    def _keeps_format(self, archive_type: int) -> bool:
+        """Whether a save as <archive_type> writes the book in the format
+        it was opened in because the reader asked for that format: the
+        one it has, or a ZIP for every book where it is a ZIP already."""
+        opened = self.file_handler.archive_type
+        chosen = prefs['save archive format']
+        if chosen == constants.SAVE_KEEP_FORMAT:
+            return archive_type == opened
+        return chosen == constants.SAVE_ALL_AS_ZIP \
+            and opened in (constants.ZIP, constants.ZIP_EXTERNAL)
 
     def _pack_archive(self, archive_path: str) -> None:
         """Write the chosen files out as an archive at <archive_path>."""
@@ -372,15 +398,12 @@ class _EditArchiveDialog(Dialog):
                 Gtk.FileChooserAction.SAVE, self,
                 folder=os.path.dirname(src_path))
 
-            chooser.set_save_name('%s%s' % (os.path.splitext(
-                os.path.basename(src_path))[0], extension))
+            chooser.set_save_name(self._save_name(extension))
             # The note says what a save writes whatever was opened.  It
-            # is left off only where the reader has asked for the format
-            # to be kept and it is being kept: there it says nothing
-            # that the name above it does not.
-            if (archive_type != self.file_handler.archive_type
-                    or prefs['save archive format']
-                    != constants.SAVE_KEEP_FORMAT):
+            # is left off only where the reader has asked for a format
+            # and the book is in it already: there it says nothing that
+            # the name above it does not.
+            if not self._keeps_format(archive_type):
                 chooser.set_note(_('Archives are stored as ZIP files.'))
             chooser.add_archive_filters()
 
