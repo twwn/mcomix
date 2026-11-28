@@ -11,9 +11,10 @@ import gc
 import os
 import shutil
 import sys
+import unittest.mock
 import warnings
 
-from . import MComixTest, get_testfile_path
+from . import MComixTest, drawn_page, encoded, get_testfile_path
 
 from mcomix import animation
 from mcomix import image_tools
@@ -125,6 +126,44 @@ class FramesTest(MComixTest):
         self.assertRaises(Exception, animation.frames,
                           get_image_path('no-such-file.gif'))
 
+    def test_two_frames_are_enough_to_play_in_this_process(self):
+        path = os.path.join(self.tmp_dir, 'two.gif')
+        first, second = drawn_page(1, (120, 90)), drawn_page(2, (120, 90))
+        with open(path, 'wb') as file:
+            file.write(encoded(first, 'GIF', save_all=True,
+                               append_images=[second], duration=[70, 30],
+                               loop=0))
+        frames = animation.frames(path)
+        self.addCleanup(frames.close)
+        self.assertIsInstance(frames, animation._PillowFrames)
+        self.assertEqual([70, 30, 70], [frames.next()[1] for _ in range(3)])
+
+    def test_a_format_that_never_holds_frames_is_one_picture(self):
+        """A JPEG has no frame count at all, rather than a count of
+        one."""
+        path = os.path.join(self.tmp_dir, 'page.jpg')
+        with open(path, 'wb') as file:
+            file.write(encoded(drawn_page(1, (120, 90)), 'JPEG'))
+        with self.assertRaisesRegex(ValueError, 'holds a single picture'):
+            animation._PillowFrames(path)
+
+    def test_where_no_decoder_animates_a_page_the_last_one_says_why(self):
+        def refusing(error):
+            def decoder(path):
+                raise error
+            return decoder
+        last = KeyError('the last decoder')
+        with unittest.mock.patch.object(
+                animation, '_DECODERS',
+                (refusing(ValueError('the first')), refusing(last))):
+            with self.assertRaises(KeyError) as raised:
+                animation.frames('page.gif')
+        self.assertIs(last, raised.exception)
+        with unittest.mock.patch.object(animation, '_DECODERS', ()):
+            with self.assertRaisesRegex(ValueError,
+                                        'page.gif holds no animation'):
+                animation.frames('page.gif')
+
 
 class GlycinFramesTest(MComixTest):
 
@@ -157,8 +196,10 @@ class GlycinFramesTest(MComixTest):
         # glycin counts a frame in microseconds; the page waits in
         # milliseconds.
         frames = animation._GlycinFrames(get_image_path('animated.webp'))
-        self.assertEqual([frames.next()[1] for _ in range(3)],
-                         [120, 120, 40])
+        delays = [frames.next()[1] for _ in range(3)]
+        self.assertEqual([120, 120, 40], delays)
+        # Whole milliseconds, as Frames.next() is declared to return.
+        self.assertEqual([int], list({type(delay) for delay in delays}))
 
     def test_an_animation_goes_round_again(self):
         frames = animation._GlycinFrames(get_image_path('animated.webp'))
