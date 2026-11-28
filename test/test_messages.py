@@ -398,6 +398,8 @@ class DialogMnemonicTest(MComixTest):
                           'C_lear bookmarks...'),
         'WebP summary': ('_Save Log…', 'Select Books with _Errors',
                          '_Close'),
+        'duplicates window': ('Tick _Recommended', '_Untick All',
+                              '_Select in Library', '_Close'),
     }
 
     @classmethod

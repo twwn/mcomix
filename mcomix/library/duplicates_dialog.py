@@ -23,7 +23,7 @@ is removed, let alone deleted, without being asked for.
 import os
 import threading
 
-from gi.repository import GdkPixbuf, GLib, Gtk, Pango
+from gi.repository import GdkPixbuf, Gio, GLib, Gtk, Pango
 
 from mcomix import i18n
 from mcomix import image_tools
@@ -60,6 +60,23 @@ _REMOVE = Response.REJECT
 #: What answers "Put All in a Collection".
 _COLLECT = Response.APPLY
 
+#: What answers "Remove and move to the trash", and "Delete
+#: permanently": numbers of MComix's own, GTK's being below zero.
+_TRASH = 1
+_DELETE = 2
+
+#: What the books ticked are removed with, from the "Remove" button's
+#: menu: the library covers' own entries.
+_REMOVALS: tuple[tuple[Callable[[], str], int], ...] = (
+    (lambda: _('Remove from the _library'), _REMOVE),
+    (lambda: _('_Remove and move to the trash'), _TRASH),
+    (lambda: _('Delete permanently'), _DELETE))
+
+#: What removes books (id to path) from the library with their files,
+#: asking over the window given and calling back once they have left it.
+_Removal = Callable[[Mapping[int, str], Gtk.Window, Callable[[], None]],
+                    None]
+
 #: What each likeness is called over its group.
 _LIKENESS = {
     duplicates.Likeness.SAME_FILE: lambda: _('The same file'),
@@ -80,12 +97,15 @@ class DuplicatesDialog(Dialog):
                  open_book: Callable[[int], None],
                  select: Callable[[list[str]], None],
                  remove: Callable[[list[int]], None],
+                 trash: _Removal, delete: _Removal,
                  collected: Callable[[int], None]) -> None:
         """Look for copies among <books> (id to path), with what is
         kept in <backend>.  <open_book> opens a book by its id,
         <select> selects books in the library by their paths,
-        <remove> removes books from it by their ids, and <collected>
-        is told the collection the books found were put in."""
+        <remove> removes books from it by their ids, <trash> and
+        <delete> with their files, to the trash or for good, and
+        <collected> is told the collection the books found were put
+        in."""
         super().__init__(title=_('Duplicates'), transient_for=parent,
                          destroy_with_parent=True)
         self._backend = backend
@@ -93,6 +113,8 @@ class DuplicatesDialog(Dialog):
         self._open_book = open_book
         self._select = select
         self._remove = remove
+        self._trash = trash
+        self._delete = delete
         self._collected = collected
         #: Set by Stop: no other book is read.
         self._stop = threading.Event()
@@ -106,6 +128,17 @@ class DuplicatesDialog(Dialog):
         self._ticks: dict[int, Gtk.CheckButton] = {}
         #: The book of each row listed.
         self._row_books: dict[Gtk.ListBoxRow, int] = {}
+        #: Whether each book listed is ticked to begin with: all but the
+        #: copy to keep.
+        self._recommended: dict[int, bool] = {}
+        #: The books of each group listed, by the group's place.
+        self._members: list[list[int]] = []
+        #: The ticks of each group last changed by hand, by its place.
+        self._by_hand: dict[int, dict[int, bool]] = {}
+        #: Set while the window ticks books itself, not the reader.
+        self._ticking = False
+        #: The "Remove" button, once the groups are shown.
+        self._removing: Gtk.MenuButton | None = None
         #: Whether the search is done, or stopped, and the groups shown.
         self.finished = False
 
@@ -198,6 +231,8 @@ class DuplicatesDialog(Dialog):
             self.destroy()
         elif response == _REMOVE:
             self._ask_to_remove()
+        elif response in (_TRASH, _DELETE):
+            self._ask_to_delete(response)
         elif response == _COLLECT:
             self._collect()
         elif self._thread.is_alive():
@@ -241,17 +276,70 @@ class DuplicatesDialog(Dialog):
             if response != Response.OK:
                 return
             self._remove(books)
-            for book in books:
-                row = self._ticks.pop(book).get_ancestor(Gtk.ListBoxRow)
-                if row is not None:
-                    row.set_sensitive(False)
-            self._update_buttons()
+            self._gone(books)
         prompt.run_async(answered)
+
+    def _ask_to_delete(self, response: int) -> None:
+        """Remove the books ticked from the library, and their files to
+        the trash or, with _DELETE, for good, asked as the covers ask."""
+        books = self.ticked()
+        if not books:
+            return
+        ask = self._trash if response == _TRASH else self._delete
+        ask({book: self._books[book] for book in books}, self,
+            lambda: self._gone(books))
+
+    def _gone(self, books: Sequence[int]) -> None:
+        """Take <books>, gone from the library, out of what can be
+        ticked."""
+        for book in books:
+            tick = self._ticks.pop(book, None)
+            row = None if tick is None else tick.get_ancestor(Gtk.ListBoxRow)
+            if row is not None:
+                row.set_sensitive(False)
+        self._update_buttons()
 
     def _update_buttons(self) -> None:
         ticked = bool(self.ticked())
-        for response in (_SELECT, _REMOVE):
-            self.set_response_sensitive(response, ticked)
+        self.set_response_sensitive(_SELECT, ticked)
+        if self._removing is not None:
+            self._removing.set_sensitive(ticked)
+
+    def _toggled(self, book: int) -> None:
+        """Keep the ticks of <book>'s group as the reader left them, for
+        "Tick Recommended" to give back."""
+        if not self._ticking:
+            place = self._group_of(book)
+            self._by_hand[place] = {
+                other: self._ticks[other].get_active()
+                for other in self._members[place] if other in self._ticks}
+        self._update_buttons()
+
+    def _group_of(self, book: int) -> int:
+        return next(place for place, members in enumerate(self._members)
+                    if book in members)
+
+    def tick_recommended(self) -> None:
+        """Tick every copy but the one to keep, except in a group whose
+        ticks the reader changed: that gets back what was ticked there
+        last by hand, which "Untick All" does not take away."""
+        self._set_ticks(lambda place, book: self._by_hand.get(
+            place, self._recommended).get(book, self._recommended[book]))
+
+    def untick_all(self) -> None:
+        self._set_ticks(lambda place, book: False)
+
+    def _set_ticks(self, ticked: Callable[[int, int], bool]) -> None:
+        self._ticking = True
+        try:
+            for place, members in enumerate(self._members):
+                for book in members:
+                    tick = self._ticks.get(book)
+                    if tick is not None:
+                        tick.set_active(ticked(place, book))
+        finally:
+            self._ticking = False
+        self._update_buttons()
 
     def _finished(self, groups: Sequence[duplicates.Group],
                   found: Mapping[int, fingerprint.Fingerprint],
@@ -278,6 +366,7 @@ class DuplicatesDialog(Dialog):
         self._status.set_text(text)
 
         if groups:
+            self._box.append(self._tick_buttons())
             listed = Gtk.Box(orientation=Gtk.Orientation.VERTICAL,
                              spacing=12)
             for group in groups:
@@ -296,13 +385,48 @@ class DuplicatesDialog(Dialog):
                 row = stop.get_parent()
                 for label, response in (
                         (_('_Select in Library'), _SELECT),
-                        (_('_Remove from Library'), _REMOVE),
                         (_('Put All in a Collection'), _COLLECT)):
                     button = self.add_button(label, response)
                     if isinstance(row, Gtk.Box):
                         row.reorder_child_after(button, None)
+                if isinstance(row, Gtk.Box):
+                    self._removing = self._removal_button()
+                    row.insert_child_after(
+                        self._removing,
+                        self.get_widget_for_response(_COLLECT))
                 self._update_buttons()
         return GLib.SOURCE_REMOVE
+
+    def _tick_buttons(self) -> Gtk.Widget:
+        """"Tick Recommended" and "Untick All", over the groups."""
+        box = Gtk.Box(spacing=6)
+        recommended = Gtk.Button.new_with_mnemonic(_('Tick _Recommended'))
+        recommended.set_tooltip_text(_(
+            'Tick every copy but the one to keep. A group whose ticks '
+            'were changed by hand gets back the ticks given it.'))
+        recommended.connect('clicked', lambda button: self.tick_recommended())
+        box.append(recommended)
+        none = Gtk.Button.new_with_mnemonic(_('_Untick All'))
+        none.connect('clicked', lambda button: self.untick_all())
+        box.append(none)
+        return box
+
+    def _removal_button(self) -> Gtk.MenuButton:
+        """"Remove", whose menu removes the books ticked from the
+        library, and their files with them where asked, as the entries
+        of the covers' own "Remove" menu do."""
+        respond = Gio.SimpleAction.new('respond', GLib.VariantType.new('i'))
+        respond.connect('activate', lambda action, target:
+                        self.response(target.get_int32()))
+        actions = Gio.SimpleActionGroup()
+        actions.add_action(respond)
+        self.insert_action_group('duplicates', actions)
+        menu = Gio.Menu()
+        for label, response in _REMOVALS:
+            menu.append_item(widgets.menu_item(
+                label(), 'duplicates.respond',
+                target=GLib.Variant('i', response)))
+        return Gtk.MenuButton(label=_('Remove'), menu_model=menu)
 
     def _group(self, group: duplicates.Group,
                found: Mapping[int, fingerprint.Fingerprint],
@@ -315,7 +439,9 @@ class DuplicatesDialog(Dialog):
         box.append(heading)
         rows = Gtk.ListBox(selection_mode=Gtk.SelectionMode.NONE)
         kept = duplicates.to_keep(group.books, found)
+        self._members.append(list(group.books))
         for book in group.books:
+            self._recommended[book] = book != kept
             rows.append(self._row(book, found[book], covers.get(book),
                                   book == kept))
         rows.connect('row-activated', self._activated)
@@ -328,7 +454,7 @@ class DuplicatesDialog(Dialog):
         path = self._books[book]
         line = Gtk.Box(spacing=8)
         tick = Gtk.CheckButton(active=not kept, valign=Gtk.Align.CENTER)
-        tick.connect('toggled', lambda button: self._update_buttons())
+        tick.connect('toggled', lambda button: self._toggled(book))
         self._ticks[book] = tick
         line.append(tick)
         picture = Gtk.Picture(can_shrink=False)

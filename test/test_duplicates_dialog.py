@@ -7,10 +7,10 @@ import threading
 import unittest.mock
 import zipfile
 
-from gi.repository import Gtk
+from gi.repository import GLib, Gtk
 
-from . import (drawn_page, encoded, pump, stop_on_the_second, visible_prompts,
-               wait_for)
+from . import (descendants, drawn_page, encoded, pump, stop_on_the_second,
+               visible_prompts, wait_for)
 from .test_library_dialog import _LibraryWindowTest
 from mcomix.dialog import Response
 from mcomix.library import duplicates_dialog
@@ -108,6 +108,92 @@ class FindDuplicatesTest(_LibraryWindowTest):
         for path in (self.first, self.same):
             self.assertIsNone(self.library.backend.get_book_by_path(path))
             self.assertTrue(os.path.isfile(path), msg=path)
+        self.assertEqual([], found.ticked())
+
+    def _ticks(self, found):
+        return {path: found._ticks[self._id(path)].get_active()
+                for path in (self.first, self.same, self.longer)}
+
+    def test_untick_all_and_tick_recommended(self):
+        """"Untick All" leaves nothing to act on; "Tick Recommended"
+        ticks again every copy but the one to keep."""
+        found = self._found(self.first, self.same, self.longer, self.other)
+        found.untick_all()
+        self.assertEqual([], found.ticked())
+        self.assertFalse(found._removing.get_sensitive())
+        self.assertFalse(
+            found.get_widget_for_response(duplicates_dialog._SELECT)
+            .get_sensitive())
+        found.tick_recommended()
+        self.assertEqual({self.first: True, self.same: True,
+                          self.longer: False}, self._ticks(found))
+        self.assertTrue(found._removing.get_sensitive())
+
+    def test_a_group_ticked_by_hand_gets_its_ticks_back(self):
+        """The reader kept another copy in a group: "Tick Recommended"
+        gives that back rather than what the window would keep, after
+        "Untick All" as well."""
+        found = self._found(self.first, self.same, self.longer, self.other)
+        found._ticks[self._id(self.longer)].set_active(True)
+        found._ticks[self._id(self.first)].set_active(False)
+        mine = {self.first: False, self.same: True, self.longer: True}
+        found.tick_recommended()
+        self.assertEqual(mine, self._ticks(found))
+        found.untick_all()
+        found.tick_recommended()
+        self.assertEqual(mine, self._ticks(found))
+
+    def test_the_remove_menu_holds_the_covers_three_removals(self):
+        found = self._found(self.first, self.same, self.longer, self.other)
+        menu = found._removing.get_menu_model()
+        self.assertEqual(
+            [duplicates_dialog._REMOVE, duplicates_dialog._TRASH,
+             duplicates_dialog._DELETE],
+            [menu.get_item_attribute_value(
+                place, 'target', GLib.VariantType.new('i')).get_int32()
+             for place in range(menu.get_n_items())])
+        found.activate_action('duplicates.respond',
+                              GLib.Variant('i', duplicates_dialog._REMOVE))
+        pump()
+        prompt, = visible_prompts()
+        self.addCleanup(prompt.destroy)
+        self.assertIs(found, prompt.get_transient_for())
+
+    def test_the_books_ticked_are_moved_to_the_trash_once_asked(self):
+        found = self._found(self.first, self.same, self.longer, self.other)
+        tools = duplicates_dialog.tools
+        with unittest.mock.patch.object(tools, 'trash_refuses',
+                                        return_value=False), \
+                unittest.mock.patch.object(tools, 'move_to_trash') as trash:
+            found.response(duplicates_dialog._TRASH)
+            pump()
+            prompt, = visible_prompts()
+            self.assertIs(found, prompt.get_transient_for())
+            prompt.response(Response.YES)
+            pump()
+        self.assertEqual({self.first, self.same},
+                         {call.args[0] for call in trash.call_args_list})
+        for path in (self.first, self.same):
+            self.assertIsNone(self.library.backend.get_book_by_path(path))
+        self.assertEqual({self.longer, self.other},
+                         set(self.library.book_area.shown_paths()))
+        self.assertEqual([], found.ticked())
+
+    def test_the_books_ticked_are_deleted_for_good_once_asked(self):
+        found = self._found(self.first, self.same, self.longer, self.other)
+        found._ticks[self._id(self.same)].set_active(False)
+        found.response(duplicates_dialog._DELETE)
+        pump()
+        prompt, = visible_prompts()
+        self.assertIs(found, prompt.get_transient_for())
+        self.assertIn('first.cbz', ' '.join(
+            widget.get_text() for widget in descendants(prompt)
+            if isinstance(widget, Gtk.Label)))
+        prompt.response(Response.OK)
+        pump()
+        self.assertFalse(os.path.exists(self.first))
+        self.assertTrue(os.path.isfile(self.same))
+        self.assertIsNone(self.library.backend.get_book_by_path(self.first))
         self.assertEqual([], found.ticked())
 
     def test_a_library_without_copies(self):
