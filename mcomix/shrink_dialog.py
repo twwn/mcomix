@@ -112,9 +112,15 @@ class ShrinkDialog(Dialog):
         self._limit.set_value(prefs['shrink page height'])
         self._quality = Gtk.SpinButton.new_with_range(1, 100, 1)
         self._quality.set_value(prefs['shrink page quality'])
+        # A book whose pages would lose detail to save a small share of
+        # it is listed but not ticked.
+        self._least = Gtk.SpinButton.new_with_range(0, 99, 1)
+        self._least.set_value(prefs['shrink least share'])
         for row, (text, spin) in enumerate((
                 (_('Page _height limit, in pixels:'), self._limit),
-                (_('WebP _quality:'), self._quality))):
+                (_('WebP _quality:'), self._quality),
+                (_('_Least saving to tick a book, in percent:'),
+                 self._least))):
             label = Gtk.Label.new_with_mnemonic(text)
             label.set_xalign(0)
             label.set_mnemonic_widget(spin)
@@ -173,6 +179,7 @@ class ShrinkDialog(Dialog):
         shrink = self.shrink
         prefs['shrink page height'] = shrink.limit
         prefs['shrink page quality'] = shrink.quality
+        prefs['shrink least share'] = self._least.get_value_as_int()
         self._grid.set_sensitive(False)
         find = self.get_widget_for_response(_FIND)
         if find is not None:
@@ -245,7 +252,49 @@ class ShrinkDialog(Dialog):
         self._thread.join()
         self.surveyed = True
         ngettext = i18n.get_translation().ngettext
-        saved = sum(surveyed.saved for _path, surveyed in self.found)
+        least = self._least.get_value_as_int() / 100
+        for path, surveyed in self.found:
+            share = surveyed.saved / surveyed.size if surveyed.size else 0.0
+            worth = share >= least and surveyed.saved > 0
+            tick = Gtk.CheckButton(active=worth)
+            label = self._text()
+            label.set_text(ngettext(
+                '%(book)s: %(pages)d page over the limit, about %(size)s '
+                '(%(share)d%%) smaller',
+                '%(book)s: %(pages)d pages over the limit, about %(size)s '
+                '(%(share)d%%) smaller', surveyed.pages) % {
+                    'book': i18n.to_display_string(os.path.basename(path)),
+                    'pages': surveyed.pages,
+                    'size': GLib.format_size(surveyed.saved),
+                    'share': round(100 * share)})
+            tick.set_child(label)
+            if not worth:
+                tick.set_tooltip_text(_(
+                    'Shrinking it saves a smaller share of the book than the '
+                    'least set for a book to be ticked.'))
+            tick.connect('toggled', lambda _tick: self._ticks_changed())
+            self.ticks[path] = tick
+            self._list.append(tick)
+        self._ticks_changed()
+        for widget in (self._book, self._bar):
+            widget.set_visible(False)
+        self._status.set_visible(True)
+        self._scrolled.set_visible(bool(self.found))
+        self._relabel(Response.CANCEL, _('_Cancel') if self.found
+                      else _('_Close'))
+        self.set_response_sensitive(Response.CANCEL, True)
+        if self.found:
+            self.add_button(_('_Shrink'), Response.OK).add_css_class(
+                'destructive-action')
+            self.set_response_sensitive(Response.OK, bool(self.ticked()))
+        return GLib.SOURCE_REMOVE
+
+    def _ticks_changed(self) -> None:
+        """Say how much the books left ticked would save, and offer
+        Shrink only while there are some."""
+        ngettext = i18n.get_translation().ngettext
+        saved = sum(surveyed.saved for path, surveyed in self.found
+                    if self.ticks[path].get_active())
         lines = [ngettext(
             '%(count)d book has pages over the limit, about %(size)s to save',
             '%(count)d books have pages over the limit, about %(size)s to '
@@ -258,33 +307,7 @@ class ShrinkDialog(Dialog):
         if read < len(self._books):
             lines.append(webp_dialog.stopped_line(len(self._books) - read))
         self._status.set_text('\n'.join(lines))
-        for path, surveyed in self.found:
-            tick = Gtk.CheckButton(active=True)
-            label = self._text()
-            label.set_text(ngettext(
-                '%(book)s: %(pages)d page over the limit, about %(size)s '
-                'smaller',
-                '%(book)s: %(pages)d pages over the limit, about %(size)s '
-                'smaller', surveyed.pages) % {
-                    'book': i18n.to_display_string(os.path.basename(path)),
-                    'pages': surveyed.pages,
-                    'size': GLib.format_size(surveyed.saved)})
-            tick.set_child(label)
-            tick.connect('toggled', lambda _tick: self.set_response_sensitive(
-                Response.OK, bool(self.ticked())))
-            self.ticks[path] = tick
-            self._list.append(tick)
-        for widget in (self._book, self._bar):
-            widget.set_visible(False)
-        self._status.set_visible(True)
-        self._scrolled.set_visible(bool(self.found))
-        self._relabel(Response.CANCEL, _('_Cancel') if self.found
-                      else _('_Close'))
-        self.set_response_sensitive(Response.CANCEL, True)
-        if self.found:
-            self.add_button(_('_Shrink'), Response.OK).add_css_class(
-                'destructive-action')
-        return GLib.SOURCE_REMOVE
+        self.set_response_sensitive(Response.OK, bool(self.ticked()))
 
     def ticked(self) -> list[str]:
         """The books listed and left ticked, in the order given."""

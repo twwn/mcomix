@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: comix 4.0.1\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-28 16:23+0100\n"
+"POT-Creation-Date: 2026-11-28 16:29+0100\n"
 "PO-Revision-Date: 2008-12-13 18:00+0100\n"
 "Last-Translator: Adrian C. <anrxc@sysphere.org>\n"
 "Language-Team: Croatian\n"
@@ -122,8 +122,8 @@ msgstr "_Ne"
 #: mcomix/file_chooser_base_dialog.py:242
 #: mcomix/file_chooser_library_dialog.py:42 mcomix/message_dialog.py:26
 #: mcomix/message_dialog.py:29 mcomix/pageselect.py:38
-#: mcomix/save_progress.py:121 mcomix/shrink_dialog.py:140
-#: mcomix/shrink_dialog.py:281 mcomix/shrink_dialog.py:316
+#: mcomix/save_progress.py:121 mcomix/shrink_dialog.py:146
+#: mcomix/shrink_dialog.py:283 mcomix/shrink_dialog.py:339
 #: mcomix/webp_dialog.py:127 mcomix/library/duplicates_dialog.py:237
 msgid "_Cancel"
 msgstr "O_dustani"
@@ -184,7 +184,7 @@ msgstr "_Ukloni"
 # File: src/ui.py, line: 48
 #: mcomix/bookmark_dialog.py:34 mcomix/comment_dialog.py:29
 #: mcomix/message_dialog.py:25 mcomix/preferences_dialog.py:105
-#: mcomix/properties_dialog.py:38 mcomix/shrink_dialog.py:282
+#: mcomix/properties_dialog.py:38 mcomix/shrink_dialog.py:284
 #: mcomix/webp_dialog.py:453 mcomix/library/book_check_dialog.py:180
 #: mcomix/library/book_properties.py:60 mcomix/library/duplicates_dialog.py:292
 #: mcomix/library/watchlist.py:41
@@ -3055,34 +3055,67 @@ msgstr ""
 "Duga traka, mnogo viša nego šira, procjenjuje se samo po širini. Svaka "
 "zapisana knjiga ide u smeće kakva je bila, odakle se može vratiti."
 
-#: mcomix/shrink_dialog.py:116
+#: mcomix/shrink_dialog.py:120
 msgid "Page _height limit, in pixels:"
 msgstr "Ograničenje _visine stranice, u pikselima:"
 
 #
 # File: src/preferences.py, line: 143
-#: mcomix/shrink_dialog.py:117
+#: mcomix/shrink_dialog.py:121
 msgid "WebP _quality:"
 msgstr "_Kvaliteta WebP-a:"
 
+#: mcomix/shrink_dialog.py:122
+msgid "_Least saving to tick a book, in percent:"
+msgstr "Najmanja _ušteda za označavanje knjige, u postocima:"
+
 #
 # File: src/library.py, line: 910
-#: mcomix/shrink_dialog.py:141
+#: mcomix/shrink_dialog.py:147
 msgid "_Find Books"
 msgstr "_Pronađi knjige"
 
-#: mcomix/shrink_dialog.py:180 mcomix/webp_dialog.py:227
+#: mcomix/shrink_dialog.py:187 mcomix/webp_dialog.py:227
 #: mcomix/library/add_progress_dialog.py:57
 #: mcomix/library/book_check_dialog.py:65
 #: mcomix/library/duplicates_dialog.py:112
 msgid "_Stop"
 msgstr "_Zaustavi"
 
-#: mcomix/shrink_dialog.py:207 mcomix/webp_dialog.py:278
+#: mcomix/shrink_dialog.py:214 mcomix/webp_dialog.py:278
 msgid "open in the main window"
 msgstr "otvoreno u glavnom prozoru"
 
-#: mcomix/shrink_dialog.py:250
+#: mcomix/shrink_dialog.py:262
+#, python-format
+msgid ""
+"%(book)s: %(pages)d page over the limit, about %(size)s (%(share)d%%) smaller"
+msgid_plural ""
+"%(book)s: %(pages)d pages over the limit, about %(size)s (%(share)d%%) "
+"smaller"
+msgstr[0] ""
+"%(book)s: %(pages)d stranica iznad ograničenja, oko %(size)s (%(share)d%%) "
+"manje"
+msgstr[1] ""
+"%(book)s: %(pages)d stranice iznad ograničenja, oko %(size)s (%(share)d%%) "
+"manje"
+msgstr[2] ""
+"%(book)s: %(pages)d stranica iznad ograničenja, oko %(size)s (%(share)d%%) "
+"manje"
+
+#: mcomix/shrink_dialog.py:273
+msgid ""
+"Shrinking it saves a smaller share of the book than the least set for a book "
+"to be ticked."
+msgstr ""
+"Smanjivanje štedi manji dio knjige od najmanjeg postavljenog za označavanje "
+"knjige."
+
+#: mcomix/shrink_dialog.py:287
+msgid "_Shrink"
+msgstr "_Smanji"
+
+#: mcomix/shrink_dialog.py:299
 #, python-format
 msgid "%(count)d book has pages over the limit, about %(size)s to save"
 msgid_plural ""
@@ -3094,23 +3127,11 @@ msgstr[1] ""
 msgstr[2] ""
 "%(count)d knjiga ima stranice iznad ograničenja, oko %(size)s uštede"
 
-#: mcomix/shrink_dialog.py:265
-#, python-format
-msgid "%(book)s: %(pages)d page over the limit, about %(size)s smaller"
-msgid_plural "%(book)s: %(pages)d pages over the limit, about %(size)s smaller"
-msgstr[0] "%(book)s: %(pages)d stranica iznad ograničenja, oko %(size)s manje"
-msgstr[1] "%(book)s: %(pages)d stranice iznad ograničenja, oko %(size)s manje"
-msgstr[2] "%(book)s: %(pages)d stranica iznad ograničenja, oko %(size)s manje"
-
-#: mcomix/shrink_dialog.py:285
-msgid "_Shrink"
-msgstr "_Smanji"
-
-#: mcomix/shrink_dialog.py:308
+#: mcomix/shrink_dialog.py:331
 msgid "Not enough room to keep the books as they were"
 msgstr "Nema dovoljno mjesta da se knjige zadrže kakve su bile"
 
-#: mcomix/shrink_dialog.py:309
+#: mcomix/shrink_dialog.py:332
 #, python-format
 msgid ""
 "The books shrunk take about %(needed)s on the disk, which has %(free)s free: "
@@ -3123,7 +3144,7 @@ msgstr ""
 "se ono ne isprazni. Trajno brisanje oslobađa njihov prostor kako se svaka "
 "knjiga zapiše."
 
-#: mcomix/shrink_dialog.py:317
+#: mcomix/shrink_dialog.py:340
 msgid "_Delete Originals Permanently"
 msgstr "_Obriši izvornike trajno"
 
@@ -4948,6 +4969,17 @@ msgstr "S poddirektorijima"
 #: mcomix/library/watchlist.py:85
 msgid "Automatically scan for new books when library is _opened"
 msgstr "Automatski traži nove knjige pri _otvaranju biblioteke"
+
+#, python-format
+#~ msgid "%(book)s: %(pages)d page over the limit, about %(size)s smaller"
+#~ msgid_plural ""
+#~ "%(book)s: %(pages)d pages over the limit, about %(size)s smaller"
+#~ msgstr[0] ""
+#~ "%(book)s: %(pages)d stranica iznad ograničenja, oko %(size)s manje"
+#~ msgstr[1] ""
+#~ "%(book)s: %(pages)d stranice iznad ograničenja, oko %(size)s manje"
+#~ msgstr[2] ""
+#~ "%(book)s: %(pages)d stranica iznad ograničenja, oko %(size)s manje"
 
 #, fuzzy
 #~ msgid ""

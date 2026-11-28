@@ -68,6 +68,7 @@ Preferences = TypedDict('Preferences', {
     'write without damaged files': bool,
     'shrink page height': int,
     'shrink page quality': int,
+    'shrink least share': int,
     'auto load last file': bool,
     'open library on startup': bool,
     'show library without book': bool,
@@ -235,6 +236,13 @@ _DEFAULTS: Preferences = {
     # which a page's lines and lettering show no blocks.
     'shrink page height': 4320,
     'shrink page quality': 90,
+    # The least share of a book, in percent, the shrink has to save
+    # for the book to be ticked.  Its pages lose detail, and a book
+    # with few pages over the limit saves little: 40 MiB written as
+    # 35 MiB is an eighth.  A share rather than a number of megabytes,
+    # which would never tick a small book that halves, and tick a huge
+    # one that barely changes.
+    'shrink least share': 25,
     'auto load last file': False,
     'open library on startup': False,
     'show library without book': True,

@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-28 16:23+0100\n"
+"POT-Creation-Date: 2026-11-28 16:29+0100\n"
 "PO-Revision-Date: 2009-05-04 23:52+0300\n"
 "Last-Translator: Oleksandr Zaiats <ai@eth0.net.ua>\n"
 "Language-Team: \n"
@@ -114,8 +114,8 @@ msgstr "Н_і"
 #: mcomix/file_chooser_base_dialog.py:242
 #: mcomix/file_chooser_library_dialog.py:42 mcomix/message_dialog.py:26
 #: mcomix/message_dialog.py:29 mcomix/pageselect.py:38
-#: mcomix/save_progress.py:121 mcomix/shrink_dialog.py:140
-#: mcomix/shrink_dialog.py:281 mcomix/shrink_dialog.py:316
+#: mcomix/save_progress.py:121 mcomix/shrink_dialog.py:146
+#: mcomix/shrink_dialog.py:283 mcomix/shrink_dialog.py:339
 #: mcomix/webp_dialog.py:127 mcomix/library/duplicates_dialog.py:237
 msgid "_Cancel"
 msgstr "_Скасувати"
@@ -169,7 +169,7 @@ msgstr "Ви_лучити"
 
 #: mcomix/bookmark_dialog.py:34 mcomix/comment_dialog.py:29
 #: mcomix/message_dialog.py:25 mcomix/preferences_dialog.py:105
-#: mcomix/properties_dialog.py:38 mcomix/shrink_dialog.py:282
+#: mcomix/properties_dialog.py:38 mcomix/shrink_dialog.py:284
 #: mcomix/webp_dialog.py:453 mcomix/library/book_check_dialog.py:180
 #: mcomix/library/book_properties.py:60 mcomix/library/duplicates_dialog.py:292
 #: mcomix/library/watchlist.py:41
@@ -2729,30 +2729,63 @@ msgstr ""
 "набагато вища за свою ширину, оцінюється лише за шириною. Кожна записана "
 "книга в попередньому вигляді йде до смітника, звідки її можна відновити."
 
-#: mcomix/shrink_dialog.py:116
+#: mcomix/shrink_dialog.py:120
 msgid "Page _height limit, in pixels:"
 msgstr "Межа _висоти сторінки, у пікселях:"
 
-#: mcomix/shrink_dialog.py:117
+#: mcomix/shrink_dialog.py:121
 msgid "WebP _quality:"
 msgstr "_Якість WebP:"
 
-#: mcomix/shrink_dialog.py:141
+#: mcomix/shrink_dialog.py:122
+msgid "_Least saving to tick a book, in percent:"
+msgstr "Найменша _економія, щоб позначити книгу, у відсотках:"
+
+#: mcomix/shrink_dialog.py:147
 msgid "_Find Books"
 msgstr "_Знайти книги"
 
-#: mcomix/shrink_dialog.py:180 mcomix/webp_dialog.py:227
+#: mcomix/shrink_dialog.py:187 mcomix/webp_dialog.py:227
 #: mcomix/library/add_progress_dialog.py:57
 #: mcomix/library/book_check_dialog.py:65
 #: mcomix/library/duplicates_dialog.py:112
 msgid "_Stop"
 msgstr "С_топ"
 
-#: mcomix/shrink_dialog.py:207 mcomix/webp_dialog.py:278
+#: mcomix/shrink_dialog.py:214 mcomix/webp_dialog.py:278
 msgid "open in the main window"
 msgstr "відкрита в головному вікні"
 
-#: mcomix/shrink_dialog.py:250
+#: mcomix/shrink_dialog.py:262
+#, python-format
+msgid ""
+"%(book)s: %(pages)d page over the limit, about %(size)s (%(share)d%%) smaller"
+msgid_plural ""
+"%(book)s: %(pages)d pages over the limit, about %(size)s (%(share)d%%) "
+"smaller"
+msgstr[0] ""
+"%(book)s: %(pages)d сторінка понад межу, менше приблизно на %(size)s "
+"(%(share)d%%)"
+msgstr[1] ""
+"%(book)s: %(pages)d сторінки понад межу, менше приблизно на %(size)s "
+"(%(share)d%%)"
+msgstr[2] ""
+"%(book)s: %(pages)d сторінок понад межу, менше приблизно на %(size)s "
+"(%(share)d%%)"
+
+#: mcomix/shrink_dialog.py:273
+msgid ""
+"Shrinking it saves a smaller share of the book than the least set for a book "
+"to be ticked."
+msgstr ""
+"Зменшення заощаджує меншу частку книги, ніж найменша, задана для позначення "
+"книги."
+
+#: mcomix/shrink_dialog.py:287
+msgid "_Shrink"
+msgstr "З_меншити"
+
+#: mcomix/shrink_dialog.py:299
 #, python-format
 msgid "%(count)d book has pages over the limit, about %(size)s to save"
 msgid_plural ""
@@ -2764,26 +2797,11 @@ msgstr[1] ""
 msgstr[2] ""
 "%(count)d книг мають сторінки понад межу, можна заощадити близько %(size)s"
 
-#: mcomix/shrink_dialog.py:265
-#, python-format
-msgid "%(book)s: %(pages)d page over the limit, about %(size)s smaller"
-msgid_plural "%(book)s: %(pages)d pages over the limit, about %(size)s smaller"
-msgstr[0] ""
-"%(book)s: %(pages)d сторінка понад межу, менше приблизно на %(size)s"
-msgstr[1] ""
-"%(book)s: %(pages)d сторінки понад межу, менше приблизно на %(size)s"
-msgstr[2] ""
-"%(book)s: %(pages)d сторінок понад межу, менше приблизно на %(size)s"
-
-#: mcomix/shrink_dialog.py:285
-msgid "_Shrink"
-msgstr "З_меншити"
-
-#: mcomix/shrink_dialog.py:308
+#: mcomix/shrink_dialog.py:331
 msgid "Not enough room to keep the books as they were"
 msgstr "Не вистачає місця, щоб зберегти книги в попередньому вигляді"
 
-#: mcomix/shrink_dialog.py:309
+#: mcomix/shrink_dialog.py:332
 #, python-format
 msgid ""
 "The books shrunk take about %(needed)s on the disk, which has %(free)s free: "
@@ -2796,7 +2814,7 @@ msgstr ""
 "спорожнять. Якщо вилучити їх остаточно, місце звільняється з записом кожної "
 "книги."
 
-#: mcomix/shrink_dialog.py:317
+#: mcomix/shrink_dialog.py:340
 msgid "_Delete Originals Permanently"
 msgstr "В_илучити оригінали остаточно"
 
@@ -4418,6 +4436,17 @@ msgstr "З підкаталогами"
 #: mcomix/library/watchlist.py:85
 msgid "Automatically scan for new books when library is _opened"
 msgstr "Автоматично шукати нові книжки при _відкритті бібліотеки"
+
+#, python-format
+#~ msgid "%(book)s: %(pages)d page over the limit, about %(size)s smaller"
+#~ msgid_plural ""
+#~ "%(book)s: %(pages)d pages over the limit, about %(size)s smaller"
+#~ msgstr[0] ""
+#~ "%(book)s: %(pages)d сторінка понад межу, менше приблизно на %(size)s"
+#~ msgstr[1] ""
+#~ "%(book)s: %(pages)d сторінки понад межу, менше приблизно на %(size)s"
+#~ msgstr[2] ""
+#~ "%(book)s: %(pages)d сторінок понад межу, менше приблизно на %(size)s"
 
 #, fuzzy
 #~ msgid ""

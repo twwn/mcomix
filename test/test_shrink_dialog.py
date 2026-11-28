@@ -7,12 +7,13 @@ import types
 import unittest.mock
 import zipfile
 
-from gi.repository import Gtk
+from gi.repository import GLib, Gtk
 from PIL import Image
 
 from . import drawn_page, encoded, pump, visible_prompts, wait_for
 from .test_library_dialog import _LibraryWindowTest
 from mcomix import shrink_dialog
+from mcomix import webp_books
 from mcomix import webp_dialog
 from mcomix.dialog import Response
 from mcomix.preferences import prefs
@@ -29,7 +30,8 @@ class ShrinkPagesTest(_LibraryWindowTest):
         self.larger = self._book('larger.cbz', (2000, 3000))
         self.small = self._book('small.cbz', (400, 600))
         self.enterContext(unittest.mock.patch.dict(
-            prefs, {'shrink page height': 600, 'shrink page quality': 70}))
+            prefs, {'shrink page height': 600, 'shrink page quality': 70,
+                    'shrink least share': 25}))
 
     def _book(self, name, size):
         path = os.path.join(self.tmp_dir, name)
@@ -185,5 +187,62 @@ class ShrinkPagesTest(_LibraryWindowTest):
         asked.response(Response.CANCEL)
         pump()
         self.assertFalse(asked.get_visible())
+
+    def test_a_book_that_would_save_little_is_listed_unticked(self):
+        """Every book with a page over the limit was ticked, one that
+        would save 5 MiB of 40 as well: an eighth is not worth pages
+        that lose detail for good."""
+        mib = 1024 * 1024
+        saving = {self.large: webp_books.Surveyed(3, 40 * mib, 5 * mib),
+                  self.larger: webp_books.Surveyed(9, 40 * mib, 30 * mib)}
+        with unittest.mock.patch.object(
+                shrink_dialog.webp_books, 'survey',
+                lambda path, *args: saving[path]):
+            asked = self._found(self.large, self.larger)
+        self.assertEqual([self.larger], asked.ticked())
+        little = asked.ticks[self.large]
+        self.assertIn('(12%) smaller', little.get_child().get_text())
+        self.assertIn('(75%) smaller',
+                      asked.ticks[self.larger].get_child().get_text())
+        self.assertIn('smaller share', little.get_tooltip_text())
+        self.assertIsNone(asked.ticks[self.larger].get_tooltip_text())
+        status = asked._status.get_text
+        self.assertIn('about %s to save' % GLib.format_size(30 * mib),
+                      status(), 'only the books ticked count')
+        little.set_active(True)
+        self.assertIn('about %s to save' % GLib.format_size(35 * mib),
+                      status())
+        shrink = asked.get_widget_for_response(Response.OK)
+        for tick in asked.ticks.values():
+            tick.set_active(False)
+        self.assertFalse(shrink.get_sensitive())
+
+    def test_the_least_share_is_the_one_set_last(self):
+        """10 MiB of 40 is a quarter: ticked at 25 %, not at 26 %."""
+        mib = 1024 * 1024
+        for least, ticked in ((25, True), (26, False)):
+            with self.subTest(least=least), unittest.mock.patch.object(
+                    shrink_dialog.webp_books, 'survey',
+                    lambda path, *args: webp_books.Surveyed(
+                        1, 40 * mib, 10 * mib)):
+                asked = self._asked(self.large)
+                asked._least.set_value(least)
+                asked.response(shrink_dialog._FIND)
+                self.assertTrue(wait_for(lambda: asked.surveyed, seconds=20))
+                pump()
+                self.assertEqual(least, prefs['shrink least share'])
+                self.assertEqual([self.large] if ticked else [],
+                                 asked.ticked())
+                asked.destroy()
+                pump()
+
+    def test_shrink_is_not_offered_ticked_where_no_book_saves_anything(self):
+        with unittest.mock.patch.object(
+                shrink_dialog.webp_books, 'survey',
+                lambda path, *args: webp_books.Surveyed(1, 40 * 1024, 0)):
+            asked = self._found(self.large)
+        self.assertEqual([], asked.ticked())
+        self.assertFalse(
+            asked.get_widget_for_response(Response.OK).get_sensitive())
 
 # vim: expandtab:sw=4:ts=4

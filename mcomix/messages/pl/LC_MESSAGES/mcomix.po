@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-28 16:23+0100\n"
+"POT-Creation-Date: 2026-11-28 16:29+0100\n"
 "PO-Revision-Date: 2009-02-02 14:19+0100\n"
 "Last-Translator: Dariusz Jakoniuk <pipaceliny@gmail.com>\n"
 "Language-Team: \n"
@@ -124,8 +124,8 @@ msgstr "_Nie"
 #: mcomix/file_chooser_base_dialog.py:242
 #: mcomix/file_chooser_library_dialog.py:42 mcomix/message_dialog.py:26
 #: mcomix/message_dialog.py:29 mcomix/pageselect.py:38
-#: mcomix/save_progress.py:121 mcomix/shrink_dialog.py:140
-#: mcomix/shrink_dialog.py:281 mcomix/shrink_dialog.py:316
+#: mcomix/save_progress.py:121 mcomix/shrink_dialog.py:146
+#: mcomix/shrink_dialog.py:283 mcomix/shrink_dialog.py:339
 #: mcomix/webp_dialog.py:127 mcomix/library/duplicates_dialog.py:237
 msgid "_Cancel"
 msgstr "_Anuluj"
@@ -188,7 +188,7 @@ msgstr "_Usuń"
 # File: src/ui.py, line: 48
 #: mcomix/bookmark_dialog.py:34 mcomix/comment_dialog.py:29
 #: mcomix/message_dialog.py:25 mcomix/preferences_dialog.py:105
-#: mcomix/properties_dialog.py:38 mcomix/shrink_dialog.py:282
+#: mcomix/properties_dialog.py:38 mcomix/shrink_dialog.py:284
 #: mcomix/webp_dialog.py:453 mcomix/library/book_check_dialog.py:180
 #: mcomix/library/book_properties.py:60 mcomix/library/duplicates_dialog.py:292
 #: mcomix/library/watchlist.py:41
@@ -3067,34 +3067,64 @@ msgstr ""
 "Każda zapisana książka trafia do kosza w dawnej postaci, skąd można ją "
 "przywrócić."
 
-#: mcomix/shrink_dialog.py:116
+#: mcomix/shrink_dialog.py:120
 msgid "Page _height limit, in pixels:"
 msgstr "Limit _wysokości strony, w pikselach:"
 
 #
 # File: src/preferences.py, line: 143
-#: mcomix/shrink_dialog.py:117
+#: mcomix/shrink_dialog.py:121
 msgid "WebP _quality:"
 msgstr "_Jakość WebP:"
 
+#: mcomix/shrink_dialog.py:122
+msgid "_Least saving to tick a book, in percent:"
+msgstr "Najmniejsza _oszczędność do zaznaczenia książki, w procentach:"
+
 #
 # File: src/library.py, line: 910
-#: mcomix/shrink_dialog.py:141
+#: mcomix/shrink_dialog.py:147
 msgid "_Find Books"
 msgstr "_Znajdź książki"
 
-#: mcomix/shrink_dialog.py:180 mcomix/webp_dialog.py:227
+#: mcomix/shrink_dialog.py:187 mcomix/webp_dialog.py:227
 #: mcomix/library/add_progress_dialog.py:57
 #: mcomix/library/book_check_dialog.py:65
 #: mcomix/library/duplicates_dialog.py:112
 msgid "_Stop"
 msgstr "Z_atrzymaj"
 
-#: mcomix/shrink_dialog.py:207 mcomix/webp_dialog.py:278
+#: mcomix/shrink_dialog.py:214 mcomix/webp_dialog.py:278
 msgid "open in the main window"
 msgstr "otwarta w głównym oknie"
 
-#: mcomix/shrink_dialog.py:250
+#: mcomix/shrink_dialog.py:262
+#, python-format
+msgid ""
+"%(book)s: %(pages)d page over the limit, about %(size)s (%(share)d%%) smaller"
+msgid_plural ""
+"%(book)s: %(pages)d pages over the limit, about %(size)s (%(share)d%%) "
+"smaller"
+msgstr[0] ""
+"%(book)s: %(pages)d strona powyżej limitu, około %(size)s (%(share)d%%) mniej"
+msgstr[1] ""
+"%(book)s: %(pages)d strony powyżej limitu, około %(size)s (%(share)d%%) mniej"
+msgstr[2] ""
+"%(book)s: %(pages)d stron powyżej limitu, około %(size)s (%(share)d%%) mniej"
+
+#: mcomix/shrink_dialog.py:273
+msgid ""
+"Shrinking it saves a smaller share of the book than the least set for a book "
+"to be ticked."
+msgstr ""
+"Zmniejszenie oszczędza mniejszą część książki niż minimum ustawione do "
+"zaznaczenia książki."
+
+#: mcomix/shrink_dialog.py:287
+msgid "_Shrink"
+msgstr "Z_mniejsz"
+
+#: mcomix/shrink_dialog.py:299
 #, python-format
 msgid "%(count)d book has pages over the limit, about %(size)s to save"
 msgid_plural ""
@@ -3107,23 +3137,11 @@ msgstr[1] ""
 msgstr[2] ""
 "%(count)d książek ma strony powyżej limitu, około %(size)s do zaoszczędzenia"
 
-#: mcomix/shrink_dialog.py:265
-#, python-format
-msgid "%(book)s: %(pages)d page over the limit, about %(size)s smaller"
-msgid_plural "%(book)s: %(pages)d pages over the limit, about %(size)s smaller"
-msgstr[0] "%(book)s: %(pages)d strona powyżej limitu, około %(size)s mniej"
-msgstr[1] "%(book)s: %(pages)d strony powyżej limitu, około %(size)s mniej"
-msgstr[2] "%(book)s: %(pages)d stron powyżej limitu, około %(size)s mniej"
-
-#: mcomix/shrink_dialog.py:285
-msgid "_Shrink"
-msgstr "Z_mniejsz"
-
-#: mcomix/shrink_dialog.py:308
+#: mcomix/shrink_dialog.py:331
 msgid "Not enough room to keep the books as they were"
 msgstr "Za mało miejsca, by zachować książki w poprzedniej postaci"
 
-#: mcomix/shrink_dialog.py:309
+#: mcomix/shrink_dialog.py:332
 #, python-format
 msgid ""
 "The books shrunk take about %(needed)s on the disk, which has %(free)s free: "
@@ -3136,7 +3154,7 @@ msgstr ""
 "zostanie opróżniony. Trwałe usunięcie ich zwalnia miejsce w miarę "
 "zapisywania każdej książki."
 
-#: mcomix/shrink_dialog.py:317
+#: mcomix/shrink_dialog.py:340
 msgid "_Delete Originals Permanently"
 msgstr "Usuń o_ryginały trwale"
 
@@ -4968,6 +4986,14 @@ msgstr "Z podkatalogami"
 #: mcomix/library/watchlist.py:85
 msgid "Automatically scan for new books when library is _opened"
 msgstr "Automatycznie szukaj nowych książek przy _otwarciu biblioteki"
+
+#, python-format
+#~ msgid "%(book)s: %(pages)d page over the limit, about %(size)s smaller"
+#~ msgid_plural ""
+#~ "%(book)s: %(pages)d pages over the limit, about %(size)s smaller"
+#~ msgstr[0] "%(book)s: %(pages)d strona powyżej limitu, około %(size)s mniej"
+#~ msgstr[1] "%(book)s: %(pages)d strony powyżej limitu, około %(size)s mniej"
+#~ msgstr[2] "%(book)s: %(pages)d stron powyżej limitu, około %(size)s mniej"
 
 #, fuzzy
 #~ msgid ""
