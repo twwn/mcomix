@@ -89,8 +89,9 @@ class CheckTest(MComixTest):
                                         'iter_extract', extracted):
             checked = self.check(NORMAL_ZIP)
         self.assertEqual(Fault.DAMAGED, checked.fault)
+        # Named as the handler lists them, with this system's separator.
         with zipfile.ZipFile(NORMAL_ZIP) as book:
-            files = [name for name in book.namelist()
+            files = [os.path.normpath(name) for name in book.namelist()
                      if not name.endswith('/')]
         self.assertEqual(sorted(files), sorted(checked.unreadable))
 
