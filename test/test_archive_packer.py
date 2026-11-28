@@ -395,6 +395,43 @@ class _PackingTest(MComixTest):
         self.archive = os.path.join(self.directory, 'packed.cbz')
 
 
+class CheckZipTest(_PackingTest):
+
+    """check_zip(): a ZIP read back before the archive it replaces is
+    removed for good."""
+
+    DATA = b'page' * 64
+
+    def setUp(self):
+        super().setUp()
+        with zipfile.ZipFile(self.archive, 'w', zipfile.ZIP_STORED) as made:
+            made.writestr('01.png', self.DATA)
+
+    def test_a_whole_zip_with_every_name_passes(self):
+        archive_packer.check_zip(self.archive, ['01.png'])
+
+    def test_a_name_it_lacks_fails(self):
+        with self.assertRaises(OSError) as raised:
+            archive_packer.check_zip(self.archive, ['01.png', '02.png'])
+        self.assertIn('02.png', str(raised.exception))
+
+    def test_a_member_whose_checksum_is_wrong_fails(self):
+        with open(self.archive, 'rb') as file:
+            data = file.read()
+        at = data.index(self.DATA) + 10
+        with open(self.archive, 'wb') as file:
+            file.write(data[:at] + b'X' + data[at + 1:])
+        with self.assertRaises(OSError) as raised:
+            archive_packer.check_zip(self.archive, ['01.png'])
+        self.assertIn('01.png', str(raised.exception))
+
+    def test_a_file_cut_short_fails(self):
+        with open(self.archive, 'r+b') as file:
+            file.truncate(os.path.getsize(self.archive) - 30)
+        with self.assertRaises(OSError):
+            archive_packer.check_zip(self.archive, ['01.png'])
+
+
 class WriteArchiveTest(_PackingTest):
 
     """write_archive(), and the ComicInfo.xml it puts in every archive.

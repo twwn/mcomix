@@ -3004,11 +3004,9 @@ class MainWindowTest(MComixTest):
         self.assertIsNone(library.get_book_by_path(source))
         self.assertIsNotNone(library.get_book_by_path(target))
 
-    def test_saving_as_a_zip_over_a_name_taken_writes_nothing(self):
-        source = self._open_a_tar()
-        taken = os.path.join(self.tmp_dir, 'Book.cbz')
-        shutil.copy(NORMAL_ZIP, taken)
-        prefs['zip when saving'] = True
+    def _save_fails(self):
+        """Remove a page and save: the save fails, logs an error and
+        tells the reader once."""
         self._remove_first_page_quietly()
         told = []
         with unittest.mock.patch.object(
@@ -3019,6 +3017,27 @@ class MainWindowTest(MComixTest):
         for dialog in told:
             dialog.destroy()
         self.assertEqual(1, len(told))
+
+    def test_a_zip_that_does_not_read_back_keeps_the_tar(self):
+        """The tar is removed for good once the ZIP takes its place: the
+        ZIP is read back first, and dropped if it does not."""
+        source = self._open_a_tar()
+        prefs['zip when saving'] = True
+        failure = OSError(errno.EIO, 'the ZIP written does not read back')
+        with unittest.mock.patch.object(archive_packer, 'check_zip',
+                                        side_effect=failure):
+            self._save_fails()
+        self.assertTrue(os.path.exists(source))
+        self.assertFalse(os.path.exists(os.path.join(self.tmp_dir,
+                                                     'Book.cbz')))
+        self.assertEqual(source, self.window.filehandler.get_path_to_base())
+
+    def test_saving_as_a_zip_over_a_name_taken_writes_nothing(self):
+        source = self._open_a_tar()
+        taken = os.path.join(self.tmp_dir, 'Book.cbz')
+        shutil.copy(NORMAL_ZIP, taken)
+        prefs['zip when saving'] = True
+        self._save_fails()
         with open(NORMAL_ZIP, 'rb') as original, open(taken, 'rb') as file:
             self.assertEqual(original.read(), file.read())
         self.assertTrue(os.path.exists(source))

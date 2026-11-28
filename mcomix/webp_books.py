@@ -305,6 +305,8 @@ def convert(path: str, stop: threading.Event,
         except archive_packer.Unchanged:
             raise Skipped(_('no page made smaller')) from None
         if repack:
+            # The archive it replaces is removed for good.
+            archive_packer.check_zip(target, written.values())
             _repacked_in_place(path, target, becomes, before)
             target = path
         elif target != path and not trash:

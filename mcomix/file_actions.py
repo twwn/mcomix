@@ -957,6 +957,14 @@ class FileActions:
                 page_names=self._page_names,
                 waiting=save_progress.waiting(self._window, path),
                 webp_pages=prefs['png pages as webp when saving'])
+            if target != path:
+                # The book at <path> is removed for good once the ZIP
+                # takes its place.
+                try:
+                    archive_packer.check_zip(target, written.values())
+                except OSError:
+                    tools.remove_file(target)
+                    raise
             self._written_as = (image_files, dict(self._page_names))
             if target != path:
                 self._replaced_by(path, target, written)

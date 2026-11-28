@@ -655,6 +655,21 @@ class RepackTest(_BookTest):
         self.assertEqual((before, os.path.getsize(zip_book)),
                          (converted.before, converted.after))
 
+    def test_a_zip_that_does_not_read_back_leaves_the_book(self):
+        """The archive a repack replaces is removed for good: the ZIP is
+        read back first."""
+        path = self.tar_book({'01.png': line_art_png()})
+        with open(path, 'rb') as file:
+            before = file.read()
+        failure = OSError(errno.EIO, 'the ZIP written does not read back')
+        with unittest.mock.patch.object(webp_books.archive_packer,
+                                        'check_zip', side_effect=failure):
+            with self.assertRaises(OSError):
+                self.convert(path)
+        self.assertEqual(['book.cbt'], os.listdir(self.directory))
+        with open(path, 'rb') as file:
+            self.assertEqual(before, file.read())
+
     def test_a_rar_needs_no_rar_program(self):
         skip_unless_rar_reads(self)
         path = os.path.join(self.directory, 'Flat.rar')

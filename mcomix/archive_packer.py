@@ -487,6 +487,29 @@ class Unchanged(Exception):
     <only_converted>."""
 
 
+def check_zip(path: str, names: "Iterable[str]") -> None:
+    """Raise OSError (EIO) unless the ZIP at <path> lists every one of
+    <names> and reads back whole, every member's checksum right.
+
+    For a ZIP about to take the place of the archive it was made from,
+    which is then removed for good: a fault in writing it, or in the
+    disk under it, would otherwise be found only once the book is gone.
+    Reading it back costs about what reading the book does.
+    """
+    try:
+        with zipfile.ZipFile(path) as written:
+            missing = set(names).difference(written.namelist())
+            bad = written.testzip()
+    except (zipfile.BadZipFile, zipfile.LargeZipFile, EOFError,
+            RuntimeError) as failure:
+        raise OSError(errno.EIO, 'the ZIP written does not read back: %s'
+                      % failure, path) from failure
+    if missing or bad is not None:
+        raise OSError(errno.EIO, 'the ZIP written does not read back: %s'
+                      % (bad if bad is not None else sorted(missing)[0]),
+                      path)
+
+
 def check_room_for(files: "Iterable[str]", archive_path: str) -> None:
     """Raise ENOSPC if <files> will not fit beside <archive_path>.
 
