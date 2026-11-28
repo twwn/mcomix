@@ -159,6 +159,25 @@ class ShrinkPagesTest(_LibraryWindowTest):
         with zipfile.ZipFile(self.larger) as book:
             self.assertIn('01.webp', book.namelist())
 
+    def test_a_fault_in_one_book_does_not_stop_the_window(self):
+        """An exception that is no OSError ended the thread, and the
+        window never showed its summary."""
+        asked = self._found(self.large, self.larger)
+        real = webp_dialog.webp_books.convert
+
+        def convert(path, *args, **kwargs):
+            if path == self.large:
+                raise TypeError('a fault')
+            return real(path, *args, **kwargs)
+
+        with unittest.mock.patch.object(webp_dialog.webp_books, 'convert',
+                                        convert), \
+                self.assertLogs('mcomix', level='ERROR'):
+            progress = self._written(asked)
+        self.assertEqual([(self.large, 'a fault')], progress._failed)
+        self.assertTrue(progress._status.get_text().startswith(
+            '1 book shrunk'))
+
     def test_nothing_over_the_limit_offers_only_to_close(self):
         asked = self._found(self.small)
         self.assertEqual([], asked.ticked())

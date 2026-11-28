@@ -296,6 +296,14 @@ class _ProgressDialog(Dialog):
                 # Each book after it would be unpacked only to fail the
                 # same way, filling the folder it is unpacked in too.
                 self._disk_full = failure.errno in _NO_ROOM
+            except Exception as failure:
+                # A fault of MComix's own: uncaught, it ended the thread,
+                # and the window waited for the books ever after, Stop
+                # and all.  The book is as it was (convert() writes over
+                # it only once all of it is written).
+                outcome, error = None, str(failure) or type(failure).__name__
+                log.error('Could not write "%s"', i18n.to_display_string(path),
+                          exc_info=failure)
             GLib.idle_add(self._book_done, path, outcome, error, unreadable)
             if self._disk_full:
                 break
