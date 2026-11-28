@@ -188,6 +188,11 @@ def _unpack(archive: archive_base.BaseArchive,
         try:
             names = [name for name in archive.list_contents()
                      if not name.endswith('/')]
+            if withheld.wanted:
+                # A 7z whose names are encrypted too lists nothing
+                # without the password, which would read as a book
+                # without pages.
+                raise Skipped(_('encrypted'))
             if any(archive_tools.is_archive_file(name) for name in names):
                 raise Skipped(_('archives inside'))
             pages = [name for name in names

@@ -17,10 +17,12 @@ from mcomix import archive_packer
 from mcomix import archive_tools
 from mcomix import constants
 from mcomix import webp_books
+from mcomix.archive import sevenzip_external
 from mcomix.archive import zip as zip_archive
 
 from . import (MComixTest, copy_rar_set, damage_member, get_testfile_path,
-               line_art_png, refuse_passwords, sample_pages)
+               line_art_png, refuse_passwords, sample_pages,
+               skip_unless_rar_reads)
 
 
 def pixels(data):
@@ -264,6 +266,29 @@ class SkippedTest(_BookTest):
         path = os.path.join(self.directory, 'Encrypted.zip')
         shutil.copy(get_testfile_path('archives', 'Encrypted.zip'), path)
         self.assertSkipped(path, 'encrypted')
+        self.assertEqual([], asked)
+
+    def test_every_kind_of_encrypted_book_is_skipped(self):
+        """Their names encrypted too or not, solid or not: some fail
+        their listing, some each file, some come out empty.  Whether
+        MComix could write them back does not come into it."""
+        asked = refuse_passwords(self)
+        self.enterContext(unittest.mock.patch.object(
+            archive_packer, 'can_write', return_value=True))
+        for name in ('Encrypted.7z', 'EncryptedHeader.7z', 'Encrypted.rar',
+                     'EncryptedHeader.rar', 'SolidEncrypted.7z',
+                     'SolidEncryptedHeader.7z', 'SolidEncrypted.rar',
+                     'SolidEncryptedHeader.rar'):
+            with self.subTest(name=name):
+                if name.endswith('.rar'):
+                    skip_unless_rar_reads(self)
+                elif not sevenzip_external.SevenZipArchive.is_available():
+                    self.skipTest('7z is not installed')
+                folder = os.path.join(self.directory, name)
+                os.makedirs(folder)
+                path = os.path.join(folder, name)
+                shutil.copy(get_testfile_path('archives', name), path)
+                self.assertSkipped(path, 'encrypted')
         self.assertEqual([], asked)
 
     def test_a_format_mcomix_cannot_write(self):
