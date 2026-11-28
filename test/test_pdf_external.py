@@ -1,10 +1,16 @@
 """ Tests for the external (mutool/mudraw) PDF handler. """
 
 import os
+import subprocess
 import sys
 import unittest
+import unittest.mock
 
+from mcomix import process
+from mcomix.archive import archive_base
 from mcomix.archive import pdf_external
+from mcomix.constants import PDF_RENDER_DPI_DEF, PDF_RENDER_DPI_MAX
+from mcomix.version_tools import Version
 
 from . import MComixTest
 
@@ -55,6 +61,7 @@ class PdfExternalTest(MComixTest):
         self.assertTrue(os.path.isfile(mupdf.mutool[0]))
         self.assertTrue(os.path.isfile(mupdf.mudraw[0]))
         self.assertTrue(mupdf.trace_args)
+
 
 @unittest.skipIf(sys.platform == 'win32',
                  'the stand-in tools are shell scripts')
@@ -113,6 +120,101 @@ class MuPdfVersionTest(MComixTest):
     def test_no_mutool_is_no_mupdf(self):
         self.assertIsNone(pdf_external._find_mupdf())
         self.assertFalse(pdf_external.PdfArchive.is_available())
+
+
+def _image(width, height, matrix):
+    """A line of a page's trace: an image of <width> by <height> pixels
+    drawn under <matrix>."""
+    return ('<fill_image alpha="1" transform="%s" width="%d" height="%d"/>'
+            % (matrix, width, height))
+
+
+class ResolutionTest(MComixTest):
+
+    """A page is rendered at the resolution that draws the largest side
+    of its largest image at that image's own size in pixels.
+
+    The tools are stood in for: the trace is given, and the render is
+    read off the command that would draw it.
+    """
+
+    MUPDF = pdf_external._MuPdf(Version('1.24'), ['mutool'],
+                                ['mutool', 'draw'], ['-F', 'trace'])
+
+    def setUp(self):
+        super().setUp()
+        self.enterContext(unittest.mock.patch.object(
+            pdf_external, '_find_mupdf', return_value=self.MUPDF))
+        self.pdf = os.path.join(self.tmp_dir, 'book.pdf')
+        self.destination = os.path.join(self.tmp_dir, 'out')
+        self.rendered = True
+
+    def _render(self, *trace):
+        """The resolution page 3 is rendered at, after <trace>."""
+        traced = subprocess.CompletedProcess([], 0, '\n'.join(
+            ('<page number="3">',) + trace + ('</page>',)))
+        with unittest.mock.patch('subprocess.run',
+                                 return_value=traced) as tracing, \
+                unittest.mock.patch.object(
+                    process, 'call', return_value=self.rendered) as drawing:
+            pdf_external.PdfArchive(self.pdf).extract('3.png',
+                                                      self.destination)
+        # Decoded, whatever the bytes, and without a console on Windows.
+        tracing.assert_called_once_with(
+            ['mutool', 'draw', '-F', 'trace', '--', self.pdf, '3'],
+            stdout=subprocess.PIPE, encoding='utf-8', errors='replace',
+            creationflags=process.CREATIONFLAGS)
+        (command,), _ = drawing.call_args
+        resolution = command[3]
+        self.assertEqual(['mutool', 'draw', '-r', resolution, '-o',
+                          os.path.join(self.destination, '3.png'),
+                          '--', self.pdf, '3'], command)
+        return int(resolution)
+
+    def test_a_page_without_images_takes_the_default(self):
+        self.assertEqual(PDF_RENDER_DPI_DEF, self._render())
+
+    def test_an_image_drawn_at_half_its_size_takes_144(self):
+        # 1000 by 1500 pixels on 500 by 750 points.
+        self.assertEqual(144, self._render(
+            '<fill_path/>', _image(1000, 1500, '500 0 0 750 0 0')))
+
+    def test_a_turned_image_is_measured_along_its_sides(self):
+        """Each side is as long as its pair of the matrix says: the
+        first two numbers for the pixels across, the next two for the
+        pixels down.  1500 pixels across on sqrt(300² + 400²) = 500
+        points are 216 per inch; 1500 down on sqrt(750² + 600²) = 960.5
+        points are 112."""
+        self.assertEqual(216, self._render(
+            _image(1500, 1000, '300 400 -750 0 0 0')))
+        self.assertEqual(112, self._render(
+            _image(1000, 1500, '0 500 -750 600 0 0')))
+
+    def test_the_largest_side_of_the_images_decides(self):
+        """The first image is 1000 pixels each way on 1000 points; the
+        second, narrower, is 2000 high on 1000 points; the third is
+        smaller."""
+        self.assertEqual(144, self._render(
+            _image(1000, 1000, '1000 0 0 1000 0 0'),
+            _image(100, 2000, '100 0 0 1000 0 0'),
+            _image(50, 50, '1 0 0 1 0 0')))
+
+    def test_the_resolution_is_bounded(self):
+        self.assertEqual(PDF_RENDER_DPI_MAX, self._render(
+            _image(10000, 10000, '72 0 0 72 0 0')))
+
+    def test_a_render_that_fails_asks_whether_the_disk_is_full(self):
+        for rendered in (False, True):
+            self.rendered = rendered
+            with self.subTest(rendered=rendered), \
+                    unittest.mock.patch.object(
+                        archive_base, 'raise_if_no_room') as asked:
+                self._render()
+            if rendered:
+                asked.assert_not_called()
+            else:
+                asked.assert_called_once_with(
+                    os.path.join(self.destination, '3.png'))
 
 
 # vim: expandtab:sw=4:ts=4
