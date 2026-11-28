@@ -109,6 +109,110 @@ class VirtualDoublePageTest(_HandlerTest):
         self.handler._available_images.clear()
         self.assertFalse(self.handler.get_virtual_double_page(1))
 
+    def test_a_wide_page_is_looked_for_in_the_pair_and_not_beyond(self):
+        tall, wide = 'portrait-no-exif.png', 'landscape-no-exif.png'
+        self._open(tall, wide, tall, tall)
+        self.assertTrue(self.handler.get_virtual_double_page(1))
+        self.assertFalse(self.handler.get_virtual_double_page(3))
+
+    def test_a_square_page_is_not_wide(self):
+        self._open('red.png', 'blue.png', 'red.png')
+        self.assertFalse(self.handler.get_virtual_double_page(1))
+
+    def test_a_wide_page_is_paired_where_the_preference_says_so(self):
+        self._open('portrait-no-exif.png', 'landscape-no-exif.png',
+                   'portrait-no-exif.png')
+        prefs['virtual double page for fitting images'] = \
+            constants.SHOW_DOUBLE_AS_ONE_TITLE
+        self.assertFalse(self.handler.get_virtual_double_page(2))
+
+    def test_the_title_page_of_an_archive_is_shown_on_its_own(self):
+        self._open('portrait-no-exif.png', 'portrait-no-exif.png',
+                   'portrait-no-exif.png')
+        prefs['virtual double page for fitting images'] = \
+            constants.SHOW_DOUBLE_AS_ONE_TITLE
+        self.assertFalse(self.handler.get_virtual_double_page(1))
+        self.handler._window.filehandler.archive_type = constants.ZIP
+        self.assertTrue(self.handler.get_virtual_double_page(1))
+        self.assertFalse(self.handler.get_virtual_double_page(2))
+        self.handler.set_page(1)
+        self.assertTrue(self.handler.get_virtual_double_page())
+        prefs['virtual double page for fitting images'] = \
+            constants.SHOW_DOUBLE_AS_ONE_WIDE
+        self.assertFalse(self.handler.get_virtual_double_page(1))
+
+    def _four_tall_pages(self):
+        tall = 'portrait-no-exif.png'
+        self._open(tall, tall, tall, tall)
+
+    def _with(self, method, page):
+        """Have <page>, and only it, answer True to the handler's
+        <method>."""
+        return unittest.mock.patch.object(
+            self.handler, method, side_effect=lambda asked: asked == page)
+
+    def _alone(self):
+        return [self.handler.get_virtual_double_page(page)
+                for page in (1, 2, 3, 4)]
+
+    def test_a_page_that_would_not_load_is_shown_on_its_own(self):
+        self._four_tall_pages()
+        self.enterContext(self._with('is_broken', 3))
+        prefs['skip broken pages'] = True
+        self.assertEqual([False, True, True, False], self._alone())
+        prefs['skip broken pages'] = False
+        self.assertEqual([False] * 4, self._alone())
+        prefs['skip broken pages'] = True
+        prefs['default double page'] = False
+        self.assertEqual([False] * 4, self._alone())
+
+    def test_the_last_page_has_nothing_beside_it_to_part_from(self):
+        self._four_tall_pages()
+        prefs['skip broken pages'] = True
+        for method in ('is_broken', 'is_skipped'):
+            with self.subTest(method=method), self._with(method, 4):
+                self.assertEqual([False, False, True, False], self._alone())
+
+    def test_a_page_marked_is_shown_on_its_own(self):
+        self._four_tall_pages()
+        for method in ('is_skipped', 'stands_alone'):
+            with self.subTest(method=method), self._with(method, 3):
+                self.assertEqual([False, True, True, False], self._alone())
+                prefs['default double page'] = False
+                self.assertEqual([False] * 4, self._alone())
+                prefs['default double page'] = True
+
+    def test_the_page_beside_has_to_be_extracted_too(self):
+        tall, wide = 'portrait-no-exif.png', 'landscape-no-exif.png'
+        self._open(tall, tall, wide, tall)
+        self.handler._available_images.discard(2)
+        self.assertFalse(self.handler.get_virtual_double_page(2))
+
+    def test_a_page_is_measured_once_for_each_way_of_turning_it(self):
+        tall, wide = 'portrait-no-exif.png', 'landscape-no-exif.png'
+        self._open(tall, wide, tall)
+        measure = self.enterContext(unittest.mock.patch.object(
+            self.handler, 'get_displayed_size',
+            wraps=self.handler.get_displayed_size))
+        for _ in range(2):
+            self.assertFalse(self.handler._is_wide(1))
+            self.assertTrue(self.handler._is_wide(2))
+        self.assertEqual([1, 2], [call.args[0]
+                                  for call in measure.call_args_list])
+        prefs['auto rotate from exif'] = not prefs['auto rotate from exif']
+        self.assertTrue(self.handler._is_wide(2))
+        self.assertEqual(3, measure.call_count)
+
+    def test_a_page_the_book_does_not_have_is_measured_each_time(self):
+        self._open('portrait-no-exif.png')
+        measure = self.enterContext(unittest.mock.patch.object(
+            self.handler, 'get_displayed_size', return_value=(20, 10)))
+        self.assertTrue(self.handler._is_wide(5))
+        self.assertTrue(self.handler._is_wide(5))
+        self.assertEqual(2, measure.call_count)
+        self.assertEqual({}, {key: wide for key, wide
+                              in self.handler._wide.items() if not key[0]})
+
     def test_exif_rotation_decides_which_way_round_a_page_is(self):
         # Stored 210x297, but its Exif data says to turn it a quarter
         # turn, so it is shown 297x210: a page to show on its own.
@@ -137,6 +241,15 @@ class VirtualDoublePageTest(_HandlerTest):
         self.handler._raw_pixbufs.clear()
         self.assertIs(self.handler._get_pixbuf(0),
                       image_tools.missing_page())
+
+    def test_a_page_is_broken_once_it_has_been_read_and_would_not_load(self):
+        self._open('red.png', 'blue.png', 'red.png')
+        with open(self.handler.get_path_to_page(2), 'wb') as damaged:
+            damaged.write(b'not an image')
+        for index in range(3):
+            self.handler._get_pixbuf(index)
+        self.assertEqual([False, True, False],
+                         [self.handler.is_broken(page) for page in (1, 2, 3)])
 
     def test_a_page_that_would_not_load_is_not_read_again(self):
         """Its answer is cached like any other, so a page turn back and
@@ -408,11 +521,121 @@ class PageNameAndSizeTest(_HandlerTest):
         os.remove(paths[0])
         self.assertEqual(('', ''), self.handler.get_page_filesize(double=True))
 
+    def test_one_page_is_answered_for_unless_two_are_asked_for(self):
+        paths = self._open('red.png', 'blue.png', 'red.png')
+        self.assertEqual('01-red.png', self.handler.get_page_filename())
+        self.assertEqual('02-blue.png', self.handler.get_page_filename(2))
+        self.assertEqual(image_handler.tools.format_byte_size(
+            os.path.getsize(paths[0])), self.handler.get_page_filesize())
+        os.remove(paths[0])
+        self.assertEqual('', self.handler.get_page_filesize())
+
+    def test_a_page_not_extracted_has_no_size_yet(self):
+        self._open('red.png', 'blue.png', 'red.png')
+        self.handler._available_images.clear()
+        self.assertEqual('', self.handler.get_page_filesize())
+        self.assertEqual(('', ''), self.handler.get_page_filesize(double=True))
+
+    def test_the_size_of_a_page_asked_for_by_number(self):
+        paths = self._open('red.png', 'checkerboard.png', 'red.png')
+        self.assertEqual(image_handler.tools.format_byte_size(
+            os.path.getsize(paths[1])), self.handler.get_page_filesize(2))
+        self.assertEqual('', self.handler.get_page_filesize(4))
+
+    def test_the_pages_on_screen_are_both_decoded(self):
+        self._open('red.png', 'blue.png', 'red.png')
+        self.handler.set_page(2)
+        first, second = self.handler.get_pixbufs(2)
+        self.assertEqual(self.handler._raw_pixbufs[1], first)
+        self.assertEqual(self.handler._raw_pixbufs[2], second)
+        self.assertEqual([first], self.handler.get_pixbufs(1))
+
     def test_the_last_page_has_no_second_to_answer_for(self):
         self._open('red.png', 'blue.png', 'red.png')
         self.handler.set_page(3)
         self.assertIsNone(self.handler.get_page_filename(double=True))
         self.assertEqual(('', ''), self.handler.get_page_filesize(double=True))
+
+
+class PageMarksTest(_HandlerTest):
+
+    """What the handler asks page_marks of a page."""
+
+    def setUp(self):
+        super().setUp()
+        filehandler = self.handler._window.filehandler
+        filehandler.page_identity = lambda page: (
+            ('/books/one.cbz', '%02d.png' % page) if page != 9 else None)
+        self.asked = []
+
+        def marked(book, member, mark):
+            self.asked.append((book, member, mark))
+            return member == '03.png'
+        self.enterContext(unittest.mock.patch.object(
+            image_handler.page_marks, 'marked', side_effect=marked))
+
+    def test_nothing_is_marked_while_no_book_is_open(self):
+        self.assertFalse(self.handler.is_skipped(3))
+        self.assertFalse(self.handler.stands_alone(3))
+        self.assertEqual([], self.asked)
+
+    def test_a_page_is_asked_about_by_its_book_and_its_file(self):
+        self.handler._window.filehandler.file_loaded = True
+        self.assertTrue(self.handler.is_skipped(3))
+        self.assertTrue(self.handler.stands_alone(3))
+        self.assertFalse(self.handler.is_skipped(4))
+        self.assertEqual(
+            [('/books/one.cbz', '03.png', image_handler.page_marks.SKIP),
+             ('/books/one.cbz', '03.png', image_handler.page_marks.ALONE),
+             ('/books/one.cbz', '04.png', image_handler.page_marks.SKIP)],
+            self.asked)
+
+    def test_a_page_without_a_file_carries_no_mark(self):
+        self.handler._window.filehandler.file_loaded = True
+        self.assertFalse(self.handler.is_skipped(9))
+        self.assertFalse(self.handler.stands_alone(9))
+        self.assertEqual([], self.asked)
+
+
+class PageAvailableTest(_HandlerTest):
+
+    """Whether the page or pages on screen are extracted."""
+
+    def setUp(self):
+        super().setUp()
+        self.handler.set_image_files(['01.png', '02.png', '03.png'])
+        self.double = False
+        self.handler._window.displayed_double = lambda: self.double
+
+    def test_no_page_is_available_before_one_is_chosen(self):
+        self.handler.page_available(1)
+        self.assertFalse(self.handler.page_is_available())
+        self.assertTrue(self.handler.page_is_available(1))
+
+    def test_the_current_page_is_what_is_asked_about(self):
+        self.handler.page_available(2)
+        self.handler.set_page(2)
+        self.assertTrue(self.handler.page_is_available())
+        self.handler.set_page(1)
+        self.assertFalse(self.handler.page_is_available())
+
+    def test_two_pages_on_screen_have_both_to_be_there(self):
+        self.handler.page_available(2)
+        self.handler.set_page(2)
+        self.double = True
+        self.assertFalse(self.handler.page_is_available())
+        self.handler.page_available(3)
+        self.assertTrue(self.handler.page_is_available())
+
+    def test_the_last_page_has_no_second_to_wait_for(self):
+        self.handler.page_available(3)
+        self.handler.set_page(3)
+        self.double = True
+        self.assertTrue(self.handler.page_is_available())
+        self.double = False
+        self.handler.page_available(1)
+        self.handler.set_page(1)
+        self.assertTrue(self.handler.page_is_available())
 
 
 class CacheWindowTest(_HandlerTest):
@@ -463,6 +686,29 @@ class CacheWindowTest(_HandlerTest):
     def test_a_book_shorter_than_a_spread_still_asks_for_its_one_page(self):
         self.handler.set_image_files(['01.png'])
         self.assertEqual(self._wanted(-1, True, 1), [0])
+
+    def test_a_strip_keeps_as_many_pages_as_it_shows(self):
+        self.handler._window.is_continuous = True
+        self.handler._window.displayed_page_count = lambda: 3
+        prefs['max pages to cache'] = 0
+        self.assertEqual([4, 5, 6], self.handler._ask_for_pages(5))
+        self.handler._window.displayed_page_count = lambda: 0
+        self.assertEqual([4], self.handler._ask_for_pages(5))
+
+    def test_the_automatic_budget_is_ten_pages(self):
+        self.handler.set_image_files(['%02d.png' % n for n in range(1, 21)])
+        for page in range(11, 21):
+            self.handler.page_available(page)
+        self.assertEqual([9, 10, 8, 11, 12, 13, 14, 15, 16, 17],
+                         self._wanted(-1, False, 10))
+
+    def test_before_a_page_is_chosen_the_first_is_nearest(self):
+        prefs['max pages to cache'] = -1
+        handler = image_handler.ImageHandler(_StubWindow())
+        self.addCleanup(handler.cleanup)
+        handler.set_image_files(['%02d.png' % n for n in range(1, 11)])
+        self.assertEqual(list(range(10)),
+                         sorted(range(10), key=handler._background_priority))
 
     def test_the_window_is_clipped_to_the_book(self):
         self.assertEqual(self._wanted(7, False, 1), [0, 1, 2, 3, 4, 5])
