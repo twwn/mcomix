@@ -1068,7 +1068,8 @@ class MissingBooksByVolumeTest(OpenLibraryTest):
         self.library._con.execute('update book set device = ?', (device,))
 
     def _device(self):
-        return os.stat(self.drive).st_dev
+        """The drive's device, as the library stores it."""
+        return backend._stored(os.stat(self.drive).st_dev)
 
     def test_a_book_records_the_volume_it_was_added_from(self):
         volume, device = self.library._con.execute(
