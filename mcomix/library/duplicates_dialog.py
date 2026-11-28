@@ -438,7 +438,9 @@ class DuplicatesDialog(Dialog):
             _LIKENESS[group.likeness]()))
         box.append(heading)
         rows = Gtk.ListBox(selection_mode=Gtk.SelectionMode.NONE)
-        kept = duplicates.to_keep(group.books, found)
+        kept = duplicates.to_keep(group.books, found, {
+            book for book in group.books
+            if os.path.realpath(self._books[book]) != self._books[book]})
         self._members.append(list(group.books))
         for book in group.books:
             self._recommended[book] = book != kept

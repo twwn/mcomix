@@ -31,7 +31,7 @@ import itertools
 import operator
 import threading
 
-from collections.abc import Callable, Iterable, Mapping, Sequence
+from collections.abc import Callable, Collection, Iterable, Mapping, Sequence
 
 from PIL import Image, ImageStat
 
@@ -131,15 +131,21 @@ def find(fingerprints: Mapping[int, Fingerprint],
 
 
 def to_keep(books: Sequence[int],
-            fingerprints: Mapping[int, Fingerprint]) -> int:
+            fingerprints: Mapping[int, Fingerprint],
+            links: Collection[int] = ()) -> int:
     """Which of <books>, copies of each other, to keep: the one of most
-    pages, then of the largest first page, then the smallest file; the
-    first of those alike in all three."""
-    def rank(book: int) -> tuple[int, int, int]:
+    pages, then of the largest first page, then the smallest file, then
+    one not among <links>, the books whose paths go through a symbolic
+    link; the first of those alike in all four.
+
+    A link and the file it leads to are alike in the first three, and
+    the link must be the one offered for the trash: trashing the file
+    would lose the book and leave the link leading nowhere."""
+    def rank(book: int) -> tuple[int, int, int, bool]:
         made = fingerprints[book]
         cover = made.samples[0] if made.samples else None
         area = cover.width * cover.height if cover is not None else 0
-        return made.pages, area, -made.size
+        return made.pages, area, -made.size, book not in links
     return max(books, key=rank)
 
 

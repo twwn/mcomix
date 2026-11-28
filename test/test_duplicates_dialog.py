@@ -110,6 +110,16 @@ class FindDuplicatesTest(_LibraryWindowTest):
             self.assertTrue(os.path.isfile(path), msg=path)
         self.assertEqual([], found.ticked())
 
+    @unittest.skipIf(os.name == 'nt', 'a symbolic link needs a privilege')
+    def test_a_link_is_ticked_rather_than_its_file(self):
+        """A book and a symbolic link to it are listed as copies; the
+        link is ticked even where its book was added first, so trashing
+        the copies ticked keeps the file."""
+        link = os.path.join(self.tmp_dir, 'link.cbz')
+        os.symlink(self.first, link)
+        found = self._found(link, self.first)
+        self.assertEqual([self._id(link)], found.ticked())
+
     def _ticks(self, found):
         return {path: found._ticks[self._id(path)].get_active()
                 for path in (self.first, self.same, self.longer)}

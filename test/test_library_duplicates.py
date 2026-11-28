@@ -237,6 +237,16 @@ class ToKeepTest(MComixTest):
         self.assertEqual(3, duplicates.to_keep((1, 2, 3), books))
         self.assertEqual(2, duplicates.to_keep((1, 2), books))
 
+    def test_the_file_before_a_link_to_it(self):
+        """Of books alike in all else, one whose path goes through a
+        symbolic link is not the one kept, whatever its place."""
+        made = fingerprint.Fingerprint(900, 0, 12, (
+            fingerprint.Sample(b'', b'', 1, 1),))
+        books = {1: made, 2: made, 3: made}
+        self.assertEqual(2, duplicates.to_keep((1, 2, 3), books, {1}))
+        self.assertEqual(3, duplicates.to_keep((1, 2, 3), books, {1, 2}))
+        self.assertEqual(1, duplicates.to_keep((1, 2, 3), books, {3}))
+
     def test_a_book_with_no_page_sampled(self):
         """Its first page counts as the smallest there is."""
         books = {1: fingerprint.Fingerprint(900, 0, 12, (
