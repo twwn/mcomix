@@ -1925,7 +1925,7 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable, LibraryPart):
             [item.path for item in self._selected_items()],
             self._stored_as_webp,
             open_book=self._library.main_window.filehandler.get_path_to_base,
-            select=self._select_paths)
+            select=self._select_paths, chain=True)
 
     def repack_as_zip(self, *args: object) -> None:
         """Offer to write the selected books again as ZIP: see
@@ -1936,7 +1936,7 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable, LibraryPart):
             [item.path for item in self._selected_items()],
             self._stored_as_webp,
             open_book=self._library.main_window.filehandler.get_path_to_base,
-            select=self._select_paths, repack=True)
+            select=self._select_paths, repack=True, chain=True)
 
     def shrink_pages(self, *args: object) -> None:
         """Offer to shrink the pages of the selected books that are over

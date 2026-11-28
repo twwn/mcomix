@@ -221,7 +221,8 @@ def convert(path: str, stop: threading.Event,
             shrink: "page_shrink.Shrink | None" = None,
             repack: bool = False,
             without_damaged: bool = False,
-            trash: bool = True) -> Converted:
+            trash: bool = True,
+            lossless: "bool | None" = None) -> Converted:
     """Store the PNG pages of the archive at <path> as lossless WebP;
     or, given <shrink>, the pages over its limit shrunk, the archive as
     it was going to the trash; or, with <repack>, the whole archive as a
@@ -241,10 +242,19 @@ def convert(path: str, stop: threading.Event,
     the book as it was in place instead of moving it to the trash, for
     a disk that has no room left to keep both.
 
+    <lossless> has the pages made smaller without loss as well, those a
+    shrink leaves among them, before a repack; left None, it is true
+    where neither <shrink> nor <repack> is given.  Ticked together in
+    the commands' confirmations, the steps are one pass over the book,
+    each page written once and the container last; a shrink still sends
+    the book as it was to the trash, even one also repacked.
+
     Raises Skipped for a book it leaves alone, archive_packer.Cancelled
     where <stop> was set, and OSError where reading or writing failed;
     the archive is as it was in all three.
     """
+    if lossless is None:
+        lossless = shrink is None and not repack
     archive, archive_type, unwritable = _opened(path, repack)
     try:
         becomes = _zip_target(path, archive_type) if repack else path
@@ -300,13 +310,15 @@ def convert(path: str, stop: threading.Event,
                 target, list(page_files), [], carried_files=files(others),
                 archive_type=constants.ZIP if repack else archive_type,
                 permissions_from=path, page_names=page_files, waiting=wait,
-                webp_pages=shrink is None and not repack, shrink=shrink,
+                webp_pages=lossless, shrink=shrink,
                 add_comic_info=False, only_converted=not repack)
         except archive_packer.Unchanged:
             raise Skipped(_('no page made smaller')) from None
         if repack:
-            # The archive it replaces is removed for good.
             archive_packer.check_zip(target, written.values())
+        if repack and (shrink is None or not trash):
+            # The archive it replaces is removed for good: it holds what
+            # the old one did, or the old one is not to be kept.
             _repacked_in_place(path, target, becomes, before)
             target = path
         elif target != path and not trash:
@@ -317,6 +329,11 @@ def convert(path: str, stop: threading.Event,
             target = path
         elif target != path:
             book = tools.replaced_path(path)
+            into = book if becomes == path else becomes
+            if into != book and os.path.lexists(into):
+                # Made while the book was being written.
+                raise Skipped(_('%s is there already') % i18n.to_display_string(
+                    os.path.basename(into)))
             try:
                 tools.move_to_trash(book)
             except GLib.Error as error:
@@ -327,7 +344,7 @@ def convert(path: str, stop: threading.Event,
             # cannot take the book's name.
             written_to, target = target, path
             try:
-                portability.rename_once_closed(os.replace, written_to, book)
+                portability.rename_once_closed(os.replace, written_to, into)
             except OSError as failure:
                 log.warning('"%s" went to the trash, but "%s", written in '
                             'its place, could not take its name: %s',
@@ -392,9 +409,11 @@ def _repacked_in_place(path: str, written_to: str, becomes: str,
     """Put <written_to>, the book at <path> packed again as a ZIP, in its
     place at <becomes>.
 
-    It holds every file the old archive held, byte for byte, so the old
-    archive is replaced, not kept in the trash as a shrunk book's is; a
-    ZIP only where packing it again made it smaller.  Raises Skipped or
+    It holds every file the old archive held, byte for byte or its
+    pages made smaller without loss, so the old archive is replaced, not
+    kept in the trash as a shrunk book's is; a ZIP only where packing it
+    again made it smaller.  A shrunk book comes here only where the book
+    as it was is to be deleted rather than trashed.  Raises Skipped or
     OSError, with nothing changed, where it cannot be.
     """
     if becomes == path:

@@ -126,6 +126,11 @@ class ShrinkDialog(Dialog):
             label.set_mnemonic_widget(spin)
             self._grid.attach(label, 0, row, 1, 1)
             self._grid.attach(spin, 1, row, 1, 1)
+        # The other two steps, in the same pass over each book.
+        self._lossless = webp_dialog.lossless_tick()
+        self._lossless.set_label(
+            _('Also make the other pages smaller without loss'))
+        self._repack = webp_dialog.repack_tick()
         self._book = Gtk.Label(xalign=0, max_width_chars=_CHARACTERS,
                                visible=False)
         self._book.set_ellipsize(Pango.EllipsizeMode.MIDDLE)
@@ -138,7 +143,8 @@ class ShrinkDialog(Dialog):
             propagate_natural_height=True, max_content_height=_LIST_HEIGHT,
             visible=False)
         self._scrolled.set_child(self._list)
-        for widget in (warning, self._grid, self._book, self._bar,
+        for widget in (warning, self._grid, self._lossless, self._repack,
+                       self._book, self._bar,
                        self._status, self._scrolled):
             box.append(widget)
         widgets.pack(self.get_content_area(), box, True, True, 0)
@@ -370,9 +376,11 @@ class ShrinkDialog(Dialog):
 
     def _shrink_books(self, books: list[str], trash: bool) -> None:
         shrink = self.shrink
+        lossless = self._lossless.get_active()
+        repack = self._repack.get_active()
         self.destroy()
         webp_dialog.write(self._parent, books, self._open_book,
                           self._written, lambda: None, self._select, shrink,
-                          trash=trash)
+                          trash=trash, lossless=lossless, repack=repack)
 
 # vim: expandtab:sw=4:ts=4

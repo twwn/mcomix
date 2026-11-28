@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-28 17:08+0100\n"
+"POT-Creation-Date: 2026-11-28 17:24+0100\n"
 "PO-Revision-Date: 2006-10-15 21:30+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -57,12 +57,12 @@ msgstr "! Kon %s niet lezen"
 msgid "! Could not remove %(file)s: %(error)s"
 msgstr "! Kon %(file)s niet verwijderen: %(error)s"
 
-#: mcomix/archive_packer.py:1320 mcomix/archive_packer.py:1355
+#: mcomix/archive_packer.py:1329 mcomix/archive_packer.py:1364
 #, python-format
 msgid "! Could not create archive at path \"%s\""
 msgstr "! Kon geen archief aanmaken op pad \"%s\""
 
-#: mcomix/archive_packer.py:1345
+#: mcomix/archive_packer.py:1354
 #, python-format
 msgid ""
 "! Could not add file %(sourcefile)s to archive %(archivefile)s, aborting..."
@@ -97,7 +97,7 @@ msgid "! Could not save %(file)s to %(directory)s: %(error)s"
 msgstr "! Kon %(file)s niet opslaan in %(directory)s: %(error)s"
 
 #: mcomix/bookmark_backend.py:493 mcomix/file_actions.py:1317
-#: mcomix/webp_dialog.py:527
+#: mcomix/webp_dialog.py:562
 #, python-format
 msgid "Could not save \"%(file)s\" to \"%(directory)s\""
 msgstr "Kon \"%(file)s\" niet opslaan in \"%(directory)s\""
@@ -117,9 +117,9 @@ msgstr "_Nee"
 #: mcomix/file_chooser_base_dialog.py:242
 #: mcomix/file_chooser_library_dialog.py:42 mcomix/message_dialog.py:26
 #: mcomix/message_dialog.py:29 mcomix/pageselect.py:38
-#: mcomix/save_progress.py:121 mcomix/shrink_dialog.py:146
-#: mcomix/shrink_dialog.py:283 mcomix/shrink_dialog.py:339
-#: mcomix/webp_dialog.py:127 mcomix/library/duplicates_dialog.py:272
+#: mcomix/save_progress.py:121 mcomix/shrink_dialog.py:152
+#: mcomix/shrink_dialog.py:289 mcomix/shrink_dialog.py:345
+#: mcomix/webp_dialog.py:137 mcomix/library/duplicates_dialog.py:272
 msgid "_Cancel"
 msgstr "A_nnuleren"
 
@@ -178,8 +178,8 @@ msgstr "_Verwijderen"
 # File: src/ui.py, line: 48
 #: mcomix/bookmark_dialog.py:34 mcomix/comment_dialog.py:29
 #: mcomix/message_dialog.py:25 mcomix/preferences_dialog.py:105
-#: mcomix/properties_dialog.py:38 mcomix/shrink_dialog.py:284
-#: mcomix/webp_dialog.py:453 mcomix/library/book_check_dialog.py:180
+#: mcomix/properties_dialog.py:38 mcomix/shrink_dialog.py:290
+#: mcomix/webp_dialog.py:488 mcomix/library/book_check_dialog.py:180
 #: mcomix/library/book_properties.py:60 mcomix/library/duplicates_dialog.py:381
 #: mcomix/library/watchlist.py:41
 msgid "_Close"
@@ -350,7 +350,7 @@ msgstr "Commentaarbestanden"
 
 #
 #: mcomix/edit_dialog.py:292 mcomix/file_actions.py:985
-#: mcomix/webp_dialog.py:293
+#: mcomix/webp_dialog.py:328
 #, python-format
 msgid "! Could not save the archive %(archivefile)s: %(error)s"
 msgstr "! Kon archief %(archivefile)s niet opslaan: %(error)s"
@@ -3022,24 +3022,28 @@ msgstr "WebP-_kwaliteit:"
 msgid "_Least saving to tick a book, in percent:"
 msgstr "_Minimale besparing om een boek aan te vinken, in procenten:"
 
+#: mcomix/shrink_dialog.py:132
+msgid "Also make the other pages smaller without loss"
+msgstr "Ook de overige pagina's verliesloos verkleinen"
+
 #
 # File: src/library.py, line: 910
-#: mcomix/shrink_dialog.py:147
+#: mcomix/shrink_dialog.py:153
 msgid "_Find Books"
 msgstr "Boeken _zoeken"
 
-#: mcomix/shrink_dialog.py:187 mcomix/webp_dialog.py:227
+#: mcomix/shrink_dialog.py:193 mcomix/webp_dialog.py:262
 #: mcomix/library/add_progress_dialog.py:57
 #: mcomix/library/book_check_dialog.py:65
 #: mcomix/library/duplicates_dialog.py:145
 msgid "_Stop"
 msgstr "_Stoppen"
 
-#: mcomix/shrink_dialog.py:214 mcomix/webp_dialog.py:278
+#: mcomix/shrink_dialog.py:220 mcomix/webp_dialog.py:313
 msgid "open in the main window"
 msgstr "geopend in het hoofdvenster"
 
-#: mcomix/shrink_dialog.py:262
+#: mcomix/shrink_dialog.py:268
 #, python-format
 msgid ""
 "%(book)s: %(pages)d page over the limit, about %(size)s (%(share)d%%) smaller"
@@ -3053,7 +3057,7 @@ msgstr[1] ""
 "%(book)s: %(pages)d pagina's boven de grens, ongeveer %(size)s (%(share)d%%) "
 "kleiner"
 
-#: mcomix/shrink_dialog.py:273
+#: mcomix/shrink_dialog.py:279
 msgid ""
 "Shrinking it saves a smaller share of the book than the least set for a book "
 "to be ticked."
@@ -3061,11 +3065,11 @@ msgstr ""
 "Verkleinen bespaart een kleiner deel van het boek dan het minimum dat is "
 "ingesteld om een boek aan te vinken."
 
-#: mcomix/shrink_dialog.py:287
+#: mcomix/shrink_dialog.py:293
 msgid "_Shrink"
 msgstr "_Verkleinen"
 
-#: mcomix/shrink_dialog.py:299
+#: mcomix/shrink_dialog.py:305
 #, python-format
 msgid "%(count)d book has pages over the limit, about %(size)s to save"
 msgid_plural ""
@@ -3076,11 +3080,11 @@ msgstr[1] ""
 "%(count)d boeken hebben pagina's boven de grens, ongeveer %(size)s te "
 "besparen"
 
-#: mcomix/shrink_dialog.py:331
+#: mcomix/shrink_dialog.py:337
 msgid "Not enough room to keep the books as they were"
 msgstr "Niet genoeg ruimte om de boeken te houden zoals ze waren"
 
-#: mcomix/shrink_dialog.py:332
+#: mcomix/shrink_dialog.py:338
 #, python-format
 msgid ""
 "The books shrunk take about %(needed)s on the disk, which has %(free)s free: "
@@ -3093,7 +3097,7 @@ msgstr ""
 "ruimte bezet tot hij wordt geleegd. Ze in plaats daarvan definitief "
 "verwijderen maakt hun ruimte vrij zodra elk boek geschreven is."
 
-#: mcomix/shrink_dialog.py:340
+#: mcomix/shrink_dialog.py:346
 msgid "_Delete Originals Permanently"
 msgstr "Originelen _definitief verwijderen"
 
@@ -3949,70 +3953,70 @@ msgid "nothing installed here reads the format"
 msgstr "hier is niets geïnstalleerd dat het formaat leest"
 
 #. TRANSLATORS: Why a book was left as it was, as the others.
-#: mcomix/webp_books.py:179 mcomix/webp_books.py:186 mcomix/webp_books.py:264
+#: mcomix/webp_books.py:179 mcomix/webp_books.py:186 mcomix/webp_books.py:274
 msgid "no page over the limit"
 msgstr "geen pagina boven de grens"
 
-#: mcomix/webp_books.py:252
+#: mcomix/webp_books.py:262
 msgid "the trash takes no files from its folder"
 msgstr "de prullenbak neemt geen bestanden uit zijn eigen map aan"
 
-#: mcomix/webp_books.py:265
+#: mcomix/webp_books.py:275
 msgid "no pages"
 msgstr "geen pagina's"
 
 #. TRANSLATORS: Why a book was left as it was, as the others.
-#: mcomix/webp_books.py:274
+#: mcomix/webp_books.py:284
 msgid "a file in it could not be read, and would be lost"
 msgstr "een bestand erin kon niet worden gelezen en zou verloren gaan"
 
-#: mcomix/webp_books.py:306
+#: mcomix/webp_books.py:316
 msgid "no page made smaller"
 msgstr "geen pagina verkleind"
 
-#: mcomix/webp_books.py:323
+#. TRANSLATORS: Why a book was left as it was, as the others; %s is
+#. a file name, such as "Book.cbz".
+#: mcomix/webp_books.py:335 mcomix/webp_books.py:402 mcomix/webp_books.py:428
+#, python-format
+msgid "%s is there already"
+msgstr "%s bestaat al"
+
+#: mcomix/webp_books.py:340
 #, python-format
 msgid "the trash refused it: %s"
 msgstr "de prullenbak weigerde het: %s"
 
 #. TRANSLATORS: Why a book was left as it was, as the others.
-#: mcomix/webp_books.py:381
+#: mcomix/webp_books.py:398
 msgid "a symbolic link, which would no longer lead to it"
 msgstr "een symbolische koppeling, die er niet meer heen zou leiden"
 
-#. TRANSLATORS: Why a book was left as it was, as the others; %s is
-#. a file name, such as "Book.cbz".
-#: mcomix/webp_books.py:385 mcomix/webp_books.py:409
-#, python-format
-msgid "%s is there already"
-msgstr "%s bestaat al"
-
 #. TRANSLATORS: Why a book was left as it was, as the others.
-#: mcomix/webp_books.py:403
+#: mcomix/webp_books.py:422
 msgid "a ZIP already, no smaller packed again"
 msgstr "al een ZIP, opnieuw ingepakt niet kleiner"
 
-#: mcomix/webp_books.py:459 mcomix/webp_books.py:488 mcomix/webp_books.py:494
-#: mcomix/webp_books.py:514 mcomix/library/book_check.py:38
+#: mcomix/webp_books.py:478 mcomix/webp_books.py:507 mcomix/webp_books.py:513
+#: mcomix/webp_books.py:533 mcomix/library/book_check.py:38
 msgid "encrypted"
 msgstr "versleuteld"
 
-#: mcomix/webp_books.py:461
+#: mcomix/webp_books.py:480
 msgid "archives inside"
 msgstr "bevat andere archieven"
 
-#: mcomix/webp_books.py:469
+#: mcomix/webp_books.py:488
 msgid "no PNG, GIF or JPEG pages"
 msgstr "geen PNG-, GIF- of JPEG-pagina's"
 
-#: mcomix/webp_dialog.py:102
+#: mcomix/webp_dialog.py:108
 #, python-format
 msgid "Repack %d book as a ZIP?"
 msgid_plural "Repack %d books as ZIP?"
 msgstr[0] "%d boek opnieuw inpakken als ZIP?"
 msgstr[1] "%d boeken opnieuw inpakken als ZIP?"
 
-#: mcomix/webp_dialog.py:104
+#: mcomix/webp_dialog.py:110
 msgid ""
 "Each book is written again as a ZIP, with every file in it as it was: pages "
 "already compressed are stored, the rest compressed. A RAR, 7z or tar book is "
@@ -4026,18 +4030,18 @@ msgstr ""
 "met .cbz in plaats van .cbr, .cb7 of .cbt, en .zip in plaats van elke andere "
 "extensie. Een ZIP wordt alleen vervangen als die kleiner uitvalt."
 
-#: mcomix/webp_dialog.py:110
+#: mcomix/webp_dialog.py:116
 msgid "_Repack"
 msgstr "_Opnieuw inpakken"
 
-#: mcomix/webp_dialog.py:113
+#: mcomix/webp_dialog.py:119
 #, python-format
 msgid "Make the pages of %d book smaller?"
 msgid_plural "Make the pages of %d books smaller?"
 msgstr[0] "De pagina's van %d boek verkleinen?"
 msgstr[1] "De pagina's van %d boeken verkleinen?"
 
-#: mcomix/webp_dialog.py:115
+#: mcomix/webp_dialog.py:121
 msgid ""
 "Each book is written again, with every PNG or GIF page that is smaller as a "
 "lossless WebP and every JPEG page optimised without loss. Some other comic "
@@ -4047,41 +4051,49 @@ msgstr ""
 "wordt als verliesloze WebP, en elke JPEG-pagina verliesloos geoptimaliseerd. "
 "Sommige andere stripboeklezers kunnen geen WebP-pagina's tonen."
 
-#: mcomix/webp_dialog.py:119
+#: mcomix/webp_dialog.py:125
 msgid "_Make Smaller"
 msgstr "_Verkleinen"
 
-#: mcomix/webp_dialog.py:123
+#: mcomix/webp_dialog.py:129
 msgid "Also write books that have damaged files, leaving those files out"
 msgstr "Ook boeken met beschadigde bestanden schrijven, zonder die bestanden"
 
 #: mcomix/webp_dialog.py:160
+msgid "Also make the pages smaller without loss"
+msgstr "Ook de pagina's verliesloos verkleinen"
+
+#: mcomix/webp_dialog.py:168
+msgid "Also repack each book as a ZIP"
+msgstr "Ook elk boek opnieuw inpakken als ZIP"
+
+#: mcomix/webp_dialog.py:193
 #, python-format
 msgid "%(count)d book left as it was: %(reason)s"
 msgid_plural "%(count)d books left as they were: %(reason)s"
 msgstr[0] "%(count)d boek gelaten zoals het was: %(reason)s"
 msgstr[1] "%(count)d boeken gelaten zoals ze waren: %(reason)s"
 
-#: mcomix/webp_dialog.py:173
+#: mcomix/webp_dialog.py:206
 #, python-format
 msgid "Stopped with %d book not yet looked at"
 msgid_plural "Stopped with %d books not yet looked at"
 msgstr[0] "Gestopt met %d boek nog niet bekeken"
 msgstr[1] "Gestopt met %d boeken nog niet bekeken"
 
-#: mcomix/webp_dialog.py:193
-msgid "Repacking books as ZIP"
-msgstr "Boeken opnieuw inpakken als ZIP"
-
-#: mcomix/webp_dialog.py:194
-msgid "Making pages smaller"
-msgstr "Pagina's worden verkleind"
-
-#: mcomix/webp_dialog.py:195
+#: mcomix/webp_dialog.py:227
 msgid "Shrinking pages"
 msgstr "Grote pagina's worden verkleind"
 
-#: mcomix/webp_dialog.py:334
+#: mcomix/webp_dialog.py:228
+msgid "Repacking books as ZIP"
+msgstr "Boeken opnieuw inpakken als ZIP"
+
+#: mcomix/webp_dialog.py:229
+msgid "Making pages smaller"
+msgstr "Pagina's worden verkleind"
+
+#: mcomix/webp_dialog.py:369
 msgid ""
 "The disk is full. The books as they were are in the trash, which holds their "
 "room until it is emptied."
@@ -4089,66 +4101,66 @@ msgstr ""
 "De schijf is vol. De boeken zoals ze waren staan in de prullenbak, die hun "
 "ruimte inneemt tot hij wordt geleegd."
 
-#: mcomix/webp_dialog.py:336
+#: mcomix/webp_dialog.py:371
 msgid "The disk is full."
 msgstr "De schijf is vol."
 
-#: mcomix/webp_dialog.py:343
+#: mcomix/webp_dialog.py:378
 #, python-format
 msgid "%(count)d book repacked as ZIP, %(size)s larger"
 msgid_plural "%(count)d books repacked as ZIP, %(size)s larger"
 msgstr[0] "%(count)d boek opnieuw ingepakt als ZIP, %(size)s groter"
 msgstr[1] "%(count)d boeken opnieuw ingepakt als ZIP, %(size)s groter"
 
-#: mcomix/webp_dialog.py:349
-#, python-format
-msgid "%(count)d book repacked as ZIP, %(size)s smaller"
-msgid_plural "%(count)d books repacked as ZIP, %(size)s smaller"
-msgstr[0] "%(count)d boek opnieuw ingepakt als ZIP, %(size)s kleiner"
-msgstr[1] "%(count)d boeken opnieuw ingepakt als ZIP, %(size)s kleiner"
-
-#: mcomix/webp_dialog.py:353
+#: mcomix/webp_dialog.py:384
 #, python-format
 msgid "%(count)d book shrunk, %(size)s smaller"
 msgid_plural "%(count)d books shrunk, %(size)s smaller"
 msgstr[0] "%(count)d boek verkleind, %(size)s kleiner"
 msgstr[1] "%(count)d boeken verkleind, %(size)s kleiner"
 
-#: mcomix/webp_dialog.py:357
+#: mcomix/webp_dialog.py:387
+#, python-format
+msgid "%(count)d book repacked as ZIP, %(size)s smaller"
+msgid_plural "%(count)d books repacked as ZIP, %(size)s smaller"
+msgstr[0] "%(count)d boek opnieuw ingepakt als ZIP, %(size)s kleiner"
+msgstr[1] "%(count)d boeken opnieuw ingepakt als ZIP, %(size)s kleiner"
+
+#: mcomix/webp_dialog.py:392
 #, python-format
 msgid "%(count)d book stored with WebP pages, %(size)s smaller"
 msgid_plural "%(count)d books stored with WebP pages, %(size)s smaller"
 msgstr[0] "%(count)d boek opgeslagen met WebP-pagina's, %(size)s kleiner"
 msgstr[1] "%(count)d boeken opgeslagen met WebP-pagina's, %(size)s kleiner"
 
-#: mcomix/webp_dialog.py:370
+#: mcomix/webp_dialog.py:405
 #, python-format
 msgid "%d book stored without its damaged files"
 msgid_plural "%d books stored without their damaged files"
 msgstr[0] "%d boek opgeslagen zonder zijn beschadigde bestanden"
 msgstr[1] "%d boeken opgeslagen zonder hun beschadigde bestanden"
 
-#: mcomix/webp_dialog.py:407
+#: mcomix/webp_dialog.py:442
 #, python-format
 msgid "About %d minute left"
 msgid_plural "About %d minutes left"
 msgstr[0] "Nog ongeveer %d minuut"
 msgstr[1] "Nog ongeveer %d minuten"
 
-#: mcomix/webp_dialog.py:438 mcomix/webp_dialog.py:492
+#: mcomix/webp_dialog.py:473 mcomix/webp_dialog.py:527
 #, python-format
 msgid "Could not be written: %s"
 msgstr "Kon niet worden geschreven: %s"
 
-#: mcomix/webp_dialog.py:456
+#: mcomix/webp_dialog.py:491
 msgid "_Save Log…"
 msgstr "Logboek _opslaan…"
 
-#: mcomix/webp_dialog.py:461
+#: mcomix/webp_dialog.py:496
 msgid "Select Books with _Errors"
 msgstr "Boeken met _fouten selecteren"
 
-#: mcomix/webp_dialog.py:507
+#: mcomix/webp_dialog.py:542
 msgid "Save the log as"
 msgstr "Logboek opslaan als"
 

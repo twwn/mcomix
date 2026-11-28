@@ -32,6 +32,7 @@ import time
 from gi.repository import GLib, Gtk, Pango
 
 from mcomix import archive_packer
+from mcomix import constants
 from mcomix import file_chooser_simple_dialog
 from mcomix import i18n
 from mcomix import log
@@ -77,7 +78,7 @@ def offer(parent: Gtk.Window, books: Sequence[str],
           start: "Callable[[Callable[[], None]], None]" = lambda run: run(),
           finished: Callable[[], None] = lambda: None,
           select: "Callable[[list[str]], None] | None" = None,
-          repack: bool = False) -> None:
+          repack: bool = False, chain: bool = False) -> None:
     """Ask whether to store the PNG pages of <books> as WebP, and do it
     if the reader says yes; with <repack>, whether to write each of them
     again as a ZIP instead (webp_books.convert()).
@@ -91,6 +92,11 @@ def offer(parent: Gtk.Window, books: Sequence[str],
     work has ended, however it ended.  Where <select> is given, the
     summary offers to select the books it found faults in, and it is
     called with their paths.
+
+    With <chain>, as the library asks, the question offers the other
+    step too: repacking as a ZIP besides making pages smaller without
+    loss, or that besides repacking, ticked to begin with where the
+    preference that does it when saving is on, for this run only.
     """
     count = len(books)
     if not count:
@@ -124,19 +130,43 @@ def offer(parent: Gtk.Window, books: Sequence[str],
                 'files out'),
         active=prefs['write without damaged files'])
     dialog.get_content_area().append(without_damaged)
+    other = None
+    if chain:
+        other = lossless_tick() if repack else repack_tick()
+        dialog.get_content_area().append(other)
     dialog.add_confirmation_buttons(_('_Cancel'), Response.CANCEL,
                                     do, Response.OK)
+    chained = False
 
     def run() -> None:
         _ProgressDialog(parent, list(books), open_book, written, finished,
-                        select, repack=repack,
-                        without_damaged=prefs['write without damaged files'])
+                        select, repack=repack or chained,
+                        without_damaged=prefs['write without damaged files'],
+                        lossless=not repack or chained)
 
     def answered(response: int) -> None:
+        nonlocal chained
         if response == Response.OK:
             prefs['write without damaged files'] = without_damaged.get_active()
+            chained = other is not None and other.get_active()
             start(run)
     dialog.run_async(answered)
+
+
+def lossless_tick() -> Gtk.CheckButton:
+    """"Also make the pages smaller without loss", ticked where saving
+    does it ('png pages as webp when saving')."""
+    return Gtk.CheckButton(
+        label=_('Also make the pages smaller without loss'),
+        active=prefs['png pages as webp when saving'])
+
+
+def repack_tick() -> Gtk.CheckButton:
+    """"Also repack each book as a ZIP", ticked where saving does it
+    ('save archive format' always a ZIP)."""
+    return Gtk.CheckButton(
+        label=_('Also repack each book as a ZIP'),
+        active=prefs['save archive format'] == constants.SAVE_ALL_AS_ZIP)
 
 
 def write(parent: Gtk.Window, books: list[str],
@@ -145,13 +175,16 @@ def write(parent: Gtk.Window, books: list[str],
           finished: Callable[[], None],
           select: "Callable[[list[str]], None] | None" = None,
           shrink: "page_shrink.Shrink | None" = None,
-          trash: bool = True) -> None:
+          trash: bool = True, lossless: bool = False,
+          repack: bool = False) -> None:
     """Write <books> again, showing how far it is, as offer() does once
     the reader has said yes; with the pages over the limit of <shrink>
     shrunk, where it is given (mcomix.shrink_dialog), instead of made
-    smaller without loss."""
+    smaller without loss, and with <lossless> and <repack> the other
+    pages made smaller without loss and the book repacked as a ZIP too."""
     _ProgressDialog(parent, books, open_book, written, finished, select,
-                    shrink, trash=trash)
+                    shrink, repack=repack, trash=trash,
+                    lossless=lossless if shrink is not None else None)
 
 
 def left_line(reason: str, count: int) -> str:
@@ -189,14 +222,16 @@ class _ProgressDialog(Dialog):
                  shrink: "page_shrink.Shrink | None" = None,
                  repack: bool = False,
                  without_damaged: bool = False,
-                 trash: bool = True) -> None:
-        super().__init__(title=_('Repacking books as ZIP') if repack
-                         else _('Making pages smaller') if shrink is None
-                         else _('Shrinking pages'),
+                 trash: bool = True,
+                 lossless: "bool | None" = None) -> None:
+        super().__init__(title=_('Shrinking pages') if shrink is not None
+                         else _('Repacking books as ZIP') if repack
+                         else _('Making pages smaller'),
                          transient_for=parent, modal=True,
                          destroy_with_parent=True)
         self._shrink = shrink
         self._repack = repack
+        self._lossless = lossless
         self._without_damaged = without_damaged
         self._trash = trash
         self._books = books
@@ -280,7 +315,7 @@ class _ProgressDialog(Dialog):
                                              self._progress, self._shrink,
                                              self._repack,
                                              self._without_damaged,
-                                             self._trash)
+                                             self._trash, self._lossless)
             except archive_packer.Cancelled:
                 break
             except webp_books.Skipped as reason:
@@ -338,20 +373,20 @@ class _ProgressDialog(Dialog):
     def _done_line(self) -> str:
         count = len(self._stored)
         ngettext = i18n.get_translation().ngettext
-        if self._repack and self._saved < 0:
+        if self._shrink is None and self._repack and self._saved < 0:
             # A 7z, say, compresses better than a ZIP of the same files.
             line = ngettext('%(count)d book repacked as ZIP, %(size)s larger',
                             '%(count)d books repacked as ZIP, %(size)s larger',
                             count)
             return line % {'count': count,
                            'size': GLib.format_size(-self._saved)}
-        if self._repack:
+        if self._shrink is not None:
+            line = ngettext('%(count)d book shrunk, %(size)s smaller',
+                            '%(count)d books shrunk, %(size)s smaller', count)
+        elif self._repack:
             line = ngettext('%(count)d book repacked as ZIP, %(size)s smaller',
                             '%(count)d books repacked as ZIP, %(size)s smaller',
                             count)
-        elif self._shrink is not None:
-            line = ngettext('%(count)d book shrunk, %(size)s smaller',
-                            '%(count)d books shrunk, %(size)s smaller', count)
         else:
             line = ngettext(
                 '%(count)d book stored with WebP pages, %(size)s smaller',
@@ -506,9 +541,9 @@ class _ProgressDialog(Dialog):
             folder=prefs['path of last saved in filechooser'])
         chooser.set_title(_('Save the log as'))
         chooser.set_save_name(time.strftime(
-            'mcomix-repack-%Y-%m-%d-%H%M.txt' if self._repack
-            else 'mcomix-webp-%Y-%m-%d-%H%M.txt' if self._shrink is None
-            else 'mcomix-shrink-%Y-%m-%d-%H%M.txt'))
+            'mcomix-shrink-%Y-%m-%d-%H%M.txt' if self._shrink is not None
+            else 'mcomix-repack-%Y-%m-%d-%H%M.txt' if self._repack
+            else 'mcomix-webp-%Y-%m-%d-%H%M.txt'))
 
         def chosen(paths: list[str]) -> None:
             chooser.destroy()

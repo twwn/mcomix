@@ -1272,12 +1272,16 @@ class Packer:
                     return None
                 try:
                     if self._shrink is not None:
-                        return page_shrink.shrink_instead(
+                        shrunk = page_shrink.shrink_instead(
                             path, directory, '%d.webp' % number,
                             self._shrink)
+                        # A page the shrink leaves, given <webp_pages>
+                        # as well, is made smaller without loss.
+                        if shrunk is not None or not self._webp_pages:
+                            return shrunk
                     if may_become_webp(path):
                         return webp_instead(path, directory,
-                                            '%d.webp' % number)
+                                            '%d.lossless.webp' % number)
                     # A JPEG keeps its extension.
                     return jpeg_instead(path, directory, '%d%s' % (
                         number, os.path.splitext(path)[1]))
@@ -1287,7 +1291,12 @@ class Packer:
                     log.debug('No WebP of "%s": %s', path, error)
                     return None
 
-        cost = webp_cost if self._shrink is None else page_shrink.cost
+        def cost(path: str) -> int:
+            if self._shrink is None:
+                return webp_cost(path)
+            if self._webp_pages:
+                return max(webp_cost(path), page_shrink.cost(path))
+            return page_shrink.cost(path)
         costs = {path: cost(path) for path in paths}
         # The largest first, so that the last page left working alone,
         # with the processors idle beside it, is a small one.

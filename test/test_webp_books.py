@@ -609,6 +609,97 @@ class ShrinkTest(_BookTest):
         return webp_books.convert(path, self.stop, shrink=self.SHRINK)
 
 
+class ChainTest(_BookTest):
+
+    """The steps ticked together in one pass: a page over the limit
+    shrunk, the other PNG pages made smaller without loss, the book
+    repacked as a ZIP last."""
+
+    SHRINK = Shrink(limit=600, quality=80)
+
+    def setUp(self):
+        super().setUp()
+        self.members = {'01.png': encoded(drawn_page(3, (1000, 1500)), 'PNG'),
+                        '02.png': line_art_png(),
+                        'notes.txt': b'kept as it was'}
+        self.book = os.path.join(self.directory, 'book.cbt')
+        with tarfile.open(self.book, 'w') as book:
+            for member, data in self.members.items():
+                info = tarfile.TarInfo(member)
+                info.size = len(data)
+                book.addfile(info, io.BytesIO(data))
+        with open(self.book, 'rb') as book:
+            self.before = book.read()
+        self.zip_book_path = os.path.join(self.directory, 'book.cbz')
+
+    def _contents(self):
+        with zipfile.ZipFile(self.zip_book_path) as book:
+            return {name: book.read(name) for name in book.namelist()}
+
+    def test_all_three_steps_trash_the_book_and_leave_a_zip(self):
+        converted = webp_books.convert(self.book, self.stop,
+                                       shrink=self.SHRINK, repack=True,
+                                       lossless=True)
+        self.assertEqual(['book.cbz'], os.listdir(self.directory))
+        self.assertEqual(self.zip_book_path, converted.moved_to)
+        self.assertEqual({'01.png': '01.webp', '02.png': '02.webp'},
+                         converted.renamed)
+        contents = self._contents()
+        self.assertEqual({'01.webp', '02.webp', 'notes.txt'}, set(contents))
+        with Image.open(io.BytesIO(contents['01.webp'])) as page:
+            self.assertEqual((400, 600), page.size)
+        # Below the limit, made smaller without loss.
+        self.assertEqual(pixels(self.members['02.png']),
+                         pixels(contents['02.webp']))
+        trashed, = os.listdir(self.trash_dir)
+        with open(os.path.join(self.trash_dir, trashed), 'rb') as book:
+            self.assertEqual(self.before, book.read())
+
+    def test_a_shrink_without_lossless_leaves_the_other_pages(self):
+        converted = webp_books.convert(self.book, self.stop,
+                                       shrink=self.SHRINK, repack=True)
+        self.assertEqual({'01.png': '01.webp', '02.png': '02.png'},
+                         converted.renamed)
+        self.assertEqual(self.members['02.png'], self._contents()['02.png'])
+
+    def test_a_shrink_repacked_and_not_trashed_replaces_the_book(self):
+        converted = webp_books.convert(self.book, self.stop,
+                                       shrink=self.SHRINK, repack=True,
+                                       trash=False)
+        self.assertEqual(self.zip_book_path, converted.moved_to)
+        self.assertEqual(['book.cbz'], os.listdir(self.directory))
+        self.assertFalse(os.path.exists(self.trash_dir), 'trashed')
+
+    def test_lossless_and_repack_replace_the_book_with_a_zip(self):
+        converted = webp_books.convert(self.book, self.stop, repack=True,
+                                       lossless=True)
+        self.assertEqual(['book.cbz'], os.listdir(self.directory))
+        self.assertEqual({'01.png': '01.webp', '02.png': '02.webp'},
+                         converted.renamed)
+        self.assertEqual(pixels(self.members['01.png']),
+                         pixels(self._contents()['01.webp']))
+        self.assertFalse(os.path.exists(self.trash_dir), 'trashed')
+
+    def test_a_zip_made_meanwhile_leaves_the_shrunk_book(self):
+        """The ZIP's name taken while the book was written: the book is
+        not trashed for a ZIP that cannot take its place."""
+        real = archive_packer.check_zip
+
+        def taken(*args):
+            real(*args)
+            with open(self.zip_book_path, 'wb') as made:
+                made.write(b'made meanwhile')
+        with unittest.mock.patch.object(archive_packer, 'check_zip', taken), \
+                self.assertRaises(webp_books.Skipped) as raised:
+            webp_books.convert(self.book, self.stop, shrink=self.SHRINK,
+                               repack=True)
+        self.assertEqual('book.cbz is there already', str(raised.exception))
+        self.assertEqual(['book.cbt', 'book.cbz'],
+                         sorted(os.listdir(self.directory)))
+        with open(self.book, 'rb') as book:
+            self.assertEqual(self.before, book.read())
+
+
 class RepackTest(_BookTest):
 
     """Books written again as ZIP, every file in them as it was."""

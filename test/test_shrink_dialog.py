@@ -12,6 +12,7 @@ from PIL import Image
 
 from . import drawn_page, encoded, pump, visible_prompts, wait_for
 from .test_library_dialog import _LibraryWindowTest
+from mcomix import constants
 from mcomix import shrink_dialog
 from mcomix import webp_books
 from mcomix import webp_dialog
@@ -96,6 +97,36 @@ class ShrinkPagesTest(_LibraryWindowTest):
                 self.assertEqual((400, 600), page.size)
         for path in (self.larger, self.small):
             self.assertEqual(before[path], os.path.getsize(path))
+        self.assertEqual(1, len(os.listdir(self.trash_dir)))
+        self.assertTrue(progress._status.get_text().startswith(
+            '1 book shrunk'))
+
+    def test_the_other_steps_are_ticked_as_saving_does_them(self):
+        """Lossless where PNG pages become WebP when saving, the repack
+        where an edited archive is always saved as a ZIP."""
+        with unittest.mock.patch.dict(prefs, {
+                'png pages as webp when saving': True,
+                'save archive format': constants.SAVE_KEEP_FORMAT}):
+            asked = self._asked(self.large)
+        self.assertEqual((True, False), (asked._lossless.get_active(),
+                                         asked._repack.get_active()))
+        asked.destroy()
+        with unittest.mock.patch.dict(prefs, {
+                'png pages as webp when saving': False,
+                'save archive format': constants.SAVE_ALL_AS_ZIP}):
+            other = self._asked()
+        self.assertEqual((False, True), (other._lossless.get_active(),
+                                         other._repack.get_active()))
+
+    def test_the_steps_ticked_are_done_in_the_same_pass(self):
+        """The page under the limit made smaller without loss, and the
+        book repacked as a ZIP: still a ZIP here, of the same name."""
+        asked = self._found(self.large)
+        asked._lossless.set_active(True)
+        asked._repack.set_active(True)
+        progress = self._written(asked)
+        with zipfile.ZipFile(self.large) as book:
+            self.assertEqual(['01.webp', '02.webp'], sorted(book.namelist()))
         self.assertEqual(1, len(os.listdir(self.trash_dir)))
         self.assertTrue(progress._status.get_text().startswith(
             '1 book shrunk'))
