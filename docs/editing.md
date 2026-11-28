@@ -5,8 +5,8 @@ The archive on disk is untouched until the changes are written.
 
 ## In the main window
 
-- "Copy page", in the page's right-click menu, copies that page as an image and as its file's path. "Edit → Copy", or CTRL+C, copies the view: both pages, joined, in double page mode.
-- "Save page as...", in the page's right-click menu and the File menu, saves that page to a file of its own.
+- "Copy page", under "Page" in the right-click menu, copies that page as an image and as its file's path. "Edit → Copy", or CTRL+C, copies the view: both pages, joined, in double page mode.
+- "Save page as...", under "Page" in the right-click menu and the File menu, saves that page to a file of its own.
 - A thumbnail dragged from the sidebar to a file manager copies that page's file there.
 - "Rename page...", in the page's menu or F2, names the page for the next save.
   - The name replaces the whole old one; the entry picks out everything but the extension.
@@ -25,7 +25,7 @@ The archive on disk is untouched until the changes are written.
   The same keys drag one page onto the other, in double page mode or among the thumbnails.
 - "Delete page", in the page's menu, removes that page; "Edit → Undo" puts it back.
 - CTRL and a click, on a page or its thumbnail, picks that page out (outlined in red, in the thumbnails too); again puts it back.
-  Escape, or "Put back pages picked out" in the Edit and page menus, puts back all of them.
+  Escape, or "Put back pages picked out" in the Edit menu and under "Page" in the right-click menu, puts back all of them.
   Delete removes every page picked out at once; "Edit → Undo" puts them back.
 
 ## The archive editor

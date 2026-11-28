@@ -20,13 +20,13 @@
 - Space and the mouse wheel scroll in reading order: across, down, across again, then to the next page.
 - [Keyboard and mouse](shortcuts.md) lists every binding.
 - L, or the middle mouse button, shows a magnifying lens.
-- The right-click menu leads with what can be done to the page it was opened on. It leaves out what cannot be done there. "Delete page" stands apart, below the rest.
+- The right-click menu leads with "Page": what can be done to the page it was opened on. The menu and that submenu leave out what cannot be done there. "Delete page" stands apart, below the rest.
 - "File → Properties" describes the page and its archive, with series, volume, issue, title, year, writer, artist and publisher from a ComicInfo.xml.
 - "Go → Go to page" (G) lists the chapters a book names, where it names any, and goes to the one picked. An EPUB names them in its table of contents, a PDF in its outline, a ComicInfo.xml by the bookmarks of its pages.
 - "Go → Back" (CTRL+[) returns to the page a jump left. Jumps are Home, End, Go to page, a thumbnail, a bookmark and a random page; page turns are not remembered.
   "Go → Forward" (CTRL+]) goes there again. Both forget their pages when another book opens.
 - "File → Open containing folder" shows the open file in the file manager. The right-click menu has it too.
-- "Skip this page", in the page's right-click menu, passes an advertisement or a blank page over when the pages are turned. The book is not changed.
+- "Skip this page", under "Page" in the right-click menu, passes an advertisement or a blank page over when the pages are turned. The book is not changed.
   The page keeps its thumbnail, drawn faint; untick "Skip this page" there to read it again.
 - "Cover in the library", in the same menu, makes the page the book's cover in the [library](library.md). It is offered for books the library holds.
 - "File → Move to", also in the right-click menu, moves the open file or archive to another folder.
@@ -102,7 +102,7 @@ Two fingers spread apart or pinched together on a touchpad or a touch screen zoo
 - "View → Title page alone" turns the cover's half of that on or off, for a book that pairs wrongly with it. Its key can be set under Shortcuts.
 - Pages turn two at a time; turning back shows the same pairs as forward.
 - CTRL with PageDown or PageUp turns one page, which shifts the pairing by one.
-- "Show this page alone", in the page's right-click menu, shifts it for good: that page stands alone in this book, and the pages after it pair up anew.
+- "Show this page alone", under "Page" in the right-click menu, shifts it for good: that page stands alone in this book, and the pages after it pair up anew.
 - Manga mode, the M key, lays out and scrolls pages from right to left.
 - A book keeps the way it was set with M, and opens so again, whatever the books read since.
 - A book never set either way opens the way M was last set on such a book.
@@ -175,7 +175,7 @@ The "Image" menu, which the right-click menu has too:
 - CTRL+D adds a bookmark; CTRL+B edits them.
 - In "Edit bookmarks", the "Note" field under the list takes a few words on the selected bookmark. The menu shows them after the page.
 - A bookmarked page has an orange ribbon on its thumbnail in the sidebar.
-- "Remove bookmark", in the page's right-click menu, removes that page's bookmark. It shows only on a bookmarked page.
+- "Remove bookmark", under "Page" in the right-click menu, removes that page's bookmark. It shows only on a bookmarked page.
 - Right-clicking a thumbnail in the sidebar opens the right-click menu for its page.
 - "Bookmarks → Remove this book's bookmarks..." removes the open book's, after asking.
 

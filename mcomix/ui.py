@@ -348,6 +348,17 @@ _GO = ('next_page', 'previous_page', 'go_to',
        'next_directory', 'previous_directory', None,
        'invert_scroll')
 
+#: What is done to the page the right-click menu was opened over: its
+#: Page submenu.  Deleting it stands apart, where a slip of the pointer
+#: from its neighbours cannot reach it.
+_PAGE = ('copy_page_popup', 'extract_page_popup',
+         'rename_page_popup', 'write_turn_popup',
+         'skip_page_popup',
+         'page_alone_popup', 'library_cover_popup', 'remove_bookmark_popup',
+         'unpick_pages',
+         None,
+         'delete_page_popup')
+
 #: The menu bar.  None is a separator, and a pair is a submenu.
 _MENUBAR = (
     ('menu_file', ('open', 'menu_recent', 'library', None,
@@ -370,8 +381,8 @@ _MENUBAR = (
 
 #: The right-click menu.  An item of its top level that is disabled is
 #: left out rather than greyed: the menu is opened on something, and
-#: says what can be done there.  Its submenus keep every item in its
-#: place.
+#: says what can be done there.  So does its Page submenu; the others
+#: keep every item in its place.
 _POPUP = (
     # Shown only while the window fills the screen: the item under
     # View, two levels down, was the only way out with the mouse
@@ -379,16 +390,9 @@ _POPUP = (
     'leave_fullscreen',
     None,
     # The menu is opened on a page, so what is done to that page leads
-    # (upstream feature requests 98 and 105).  Deleting it stands apart,
-    # where a slip of the pointer from its neighbours cannot reach it.
-    'copy_page_popup', 'extract_page_popup',
-    'rename_page_popup', 'write_turn_popup',
-    'skip_page_popup',
-    'page_alone_popup', 'library_cover_popup', 'remove_bookmark_popup',
-    'unpick_pages',
-    None,
-    'delete_page_popup',
-    None,
+    # (upstream feature requests 98 and 105), in a submenu of its own
+    # that keeps the top level short.
+    ('menu_page_popup', _PAGE),
     ('menu_go_popup', _GO),
     ('menu_view_popup', _VIEW),
     ('menu_image_popup', _IMAGE),
@@ -540,6 +544,8 @@ class MainUI:
             # for it in several languages, as for the items without one
             # above it.
             _Entry('menu_image_popup', 'mcomix-transform', _('Image')),
+            # Without a letter, as Image: P is Preferences' there.
+            _Entry('menu_page_popup', None, _('Page')),
             _Entry('menu_help', None, _('_Help')),
             _Entry('manual', 'help-browser', _('_Manual'), None,
                    _action_lambda(self._open_manual)),
@@ -756,7 +762,13 @@ class MainUI:
         self._actions.get_action('fullscreen').set_active(False)
 
     #: The submenus of the right-click menu that act on the open book.
-    _NEEDS_A_BOOK = ('menu_move_to_popup', 'menu_open_with_popup')
+    _NEEDS_A_BOOK = ('menu_page_popup', 'menu_move_to_popup',
+                     'menu_open_with_popup')
+
+    #: The submenus of the right-click menu that leave out what is
+    #: disabled, as its top level does: what can be done to the page it
+    #: was opened over, which changes with the page.
+    _HIDES_DISABLED = ('menu_page_popup',)
 
     #: What the menu bar leaves out, rather than greys, while it does not
     #: apply to the open book: the archive cannot be written back, or
@@ -773,6 +785,24 @@ class MainUI:
                 'menu_move_to': self.move_to.model,
                 'menu_move_to_popup': self.move_to.model}.get(name)
 
+    def _hide_without_a_book(self, submenu: Gio.MenuItem, name: str) -> None:
+        """Have the right-click menu leave out <submenu>, called <name>,
+        while no book is open, if it needs one.
+
+        The menu leaves out what it cannot do, and with no book open
+        there is no page to act on, nothing to move and nothing to open
+        with another program.  A submenu is hidden as an item is, by an
+        action that is disabled: the one its own name stands for, which
+        does nothing but be enabled while a book is open
+        (set_sensitivities()).
+        """
+        if name not in self._NEEDS_A_BOOK:
+            return
+        submenu.set_attribute_value(
+            'action', GLib.Variant('s', self._actions.detailed(name)[0]))
+        submenu.set_attribute_value(
+            'hidden-when', GLib.Variant('s', 'action-disabled'))
+
     def _build(self, layout: _Layout,
                hide_disabled: bool = False) -> Gio.Menu:
         """Turn one of the layouts below into a Gio.Menu.
@@ -783,7 +813,8 @@ class MainUI:
 
         <hide_disabled> leaves an item of the top level out while its
         action is disabled, which is the right-click menu's way; the
-        items of a submenu are greyed as everywhere else.
+        items of a submenu are greyed as everywhere else, but in those
+        _HIDES_DISABLED names.
         """
         model = Gio.Menu()
         section = Gio.Menu()
@@ -795,27 +826,21 @@ class MainUI:
                 continue
             if isinstance(item, tuple):
                 name, contents = item
-                section.append_submenu(self._actions.label(name),
-                                       self._build(contents))
+                submenu = Gio.MenuItem.new_submenu(
+                    self._actions.label(name),
+                    self._build(contents, hide_disabled
+                                and name in self._HIDES_DISABLED))
+                if hide_disabled:
+                    self._hide_without_a_book(submenu, name)
+                section.append_item(submenu)
                 continue
             dynamic = self._dynamic(item)
             if dynamic is not None:
                 # Built and rebuilt elsewhere.
                 submenu = Gio.MenuItem.new_submenu(self._actions.label(item),
                                                    dynamic)
-                if hide_disabled and item in self._NEEDS_A_BOOK:
-                    # The right-click menu leaves out what it cannot do,
-                    # and with no book open there is nothing to move or
-                    # to open with another program.  A submenu is hidden
-                    # as an item is, by an action that is disabled: the
-                    # one its own name stands for, which does nothing
-                    # but be enabled while a book is open
-                    # (set_sensitivities()).
-                    submenu.set_attribute_value(
-                        'action',
-                        GLib.Variant('s', self._actions.detailed(item)[0]))
-                    submenu.set_attribute_value(
-                        'hidden-when', GLib.Variant('s', 'action-disabled'))
+                if hide_disabled:
+                    self._hide_without_a_book(submenu, item)
                 section.append_item(submenu)
                 continue
             detailed, target = self._actions.detailed(item)

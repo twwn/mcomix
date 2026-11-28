@@ -5877,10 +5877,12 @@ class MainWindowTest(MComixTest):
                         MainWindowTest._menu_actions(child))
         return actions
 
-    def _popup_top_level(self):
-        """The right-click menu's own items, in order: for each its
-        action (None for a submenu) and what hides it."""
-        model = _popup_model(self.window)
+    def _popup_top_level(self, model=None):
+        """The items of the right-click menu's <model>, its own where
+        None, in order: for each its action (None for a submenu that
+        has none) and what hides it."""
+        if model is None:
+            model = _popup_model(self.window)
         items = []
         for number in range(model.get_n_items()):
             section = model.get_item_link(number, Gio.MENU_LINK_SECTION)
@@ -5893,24 +5895,46 @@ class MainWindowTest(MComixTest):
                               hidden.get_string() if hidden else None))
         return items
 
+    def _page_submenu(self):
+        """The model of the right-click menu's Page submenu."""
+        model = _popup_model(self.window)
+        for number in range(model.get_n_items()):
+            section = model.get_item_link(number, Gio.MENU_LINK_SECTION)
+            for index in range(section.get_n_items()):
+                action = section.get_item_attribute_value(
+                    index, Gio.MENU_ATTRIBUTE_ACTION, None)
+                if action and action.get_string() == 'win.menu-page-popup':
+                    return section.get_item_link(index, Gio.MENU_LINK_SUBMENU)
+        self.fail('no Page submenu')
+
     def test_the_right_click_menu_leads_with_the_page_it_was_opened_on(self):
         """It opened with three submenus of the menu bar, and what can
         be done to the page stood eleven items down (upstream feature
-        requests 98 and 105)."""
+        requests 98 and 105).  Those nine items then made the top level
+        long, so they are a submenu of their own, first in the menu."""
         actions = [action for action, _ in self._popup_top_level()]
+        self.assertEqual(['win.leave-fullscreen', 'win.menu-page-popup'],
+                         actions[:2])
         self.assertEqual(
-            ['win.leave-fullscreen', 'win.copy-page-popup',
-             'win.extract-page-popup', 'win.rename-page-popup',
-             'win.write-turn-popup', 'win.skip-page-popup',
-             'win.page-alone-popup', 'win.library-cover-popup',
-             'win.remove-bookmark-popup', 'win.unpick-pages',
-             'win.delete-page-popup', None],
-            actions[:12])
+            [('win.copy-page-popup', 'action-disabled'),
+             ('win.extract-page-popup', 'action-disabled'),
+             ('win.rename-page-popup', 'action-disabled'),
+             ('win.write-turn-popup', 'action-disabled'),
+             ('win.skip-page-popup', 'action-disabled'),
+             ('win.page-alone-popup', 'action-disabled'),
+             ('win.library-cover-popup', 'action-disabled'),
+             ('win.remove-bookmark-popup', 'action-disabled'),
+             ('win.unpick-pages', 'action-disabled'),
+             ('win.delete-page-popup', 'action-disabled')],
+            self._popup_top_level(self._page_submenu()),
+            'the submenu leaves out what cannot be done to the page, '
+            'as the top level does')
+        self.assertNotIn('win.copy-page-popup', actions)
 
     def test_deleting_the_page_stands_apart_in_the_right_click_menu(self):
         """It stood between "Save rotation to file" and "Skip this
         page", a slip of the pointer from either."""
-        model = _popup_model(self.window)
+        model = self._page_submenu()
         sections = [model.get_item_link(number, Gio.MENU_LINK_SECTION)
                     for number in range(model.get_n_items())]
         alone = [section for section in sections
@@ -5928,10 +5952,15 @@ class MainWindowTest(MComixTest):
         for action, hidden in self._popup_top_level():
             if action is not None:
                 self.assertEqual('action-disabled', hidden, action)
-        # A submenu keeps every item in its place, greyed or not.
+        # A submenu keeps every item in its place, greyed or not: Go,
+        # after Page.
         model = _popup_model(self.window)
-        go = model.get_item_link(3, Gio.MENU_LINK_SECTION).get_item_link(
-            0, Gio.MENU_LINK_SUBMENU)
+        go = model.get_item_link(1, Gio.MENU_LINK_SECTION).get_item_link(
+            1, Gio.MENU_LINK_SUBMENU)
+        self.assertEqual('win.next-page',
+                         go.get_item_link(0, Gio.MENU_LINK_SECTION)
+                         .get_item_attribute_value(
+                             0, Gio.MENU_ATTRIBUTE_ACTION, None).get_string())
         self.assertIsNone(go.get_item_link(0, Gio.MENU_LINK_SECTION)
                           .get_item_attribute_value(0, 'hidden-when', None))
 
@@ -6188,7 +6217,8 @@ class PageMenuSubmenusTest(MComixTest):
     in the menu of an empty window.
     """
 
-    SUBMENUS = ('menu_move_to_popup', 'menu_open_with_popup')
+    SUBMENUS = ('menu_page_popup', 'menu_move_to_popup',
+                'menu_open_with_popup')
 
     def setUp(self):
         super().setUp()
