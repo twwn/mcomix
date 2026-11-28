@@ -121,6 +121,33 @@ class RequiredVersionTest(unittest.TestCase):
         self.assertIs(pdf_multi.DisabledFitzArchive, handler)
         self.assertFalse({'pymupdf', 'fitz'} & set(imported), imported)
 
+    def test_a_release_recent_enough_is_loaded(self):
+        with mock.patch('importlib.metadata.version', return_value='1.24.10'), \
+                mock.patch.dict(os.environ):
+            os.environ.pop('MCOMIX_DISABLE_PDF_MULTI', None)
+            self.assertEqual('FitzArchive', pdf_multi.load_handler().__name__)
+
+    def test_the_environment_can_switch_the_handler_off(self):
+        """Before the version is asked for: a PyMuPDF that crashes on
+        being asked is kept out of the process."""
+        with mock.patch.object(pdf_multi, 'installed_version',
+                               side_effect=AssertionError('asked')), \
+                mock.patch.dict(os.environ, {'MCOMIX_DISABLE_PDF_MULTI': ''}):
+            self.assertIs(pdf_multi.DisabledFitzArchive, pdf_multi.load_handler())
+
+    def test_a_release_too_old_says_which_it_is_and_which_would_do(self):
+        error = pdf_multi.UnsupportedFitzVersionError(found_version='1.23.5')
+        self.assertEqual('PyMuPDF 1.24.7 or later required, 1.23.5 found',
+                         str(error))
+        self.assertEqual('1.23.5', error.found_version)
+        self.assertEqual('1.24.7', error.minimum_version)
+        self.assertEqual('PyMuPDF 1.24.7 or later required',
+                         str(pdf_multi.UnsupportedFitzVersionError()))
+        error = pdf_multi.UnsupportedFitzVersionError(
+            'told', name='pymupdf', path='/where', found_version='1.0')
+        self.assertEqual(('told', 'pymupdf', '/where'),
+                         (str(error), error.name, error.path))
+
     def test_a_pymupdf_without_metadata_is_asked_for_its_version(self):
         module = types.SimpleNamespace(__version__='1.24.10')
         with mock.patch('importlib.metadata.version',
