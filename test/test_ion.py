@@ -122,6 +122,10 @@ class IonTest(unittest.TestCase):
                 # 0.25: exponent -2, coefficient 25; -1.5: -1, -15.
                 ('52 c2 19', decimal.Decimal('0.25')),
                 ('52 c1 8f', decimal.Decimal('-1.5')),
+                # Exponents of more than one octet: -64, 200, 10000.
+                ('53 40 c0 01', decimal.Decimal('1E-64')),
+                ('53 01 c8 01', decimal.Decimal('1E+200')),
+                ('54 00 4e 90 01', decimal.Decimal('1E+10000')),
                 ('70', Symbol(0)), ('71 04', Symbol(4)),
                 ('72 01 5f', Symbol(351)),
                 ('83 61 62 63', 'abc'), ('80', ''),
@@ -132,12 +136,24 @@ class IonTest(unittest.TestCase):
                 self.assertEqual(value, expected)
                 self.assertIs(type(value), type(expected))
 
+    def test_the_sign_of_a_decimal_zero(self):
+        """A decimal of an exponent and no coefficient is a positive
+        zero; one whose coefficient is only its sign bit, a negative
+        zero.  Both equal 0, so their tuples are compared."""
+        for hexadecimal, expected in (('51 c2', (0, (0,), -2)),
+                                      ('52 c2 80', (1, (0,), -2))):
+            with self.subTest(hexadecimal):
+                self.assertEqual(
+                    expected, ion.loads(_stream(hexadecimal)).as_tuple())
+
     def test_timestamp(self):
         """A timestamp is kept as its representation, which is checked
         only for the two fields every one has."""
         value = ion.loads(_stream('68 80 0f d0 81 81 80 80 80'))
         self.assertIsInstance(value, ion.Timestamp)
         self.assertEqual(value, bytes.fromhex('80 0f d0 81 81 80 80 80'))
+        # The shortest there is: an offset and a year.
+        self.assertEqual(ion.loads(_stream('62 c0 81')), b'\xc0\x81')
         for illegal in ('60', '61 80'):
             with self.subTest(illegal), self.assertRaises(IonError):
                 ion.loads(_stream(illegal))
@@ -197,8 +213,13 @@ class IonTest(unittest.TestCase):
                 # around another wrapper, longer than their value.
                 'ef', 'e1 81', 'b4 e3 81 84 00', 'e6 81 84 e3 81 84 20',
                 'e4 81 84 20 20',
-                # Lengths past the end, a VarUInt never terminated.
-                '82 61', 'b3 21 01', 'd2 84', '8e 01',
+                # Annotation wrappers with no annotations, and with
+                # annotations up to their end and no value.
+                'e3 80 21 01', 'e3 82 84 85',
+                # Lengths past the end, a VarUInt never terminated, a
+                # VarInt never terminated (a decimal's exponent), a
+                # field name without its value.
+                '82 61', 'b3 21 01', 'd2 84', '8e 01', '51 40', 'd1 81 84',
                 # Text that is not UTF-8.
                 '81 ff',
         ):
@@ -236,6 +257,7 @@ class IonTest(unittest.TestCase):
             with self.subTest(data), self.assertRaises(IonError):
                 ion.loads(data)
         self.assertEqual(ion.loads(_stream('21 01') + ion.VERSION_MARKER), 1)
+        self.assertEqual(ion.loads(ion.VERSION_MARKER + _stream('21 01')), 1)
 
     def test_nesting(self):
         """Lists nested deeper than the reader goes are refused rather
@@ -246,6 +268,21 @@ class IonTest(unittest.TestCase):
         self.assertEqual(ion.loads(dumps(value)), value)
         with self.assertRaises(IonError):
             ion.loads(dumps([value]))
+
+    def test_nesting_through_structs_and_annotations(self):
+        """A struct is a level as a list is, and so is an annotation
+        wrapper: 50 annotated lists are 100 levels."""
+        for name, level, levels in (
+                ('structs', lambda value: {4: value}, 100),
+                ('annotated lists',
+                 lambda value: Annotated([3], [value]), 50)):
+            with self.subTest(name):
+                value = 1
+                for _ in range(levels):
+                    value = level(value)
+                ion.loads(dumps(value))
+                with self.assertRaises(IonError):
+                    ion.loads(dumps(level(value)))
 
     def test_round_trip(self):
         """Values written by dumps() are read back as they were."""
