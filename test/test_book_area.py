@@ -1754,7 +1754,26 @@ class StorePagesAsWebpEntryTest(_FourCoversTest):
                         index, 'action', None) is not None]
                    for section in sections if section is not None]
         self.assertIn(['books.store-webp', 'books.shrink-pages',
-                       'books.find-duplicates'], actions)
+                       'books.repack-zip', 'books.find-duplicates'], actions)
+
+    def test_repacking_is_offered_for_a_rar_without_rar(self):
+        """A ZIP is what it writes, which needs nothing installed; only
+        a book whose pages are not files in it, a PDF, is left out."""
+        self.library.collection_area = _CollectionArea()
+        self.library.main_window = _main_window()
+        action = self.area._popup_actions.lookup_action('repack-zip')
+        self.area._covers.get_item(0).format = constants.PDF
+        self.area._covers.get_item(1).format = constants.RAR
+        with unittest.mock.patch.object(book_area.widgets, 'popup_at'), \
+                unittest.mock.patch.object(
+                    book_area.archive_packer, 'rar_executable',
+                    return_value=None):
+            for selected, offered in (([0], False), ([1], True),
+                                      ([0, 1], True), ([], False)):
+                with self.subTest(selected=selected):
+                    self.area._covers.select_positions(selected)
+                    self.area._popup_book_menu()
+                    self.assertEqual(offered, action.get_enabled())
 
 
 class BooksOnShowEntriesTest(_FourCoversTest):

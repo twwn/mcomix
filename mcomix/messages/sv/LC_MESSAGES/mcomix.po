@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix 0.90.4\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-28 11:28+0100\n"
+"POT-Creation-Date: 2026-11-28 11:54+0100\n"
 "PO-Revision-Date: 2018-02-24 08:43+0100\n"
 "Last-Translator: Jonatan Nyberg <jonatan@autistici.org>\n"
 "Language-Team: Swedish <LL@li.org>\n"
@@ -55,7 +55,7 @@ msgstr "! Kunde inte läsa %s"
 #
 # File: src/comment.py, line: 53
 #: mcomix/archive_packer.py:708 mcomix/file_actions.py:1473
-#: mcomix/library/book_area.py:1447
+#: mcomix/library/book_area.py:1448
 #, python-format
 msgid "! Could not remove %(file)s: %(error)s"
 msgstr "! Kunde inte ta bort %(file)s: %(error)s"
@@ -104,7 +104,7 @@ msgid "! Could not save %(file)s to %(directory)s: %(error)s"
 msgstr "! Kunde inte spara %(file)s till %(directory)s: %(error)s"
 
 #: mcomix/bookmark_backend.py:493 mcomix/file_actions.py:1245
-#: mcomix/webp_dialog.py:446
+#: mcomix/webp_dialog.py:478
 #, python-format
 msgid "Could not save \"%(file)s\" to \"%(directory)s\""
 msgstr "Kunde inte spara \"%(file)s\" till \"%(directory)s\""
@@ -128,7 +128,7 @@ msgstr "_Nej"
 #: mcomix/file_chooser_library_dialog.py:42 mcomix/message_dialog.py:26
 #: mcomix/message_dialog.py:29 mcomix/pageselect.py:38
 #: mcomix/save_progress.py:121 mcomix/shrink_dialog.py:138
-#: mcomix/shrink_dialog.py:277 mcomix/webp_dialog.py:103
+#: mcomix/shrink_dialog.py:279 mcomix/webp_dialog.py:119
 #: mcomix/library/duplicates_dialog.py:237
 msgid "_Cancel"
 msgstr "_Avbryt"
@@ -192,8 +192,8 @@ msgstr "_Ta bort"
 # File: src/ui.py, line: 48
 #: mcomix/bookmark_dialog.py:34 mcomix/comment_dialog.py:29
 #: mcomix/message_dialog.py:25 mcomix/preferences_dialog.py:105
-#: mcomix/properties_dialog.py:38 mcomix/shrink_dialog.py:278
-#: mcomix/webp_dialog.py:375 mcomix/library/book_check_dialog.py:180
+#: mcomix/properties_dialog.py:38 mcomix/shrink_dialog.py:280
+#: mcomix/webp_dialog.py:406 mcomix/library/book_check_dialog.py:180
 #: mcomix/library/book_properties.py:60 mcomix/library/duplicates_dialog.py:292
 #: mcomix/library/watchlist.py:41
 msgid "_Close"
@@ -371,7 +371,7 @@ msgstr "Kommentarer"
 #
 # File: src/library.py, line: 271
 #: mcomix/edit_dialog.py:262 mcomix/file_actions.py:941
-#: mcomix/webp_dialog.py:249
+#: mcomix/webp_dialog.py:269
 #, python-format
 msgid "! Could not save the archive %(archivefile)s: %(error)s"
 msgstr "! Kunde inte spara arkivet %(archivefile)s: %(error)s"
@@ -650,11 +650,11 @@ msgstr "Filen flyttas till papperskorgen."
 msgid "_Move to Trash"
 msgstr "_Flytta till papperskorgen"
 
-#: mcomix/file_actions.py:1317 mcomix/library/book_area.py:1384
+#: mcomix/file_actions.py:1317 mcomix/library/book_area.py:1385
 msgid "It does not go to the trash and cannot be restored."
 msgstr "Filen flyttas inte till papperskorgen och kan inte återställas."
 
-#: mcomix/file_actions.py:1325 mcomix/library/book_area.py:1376
+#: mcomix/file_actions.py:1325 mcomix/library/book_area.py:1377
 #, python-format
 msgid "Delete \"%s\" permanently?"
 msgstr "Ta bort \"%s\" permanent?"
@@ -664,7 +664,7 @@ msgstr "Ta bort \"%s\" permanent?"
 msgid "Could not move \"%s\" to the trash"
 msgstr "Kunde inte flytta \"%s\" till papperskorgen"
 
-#: mcomix/file_actions.py:1436 mcomix/library/book_area.py:1461
+#: mcomix/file_actions.py:1436 mcomix/library/book_area.py:1462
 #, python-format
 msgid "%d book could not be moved to the trash."
 msgid_plural "%d books could not be moved to the trash."
@@ -2603,7 +2603,7 @@ msgstr "Filnamn"
 msgid "File name (GLib)"
 msgstr "Filnamn (GLib)"
 
-#: mcomix/preferences_dialog.py:800 mcomix/library/book_area.py:435
+#: mcomix/preferences_dialog.py:800 mcomix/library/book_area.py:436
 msgid "File size"
 msgstr "Filstorlek"
 
@@ -2645,11 +2645,11 @@ msgstr ""
 "ordning sorterar filer med sorteringsnycklar som genereras av GLib/GTK och "
 "som många andra GTK-program använder."
 
-#: mcomix/preferences_dialog.py:831 mcomix/library/book_area.py:443
+#: mcomix/preferences_dialog.py:831 mcomix/library/book_area.py:444
 msgid "Ascending"
 msgstr "Stigande"
 
-#: mcomix/preferences_dialog.py:832 mcomix/library/book_area.py:444
+#: mcomix/preferences_dialog.py:832 mcomix/library/book_area.py:445
 msgid "Descending"
 msgstr "Fallande"
 
@@ -2765,7 +2765,7 @@ msgstr ""
 "färgprofil för skärmen är angiven. Perceptuell behåller färgernas "
 "proportioner; relativ kolorimetri behåller de färger skärmen kan visa exakt."
 
-#: mcomix/preferences_dialog.py:975 mcomix/library/book_area.py:451
+#: mcomix/preferences_dialog.py:975 mcomix/library/book_area.py:452
 msgid "Normal"
 msgstr "Normal"
 
@@ -3030,7 +3030,11 @@ msgid ""
 "WebP at the quality set here. Such pages lose detail. A long strip, far "
 "higher than wide, is judged by its width alone. Each book written goes to "
 "the trash as it was, from where it can be put back."
-msgstr "Varje sida som är högre än gränsen görs lika hög som gränsen och sparas som WebP med kvaliteten som anges här. Sådana sidor förlorar detaljer. En lång remsa, mycket högre än bred, bedöms bara efter sin bredd. Varje bok som skrivs flyttas som den var till papperskorgen, varifrån den kan återställas."
+msgstr ""
+"Varje sida som är högre än gränsen görs lika hög som gränsen och sparas som "
+"WebP med kvaliteten som anges här. Sådana sidor förlorar detaljer. En lång "
+"remsa, mycket högre än bred, bedöms bara efter sin bredd. Varje bok som "
+"skrivs flyttas som den var till papperskorgen, varifrån den kan återställas."
 
 #: mcomix/shrink_dialog.py:114
 msgid "Page _height limit, in pixels:"
@@ -3048,14 +3052,14 @@ msgstr "WebP-k_valitet:"
 msgid "_Find Books"
 msgstr "_Hitta böcker"
 
-#: mcomix/shrink_dialog.py:178 mcomix/webp_dialog.py:186
+#: mcomix/shrink_dialog.py:178 mcomix/webp_dialog.py:205
 #: mcomix/library/add_progress_dialog.py:57
 #: mcomix/library/book_check_dialog.py:65
 #: mcomix/library/duplicates_dialog.py:112
 msgid "_Stop"
 msgstr "_Stoppa"
 
-#: mcomix/shrink_dialog.py:205 mcomix/webp_dialog.py:237
+#: mcomix/shrink_dialog.py:205 mcomix/webp_dialog.py:256
 msgid "open in the main window"
 msgstr "öppen i huvudfönstret"
 
@@ -3074,7 +3078,7 @@ msgid_plural "%(book)s: %(pages)d pages over the limit, about %(size)s smaller"
 msgstr[0] "%(book)s: %(pages)d sida över gränsen, cirka %(size)s mindre"
 msgstr[1] "%(book)s: %(pages)d sidor över gränsen, cirka %(size)s mindre"
 
-#: mcomix/shrink_dialog.py:281
+#: mcomix/shrink_dialog.py:283
 msgid "_Shrink"
 msgstr "_Krymp"
 
@@ -3903,67 +3907,115 @@ msgstr "Kunde inte öppna handboken: %s"
 
 #. TRANSLATORS: Why a book was left as it was, after "3 books left as
 #. they were: ". So are the others here and "open in the main window".
-#: mcomix/webp_books.py:115
+#: mcomix/webp_books.py:136
 msgid "split into volumes"
 msgstr "uppdelad i volymer"
 
-#: mcomix/webp_books.py:118 mcomix/library/book_check.py:34
+#: mcomix/webp_books.py:139 mcomix/library/book_check.py:34
 msgid "damaged, or not an archive"
 msgstr "skadad, eller inget arkiv"
 
-#: mcomix/webp_books.py:123
+#. TRANSLATORS: Why a book was left as it was, as the others;
+#. %s is a format, such as "PDF document".
+#: mcomix/webp_books.py:145
+#, python-format
+msgid "not an archive of picture files: %s"
+msgstr "inte ett arkiv med bildfiler: %s"
+
+#: mcomix/webp_books.py:150
 #, python-format
 msgid "a format MComix does not write: %s"
 msgstr "ett format som MComix inte skriver: %s"
 
-#: mcomix/webp_books.py:127
+#: mcomix/webp_books.py:154
 #, python-format
 msgid "the %s program that writes the format is not installed"
 msgstr "programmet %s, som skriver formatet, är inte installerat"
 
-#: mcomix/webp_books.py:131 mcomix/library/book_check.py:36
+#: mcomix/webp_books.py:158 mcomix/library/book_check.py:36
 msgid "nothing installed here reads the format"
 msgstr "inget som läser formatet är installerat här"
 
 #. TRANSLATORS: Why a book was left as it was, as the others.
-#: mcomix/webp_books.py:159 mcomix/webp_books.py:328
+#: mcomix/webp_books.py:179 mcomix/webp_books.py:186 mcomix/webp_books.py:257
 msgid "no page over the limit"
 msgstr "ingen sida över gränsen"
 
-#: mcomix/webp_books.py:214
+#: mcomix/webp_books.py:245
 msgid "the trash takes no files from its folder"
 msgstr "papperskorgen tar inte emot filer från sin egen mapp"
 
-#: mcomix/webp_books.py:256
+#: mcomix/webp_books.py:258
+msgid "no pages"
+msgstr "inga sidor"
+
+#: mcomix/webp_books.py:291
 msgid "no page made smaller"
 msgstr "ingen sida blev mindre"
 
-#: mcomix/webp_books.py:262
+#: mcomix/webp_books.py:300
 #, python-format
 msgid "the trash refused it: %s"
 msgstr "papperskorgen vägrade: %s"
 
-#: mcomix/webp_books.py:320 mcomix/webp_books.py:349 mcomix/webp_books.py:355
-#: mcomix/webp_books.py:375 mcomix/library/book_check.py:38
+#. TRANSLATORS: Why a book was left as it was, as the others.
+#: mcomix/webp_books.py:358
+msgid "a symbolic link, which would no longer lead to it"
+msgstr "en symbolisk länk, som inte längre skulle leda dit"
+
+#. TRANSLATORS: Why a book was left as it was, as the others; %s is
+#. a file name, such as "Book.cbz".
+#: mcomix/webp_books.py:362 mcomix/webp_books.py:386
+#, python-format
+msgid "%s is there already"
+msgstr "%s finns redan"
+
+#. TRANSLATORS: Why a book was left as it was, as the others.
+#: mcomix/webp_books.py:380
+msgid "a ZIP already, no smaller packed again"
+msgstr "redan en ZIP, inte mindre ompackad"
+
+#: mcomix/webp_books.py:436 mcomix/webp_books.py:465 mcomix/webp_books.py:471
+#: mcomix/webp_books.py:491 mcomix/library/book_check.py:38
 msgid "encrypted"
 msgstr "krypterad"
 
-#: mcomix/webp_books.py:322
+#: mcomix/webp_books.py:438
 msgid "archives inside"
 msgstr "innehåller andra arkiv"
 
-#: mcomix/webp_books.py:330
+#: mcomix/webp_books.py:446
 msgid "no PNG, GIF or JPEG pages"
 msgstr "inga PNG-, GIF- eller JPEG-sidor"
 
-#: mcomix/webp_dialog.py:98
+#: mcomix/webp_dialog.py:101
+#, python-format
+msgid "Repack %d book as a ZIP?"
+msgid_plural "Repack %d books as ZIP?"
+msgstr[0] "Packa om %d bok som ZIP?"
+msgstr[1] "Packa om %d böcker som ZIP?"
+
+#: mcomix/webp_dialog.py:103
+msgid ""
+"Each book is written again as a ZIP, with every file in it as it was: pages "
+"already compressed are stored, the rest compressed. A RAR, 7z or tar book is "
+"replaced by the ZIP, named .cbz in place of .cbr, .cb7 or .cbt, and .zip in "
+"place of any other extension. A ZIP is replaced only where it comes out "
+"smaller."
+msgstr "Varje bok skrivs om som ZIP, med varje fil i den som den var: sidor som redan är komprimerade lagras som de är, resten komprimeras. En RAR-, 7z- eller tar-bok ersätts av ZIP-filen, med .cbz i stället för .cbr, .cb7 eller .cbt och .zip i stället för alla andra filändelser. En ZIP ersätts bara där den blir mindre."
+
+#: mcomix/webp_dialog.py:109
+msgid "_Repack"
+msgstr "_Packa om"
+
+#: mcomix/webp_dialog.py:112
 #, python-format
 msgid "Make the pages of %d book smaller?"
 msgid_plural "Make the pages of %d books smaller?"
 msgstr[0] "Göra sidorna i %d bok mindre?"
 msgstr[1] "Göra sidorna i %d böcker mindre?"
 
-#: mcomix/webp_dialog.py:100
+#: mcomix/webp_dialog.py:114
 msgid ""
 "Each book is written again, with every PNG or GIF page that is smaller as a "
 "lossless WebP and every JPEG page optimised without loss. Some other comic "
@@ -3973,74 +4025,92 @@ msgstr ""
 "förlustfri WebP, och varje JPEG-sida optimerad utan förlust. Vissa andra "
 "serieläsare kan inte visa WebP-sidor."
 
-#: mcomix/webp_dialog.py:104
+#: mcomix/webp_dialog.py:118
 msgid "_Make Smaller"
 msgstr "_Gör mindre"
 
-#: mcomix/webp_dialog.py:132
+#: mcomix/webp_dialog.py:149
 #, python-format
 msgid "%(count)d book left as it was: %(reason)s"
 msgid_plural "%(count)d books left as they were: %(reason)s"
 msgstr[0] "%(count)d bok lämnad som den var: %(reason)s"
 msgstr[1] "%(count)d böcker lämnade som de var: %(reason)s"
 
-#: mcomix/webp_dialog.py:140
+#: mcomix/webp_dialog.py:157
 #, python-format
 msgid "Stopped with %d book not yet looked at"
 msgid_plural "Stopped with %d books not yet looked at"
 msgstr[0] "Stoppad med %d bok ännu inte granskad"
 msgstr[1] "Stoppad med %d böcker ännu inte granskade"
 
-#: mcomix/webp_dialog.py:158
+#: mcomix/webp_dialog.py:175
+msgid "Repacking books as ZIP"
+msgstr "Packar om böcker som ZIP"
+
+#: mcomix/webp_dialog.py:176
 msgid "Making pages smaller"
 msgstr "Gör sidorna mindre"
 
-#: mcomix/webp_dialog.py:159
+#: mcomix/webp_dialog.py:177
 msgid "Shrinking pages"
 msgstr "Krymper stora sidor"
 
-#: mcomix/webp_dialog.py:277
+#: mcomix/webp_dialog.py:298
+#, python-format
+msgid "%(count)d book repacked as ZIP, %(size)s larger"
+msgid_plural "%(count)d books repacked as ZIP, %(size)s larger"
+msgstr[0] "%(count)d bok ompackad som ZIP, %(size)s större"
+msgstr[1] "%(count)d böcker ompackade som ZIP, %(size)s större"
+
+#: mcomix/webp_dialog.py:304
+#, python-format
+msgid "%(count)d book repacked as ZIP, %(size)s smaller"
+msgid_plural "%(count)d books repacked as ZIP, %(size)s smaller"
+msgstr[0] "%(count)d bok ompackad som ZIP, %(size)s mindre"
+msgstr[1] "%(count)d böcker ompackade som ZIP, %(size)s mindre"
+
+#: mcomix/webp_dialog.py:308
 #, python-format
 msgid "%(count)d book shrunk, %(size)s smaller"
 msgid_plural "%(count)d books shrunk, %(size)s smaller"
 msgstr[0] "%(count)d bok krympt, %(size)s mindre"
 msgstr[1] "%(count)d böcker krympta, %(size)s mindre"
 
-#: mcomix/webp_dialog.py:281
+#: mcomix/webp_dialog.py:312
 #, python-format
 msgid "%(count)d book stored with WebP pages, %(size)s smaller"
 msgid_plural "%(count)d books stored with WebP pages, %(size)s smaller"
 msgstr[0] "%(count)d bok lagrad med WebP-sidor, %(size)s mindre"
 msgstr[1] "%(count)d böcker lagrade med WebP-sidor, %(size)s mindre"
 
-#: mcomix/webp_dialog.py:294
+#: mcomix/webp_dialog.py:325
 #, python-format
 msgid "%d book stored without its damaged files"
 msgid_plural "%d books stored without their damaged files"
 msgstr[0] "%d bok lagrad utan sina skadade filer"
 msgstr[1] "%d böcker lagrade utan sina skadade filer"
 
-#: mcomix/webp_dialog.py:331
+#: mcomix/webp_dialog.py:362
 #, python-format
 msgid "About %d minute left"
 msgid_plural "About %d minutes left"
 msgstr[0] "Ungefär %d minut kvar"
 msgstr[1] "Ungefär %d minuter kvar"
 
-#: mcomix/webp_dialog.py:362 mcomix/webp_dialog.py:414
+#: mcomix/webp_dialog.py:393 mcomix/webp_dialog.py:445
 #, python-format
 msgid "Could not be written: %s"
 msgstr "Kunde inte skrivas: %s"
 
-#: mcomix/webp_dialog.py:378
+#: mcomix/webp_dialog.py:409
 msgid "_Save Log…"
 msgstr "_Spara loggen…"
 
-#: mcomix/webp_dialog.py:383
+#: mcomix/webp_dialog.py:414
 msgid "Select Books with _Errors"
 msgstr "Markera böcker med _fel"
 
-#: mcomix/webp_dialog.py:427
+#: mcomix/webp_dialog.py:458
 msgid "Save the log as"
 msgstr "Spara loggen som"
 
@@ -4183,7 +4253,7 @@ msgstr "Uppgradering av biblioteksdatabasversionen från %(from)d till %(to)d."
 
 #
 # File: src/library.py, line: 202
-#: mcomix/library/backend_types.py:431 mcomix/library/book_area.py:463
+#: mcomix/library/backend_types.py:431 mcomix/library/book_area.py:464
 #: mcomix/library/collection_area.py:201 mcomix/library/control_area.py:95
 #: mcomix/library/shelf.py:215
 msgid "All books"
@@ -4250,104 +4320,108 @@ msgstr "E_genskaper"
 msgid "Shrin_k oversized pages..."
 msgstr "Krymp för stora s_idor..."
 
-#: mcomix/library/book_area.py:366
+#: mcomix/library/book_area.py:364
+msgid "Repack as _ZIP..."
+msgstr "Packa om som _ZIP..."
+
+#: mcomix/library/book_area.py:367
 msgid "Find _duplicates..."
 msgstr "_Hitta dubbletter..."
 
-#: mcomix/library/book_area.py:409
+#: mcomix/library/book_area.py:410
 msgid "Library books"
 msgstr "Biblioteksböcker"
 
-#: mcomix/library/book_area.py:422
+#: mcomix/library/book_area.py:423
 msgid "Move _to"
 msgstr "Fl_ytta till"
 
-#: mcomix/library/book_area.py:433
+#: mcomix/library/book_area.py:434
 msgid "Book name"
 msgstr "Boknamn"
 
-#: mcomix/library/book_area.py:434
+#: mcomix/library/book_area.py:435
 msgid "Full path"
 msgstr "Fullständig sökväg"
 
-#: mcomix/library/book_area.py:436
+#: mcomix/library/book_area.py:437
 msgid "Pages"
 msgstr "Sidor"
 
-#: mcomix/library/book_area.py:437 mcomix/library/book_properties.py:102
+#: mcomix/library/book_area.py:438 mcomix/library/book_properties.py:102
 msgid "Date added"
 msgstr "Datum tillagd"
 
-#: mcomix/library/book_area.py:438
+#: mcomix/library/book_area.py:439
 msgid "Date modified"
 msgstr "Ändringsdatum"
 
-#: mcomix/library/book_area.py:439 mcomix/library/book_properties.py:106
+#: mcomix/library/book_area.py:440 mcomix/library/book_properties.py:106
 msgid "Last read"
 msgstr "Senast läst"
 
-#: mcomix/library/book_area.py:440
+#: mcomix/library/book_area.py:441
 msgid "By hand"
 msgstr "Manuellt"
 
-#: mcomix/library/book_area.py:449
+#: mcomix/library/book_area.py:450
 msgid "Huge"
 msgstr "Jättestor"
 
-#: mcomix/library/book_area.py:450
+#: mcomix/library/book_area.py:451
 msgid "Large"
 msgstr "Stor"
 
-#: mcomix/library/book_area.py:452
+#: mcomix/library/book_area.py:453
 msgid "Small"
 msgstr "Liten"
 
-#: mcomix/library/book_area.py:453
+#: mcomix/library/book_area.py:454
 msgid "Tiny"
 msgstr "Mycket liten"
 
-#: mcomix/library/book_area.py:457
+#: mcomix/library/book_area.py:458
 msgid "Custom..."
 msgstr "Anpassa..."
 
-#: mcomix/library/book_area.py:465
+#: mcomix/library/book_area.py:466
 msgid "Books with no pages"
 msgstr "Böcker utan sidor"
 
-#: mcomix/library/book_area.py:468
+#: mcomix/library/book_area.py:469
 msgid "Books whose file is not there"
 msgstr "Böcker vars fil inte finns där"
 
-#: mcomix/library/book_area.py:470
+#: mcomix/library/book_area.py:471
 msgid "Books that cannot be read in full..."
 msgstr "Böcker som inte kan läsas helt..."
 
-#: mcomix/library/book_area.py:474
+#: mcomix/library/book_area.py:475
 msgid "Select books"
 msgstr "Markera böcker"
 
-#: mcomix/library/book_area.py:475
+#: mcomix/library/book_area.py:476
 msgid "_Sort"
 msgstr "Sor_tera"
 
-#: mcomix/library/book_area.py:476
+#: mcomix/library/book_area.py:477
 msgid "Cover si_ze"
 msgstr "Omslagsstorle_k"
 
-#: mcomix/library/book_area.py:974
+#: mcomix/library/book_area.py:975
 msgid "Set library cover size"
 msgstr "Ställ in bibliotekets omslagsstorlek"
 
 #
 # File: src/library.py, line: 588
-#: mcomix/library/book_area.py:1282
+#: mcomix/library/book_area.py:1283
 #, python-format
 msgid "Removed %(num)d book from '%(collection)s'."
 msgid_plural "Removed %(num)d books from '%(collection)s'."
 msgstr[0] "Tog bort %(num)d bokr från '%(collection)s'."
 msgstr[1] "Tog bort %(num)d böcker från '%(collection)s'."
 
-#: mcomix/library/book_area.py:1311 mcomix/library/collection_area.py:283
+#: mcomix/library/book_area.py:1312 mcomix/library/collection_area.py:283
 #: mcomix/library/main_dialog.py:256
 #, python-format
 msgid "Removed %d book from the library."
@@ -4357,11 +4431,11 @@ msgstr[1] "Tog bort %d böcker från biblioteket."
 
 #
 # File: src/library.py, line: 597
-#: mcomix/library/book_area.py:1333 mcomix/library/book_area.py:1354
+#: mcomix/library/book_area.py:1334 mcomix/library/book_area.py:1355
 msgid "Remove books from the library?"
 msgstr "Ta bort böcker från biblioteket?"
 
-#: mcomix/library/book_area.py:1334
+#: mcomix/library/book_area.py:1335
 msgid ""
 "The selected books will be removed from the library. Any in a folder with no "
 "trash is deleted permanently and cannot be restored."
@@ -4369,27 +4443,27 @@ msgstr ""
 "De valda böckerna tas bort från biblioteket. Böcker i en katalog utan "
 "papperskorg tas bort permanent och kan inte återställas."
 
-#: mcomix/library/book_area.py:1355
+#: mcomix/library/book_area.py:1356
 msgid ""
 "The selected books will be removed from the library and moved to the trash."
 msgstr ""
 "De valda böckerna tas bort från biblioteket och flyttas till papperskorgen."
 
-#: mcomix/library/book_area.py:1380
+#: mcomix/library/book_area.py:1381
 #, python-format
 msgid "Delete %d book permanently?"
 msgid_plural "Delete %d books permanently?"
 msgstr[0] "Ta bort %d bok permanent?"
 msgstr[1] "Ta bort %d böcker permanent?"
 
-#: mcomix/library/book_area.py:1512
+#: mcomix/library/book_area.py:1513
 #, python-format
 msgid "Remove the bookmarks in the deleted book?"
 msgid_plural "Remove the bookmarks in the %(count)d deleted books?"
 msgstr[0] "Ta bort bokmärkena i den borttagna boken?"
 msgstr[1] "Ta bort bokmärkena i de %(count)d borttagna böckerna?"
 
-#: mcomix/library/book_area.py:1721
+#: mcomix/library/book_area.py:1725
 msgid "Open with"
 msgstr "Öppna med"
 
@@ -4814,9 +4888,6 @@ msgstr "Skanna automatiskt efter nya böcker när biblioteket _öppnas"
 
 #~ msgid "no page smaller as WebP"
 #~ msgstr "ingen sida mindre som WebP"
-
-#~ msgid "no PNG pages"
-#~ msgstr "inga PNG-sidor"
 
 #, python-format
 #~ msgid "Store the PNG pages of %d book as WebP?"

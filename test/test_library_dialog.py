@@ -13,6 +13,7 @@ import gettext
 import io
 import os
 import shutil
+import tarfile
 import threading
 import types
 import unittest.mock
@@ -2683,6 +2684,62 @@ class StorePagesAsWebpTest(_LibraryWindowTest):
         self.assertEqual('art/02.webp', backend.get_book_by_path(
             self.book).get_last_read_member())
 
+    def _repack(self, path, mode='w', members=None):
+        """A tar at <path>, written with <mode>, of <members> or of two
+        PNG pages, put in the library and repacked as a ZIP; answer
+        with the progress dialog once it is done."""
+        if members is None:
+            members = {'01.png': line_art_png(),
+                       '02.png': line_art_png(size=(200, 300))}
+        with tarfile.open(path, mode) as book:
+            for name, data in members.items():
+                info = tarfile.TarInfo(name)
+                info.size = len(data)
+                book.addfile(info, io.BytesIO(data))
+        self._held(self.dialog, path)
+        self.dialog.backend.set_chosen_cover(path, sorted(members)[-1])
+        self.dialog.book_area._covers.select_all()
+        self.dialog.book_area.repack_as_zip()
+        pump()
+        prompt, = visible_prompts()
+        prompt.response(Response.OK)
+        pump()
+        progress, = [window for window in Gtk.Window.list_toplevels()
+                     if isinstance(window, webp_dialog._ProgressDialog)]
+        self.addCleanup(progress.destroy)
+        self.assertTrue(wait_for(lambda: progress.finished, seconds=20))
+        return progress
+
+    def test_a_tar_repacked_as_a_zip_keeps_its_library_book(self):
+        """"Repack as ZIP...": the book takes the ZIP's name, and what the
+        library kept by the old one follows it there."""
+        tar_book = os.path.join(self.tmp_dir, 'strip.cbt')
+        progress = self._repack(tar_book)
+        zip_book = os.path.join(self.tmp_dir, 'strip.cbz')
+        self.assertFalse(os.path.exists(tar_book))
+        self.assertEqual(['01.png', '02.png'], self._names(zip_book))
+        self.assertTrue(progress._status.get_text().startswith(
+            '1 book repacked as ZIP, '))
+        self.assertTrue(progress._status.get_text().split('\n')[0]
+                        .endswith(' smaller'))
+        backend = self.dialog.backend
+        self.assertIsNone(backend.get_book_by_path(tar_book))
+        self.assertEqual(os.path.getsize(zip_book),
+                         backend.get_book_by_path(zip_book).size)
+        self.assertEqual('02.png', backend.get_chosen_cover(zip_book))
+
+    def test_a_book_that_comes_out_larger_is_told_so(self):
+        """An xz tar of text packs smaller than a ZIP can."""
+        words = [b'%d' % (number * 7919 % 1000) for number in range(40000)]
+        progress = self._repack(
+            os.path.join(self.tmp_dir, 'notes.tar.xz'), 'w:xz',
+            {'01.png': line_art_png(), 'notes.txt': b' '.join(words)})
+        line = progress._status.get_text().split('\n')[0]
+        self.assertTrue(line.startswith('1 book repacked as ZIP, '), line)
+        self.assertTrue(line.endswith(' larger'), line)
+        self.assertTrue(os.path.exists(
+            os.path.join(self.tmp_dir, 'notes.zip')))
+
     def test_saying_no_writes_nothing(self):
         with open(self.book, 'rb') as book:
             before = book.read()
@@ -2707,7 +2764,7 @@ class StorePagesAsWebpTest(_LibraryWindowTest):
             before = book.read()
         real = webp_books.convert
 
-        def first_then_stop(path, stop, progress, shrink=None):
+        def first_then_stop(path, stop, progress, shrink=None, repack=False):
             converted = real(path, stop, progress, shrink)
             stop.set()
             return converted
@@ -2726,7 +2783,7 @@ class StorePagesAsWebpTest(_LibraryWindowTest):
     def test_closing_the_window_stops_and_shows_the_summary(self):
         started = threading.Event()
 
-        def until_stopped(path, stop, progress, shrink=None):
+        def until_stopped(path, stop, progress, shrink=None, repack=False):
             started.set()
             stop.wait(10)
             raise archive_packer.Cancelled()
@@ -2756,7 +2813,7 @@ class StorePagesAsWebpTest(_LibraryWindowTest):
         that it left out <left_out>."""
         real = webp_books.convert
 
-        def convert(path, stop, progress, shrink=None):
+        def convert(path, stop, progress, shrink=None, repack=False):
             if path in failing:
                 raise OSError('the disk went away')
             converted = real(path, stop, progress, shrink)
@@ -2826,7 +2883,7 @@ class StorePagesAsWebpTest(_LibraryWindowTest):
                       left_out={'02.png': 'Bad CRC-32'})
         failing_convert = webp_books.convert
 
-        def spoilt(path, stop, progress, shrink=None):
+        def spoilt(path, stop, progress, shrink=None, repack=False):
             # Spoilt once the library holds it, which it would not take.
             if path == unreadable:
                 with open(unreadable, 'wb') as book:

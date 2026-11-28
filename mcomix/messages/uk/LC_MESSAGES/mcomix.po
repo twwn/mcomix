@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-28 11:28+0100\n"
+"POT-Creation-Date: 2026-11-28 11:54+0100\n"
 "PO-Revision-Date: 2009-05-04 23:52+0300\n"
 "Last-Translator: Oleksandr Zaiats <ai@eth0.net.ua>\n"
 "Language-Team: \n"
@@ -50,7 +50,7 @@ msgid "! Could not read %s"
 msgstr "! Не вдалося прочитати %s"
 
 #: mcomix/archive_packer.py:708 mcomix/file_actions.py:1473
-#: mcomix/library/book_area.py:1447
+#: mcomix/library/book_area.py:1448
 #, python-format
 msgid "! Could not remove %(file)s: %(error)s"
 msgstr "! Не вдалося видалити %(file)s: %(error)s"
@@ -95,7 +95,7 @@ msgid "! Could not save %(file)s to %(directory)s: %(error)s"
 msgstr "! Не вдалося зберегти %(file)s у %(directory)s: %(error)s"
 
 #: mcomix/bookmark_backend.py:493 mcomix/file_actions.py:1245
-#: mcomix/webp_dialog.py:446
+#: mcomix/webp_dialog.py:478
 #, python-format
 msgid "Could not save \"%(file)s\" to \"%(directory)s\""
 msgstr "Не вдалося зберегти «%(file)s» у «%(directory)s»"
@@ -115,7 +115,7 @@ msgstr "Н_і"
 #: mcomix/file_chooser_library_dialog.py:42 mcomix/message_dialog.py:26
 #: mcomix/message_dialog.py:29 mcomix/pageselect.py:38
 #: mcomix/save_progress.py:121 mcomix/shrink_dialog.py:138
-#: mcomix/shrink_dialog.py:277 mcomix/webp_dialog.py:103
+#: mcomix/shrink_dialog.py:279 mcomix/webp_dialog.py:119
 #: mcomix/library/duplicates_dialog.py:237
 msgid "_Cancel"
 msgstr "_Скасувати"
@@ -169,8 +169,8 @@ msgstr "Ви_лучити"
 
 #: mcomix/bookmark_dialog.py:34 mcomix/comment_dialog.py:29
 #: mcomix/message_dialog.py:25 mcomix/preferences_dialog.py:105
-#: mcomix/properties_dialog.py:38 mcomix/shrink_dialog.py:278
-#: mcomix/webp_dialog.py:375 mcomix/library/book_check_dialog.py:180
+#: mcomix/properties_dialog.py:38 mcomix/shrink_dialog.py:280
+#: mcomix/webp_dialog.py:406 mcomix/library/book_check_dialog.py:180
 #: mcomix/library/book_properties.py:60 mcomix/library/duplicates_dialog.py:292
 #: mcomix/library/watchlist.py:41
 msgid "_Close"
@@ -317,7 +317,7 @@ msgid "Comment files"
 msgstr "Файли коментарів"
 
 #: mcomix/edit_dialog.py:262 mcomix/file_actions.py:941
-#: mcomix/webp_dialog.py:249
+#: mcomix/webp_dialog.py:269
 #, python-format
 msgid "! Could not save the archive %(archivefile)s: %(error)s"
 msgstr "! Не вдалося зберегти архів %(archivefile)s: %(error)s"
@@ -570,11 +570,11 @@ msgstr "Файл буде пересунуто у смітник."
 msgid "_Move to Trash"
 msgstr "Пере_містити у смітник"
 
-#: mcomix/file_actions.py:1317 mcomix/library/book_area.py:1384
+#: mcomix/file_actions.py:1317 mcomix/library/book_area.py:1385
 msgid "It does not go to the trash and cannot be restored."
 msgstr "Файл не буде пересунуто у смітник, і відновити його буде неможливо."
 
-#: mcomix/file_actions.py:1325 mcomix/library/book_area.py:1376
+#: mcomix/file_actions.py:1325 mcomix/library/book_area.py:1377
 #, python-format
 msgid "Delete \"%s\" permanently?"
 msgstr "Вилучити «%s» остаточно?"
@@ -584,7 +584,7 @@ msgstr "Вилучити «%s» остаточно?"
 msgid "Could not move \"%s\" to the trash"
 msgstr "Не вдалося пересунути «%s» у смітник"
 
-#: mcomix/file_actions.py:1436 mcomix/library/book_area.py:1461
+#: mcomix/file_actions.py:1436 mcomix/library/book_area.py:1462
 #, python-format
 msgid "%d book could not be moved to the trash."
 msgid_plural "%d books could not be moved to the trash."
@@ -2291,7 +2291,7 @@ msgstr "Назвою файла"
 msgid "File name (GLib)"
 msgstr "Назвою файла (GLib)"
 
-#: mcomix/preferences_dialog.py:800 mcomix/library/book_area.py:435
+#: mcomix/preferences_dialog.py:800 mcomix/library/book_area.py:436
 msgid "File size"
 msgstr "Розміром файла"
 
@@ -2333,11 +2333,11 @@ msgstr ""
 "1, 2, 34, 5. Порядок GLib впорядковує файли за ключами зіставлення, які "
 "створює GLib/GTK і які вживає багато інших програм GTK."
 
-#: mcomix/preferences_dialog.py:831 mcomix/library/book_area.py:443
+#: mcomix/preferences_dialog.py:831 mcomix/library/book_area.py:444
 msgid "Ascending"
 msgstr "За зростанням"
 
-#: mcomix/preferences_dialog.py:832 mcomix/library/book_area.py:444
+#: mcomix/preferences_dialog.py:832 mcomix/library/book_area.py:445
 msgid "Descending"
 msgstr "За спаданням"
 
@@ -2452,7 +2452,7 @@ msgstr ""
 "співвідношення кольорів; відносне колориметричне точно зберігає ті, які "
 "екран може показати."
 
-#: mcomix/preferences_dialog.py:975 mcomix/library/book_area.py:451
+#: mcomix/preferences_dialog.py:975 mcomix/library/book_area.py:452
 msgid "Normal"
 msgstr "Звичайний"
 
@@ -2698,7 +2698,11 @@ msgid ""
 "WebP at the quality set here. Such pages lose detail. A long strip, far "
 "higher than wide, is judged by its width alone. Each book written goes to "
 "the trash as it was, from where it can be put back."
-msgstr "Кожна сторінка, вища за межу, зменшується до висоти межі й зберігається як WebP із заданою тут якістю. Такі сторінки втрачають деталі. Довга стрічка, набагато вища за свою ширину, оцінюється лише за шириною. Кожна записана книга в попередньому вигляді йде до смітника, звідки її можна відновити."
+msgstr ""
+"Кожна сторінка, вища за межу, зменшується до висоти межі й зберігається як "
+"WebP із заданою тут якістю. Такі сторінки втрачають деталі. Довга стрічка, "
+"набагато вища за свою ширину, оцінюється лише за шириною. Кожна записана "
+"книга в попередньому вигляді йде до смітника, звідки її можна відновити."
 
 #: mcomix/shrink_dialog.py:114
 msgid "Page _height limit, in pixels:"
@@ -2712,14 +2716,14 @@ msgstr "_Якість WebP:"
 msgid "_Find Books"
 msgstr "_Знайти книги"
 
-#: mcomix/shrink_dialog.py:178 mcomix/webp_dialog.py:186
+#: mcomix/shrink_dialog.py:178 mcomix/webp_dialog.py:205
 #: mcomix/library/add_progress_dialog.py:57
 #: mcomix/library/book_check_dialog.py:65
 #: mcomix/library/duplicates_dialog.py:112
 msgid "_Stop"
 msgstr "С_топ"
 
-#: mcomix/shrink_dialog.py:205 mcomix/webp_dialog.py:237
+#: mcomix/shrink_dialog.py:205 mcomix/webp_dialog.py:256
 msgid "open in the main window"
 msgstr "відкрита в головному вікні"
 
@@ -2728,19 +2732,25 @@ msgstr "відкрита в головному вікні"
 msgid "%(count)d book has pages over the limit, about %(size)s to save"
 msgid_plural ""
 "%(count)d books have pages over the limit, about %(size)s to save"
-msgstr[0] "%(count)d книга має сторінки понад межу, можна заощадити близько %(size)s"
-msgstr[1] "%(count)d книги мають сторінки понад межу, можна заощадити близько %(size)s"
-msgstr[2] "%(count)d книг мають сторінки понад межу, можна заощадити близько %(size)s"
+msgstr[0] ""
+"%(count)d книга має сторінки понад межу, можна заощадити близько %(size)s"
+msgstr[1] ""
+"%(count)d книги мають сторінки понад межу, можна заощадити близько %(size)s"
+msgstr[2] ""
+"%(count)d книг мають сторінки понад межу, можна заощадити близько %(size)s"
 
 #: mcomix/shrink_dialog.py:263
 #, python-format
 msgid "%(book)s: %(pages)d page over the limit, about %(size)s smaller"
 msgid_plural "%(book)s: %(pages)d pages over the limit, about %(size)s smaller"
-msgstr[0] "%(book)s: %(pages)d сторінка понад межу, менше приблизно на %(size)s"
-msgstr[1] "%(book)s: %(pages)d сторінки понад межу, менше приблизно на %(size)s"
-msgstr[2] "%(book)s: %(pages)d сторінок понад межу, менше приблизно на %(size)s"
+msgstr[0] ""
+"%(book)s: %(pages)d сторінка понад межу, менше приблизно на %(size)s"
+msgstr[1] ""
+"%(book)s: %(pages)d сторінки понад межу, менше приблизно на %(size)s"
+msgstr[2] ""
+"%(book)s: %(pages)d сторінок понад межу, менше приблизно на %(size)s"
 
-#: mcomix/shrink_dialog.py:281
+#: mcomix/shrink_dialog.py:283
 msgid "_Shrink"
 msgstr "З_меншити"
 
@@ -3422,60 +3432,109 @@ msgstr "Не вдалося відкрити посібник: %s"
 
 #. TRANSLATORS: Why a book was left as it was, after "3 books left as
 #. they were: ". So are the others here and "open in the main window".
-#: mcomix/webp_books.py:115
+#: mcomix/webp_books.py:136
 msgid "split into volumes"
 msgstr "розділена на томи"
 
-#: mcomix/webp_books.py:118 mcomix/library/book_check.py:34
+#: mcomix/webp_books.py:139 mcomix/library/book_check.py:34
 msgid "damaged, or not an archive"
 msgstr "пошкоджена або не є архівом"
 
-#: mcomix/webp_books.py:123
+#. TRANSLATORS: Why a book was left as it was, as the others;
+#. %s is a format, such as "PDF document".
+#: mcomix/webp_books.py:145
+#, python-format
+msgid "not an archive of picture files: %s"
+msgstr "не архів файлів зображень: %s"
+
+#: mcomix/webp_books.py:150
 #, python-format
 msgid "a format MComix does not write: %s"
 msgstr "формат, який MComix не записує: %s"
 
-#: mcomix/webp_books.py:127
+#: mcomix/webp_books.py:154
 #, python-format
 msgid "the %s program that writes the format is not installed"
 msgstr "програму %s, яка записує цей формат, не встановлено"
 
-#: mcomix/webp_books.py:131 mcomix/library/book_check.py:36
+#: mcomix/webp_books.py:158 mcomix/library/book_check.py:36
 msgid "nothing installed here reads the format"
 msgstr "тут не встановлено нічого, що читає цей формат"
 
 #. TRANSLATORS: Why a book was left as it was, as the others.
-#: mcomix/webp_books.py:159 mcomix/webp_books.py:328
+#: mcomix/webp_books.py:179 mcomix/webp_books.py:186 mcomix/webp_books.py:257
 msgid "no page over the limit"
 msgstr "жодної сторінки понад межу"
 
-#: mcomix/webp_books.py:214
+#: mcomix/webp_books.py:245
 msgid "the trash takes no files from its folder"
 msgstr "смітник не приймає файли зі своєї теки"
 
-#: mcomix/webp_books.py:256
+#: mcomix/webp_books.py:258
+msgid "no pages"
+msgstr "немає сторінок"
+
+#: mcomix/webp_books.py:291
 msgid "no page made smaller"
 msgstr "жодна сторінка не зменшилась"
 
-#: mcomix/webp_books.py:262
+#: mcomix/webp_books.py:300
 #, python-format
 msgid "the trash refused it: %s"
 msgstr "смітник відмовив: %s"
 
-#: mcomix/webp_books.py:320 mcomix/webp_books.py:349 mcomix/webp_books.py:355
-#: mcomix/webp_books.py:375 mcomix/library/book_check.py:38
+#. TRANSLATORS: Why a book was left as it was, as the others.
+#: mcomix/webp_books.py:358
+msgid "a symbolic link, which would no longer lead to it"
+msgstr "символьне посилання, яке більше не вело б до нього"
+
+#. TRANSLATORS: Why a book was left as it was, as the others; %s is
+#. a file name, such as "Book.cbz".
+#: mcomix/webp_books.py:362 mcomix/webp_books.py:386
+#, python-format
+msgid "%s is there already"
+msgstr "%s уже існує"
+
+#. TRANSLATORS: Why a book was left as it was, as the others.
+#: mcomix/webp_books.py:380
+msgid "a ZIP already, no smaller packed again"
+msgstr "уже ZIP, після перепакування не менший"
+
+#: mcomix/webp_books.py:436 mcomix/webp_books.py:465 mcomix/webp_books.py:471
+#: mcomix/webp_books.py:491 mcomix/library/book_check.py:38
 msgid "encrypted"
 msgstr "зашифрована"
 
-#: mcomix/webp_books.py:322
+#: mcomix/webp_books.py:438
 msgid "archives inside"
 msgstr "містить інші архіви"
 
-#: mcomix/webp_books.py:330
+#: mcomix/webp_books.py:446
 msgid "no PNG, GIF or JPEG pages"
 msgstr "немає сторінок PNG, GIF чи JPEG"
 
-#: mcomix/webp_dialog.py:98
+#: mcomix/webp_dialog.py:101
+#, python-format
+msgid "Repack %d book as a ZIP?"
+msgid_plural "Repack %d books as ZIP?"
+msgstr[0] "Перепакувати %d книгу в ZIP?"
+msgstr[1] "Перепакувати %d книги в ZIP?"
+msgstr[2] "Перепакувати %d книг у ZIP?"
+
+#: mcomix/webp_dialog.py:103
+msgid ""
+"Each book is written again as a ZIP, with every file in it as it was: pages "
+"already compressed are stored, the rest compressed. A RAR, 7z or tar book is "
+"replaced by the ZIP, named .cbz in place of .cbr, .cb7 or .cbt, and .zip in "
+"place of any other extension. A ZIP is replaced only where it comes out "
+"smaller."
+msgstr "Кожну книгу буде записано заново як ZIP, кожен файл у ній лишається як був: уже стиснені сторінки зберігаються без змін, решта стискається. Книгу RAR, 7z або tar буде замінено на ZIP, з .cbz замість .cbr, .cb7 чи .cbt і .zip замість будь-якого іншого розширення. ZIP замінюється, лише якщо стає меншим."
+
+#: mcomix/webp_dialog.py:109
+msgid "_Repack"
+msgstr "_Перепакувати"
+
+#: mcomix/webp_dialog.py:112
 #, python-format
 msgid "Make the pages of %d book smaller?"
 msgid_plural "Make the pages of %d books smaller?"
@@ -3483,7 +3542,7 @@ msgstr[0] "Зменшити сторінки %d книжки?"
 msgstr[1] "Зменшити сторінки %d книжок?"
 msgstr[2] "Зменшити сторінки %d книжок?"
 
-#: mcomix/webp_dialog.py:100
+#: mcomix/webp_dialog.py:114
 msgid ""
 "Each book is written again, with every PNG or GIF page that is smaller as a "
 "lossless WebP and every JPEG page optimised without loss. Some other comic "
@@ -3493,11 +3552,11 @@ msgstr ""
 "— як WebP без втрат, а кожна сторінка JPEG оптимізується без втрат. Деякі "
 "інші програми для читання коміксів не вміють показувати сторінки WebP."
 
-#: mcomix/webp_dialog.py:104
+#: mcomix/webp_dialog.py:118
 msgid "_Make Smaller"
 msgstr "_Зменшити"
 
-#: mcomix/webp_dialog.py:132
+#: mcomix/webp_dialog.py:149
 #, python-format
 msgid "%(count)d book left as it was: %(reason)s"
 msgid_plural "%(count)d books left as they were: %(reason)s"
@@ -3505,7 +3564,7 @@ msgstr[0] "%(count)d книжку залишено як була: %(reason)s"
 msgstr[1] "%(count)d книжки залишено як були: %(reason)s"
 msgstr[2] "%(count)d книжок залишено як були: %(reason)s"
 
-#: mcomix/webp_dialog.py:140
+#: mcomix/webp_dialog.py:157
 #, python-format
 msgid "Stopped with %d book not yet looked at"
 msgid_plural "Stopped with %d books not yet looked at"
@@ -3513,15 +3572,35 @@ msgstr[0] "Зупинено, %d книжку ще не переглянуто"
 msgstr[1] "Зупинено, %d книжки ще не переглянуто"
 msgstr[2] "Зупинено, %d книжок ще не переглянуто"
 
-#: mcomix/webp_dialog.py:158
+#: mcomix/webp_dialog.py:175
+msgid "Repacking books as ZIP"
+msgstr "Перепакування книг у ZIP"
+
+#: mcomix/webp_dialog.py:176
 msgid "Making pages smaller"
 msgstr "Зменшення сторінок"
 
-#: mcomix/webp_dialog.py:159
+#: mcomix/webp_dialog.py:177
 msgid "Shrinking pages"
 msgstr "Зменшення великих сторінок"
 
-#: mcomix/webp_dialog.py:277
+#: mcomix/webp_dialog.py:298
+#, python-format
+msgid "%(count)d book repacked as ZIP, %(size)s larger"
+msgid_plural "%(count)d books repacked as ZIP, %(size)s larger"
+msgstr[0] "%(count)d книгу перепаковано в ZIP, на %(size)s більше"
+msgstr[1] "%(count)d книги перепаковано в ZIP, на %(size)s більше"
+msgstr[2] "%(count)d книг перепаковано в ZIP, на %(size)s більше"
+
+#: mcomix/webp_dialog.py:304
+#, python-format
+msgid "%(count)d book repacked as ZIP, %(size)s smaller"
+msgid_plural "%(count)d books repacked as ZIP, %(size)s smaller"
+msgstr[0] "%(count)d книгу перепаковано в ZIP, на %(size)s менше"
+msgstr[1] "%(count)d книги перепаковано в ZIP, на %(size)s менше"
+msgstr[2] "%(count)d книг перепаковано в ZIP, на %(size)s менше"
+
+#: mcomix/webp_dialog.py:308
 #, python-format
 msgid "%(count)d book shrunk, %(size)s smaller"
 msgid_plural "%(count)d books shrunk, %(size)s smaller"
@@ -3529,7 +3608,7 @@ msgstr[0] "%(count)d книгу зменшено, на %(size)s менше"
 msgstr[1] "%(count)d книги зменшено, на %(size)s менше"
 msgstr[2] "%(count)d книг зменшено, на %(size)s менше"
 
-#: mcomix/webp_dialog.py:281
+#: mcomix/webp_dialog.py:312
 #, python-format
 msgid "%(count)d book stored with WebP pages, %(size)s smaller"
 msgid_plural "%(count)d books stored with WebP pages, %(size)s smaller"
@@ -3537,7 +3616,7 @@ msgstr[0] "%(count)d книжку збережено зі сторінками W
 msgstr[1] "%(count)d книжки збережено зі сторінками WebP, менше на %(size)s"
 msgstr[2] "%(count)d книжок збережено зі сторінками WebP, менше на %(size)s"
 
-#: mcomix/webp_dialog.py:294
+#: mcomix/webp_dialog.py:325
 #, python-format
 msgid "%d book stored without its damaged files"
 msgid_plural "%d books stored without their damaged files"
@@ -3545,7 +3624,7 @@ msgstr[0] "%d книжку збережено без її пошкоджених
 msgstr[1] "%d книжки збережено без їхніх пошкоджених файлів"
 msgstr[2] "%d книжок збережено без їхніх пошкоджених файлів"
 
-#: mcomix/webp_dialog.py:331
+#: mcomix/webp_dialog.py:362
 #, python-format
 msgid "About %d minute left"
 msgid_plural "About %d minutes left"
@@ -3553,20 +3632,20 @@ msgstr[0] "Лишилося близько %d хвилини"
 msgstr[1] "Лишилося близько %d хвилин"
 msgstr[2] "Лишилося близько %d хвилин"
 
-#: mcomix/webp_dialog.py:362 mcomix/webp_dialog.py:414
+#: mcomix/webp_dialog.py:393 mcomix/webp_dialog.py:445
 #, python-format
 msgid "Could not be written: %s"
 msgstr "Не вдалося записати: %s"
 
-#: mcomix/webp_dialog.py:378
+#: mcomix/webp_dialog.py:409
 msgid "_Save Log…"
 msgstr "З_берегти журнал…"
 
-#: mcomix/webp_dialog.py:383
+#: mcomix/webp_dialog.py:414
 msgid "Select Books with _Errors"
 msgstr "Вибрати книжки з _помилками"
 
-#: mcomix/webp_dialog.py:427
+#: mcomix/webp_dialog.py:458
 msgid "Save the log as"
 msgstr "Зберегти журнал як"
 
@@ -3685,7 +3764,7 @@ msgstr "Не вдалося визначити версію бази даних 
 msgid "Upgrading library database version from %(from)d to %(to)d."
 msgstr "Оновлення версії бази даних бібліотеки з %(from)d до %(to)d."
 
-#: mcomix/library/backend_types.py:431 mcomix/library/book_area.py:463
+#: mcomix/library/backend_types.py:431 mcomix/library/book_area.py:464
 #: mcomix/library/collection_area.py:201 mcomix/library/control_area.py:95
 #: mcomix/library/shelf.py:215
 msgid "All books"
@@ -3748,95 +3827,99 @@ msgstr "Вл_астивості"
 msgid "Shrin_k oversized pages..."
 msgstr "Зменшити завеликі стор_інки..."
 
-#: mcomix/library/book_area.py:366
+#: mcomix/library/book_area.py:364
+msgid "Repack as _ZIP..."
+msgstr "Перепакувати в _ZIP..."
+
+#: mcomix/library/book_area.py:367
 msgid "Find _duplicates..."
 msgstr "Знайт_и дублікати..."
 
-#: mcomix/library/book_area.py:409
+#: mcomix/library/book_area.py:410
 msgid "Library books"
 msgstr "Книжки бібліотеки"
 
-#: mcomix/library/book_area.py:422
+#: mcomix/library/book_area.py:423
 msgid "Move _to"
 msgstr "П_еремістити до"
 
-#: mcomix/library/book_area.py:433
+#: mcomix/library/book_area.py:434
 msgid "Book name"
 msgstr "Назва книжки"
 
-#: mcomix/library/book_area.py:434
+#: mcomix/library/book_area.py:435
 msgid "Full path"
 msgstr "Повний шлях"
 
-#: mcomix/library/book_area.py:436
+#: mcomix/library/book_area.py:437
 msgid "Pages"
 msgstr "Сторінки"
 
-#: mcomix/library/book_area.py:437 mcomix/library/book_properties.py:102
+#: mcomix/library/book_area.py:438 mcomix/library/book_properties.py:102
 msgid "Date added"
 msgstr "Дата додавання"
 
-#: mcomix/library/book_area.py:438
+#: mcomix/library/book_area.py:439
 msgid "Date modified"
 msgstr "Дата зміни"
 
-#: mcomix/library/book_area.py:439 mcomix/library/book_properties.py:106
+#: mcomix/library/book_area.py:440 mcomix/library/book_properties.py:106
 msgid "Last read"
 msgstr "Останнє читання"
 
-#: mcomix/library/book_area.py:440
+#: mcomix/library/book_area.py:441
 msgid "By hand"
 msgstr "Вручну"
 
-#: mcomix/library/book_area.py:449
+#: mcomix/library/book_area.py:450
 msgid "Huge"
 msgstr "Величезний"
 
-#: mcomix/library/book_area.py:450
+#: mcomix/library/book_area.py:451
 msgid "Large"
 msgstr "Великий"
 
-#: mcomix/library/book_area.py:452
+#: mcomix/library/book_area.py:453
 msgid "Small"
 msgstr "Малий"
 
-#: mcomix/library/book_area.py:453
+#: mcomix/library/book_area.py:454
 msgid "Tiny"
 msgstr "Крихітний"
 
-#: mcomix/library/book_area.py:457
+#: mcomix/library/book_area.py:458
 msgid "Custom..."
 msgstr "Інший..."
 
-#: mcomix/library/book_area.py:465
+#: mcomix/library/book_area.py:466
 msgid "Books with no pages"
 msgstr "Книжки без сторінок"
 
-#: mcomix/library/book_area.py:468
+#: mcomix/library/book_area.py:469
 msgid "Books whose file is not there"
 msgstr "Книжки, файлу яких немає на місці"
 
-#: mcomix/library/book_area.py:470
+#: mcomix/library/book_area.py:471
 msgid "Books that cannot be read in full..."
 msgstr "Книжки, які не читаються повністю..."
 
-#: mcomix/library/book_area.py:474
+#: mcomix/library/book_area.py:475
 msgid "Select books"
 msgstr "Вибрати книжки"
 
-#: mcomix/library/book_area.py:475
+#: mcomix/library/book_area.py:476
 msgid "_Sort"
 msgstr "Впо_рядкувати"
 
-#: mcomix/library/book_area.py:476
+#: mcomix/library/book_area.py:477
 msgid "Cover si_ze"
 msgstr "Роз_мір обкладинок"
 
-#: mcomix/library/book_area.py:974
+#: mcomix/library/book_area.py:975
 msgid "Set library cover size"
 msgstr "Задати розмір обкладинок у бібліотеці"
 
-#: mcomix/library/book_area.py:1282
+#: mcomix/library/book_area.py:1283
 #, python-format
 msgid "Removed %(num)d book from '%(collection)s'."
 msgid_plural "Removed %(num)d books from '%(collection)s'."
@@ -3844,7 +3927,7 @@ msgstr[0] "Зі збірки «%(collection)s» вилучено %(num)d кни�
 msgstr[1] "Зі збірки «%(collection)s» вилучено %(num)d книжки."
 msgstr[2] "Зі збірки «%(collection)s» вилучено %(num)d книжок."
 
-#: mcomix/library/book_area.py:1311 mcomix/library/collection_area.py:283
+#: mcomix/library/book_area.py:1312 mcomix/library/collection_area.py:283
 #: mcomix/library/main_dialog.py:256
 #, python-format
 msgid "Removed %d book from the library."
@@ -3853,11 +3936,11 @@ msgstr[0] "З бібліотеки вилучено %d книжку."
 msgstr[1] "З бібліотеки вилучено %d книжки."
 msgstr[2] "З бібліотеки вилучено %d книжок."
 
-#: mcomix/library/book_area.py:1333 mcomix/library/book_area.py:1354
+#: mcomix/library/book_area.py:1334 mcomix/library/book_area.py:1355
 msgid "Remove books from the library?"
 msgstr "Видалити книжки з колекції?"
 
-#: mcomix/library/book_area.py:1334
+#: mcomix/library/book_area.py:1335
 msgid ""
 "The selected books will be removed from the library. Any in a folder with no "
 "trash is deleted permanently and cannot be restored."
@@ -3865,12 +3948,12 @@ msgstr ""
 "Вибрані книжки буде вилучено з бібліотеки. Книжки з каталогу без смітника "
 "буде вилучено назавжди, і відновити їх буде неможливо."
 
-#: mcomix/library/book_area.py:1355
+#: mcomix/library/book_area.py:1356
 msgid ""
 "The selected books will be removed from the library and moved to the trash."
 msgstr "Вибрані книжки буде вилучено з бібліотеки і пересунуто у смітник."
 
-#: mcomix/library/book_area.py:1380
+#: mcomix/library/book_area.py:1381
 #, python-format
 msgid "Delete %d book permanently?"
 msgid_plural "Delete %d books permanently?"
@@ -3878,7 +3961,7 @@ msgstr[0] "Вилучити %d книгу остаточно?"
 msgstr[1] "Вилучити %d книги остаточно?"
 msgstr[2] "Вилучити %d книг остаточно?"
 
-#: mcomix/library/book_area.py:1512
+#: mcomix/library/book_area.py:1513
 #, python-format
 msgid "Remove the bookmarks in the deleted book?"
 msgid_plural "Remove the bookmarks in the %(count)d deleted books?"
@@ -3886,7 +3969,7 @@ msgstr[0] "Вилучити закладки у %(count)d вилученій к�
 msgstr[1] "Вилучити закладки у %(count)d вилучених книжках?"
 msgstr[2] "Вилучити закладки у %(count)d вилучених книжках?"
 
-#: mcomix/library/book_area.py:1721
+#: mcomix/library/book_area.py:1725
 msgid "Open with"
 msgstr "Відкрити за допомогою"
 
@@ -4273,9 +4356,6 @@ msgstr "Автоматично шукати нові книжки при _від
 
 #~ msgid "no page smaller as WebP"
 #~ msgstr "жодна сторінка не менша у WebP"
-
-#~ msgid "no PNG pages"
-#~ msgstr "немає сторінок PNG"
 
 #, python-format
 #~ msgid "Store the PNG pages of %d book as WebP?"

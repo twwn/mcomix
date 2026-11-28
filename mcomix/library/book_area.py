@@ -361,6 +361,7 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable, LibraryPart):
              self.store_pages_as_webp),
             ('shrink-pages', _('Shrin_k oversized pages...'),
              self.shrink_pages),
+            ('repack-zip', _('Repack as _ZIP...'), self.repack_as_zip),
             # Of the books on show, not those selected: what it finds
             # is selected afterwards.
             ('find-duplicates', _('Find _duplicates...'),
@@ -409,7 +410,7 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable, LibraryPart):
         for heading, group in ((_('Library books'), entries[0:4]),
                                (None, entries[4:6]), (None, entries[6:7]),
                                (None, entries[7:12]), (None, entries[12:16]),
-                               (None, entries[16:19])):
+                               (None, entries[16:20])):
             section = Gio.Menu()
             for name, label, _handler in group:
                 item = widgets.menu_item(label, 'books.' + name,
@@ -1671,6 +1672,9 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable, LibraryPart):
                        for archive_type in {item.format for item in selected})
         self._set_sensitive('store-webp', writable)
         self._set_sensitive('shrink-pages', writable)
+        self._set_sensitive('repack-zip', any(
+            webp_books.can_repack(archive_type)
+            for archive_type in {item.format for item in selected}))
 
         manages = self._library.manages
         self._set_sensitive('open-keep-library', books_selected and manages)
@@ -1737,6 +1741,17 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable, LibraryPart):
             open_book=self._library.main_window.filehandler.get_path_to_base,
             select=self._select_paths)
 
+    def repack_as_zip(self, *args: object) -> None:
+        """Offer to write the selected books again as ZIP: see
+        mcomix.webp_dialog.  The book the main window reads is left
+        alone."""
+        webp_dialog.offer(
+            self._library.window,
+            [item.path for item in self._selected_items()],
+            self._stored_as_webp,
+            open_book=self._library.main_window.filehandler.get_path_to_base,
+            select=self._select_paths, repack=True)
+
     def shrink_pages(self, *args: object) -> None:
         """Offer to shrink the pages of the selected books that are over
         a limit: see mcomix.shrink_dialog.  The book the main window
@@ -1775,7 +1790,12 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable, LibraryPart):
     def _stored_as_webp(self, path: str,
                         converted: webp_books.Converted) -> None:
         """Bring what is kept by a page's name along to the pages of the
-        book at <path>, renamed as <converted> says."""
+        book at <path>, renamed as <converted> says, and what is kept by
+        the book's own path along to where it is now, where it was
+        renamed."""
+        if converted.moved_to is not None:
+            file_actions.follow_book(path, converted.moved_to)
+            path = converted.moved_to
         file_actions.follow_pages(path, converted.renamed)
 
     def show_properties(self, *args: object) -> None:

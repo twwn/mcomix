@@ -75,9 +75,11 @@ def offer(parent: Gtk.Window, books: Sequence[str],
           open_book: Callable[[], "str | None"] = lambda: None,
           start: "Callable[[Callable[[], None]], None]" = lambda run: run(),
           finished: Callable[[], None] = lambda: None,
-          select: "Callable[[list[str]], None] | None" = None) -> None:
+          select: "Callable[[list[str]], None] | None" = None,
+          repack: bool = False) -> None:
     """Ask whether to store the PNG pages of <books> as WebP, and do it
-    if the reader says yes.
+    if the reader says yes; with <repack>, whether to write each of them
+    again as a ZIP instead (webp_books.convert()).
 
     <written> is called on the main thread with the path of each book
     written again and what was done to it.  <open_book> answers with
@@ -93,18 +95,33 @@ def offer(parent: Gtk.Window, books: Sequence[str],
     if not count:
         return
     dialog = message_dialog.MessageDialog(parent, modal=True)
-    dialog.set_text(
-        i18n.get_translation().ngettext(
-            'Make the pages of %d book smaller?',
-            'Make the pages of %d books smaller?', count) % count,
-        _('Each book is written again, with every PNG or GIF page that is '
-          'smaller as a lossless WebP and every JPEG page optimised without '
-          'loss. Some other comic readers cannot show WebP pages.'))
+    ngettext = i18n.get_translation().ngettext
+    if repack:
+        dialog.set_text(
+            ngettext('Repack %d book as a ZIP?',
+                     'Repack %d books as ZIP?', count) % count,
+            _('Each book is written again as a ZIP, with every file in it '
+              'as it was: pages already compressed are stored, the rest '
+              'compressed. A RAR, 7z or tar book is replaced by the ZIP, '
+              'named .cbz in place of .cbr, .cb7 or .cbt, and .zip in place '
+              'of any other extension. A ZIP is replaced only where it '
+              'comes out smaller.'))
+        do = _('_Repack')
+    else:
+        dialog.set_text(
+            ngettext('Make the pages of %d book smaller?',
+                     'Make the pages of %d books smaller?', count) % count,
+            _('Each book is written again, with every PNG or GIF page that '
+              'is smaller as a lossless WebP and every JPEG page optimised '
+              'without loss. Some other comic readers cannot show WebP '
+              'pages.'))
+        do = _('_Make Smaller')
     dialog.add_confirmation_buttons(_('_Cancel'), Response.CANCEL,
-                                    _('_Make Smaller'), Response.OK)
+                                    do, Response.OK)
 
     def run() -> None:
-        write(parent, list(books), open_book, written, finished, select)
+        _ProgressDialog(parent, list(books), open_book, written, finished,
+                        select, repack=repack)
 
     def answered(response: int) -> None:
         if response == Response.OK:
@@ -153,13 +170,15 @@ class _ProgressDialog(Dialog):
                  written: "Callable[[str, webp_books.Converted], None]",
                  finished: Callable[[], None],
                  select: "Callable[[list[str]], None] | None" = None,
-                 shrink: "page_shrink.Shrink | None" = None
-                 ) -> None:
-        super().__init__(title=_('Making pages smaller') if shrink is None
+                 shrink: "page_shrink.Shrink | None" = None,
+                 repack: bool = False) -> None:
+        super().__init__(title=_('Repacking books as ZIP') if repack
+                         else _('Making pages smaller') if shrink is None
                          else _('Shrinking pages'),
                          transient_for=parent, modal=True,
                          destroy_with_parent=True)
         self._shrink = shrink
+        self._repack = repack
         self._books = books
         self._open_book = open_book
         self._written = written
@@ -236,7 +255,8 @@ class _ProgressDialog(Dialog):
                         os.path.abspath(open_book) == os.path.abspath(path):
                     raise webp_books.Skipped(_('open in the main window'))
                 outcome = webp_books.convert(path, self._stop,
-                                             self._progress, self._shrink)
+                                             self._progress, self._shrink,
+                                             self._repack)
             except archive_packer.Cancelled:
                 break
             except webp_books.Skipped as reason:
@@ -273,7 +293,18 @@ class _ProgressDialog(Dialog):
     def _done_line(self) -> str:
         count = len(self._stored)
         ngettext = i18n.get_translation().ngettext
-        if self._shrink is not None:
+        if self._repack and self._saved < 0:
+            # A 7z, say, compresses better than a ZIP of the same files.
+            line = ngettext('%(count)d book repacked as ZIP, %(size)s larger',
+                            '%(count)d books repacked as ZIP, %(size)s larger',
+                            count)
+            return line % {'count': count,
+                           'size': GLib.format_size(-self._saved)}
+        if self._repack:
+            line = ngettext('%(count)d book repacked as ZIP, %(size)s smaller',
+                            '%(count)d books repacked as ZIP, %(size)s smaller',
+                            count)
+        elif self._shrink is not None:
             line = ngettext('%(count)d book shrunk, %(size)s smaller',
                             '%(count)d books shrunk, %(size)s smaller', count)
         else:
@@ -426,7 +457,8 @@ class _ProgressDialog(Dialog):
             folder=prefs['path of last saved in filechooser'])
         chooser.set_title(_('Save the log as'))
         chooser.set_save_name(time.strftime(
-            'mcomix-webp-%Y-%m-%d-%H%M.txt' if self._shrink is None
+            'mcomix-repack-%Y-%m-%d-%H%M.txt' if self._repack
+            else 'mcomix-webp-%Y-%m-%d-%H%M.txt' if self._shrink is None
             else 'mcomix-shrink-%Y-%m-%d-%H%M.txt'))
 
         def chosen(paths: list[str]) -> None:

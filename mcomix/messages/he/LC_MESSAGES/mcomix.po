@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: mcomix 0.99\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-28 11:28+0100\n"
+"POT-Creation-Date: 2026-11-28 11:54+0100\n"
 "PO-Revision-Date: 2013-01-07 22:51+0200\n"
 "Last-Translator: Isratine Citizen <genghiskhan@gmx.ca>\n"
 "Language-Team: Hebrew <eliz@gnu.org>\n"
@@ -54,7 +54,7 @@ msgid "! Could not read %s"
 msgstr "! לא ניתן לקרוא את %s"
 
 #: mcomix/archive_packer.py:708 mcomix/file_actions.py:1473
-#: mcomix/library/book_area.py:1447
+#: mcomix/library/book_area.py:1448
 #, python-format
 msgid "! Could not remove %(file)s: %(error)s"
 msgstr "! לא ניתן היה למחוק את %(file)s: %(error)s"
@@ -99,7 +99,7 @@ msgid "! Could not save %(file)s to %(directory)s: %(error)s"
 msgstr "! לא ניתן היה לשמור את %(file)s ב־%(directory)s: %(error)s"
 
 #: mcomix/bookmark_backend.py:493 mcomix/file_actions.py:1245
-#: mcomix/webp_dialog.py:446
+#: mcomix/webp_dialog.py:478
 #, python-format
 msgid "Could not save \"%(file)s\" to \"%(directory)s\""
 msgstr "לא ניתן היה לשמור את \"%(file)s\" ב־\"%(directory)s\""
@@ -119,7 +119,7 @@ msgstr "_לא"
 #: mcomix/file_chooser_library_dialog.py:42 mcomix/message_dialog.py:26
 #: mcomix/message_dialog.py:29 mcomix/pageselect.py:38
 #: mcomix/save_progress.py:121 mcomix/shrink_dialog.py:138
-#: mcomix/shrink_dialog.py:277 mcomix/webp_dialog.py:103
+#: mcomix/shrink_dialog.py:279 mcomix/webp_dialog.py:119
 #: mcomix/library/duplicates_dialog.py:237
 msgid "_Cancel"
 msgstr "בי_טול"
@@ -171,8 +171,8 @@ msgstr "הס_רה"
 
 #: mcomix/bookmark_dialog.py:34 mcomix/comment_dialog.py:29
 #: mcomix/message_dialog.py:25 mcomix/preferences_dialog.py:105
-#: mcomix/properties_dialog.py:38 mcomix/shrink_dialog.py:278
-#: mcomix/webp_dialog.py:375 mcomix/library/book_check_dialog.py:180
+#: mcomix/properties_dialog.py:38 mcomix/shrink_dialog.py:280
+#: mcomix/webp_dialog.py:406 mcomix/library/book_check_dialog.py:180
 #: mcomix/library/book_properties.py:60 mcomix/library/duplicates_dialog.py:292
 #: mcomix/library/watchlist.py:41
 msgid "_Close"
@@ -322,7 +322,7 @@ msgid "Comment files"
 msgstr "קבצי הערות"
 
 #: mcomix/edit_dialog.py:262 mcomix/file_actions.py:941
-#: mcomix/webp_dialog.py:249
+#: mcomix/webp_dialog.py:269
 #, python-format
 msgid "! Could not save the archive %(archivefile)s: %(error)s"
 msgstr "! לא ניתן היה לשמור את הארכיון %(archivefile)s: %(error)s"
@@ -569,11 +569,11 @@ msgstr "הקובץ יועבר לאשפה."
 msgid "_Move to Trash"
 msgstr "ה_עברה לאשפה"
 
-#: mcomix/file_actions.py:1317 mcomix/library/book_area.py:1384
+#: mcomix/file_actions.py:1317 mcomix/library/book_area.py:1385
 msgid "It does not go to the trash and cannot be restored."
 msgstr "הקובץ לא יועבר לאשפה ולא ניתן יהיה לשחזר אותו."
 
-#: mcomix/file_actions.py:1325 mcomix/library/book_area.py:1376
+#: mcomix/file_actions.py:1325 mcomix/library/book_area.py:1377
 #, python-format
 msgid "Delete \"%s\" permanently?"
 msgstr "למחוק את \"%s\" לצמיתות?"
@@ -583,7 +583,7 @@ msgstr "למחוק את \"%s\" לצמיתות?"
 msgid "Could not move \"%s\" to the trash"
 msgstr "לא ניתן היה להעביר את \"%s\" לאשפה"
 
-#: mcomix/file_actions.py:1436 mcomix/library/book_area.py:1461
+#: mcomix/file_actions.py:1436 mcomix/library/book_area.py:1462
 #, python-format
 msgid "%d book could not be moved to the trash."
 msgid_plural "%d books could not be moved to the trash."
@@ -2281,7 +2281,7 @@ msgstr "שם קובץ"
 msgid "File name (GLib)"
 msgstr "שם קובץ (GLib)"
 
-#: mcomix/preferences_dialog.py:800 mcomix/library/book_area.py:435
+#: mcomix/preferences_dialog.py:800 mcomix/library/book_area.py:436
 msgid "File size"
 msgstr "גודל קובץ"
 
@@ -2322,11 +2322,11 @@ msgstr ""
 "התקני של C, כלומר 1, 2, 34, 5. סדר GLib ימיין קבצים לפי מפתחות השוואה ש־GLib/"
 "GTK מייצרים, ובהם משתמשים יישומי GTK רבים אחרים."
 
-#: mcomix/preferences_dialog.py:831 mcomix/library/book_area.py:443
+#: mcomix/preferences_dialog.py:831 mcomix/library/book_area.py:444
 msgid "Ascending"
 msgstr "סדר מיון עולה"
 
-#: mcomix/preferences_dialog.py:832 mcomix/library/book_area.py:444
+#: mcomix/preferences_dialog.py:832 mcomix/library/book_area.py:445
 msgid "Descending"
 msgstr "סדר מיון יורד"
 
@@ -2442,7 +2442,7 @@ msgstr ""
 "יכול להציג."
 
 # מקורי
-#: mcomix/preferences_dialog.py:975 mcomix/library/book_area.py:451
+#: mcomix/preferences_dialog.py:975 mcomix/library/book_area.py:452
 msgid "Normal"
 msgstr "רגיל"
 
@@ -2689,7 +2689,10 @@ msgid ""
 "WebP at the quality set here. Such pages lose detail. A long strip, far "
 "higher than wide, is judged by its width alone. Each book written goes to "
 "the trash as it was, from where it can be put back."
-msgstr "כל עמוד גבוה מהמגבלה מוקטן לגובה המגבלה ונשמר כ־WebP באיכות שנקבעה כאן. עמודים כאלה מאבדים פרטים. רצועה ארוכה, גבוהה בהרבה מרוחבה, נשפטת לפי רוחבה בלבד. כל ספר שנכתב עובר לאשפה כפי שהיה, ומשם אפשר לשחזר אותו."
+msgstr ""
+"כל עמוד גבוה מהמגבלה מוקטן לגובה המגבלה ונשמר כ־WebP באיכות שנקבעה כאן. "
+"עמודים כאלה מאבדים פרטים. רצועה ארוכה, גבוהה בהרבה מרוחבה, נשפטת לפי רוחבה "
+"בלבד. כל ספר שנכתב עובר לאשפה כפי שהיה, ומשם אפשר לשחזר אותו."
 
 #: mcomix/shrink_dialog.py:114
 msgid "Page _height limit, in pixels:"
@@ -2703,14 +2706,14 @@ msgstr "_איכות WebP:"
 msgid "_Find Books"
 msgstr "_חיפוש ספרים"
 
-#: mcomix/shrink_dialog.py:178 mcomix/webp_dialog.py:186
+#: mcomix/shrink_dialog.py:178 mcomix/webp_dialog.py:205
 #: mcomix/library/add_progress_dialog.py:57
 #: mcomix/library/book_check_dialog.py:65
 #: mcomix/library/duplicates_dialog.py:112
 msgid "_Stop"
 msgstr "_עצירה"
 
-#: mcomix/shrink_dialog.py:205 mcomix/webp_dialog.py:237
+#: mcomix/shrink_dialog.py:205 mcomix/webp_dialog.py:256
 msgid "open in the main window"
 msgstr "פתוחה בחלון הראשי"
 
@@ -2729,7 +2732,7 @@ msgid_plural "%(book)s: %(pages)d pages over the limit, about %(size)s smaller"
 msgstr[0] "%(book)s: %(pages)d עמוד מעל המגבלה, קטן בכ־%(size)s"
 msgstr[1] "%(book)s: %(pages)d עמודים מעל המגבלה, קטן בכ־%(size)s"
 
-#: mcomix/shrink_dialog.py:281
+#: mcomix/shrink_dialog.py:283
 msgid "_Shrink"
 msgstr "_הקטנה"
 
@@ -3409,67 +3412,115 @@ msgstr "לא ניתן לפתוח את המדריך: %s"
 
 #. TRANSLATORS: Why a book was left as it was, after "3 books left as
 #. they were: ". So are the others here and "open in the main window".
-#: mcomix/webp_books.py:115
+#: mcomix/webp_books.py:136
 msgid "split into volumes"
 msgstr "מפוצלת לכרכים"
 
-#: mcomix/webp_books.py:118 mcomix/library/book_check.py:34
+#: mcomix/webp_books.py:139 mcomix/library/book_check.py:34
 msgid "damaged, or not an archive"
 msgstr "פגומה, או אינה ארכיון"
 
-#: mcomix/webp_books.py:123
+#. TRANSLATORS: Why a book was left as it was, as the others;
+#. %s is a format, such as "PDF document".
+#: mcomix/webp_books.py:145
+#, python-format
+msgid "not an archive of picture files: %s"
+msgstr "אינו ארכיון של קובצי תמונה: %s"
+
+#: mcomix/webp_books.py:150
 #, python-format
 msgid "a format MComix does not write: %s"
 msgstr "תבנית ש־MComix אינו כותב: %s"
 
-#: mcomix/webp_books.py:127
+#: mcomix/webp_books.py:154
 #, python-format
 msgid "the %s program that writes the format is not installed"
 msgstr "התוכנה %s, שכותבת את התבנית, אינה מותקנת"
 
-#: mcomix/webp_books.py:131 mcomix/library/book_check.py:36
+#: mcomix/webp_books.py:158 mcomix/library/book_check.py:36
 msgid "nothing installed here reads the format"
 msgstr "לא מותקן כאן דבר שקורא את התבנית"
 
 #. TRANSLATORS: Why a book was left as it was, as the others.
-#: mcomix/webp_books.py:159 mcomix/webp_books.py:328
+#: mcomix/webp_books.py:179 mcomix/webp_books.py:186 mcomix/webp_books.py:257
 msgid "no page over the limit"
 msgstr "אין עמוד מעל המגבלה"
 
-#: mcomix/webp_books.py:214
+#: mcomix/webp_books.py:245
 msgid "the trash takes no files from its folder"
 msgstr "האשפה לא מקבלת קבצים מהתיקייה שלה"
 
-#: mcomix/webp_books.py:256
+#: mcomix/webp_books.py:258
+msgid "no pages"
+msgstr "אין עמודים"
+
+#: mcomix/webp_books.py:291
 msgid "no page made smaller"
 msgstr "אף עמוד לא הוקטן"
 
-#: mcomix/webp_books.py:262
+#: mcomix/webp_books.py:300
 #, python-format
 msgid "the trash refused it: %s"
 msgstr "האשפה דחתה אותו: %s"
 
-#: mcomix/webp_books.py:320 mcomix/webp_books.py:349 mcomix/webp_books.py:355
-#: mcomix/webp_books.py:375 mcomix/library/book_check.py:38
+#. TRANSLATORS: Why a book was left as it was, as the others.
+#: mcomix/webp_books.py:358
+msgid "a symbolic link, which would no longer lead to it"
+msgstr "קישור סמלי, שלא היה מוביל אליו עוד"
+
+#. TRANSLATORS: Why a book was left as it was, as the others; %s is
+#. a file name, such as "Book.cbz".
+#: mcomix/webp_books.py:362 mcomix/webp_books.py:386
+#, python-format
+msgid "%s is there already"
+msgstr "%s כבר קיים שם"
+
+#. TRANSLATORS: Why a book was left as it was, as the others.
+#: mcomix/webp_books.py:380
+msgid "a ZIP already, no smaller packed again"
+msgstr "כבר ZIP, לא קטן יותר באריזה מחדש"
+
+#: mcomix/webp_books.py:436 mcomix/webp_books.py:465 mcomix/webp_books.py:471
+#: mcomix/webp_books.py:491 mcomix/library/book_check.py:38
 msgid "encrypted"
 msgstr "מוצפנת"
 
-#: mcomix/webp_books.py:322
+#: mcomix/webp_books.py:438
 msgid "archives inside"
 msgstr "מכילה ארכיונים אחרים"
 
-#: mcomix/webp_books.py:330
+#: mcomix/webp_books.py:446
 msgid "no PNG, GIF or JPEG pages"
 msgstr "אין עמודי PNG, GIF או JPEG"
 
-#: mcomix/webp_dialog.py:98
+#: mcomix/webp_dialog.py:101
+#, python-format
+msgid "Repack %d book as a ZIP?"
+msgid_plural "Repack %d books as ZIP?"
+msgstr[0] "לארוז מחדש ספר %d כ־ZIP?"
+msgstr[1] "לארוז מחדש %d ספרים כ־ZIP?"
+
+#: mcomix/webp_dialog.py:103
+msgid ""
+"Each book is written again as a ZIP, with every file in it as it was: pages "
+"already compressed are stored, the rest compressed. A RAR, 7z or tar book is "
+"replaced by the ZIP, named .cbz in place of .cbr, .cb7 or .cbt, and .zip in "
+"place of any other extension. A ZIP is replaced only where it comes out "
+"smaller."
+msgstr "כל ספר נכתב מחדש כ־ZIP, וכל קובץ בו כפי שהיה: עמודים שכבר דחוסים נשמרים כמות שהם, והשאר נדחס. ספר RAR,‏ 7z או tar מוחלף ב־ZIP, עם ‎.cbz במקום ‎.cbr,‏ ‎.cb7 או ‎.cbt, ו־‎.zip במקום כל סיומת אחרת. ZIP מוחלף רק אם הוא יוצא קטן יותר."
+
+#: mcomix/webp_dialog.py:109
+msgid "_Repack"
+msgstr "_אריזה מחדש"
+
+#: mcomix/webp_dialog.py:112
 #, python-format
 msgid "Make the pages of %d book smaller?"
 msgid_plural "Make the pages of %d books smaller?"
 msgstr[0] "להקטין את העמודים של %d חוברת?"
 msgstr[1] "להקטין את העמודים של %d חוברות?"
 
-#: mcomix/webp_dialog.py:100
+#: mcomix/webp_dialog.py:114
 msgid ""
 "Each book is written again, with every PNG or GIF page that is smaller as a "
 "lossless WebP and every JPEG page optimised without loss. Some other comic "
@@ -3479,74 +3530,92 @@ msgstr ""
 "עמוד JPEG ממוטב ללא אובדן. חלק מקוראי הקומיקס האחרים אינם יכולים להציג עמודי "
 "WebP."
 
-#: mcomix/webp_dialog.py:104
+#: mcomix/webp_dialog.py:118
 msgid "_Make Smaller"
 msgstr "_הקטנה"
 
-#: mcomix/webp_dialog.py:132
+#: mcomix/webp_dialog.py:149
 #, python-format
 msgid "%(count)d book left as it was: %(reason)s"
 msgid_plural "%(count)d books left as they were: %(reason)s"
 msgstr[0] "%(count)d חוברת נותרה כפי שהייתה: %(reason)s"
 msgstr[1] "%(count)d חוברות נותרו כפי שהיו: %(reason)s"
 
-#: mcomix/webp_dialog.py:140
+#: mcomix/webp_dialog.py:157
 #, python-format
 msgid "Stopped with %d book not yet looked at"
 msgid_plural "Stopped with %d books not yet looked at"
 msgstr[0] "נעצר, %d חוברת טרם נבדקה"
 msgstr[1] "נעצר, %d חוברות טרם נבדקו"
 
-#: mcomix/webp_dialog.py:158
+#: mcomix/webp_dialog.py:175
+msgid "Repacking books as ZIP"
+msgstr "אריזת ספרים מחדש כ־ZIP"
+
+#: mcomix/webp_dialog.py:176
 msgid "Making pages smaller"
 msgstr "העמודים מוקטנים"
 
-#: mcomix/webp_dialog.py:159
+#: mcomix/webp_dialog.py:177
 msgid "Shrinking pages"
 msgstr "עמודים גדולים מוקטנים"
 
-#: mcomix/webp_dialog.py:277
+#: mcomix/webp_dialog.py:298
+#, python-format
+msgid "%(count)d book repacked as ZIP, %(size)s larger"
+msgid_plural "%(count)d books repacked as ZIP, %(size)s larger"
+msgstr[0] "ספר %(count)d נארז מחדש כ־ZIP, גדול יותר ב־%(size)s"
+msgstr[1] "%(count)d ספרים נארזו מחדש כ־ZIP, גדולים יותר ב־%(size)s"
+
+#: mcomix/webp_dialog.py:304
+#, python-format
+msgid "%(count)d book repacked as ZIP, %(size)s smaller"
+msgid_plural "%(count)d books repacked as ZIP, %(size)s smaller"
+msgstr[0] "ספר %(count)d נארז מחדש כ־ZIP, קטן יותר ב־%(size)s"
+msgstr[1] "%(count)d ספרים נארזו מחדש כ־ZIP, קטנים יותר ב־%(size)s"
+
+#: mcomix/webp_dialog.py:308
 #, python-format
 msgid "%(count)d book shrunk, %(size)s smaller"
 msgid_plural "%(count)d books shrunk, %(size)s smaller"
 msgstr[0] "%(count)d ספר הוקטן, קטן ב־%(size)s"
 msgstr[1] "%(count)d ספרים הוקטנו, קטנים ב־%(size)s"
 
-#: mcomix/webp_dialog.py:281
+#: mcomix/webp_dialog.py:312
 #, python-format
 msgid "%(count)d book stored with WebP pages, %(size)s smaller"
 msgid_plural "%(count)d books stored with WebP pages, %(size)s smaller"
 msgstr[0] "%(count)d חוברת נשמרה עם עמודי WebP, קטנה ב־%(size)s"
 msgstr[1] "%(count)d חוברות נשמרו עם עמודי WebP, קטנות ב־%(size)s"
 
-#: mcomix/webp_dialog.py:294
+#: mcomix/webp_dialog.py:325
 #, python-format
 msgid "%d book stored without its damaged files"
 msgid_plural "%d books stored without their damaged files"
 msgstr[0] "%d חוברת נשמרה ללא הקבצים הפגומים שבה"
 msgstr[1] "%d חוברות נשמרו ללא הקבצים הפגומים שבהן"
 
-#: mcomix/webp_dialog.py:331
+#: mcomix/webp_dialog.py:362
 #, python-format
 msgid "About %d minute left"
 msgid_plural "About %d minutes left"
 msgstr[0] "נותרה כ־%d דקה"
 msgstr[1] "נותרו כ־%d דקות"
 
-#: mcomix/webp_dialog.py:362 mcomix/webp_dialog.py:414
+#: mcomix/webp_dialog.py:393 mcomix/webp_dialog.py:445
 #, python-format
 msgid "Could not be written: %s"
 msgstr "לא ניתן היה לכתוב: %s"
 
-#: mcomix/webp_dialog.py:378
+#: mcomix/webp_dialog.py:409
 msgid "_Save Log…"
 msgstr "_שמירת היומן…"
 
-#: mcomix/webp_dialog.py:383
+#: mcomix/webp_dialog.py:414
 msgid "Select Books with _Errors"
 msgstr "_בחירת חוברות עם שגיאות"
 
-#: mcomix/webp_dialog.py:427
+#: mcomix/webp_dialog.py:458
 msgid "Save the log as"
 msgstr "שמירת היומן בשם"
 
@@ -3664,7 +3733,7 @@ msgstr "לא ניתן היה לקבוע את גרסת מסד הנתונים של
 msgid "Upgrading library database version from %(from)d to %(to)d."
 msgstr "שדרוג גרסת מסד הנתונים של הספרייה מ־%(from)d ל־%(to)d."
 
-#: mcomix/library/backend_types.py:431 mcomix/library/book_area.py:463
+#: mcomix/library/backend_types.py:431 mcomix/library/book_area.py:464
 #: mcomix/library/collection_area.py:201 mcomix/library/control_area.py:95
 #: mcomix/library/shelf.py:215
 msgid "All books"
@@ -3727,104 +3796,108 @@ msgstr "מאפייני_ם"
 msgid "Shrin_k oversized pages..."
 msgstr "הקטנ_ת עמודים גדולים מדי..."
 
-#: mcomix/library/book_area.py:366
+#: mcomix/library/book_area.py:364
+msgid "Repack as _ZIP..."
+msgstr "אריזה מחדש כ־_ZIP..."
+
+#: mcomix/library/book_area.py:367
 msgid "Find _duplicates..."
 msgstr "חיפוש _כפילויות..."
 
 # חוברות ספרייה
-#: mcomix/library/book_area.py:409
+#: mcomix/library/book_area.py:410
 msgid "Library books"
 msgstr "ספריית חוברות"
 
-#: mcomix/library/book_area.py:422
+#: mcomix/library/book_area.py:423
 msgid "Move _to"
 msgstr "הע_ברה אל"
 
-#: mcomix/library/book_area.py:433
+#: mcomix/library/book_area.py:434
 msgid "Book name"
 msgstr "שם חוברת"
 
-#: mcomix/library/book_area.py:434
+#: mcomix/library/book_area.py:435
 msgid "Full path"
 msgstr "נתיב מלא"
 
-#: mcomix/library/book_area.py:436
+#: mcomix/library/book_area.py:437
 msgid "Pages"
 msgstr "עמודים"
 
-#: mcomix/library/book_area.py:437 mcomix/library/book_properties.py:102
+#: mcomix/library/book_area.py:438 mcomix/library/book_properties.py:102
 msgid "Date added"
 msgstr "תאריך הוספה"
 
-#: mcomix/library/book_area.py:438
+#: mcomix/library/book_area.py:439
 msgid "Date modified"
 msgstr "תאריך שינוי"
 
-#: mcomix/library/book_area.py:439 mcomix/library/book_properties.py:106
+#: mcomix/library/book_area.py:440 mcomix/library/book_properties.py:106
 msgid "Last read"
 msgstr "קריאה אחרונה"
 
-#: mcomix/library/book_area.py:440
+#: mcomix/library/book_area.py:441
 msgid "By hand"
 msgstr "ידני"
 
-#: mcomix/library/book_area.py:449
+#: mcomix/library/book_area.py:450
 msgid "Huge"
 msgstr "ענק"
 
-#: mcomix/library/book_area.py:450
+#: mcomix/library/book_area.py:451
 msgid "Large"
 msgstr "גדול"
 
-#: mcomix/library/book_area.py:452
+#: mcomix/library/book_area.py:453
 msgid "Small"
 msgstr "קטן"
 
-#: mcomix/library/book_area.py:453
+#: mcomix/library/book_area.py:454
 msgid "Tiny"
 msgstr "זעיר"
 
-#: mcomix/library/book_area.py:457
+#: mcomix/library/book_area.py:458
 msgid "Custom..."
 msgstr "מותאם..."
 
-#: mcomix/library/book_area.py:465
+#: mcomix/library/book_area.py:466
 msgid "Books with no pages"
 msgstr "חוברות ללא עמודים"
 
-#: mcomix/library/book_area.py:468
+#: mcomix/library/book_area.py:469
 msgid "Books whose file is not there"
 msgstr "חוברות שהקובץ שלהן אינו שם"
 
-#: mcomix/library/book_area.py:470
+#: mcomix/library/book_area.py:471
 msgid "Books that cannot be read in full..."
 msgstr "ספרים שלא ניתן לקרוא במלואם..."
 
-#: mcomix/library/book_area.py:474
+#: mcomix/library/book_area.py:475
 msgid "Select books"
 msgstr "בחירת חוברות"
 
-#: mcomix/library/book_area.py:475
+#: mcomix/library/book_area.py:476
 msgid "_Sort"
 msgstr "_מיון"
 
-#: mcomix/library/book_area.py:476
+#: mcomix/library/book_area.py:477
 msgid "Cover si_ze"
 msgstr "_גודל כריכה"
 
-#: mcomix/library/book_area.py:974
+#: mcomix/library/book_area.py:975
 msgid "Set library cover size"
 msgstr "קבע כריכה עבור הספרייה"
 
 # אולי מוטב יהיה להחליף את המילה from "מן" אל "מהאוסף"
-#: mcomix/library/book_area.py:1282
+#: mcomix/library/book_area.py:1283
 #, python-format
 msgid "Removed %(num)d book from '%(collection)s'."
 msgid_plural "Removed %(num)d books from '%(collection)s'."
 msgstr[0] "הוסרה חוברת %(num)d מהאוסף '%(collection)s'."
 msgstr[1] "הוסרו %(num)d חוברות מהאוסף '%(collection)s'."
 
-#: mcomix/library/book_area.py:1311 mcomix/library/collection_area.py:283
+#: mcomix/library/book_area.py:1312 mcomix/library/collection_area.py:283
 #: mcomix/library/main_dialog.py:256
 #, python-format
 msgid "Removed %d book from the library."
@@ -3832,11 +3905,11 @@ msgid_plural "Removed %d books from the library."
 msgstr[0] "הוסרה חוברת %d מן הספרייה."
 msgstr[1] "הוסרו %d חוברות מן הספרייה."
 
-#: mcomix/library/book_area.py:1333 mcomix/library/book_area.py:1354
+#: mcomix/library/book_area.py:1334 mcomix/library/book_area.py:1355
 msgid "Remove books from the library?"
 msgstr "להסיר חוברות מן הספרייה?"
 
-#: mcomix/library/book_area.py:1334
+#: mcomix/library/book_area.py:1335
 msgid ""
 "The selected books will be removed from the library. Any in a folder with no "
 "trash is deleted permanently and cannot be restored."
@@ -3844,26 +3917,26 @@ msgstr ""
 "החוברות הנבחרות יוסרו מן הספרייה. חוברות במדור ללא אשפה יימחקו לצמיתות ולא "
 "ניתן יהיה לשחזר אותן."
 
-#: mcomix/library/book_area.py:1355
+#: mcomix/library/book_area.py:1356
 msgid ""
 "The selected books will be removed from the library and moved to the trash."
 msgstr "החוברות הנבחרות יוסרו מן הספרייה ויועברו לאשפה."
 
-#: mcomix/library/book_area.py:1380
+#: mcomix/library/book_area.py:1381
 #, python-format
 msgid "Delete %d book permanently?"
 msgid_plural "Delete %d books permanently?"
 msgstr[0] "למחוק ספר %d לצמיתות?"
 msgstr[1] "למחוק %d ספרים לצמיתות?"
 
-#: mcomix/library/book_area.py:1512
+#: mcomix/library/book_area.py:1513
 #, python-format
 msgid "Remove the bookmarks in the deleted book?"
 msgid_plural "Remove the bookmarks in the %(count)d deleted books?"
 msgstr[0] "להסיר את הסימניות בחוברת שנמחקה?"
 msgstr[1] "להסיר את הסימניות ב־%(count)d החוברות שנמחקו?"
 
-#: mcomix/library/book_area.py:1721
+#: mcomix/library/book_area.py:1725
 msgid "Open with"
 msgstr "פתיחה באמצעות"
 
@@ -4245,9 +4318,6 @@ msgstr "סרוק חוברות אוטומטית כאשר הספרייה הינה 
 
 #~ msgid "no page smaller as WebP"
 #~ msgstr "אף עמוד אינו קטן יותר כ־WebP"
-
-#~ msgid "no PNG pages"
-#~ msgstr "אין עמודי PNG"
 
 #, python-format
 #~ msgid "Store the PNG pages of %d book as WebP?"

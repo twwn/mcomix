@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: comix 4.0.1\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-28 11:28+0100\n"
+"POT-Creation-Date: 2026-11-28 11:54+0100\n"
 "PO-Revision-Date: 2008-12-13 18:00+0100\n"
 "Last-Translator: Adrian C. <anrxc@sysphere.org>\n"
 "Language-Team: Croatian\n"
@@ -54,7 +54,7 @@ msgstr "! Nije moguće pročitati %s"
 #
 # File: src/comment.py, line: 53
 #: mcomix/archive_packer.py:708 mcomix/file_actions.py:1473
-#: mcomix/library/book_area.py:1447
+#: mcomix/library/book_area.py:1448
 #, python-format
 msgid "! Could not remove %(file)s: %(error)s"
 msgstr "! Nije moguće obrisati %(file)s: %(error)s"
@@ -99,7 +99,7 @@ msgid "! Could not save %(file)s to %(directory)s: %(error)s"
 msgstr "! Nije moguće spremiti %(file)s u %(directory)s: %(error)s"
 
 #: mcomix/bookmark_backend.py:493 mcomix/file_actions.py:1245
-#: mcomix/webp_dialog.py:446
+#: mcomix/webp_dialog.py:478
 #, python-format
 msgid "Could not save \"%(file)s\" to \"%(directory)s\""
 msgstr "Nije moguće spremiti „%(file)s” u „%(directory)s”"
@@ -123,7 +123,7 @@ msgstr "_Ne"
 #: mcomix/file_chooser_library_dialog.py:42 mcomix/message_dialog.py:26
 #: mcomix/message_dialog.py:29 mcomix/pageselect.py:38
 #: mcomix/save_progress.py:121 mcomix/shrink_dialog.py:138
-#: mcomix/shrink_dialog.py:277 mcomix/webp_dialog.py:103
+#: mcomix/shrink_dialog.py:279 mcomix/webp_dialog.py:119
 #: mcomix/library/duplicates_dialog.py:237
 msgid "_Cancel"
 msgstr "O_dustani"
@@ -184,8 +184,8 @@ msgstr "_Ukloni"
 # File: src/ui.py, line: 48
 #: mcomix/bookmark_dialog.py:34 mcomix/comment_dialog.py:29
 #: mcomix/message_dialog.py:25 mcomix/preferences_dialog.py:105
-#: mcomix/properties_dialog.py:38 mcomix/shrink_dialog.py:278
-#: mcomix/webp_dialog.py:375 mcomix/library/book_check_dialog.py:180
+#: mcomix/properties_dialog.py:38 mcomix/shrink_dialog.py:280
+#: mcomix/webp_dialog.py:406 mcomix/library/book_check_dialog.py:180
 #: mcomix/library/book_properties.py:60 mcomix/library/duplicates_dialog.py:292
 #: mcomix/library/watchlist.py:41
 msgid "_Close"
@@ -363,7 +363,7 @@ msgstr "Datoteke s komentarima"
 #
 # File: src/library.py, line: 271
 #: mcomix/edit_dialog.py:262 mcomix/file_actions.py:941
-#: mcomix/webp_dialog.py:249
+#: mcomix/webp_dialog.py:269
 #, python-format
 msgid "! Could not save the archive %(archivefile)s: %(error)s"
 msgstr "! Nije moguće spremiti arhivu %(archivefile)s: %(error)s"
@@ -638,11 +638,11 @@ msgstr "Datoteka se premješta u smeće."
 msgid "_Move to Trash"
 msgstr "_Premjesti u smeće"
 
-#: mcomix/file_actions.py:1317 mcomix/library/book_area.py:1384
+#: mcomix/file_actions.py:1317 mcomix/library/book_area.py:1385
 msgid "It does not go to the trash and cannot be restored."
 msgstr "Ne premješta se u smeće i neće se moći vratiti."
 
-#: mcomix/file_actions.py:1325 mcomix/library/book_area.py:1376
+#: mcomix/file_actions.py:1325 mcomix/library/book_area.py:1377
 #, python-format
 msgid "Delete \"%s\" permanently?"
 msgstr "Trajno obrisati „%s”?"
@@ -652,7 +652,7 @@ msgstr "Trajno obrisati „%s”?"
 msgid "Could not move \"%s\" to the trash"
 msgstr "Nije moguće premjestiti „%s” u smeće"
 
-#: mcomix/file_actions.py:1436 mcomix/library/book_area.py:1461
+#: mcomix/file_actions.py:1436 mcomix/library/book_area.py:1462
 #, python-format
 msgid "%d book could not be moved to the trash."
 msgid_plural "%d books could not be moved to the trash."
@@ -2597,7 +2597,7 @@ msgstr "Nazivu datoteke"
 msgid "File name (GLib)"
 msgstr "Nazivu datoteke (GLib)"
 
-#: mcomix/preferences_dialog.py:800 mcomix/library/book_area.py:435
+#: mcomix/preferences_dialog.py:800 mcomix/library/book_area.py:436
 msgid "File size"
 msgstr "Veličini datoteke"
 
@@ -2640,11 +2640,11 @@ msgstr ""
 "ključeva usporedbe koje stvara GLib/GTK, a koje koriste i mnoge druge GTK "
 "aplikacije."
 
-#: mcomix/preferences_dialog.py:831 mcomix/library/book_area.py:443
+#: mcomix/preferences_dialog.py:831 mcomix/library/book_area.py:444
 msgid "Ascending"
 msgstr "Uzlazno"
 
-#: mcomix/preferences_dialog.py:832 mcomix/library/book_area.py:444
+#: mcomix/preferences_dialog.py:832 mcomix/library/book_area.py:445
 msgid "Descending"
 msgstr "Silazno"
 
@@ -2760,7 +2760,7 @@ msgstr ""
 "postavljen profil boje zaslona. Osjetilno čuva omjere boja; relativno "
 "kolorimetrijski točno čuva one koje zaslon može prikazati."
 
-#: mcomix/preferences_dialog.py:975 mcomix/library/book_area.py:451
+#: mcomix/preferences_dialog.py:975 mcomix/library/book_area.py:452
 msgid "Normal"
 msgstr "Uobičajeno"
 
@@ -3024,7 +3024,11 @@ msgid ""
 "WebP at the quality set here. Such pages lose detail. A long strip, far "
 "higher than wide, is judged by its width alone. Each book written goes to "
 "the trash as it was, from where it can be put back."
-msgstr "Svaka stranica viša od ograničenja smanjuje se na visinu ograničenja i sprema kao WebP u ovdje postavljenoj kvaliteti. Takve stranice gube detalje. Duga traka, mnogo viša nego šira, procjenjuje se samo po širini. Svaka zapisana knjiga ide u smeće kakva je bila, odakle se može vratiti."
+msgstr ""
+"Svaka stranica viša od ograničenja smanjuje se na visinu ograničenja i "
+"sprema kao WebP u ovdje postavljenoj kvaliteti. Takve stranice gube detalje. "
+"Duga traka, mnogo viša nego šira, procjenjuje se samo po širini. Svaka "
+"zapisana knjiga ide u smeće kakva je bila, odakle se može vratiti."
 
 #: mcomix/shrink_dialog.py:114
 msgid "Page _height limit, in pixels:"
@@ -3042,14 +3046,14 @@ msgstr "_Kvaliteta WebP-a:"
 msgid "_Find Books"
 msgstr "_Pronađi knjige"
 
-#: mcomix/shrink_dialog.py:178 mcomix/webp_dialog.py:186
+#: mcomix/shrink_dialog.py:178 mcomix/webp_dialog.py:205
 #: mcomix/library/add_progress_dialog.py:57
 #: mcomix/library/book_check_dialog.py:65
 #: mcomix/library/duplicates_dialog.py:112
 msgid "_Stop"
 msgstr "_Zaustavi"
 
-#: mcomix/shrink_dialog.py:205 mcomix/webp_dialog.py:237
+#: mcomix/shrink_dialog.py:205 mcomix/webp_dialog.py:256
 msgid "open in the main window"
 msgstr "otvoreno u glavnom prozoru"
 
@@ -3058,9 +3062,12 @@ msgstr "otvoreno u glavnom prozoru"
 msgid "%(count)d book has pages over the limit, about %(size)s to save"
 msgid_plural ""
 "%(count)d books have pages over the limit, about %(size)s to save"
-msgstr[0] "%(count)d knjiga ima stranice iznad ograničenja, oko %(size)s uštede"
-msgstr[1] "%(count)d knjige imaju stranice iznad ograničenja, oko %(size)s uštede"
-msgstr[2] "%(count)d knjiga ima stranice iznad ograničenja, oko %(size)s uštede"
+msgstr[0] ""
+"%(count)d knjiga ima stranice iznad ograničenja, oko %(size)s uštede"
+msgstr[1] ""
+"%(count)d knjige imaju stranice iznad ograničenja, oko %(size)s uštede"
+msgstr[2] ""
+"%(count)d knjiga ima stranice iznad ograničenja, oko %(size)s uštede"
 
 #: mcomix/shrink_dialog.py:263
 #, python-format
@@ -3070,7 +3077,7 @@ msgstr[0] "%(book)s: %(pages)d stranica iznad ograničenja, oko %(size)s manje"
 msgstr[1] "%(book)s: %(pages)d stranice iznad ograničenja, oko %(size)s manje"
 msgstr[2] "%(book)s: %(pages)d stranica iznad ograničenja, oko %(size)s manje"
 
-#: mcomix/shrink_dialog.py:281
+#: mcomix/shrink_dialog.py:283
 msgid "_Shrink"
 msgstr "_Smanji"
 
@@ -3891,60 +3898,109 @@ msgstr "Nije moguće otvoriti priručnik: %s"
 
 #. TRANSLATORS: Why a book was left as it was, after "3 books left as
 #. they were: ". So are the others here and "open in the main window".
-#: mcomix/webp_books.py:115
+#: mcomix/webp_books.py:136
 msgid "split into volumes"
 msgstr "podijeljeno u sveske"
 
-#: mcomix/webp_books.py:118 mcomix/library/book_check.py:34
+#: mcomix/webp_books.py:139 mcomix/library/book_check.py:34
 msgid "damaged, or not an archive"
 msgstr "oštećeno ili nije arhiva"
 
-#: mcomix/webp_books.py:123
+#. TRANSLATORS: Why a book was left as it was, as the others;
+#. %s is a format, such as "PDF document".
+#: mcomix/webp_books.py:145
+#, python-format
+msgid "not an archive of picture files: %s"
+msgstr "nije arhiva slikovnih datoteka: %s"
+
+#: mcomix/webp_books.py:150
 #, python-format
 msgid "a format MComix does not write: %s"
 msgstr "format koji MComix ne zapisuje: %s"
 
-#: mcomix/webp_books.py:127
+#: mcomix/webp_books.py:154
 #, python-format
 msgid "the %s program that writes the format is not installed"
 msgstr "program %s koji zapisuje taj format nije instaliran"
 
-#: mcomix/webp_books.py:131 mcomix/library/book_check.py:36
+#: mcomix/webp_books.py:158 mcomix/library/book_check.py:36
 msgid "nothing installed here reads the format"
 msgstr "ovdje nije instalirano ništa što čita taj format"
 
 #. TRANSLATORS: Why a book was left as it was, as the others.
-#: mcomix/webp_books.py:159 mcomix/webp_books.py:328
+#: mcomix/webp_books.py:179 mcomix/webp_books.py:186 mcomix/webp_books.py:257
 msgid "no page over the limit"
 msgstr "nijedna stranica iznad ograničenja"
 
-#: mcomix/webp_books.py:214
+#: mcomix/webp_books.py:245
 msgid "the trash takes no files from its folder"
 msgstr "smeće ne prima datoteke iz svoje mape"
 
-#: mcomix/webp_books.py:256
+#: mcomix/webp_books.py:258
+msgid "no pages"
+msgstr "nema stranica"
+
+#: mcomix/webp_books.py:291
 msgid "no page made smaller"
 msgstr "nijedna stranica nije smanjena"
 
-#: mcomix/webp_books.py:262
+#: mcomix/webp_books.py:300
 #, python-format
 msgid "the trash refused it: %s"
 msgstr "smeće ju je odbilo: %s"
 
-#: mcomix/webp_books.py:320 mcomix/webp_books.py:349 mcomix/webp_books.py:355
-#: mcomix/webp_books.py:375 mcomix/library/book_check.py:38
+#. TRANSLATORS: Why a book was left as it was, as the others.
+#: mcomix/webp_books.py:358
+msgid "a symbolic link, which would no longer lead to it"
+msgstr "simbolička poveznica, koja više ne bi vodila do nje"
+
+#. TRANSLATORS: Why a book was left as it was, as the others; %s is
+#. a file name, such as "Book.cbz".
+#: mcomix/webp_books.py:362 mcomix/webp_books.py:386
+#, python-format
+msgid "%s is there already"
+msgstr "%s već postoji"
+
+#. TRANSLATORS: Why a book was left as it was, as the others.
+#: mcomix/webp_books.py:380
+msgid "a ZIP already, no smaller packed again"
+msgstr "već je ZIP, ponovno pakiran nije manji"
+
+#: mcomix/webp_books.py:436 mcomix/webp_books.py:465 mcomix/webp_books.py:471
+#: mcomix/webp_books.py:491 mcomix/library/book_check.py:38
 msgid "encrypted"
 msgstr "šifrirano"
 
-#: mcomix/webp_books.py:322
+#: mcomix/webp_books.py:438
 msgid "archives inside"
 msgstr "sadrži druge arhive"
 
-#: mcomix/webp_books.py:330
+#: mcomix/webp_books.py:446
 msgid "no PNG, GIF or JPEG pages"
 msgstr "nema PNG, GIF ni JPEG stranica"
 
-#: mcomix/webp_dialog.py:98
+#: mcomix/webp_dialog.py:101
+#, python-format
+msgid "Repack %d book as a ZIP?"
+msgid_plural "Repack %d books as ZIP?"
+msgstr[0] "Ponovno pakirati %d knjigu kao ZIP?"
+msgstr[1] "Ponovno pakirati %d knjige kao ZIP?"
+msgstr[2] "Ponovno pakirati %d knjiga kao ZIP?"
+
+#: mcomix/webp_dialog.py:103
+msgid ""
+"Each book is written again as a ZIP, with every file in it as it was: pages "
+"already compressed are stored, the rest compressed. A RAR, 7z or tar book is "
+"replaced by the ZIP, named .cbz in place of .cbr, .cb7 or .cbt, and .zip in "
+"place of any other extension. A ZIP is replaced only where it comes out "
+"smaller."
+msgstr "Svaka se knjiga ponovno zapisuje kao ZIP, sa svakom datotekom kakva je bila: već sažete stranice spremaju se nepromijenjene, ostalo se sažima. Knjiga RAR, 7z ili tar zamjenjuje se ZIP-om, s .cbz umjesto .cbr, .cb7 ili .cbt i .zip umjesto svakog drugog nastavka. ZIP se zamjenjuje samo ako ispadne manji."
+
+#: mcomix/webp_dialog.py:109
+msgid "_Repack"
+msgstr "_Pakiraj"
+
+#: mcomix/webp_dialog.py:112
 #, python-format
 msgid "Make the pages of %d book smaller?"
 msgid_plural "Make the pages of %d books smaller?"
@@ -3952,7 +4008,7 @@ msgstr[0] "Smanjiti stranice %d knjige?"
 msgstr[1] "Smanjiti stranice %d knjige?"
 msgstr[2] "Smanjiti stranice %d knjiga?"
 
-#: mcomix/webp_dialog.py:100
+#: mcomix/webp_dialog.py:114
 msgid ""
 "Each book is written again, with every PNG or GIF page that is smaller as a "
 "lossless WebP and every JPEG page optimised without loss. Some other comic "
@@ -3962,11 +4018,11 @@ msgstr ""
 "manja kao WebP bez gubitka, a svaka JPEG stranica optimizirana bez gubitka. "
 "Neki drugi čitači stripova ne mogu prikazati WebP stranice."
 
-#: mcomix/webp_dialog.py:104
+#: mcomix/webp_dialog.py:118
 msgid "_Make Smaller"
 msgstr "_Smanji"
 
-#: mcomix/webp_dialog.py:132
+#: mcomix/webp_dialog.py:149
 #, python-format
 msgid "%(count)d book left as it was: %(reason)s"
 msgid_plural "%(count)d books left as they were: %(reason)s"
@@ -3974,7 +4030,7 @@ msgstr[0] "%(count)d knjiga ostavljena nepromijenjena: %(reason)s"
 msgstr[1] "%(count)d knjige ostavljene nepromijenjene: %(reason)s"
 msgstr[2] "%(count)d knjiga ostavljeno nepromijenjeno: %(reason)s"
 
-#: mcomix/webp_dialog.py:140
+#: mcomix/webp_dialog.py:157
 #, python-format
 msgid "Stopped with %d book not yet looked at"
 msgid_plural "Stopped with %d books not yet looked at"
@@ -3982,15 +4038,35 @@ msgstr[0] "Zaustavljeno, %d knjiga još nije pregledana"
 msgstr[1] "Zaustavljeno, %d knjige još nisu pregledane"
 msgstr[2] "Zaustavljeno, %d knjiga još nije pregledano"
 
-#: mcomix/webp_dialog.py:158
+#: mcomix/webp_dialog.py:175
+msgid "Repacking books as ZIP"
+msgstr "Ponovno pakiranje knjiga kao ZIP"
+
+#: mcomix/webp_dialog.py:176
 msgid "Making pages smaller"
 msgstr "Smanjivanje stranica"
 
-#: mcomix/webp_dialog.py:159
+#: mcomix/webp_dialog.py:177
 msgid "Shrinking pages"
 msgstr "Smanjivanje velikih stranica"
 
-#: mcomix/webp_dialog.py:277
+#: mcomix/webp_dialog.py:298
+#, python-format
+msgid "%(count)d book repacked as ZIP, %(size)s larger"
+msgid_plural "%(count)d books repacked as ZIP, %(size)s larger"
+msgstr[0] "%(count)d knjiga pakirana kao ZIP, %(size)s veća"
+msgstr[1] "%(count)d knjige pakirane kao ZIP, %(size)s veće"
+msgstr[2] "%(count)d knjiga pakirano kao ZIP, %(size)s veće"
+
+#: mcomix/webp_dialog.py:304
+#, python-format
+msgid "%(count)d book repacked as ZIP, %(size)s smaller"
+msgid_plural "%(count)d books repacked as ZIP, %(size)s smaller"
+msgstr[0] "%(count)d knjiga pakirana kao ZIP, %(size)s manja"
+msgstr[1] "%(count)d knjige pakirane kao ZIP, %(size)s manje"
+msgstr[2] "%(count)d knjiga pakirano kao ZIP, %(size)s manje"
+
+#: mcomix/webp_dialog.py:308
 #, python-format
 msgid "%(count)d book shrunk, %(size)s smaller"
 msgid_plural "%(count)d books shrunk, %(size)s smaller"
@@ -3998,7 +4074,7 @@ msgstr[0] "%(count)d knjiga smanjena, %(size)s manje"
 msgstr[1] "%(count)d knjige smanjene, %(size)s manje"
 msgstr[2] "%(count)d knjiga smanjeno, %(size)s manje"
 
-#: mcomix/webp_dialog.py:281
+#: mcomix/webp_dialog.py:312
 #, python-format
 msgid "%(count)d book stored with WebP pages, %(size)s smaller"
 msgid_plural "%(count)d books stored with WebP pages, %(size)s smaller"
@@ -4006,7 +4082,7 @@ msgstr[0] "%(count)d knjiga spremljena s WebP stranicama, %(size)s manja"
 msgstr[1] "%(count)d knjige spremljene s WebP stranicama, %(size)s manje"
 msgstr[2] "%(count)d knjiga spremljeno s WebP stranicama, %(size)s manje"
 
-#: mcomix/webp_dialog.py:294
+#: mcomix/webp_dialog.py:325
 #, python-format
 msgid "%d book stored without its damaged files"
 msgid_plural "%d books stored without their damaged files"
@@ -4014,7 +4090,7 @@ msgstr[0] "%d knjiga spremljena bez svojih oštećenih datoteka"
 msgstr[1] "%d knjige spremljene bez svojih oštećenih datoteka"
 msgstr[2] "%d knjiga spremljeno bez svojih oštećenih datoteka"
 
-#: mcomix/webp_dialog.py:331
+#: mcomix/webp_dialog.py:362
 #, python-format
 msgid "About %d minute left"
 msgid_plural "About %d minutes left"
@@ -4022,20 +4098,20 @@ msgstr[0] "Preostala je otprilike %d minuta"
 msgstr[1] "Preostale su otprilike %d minute"
 msgstr[2] "Preostalo je otprilike %d minuta"
 
-#: mcomix/webp_dialog.py:362 mcomix/webp_dialog.py:414
+#: mcomix/webp_dialog.py:393 mcomix/webp_dialog.py:445
 #, python-format
 msgid "Could not be written: %s"
 msgstr "Nije bilo moguće zapisati: %s"
 
-#: mcomix/webp_dialog.py:378
+#: mcomix/webp_dialog.py:409
 msgid "_Save Log…"
 msgstr "_Spremi zapisnik…"
 
-#: mcomix/webp_dialog.py:383
+#: mcomix/webp_dialog.py:414
 msgid "Select Books with _Errors"
 msgstr "Odaberi knjige s _greškama"
 
-#: mcomix/webp_dialog.py:427
+#: mcomix/webp_dialog.py:458
 msgid "Save the log as"
 msgstr "Spremi zapisnik kao"
 
@@ -4166,7 +4242,7 @@ msgstr "Nadogradnja inačice baze podataka biblioteke s %(from)d na %(to)d."
 
 #
 # File: src/library.py, line: 202
-#: mcomix/library/backend_types.py:431 mcomix/library/book_area.py:463
+#: mcomix/library/backend_types.py:431 mcomix/library/book_area.py:464
 #: mcomix/library/collection_area.py:201 mcomix/library/control_area.py:95
 #: mcomix/library/shelf.py:215
 msgid "All books"
@@ -4231,97 +4307,101 @@ msgstr "Svo_jstva"
 msgid "Shrin_k oversized pages..."
 msgstr "S_manji prevelike stranice..."
 
-#: mcomix/library/book_area.py:366
+#: mcomix/library/book_area.py:364
+msgid "Repack as _ZIP..."
+msgstr "Ponovno pakiraj u _format ZIP..."
+
+#: mcomix/library/book_area.py:367
 msgid "Find _duplicates..."
 msgstr "Pronađi d_uplikate..."
 
-#: mcomix/library/book_area.py:409
+#: mcomix/library/book_area.py:410
 msgid "Library books"
 msgstr "Knjige biblioteke"
 
-#: mcomix/library/book_area.py:422
+#: mcomix/library/book_area.py:423
 msgid "Move _to"
 msgstr "P_remjesti u"
 
-#: mcomix/library/book_area.py:433
+#: mcomix/library/book_area.py:434
 msgid "Book name"
 msgstr "Naziv knjige"
 
-#: mcomix/library/book_area.py:434
+#: mcomix/library/book_area.py:435
 msgid "Full path"
 msgstr "Puna putanja"
 
-#: mcomix/library/book_area.py:436
+#: mcomix/library/book_area.py:437
 msgid "Pages"
 msgstr "Stranice"
 
-#: mcomix/library/book_area.py:437 mcomix/library/book_properties.py:102
+#: mcomix/library/book_area.py:438 mcomix/library/book_properties.py:102
 msgid "Date added"
 msgstr "Datum dodavanja"
 
-#: mcomix/library/book_area.py:438
+#: mcomix/library/book_area.py:439
 msgid "Date modified"
 msgstr "Datum izmjene"
 
-#: mcomix/library/book_area.py:439 mcomix/library/book_properties.py:106
+#: mcomix/library/book_area.py:440 mcomix/library/book_properties.py:106
 msgid "Last read"
 msgstr "Zadnje čitano"
 
-#: mcomix/library/book_area.py:440
+#: mcomix/library/book_area.py:441
 msgid "By hand"
 msgstr "Ručno"
 
-#: mcomix/library/book_area.py:449
+#: mcomix/library/book_area.py:450
 msgid "Huge"
 msgstr "Ogromna"
 
-#: mcomix/library/book_area.py:450
+#: mcomix/library/book_area.py:451
 msgid "Large"
 msgstr "Velika"
 
-#: mcomix/library/book_area.py:452
+#: mcomix/library/book_area.py:453
 msgid "Small"
 msgstr "Mala"
 
-#: mcomix/library/book_area.py:453
+#: mcomix/library/book_area.py:454
 msgid "Tiny"
 msgstr "Sitna"
 
-#: mcomix/library/book_area.py:457
+#: mcomix/library/book_area.py:458
 msgid "Custom..."
 msgstr "Prilagođena..."
 
-#: mcomix/library/book_area.py:465
+#: mcomix/library/book_area.py:466
 msgid "Books with no pages"
 msgstr "Knjige bez stranica"
 
-#: mcomix/library/book_area.py:468
+#: mcomix/library/book_area.py:469
 msgid "Books whose file is not there"
 msgstr "Knjige čija datoteka nije tamo"
 
-#: mcomix/library/book_area.py:470
+#: mcomix/library/book_area.py:471
 msgid "Books that cannot be read in full..."
 msgstr "Knjige koje se ne mogu pročitati u cijelosti..."
 
-#: mcomix/library/book_area.py:474
+#: mcomix/library/book_area.py:475
 msgid "Select books"
 msgstr "Odaberi knjige"
 
-#: mcomix/library/book_area.py:475
+#: mcomix/library/book_area.py:476
 msgid "_Sort"
 msgstr "Razvr_staj"
 
-#: mcomix/library/book_area.py:476
+#: mcomix/library/book_area.py:477
 msgid "Cover si_ze"
 msgstr "Veličina _naslovnica"
 
-#: mcomix/library/book_area.py:974
+#: mcomix/library/book_area.py:975
 msgid "Set library cover size"
 msgstr "Postavlja veličinu naslovnica u biblioteci"
 
 #
 # File: src/library.py, line: 588
-#: mcomix/library/book_area.py:1282
+#: mcomix/library/book_area.py:1283
 #, python-format
 msgid "Removed %(num)d book from '%(collection)s'."
 msgid_plural "Removed %(num)d books from '%(collection)s'."
@@ -4329,7 +4409,7 @@ msgstr[0] "Iz zbirke „%(collection)s” uklonjena je %(num)d knjiga."
 msgstr[1] "Iz zbirke „%(collection)s” uklonjene su %(num)d knjige."
 msgstr[2] "Iz zbirke „%(collection)s” uklonjeno je %(num)d knjiga."
 
-#: mcomix/library/book_area.py:1311 mcomix/library/collection_area.py:283
+#: mcomix/library/book_area.py:1312 mcomix/library/collection_area.py:283
 #: mcomix/library/main_dialog.py:256
 #, python-format
 msgid "Removed %d book from the library."
@@ -4340,11 +4420,11 @@ msgstr[2] "Iz biblioteke je uklonjeno %d knjiga."
 
 #
 # File: src/library.py, line: 597
-#: mcomix/library/book_area.py:1333 mcomix/library/book_area.py:1354
+#: mcomix/library/book_area.py:1334 mcomix/library/book_area.py:1355
 msgid "Remove books from the library?"
 msgstr "Obrisati knjige iz biblioteke?"
 
-#: mcomix/library/book_area.py:1334
+#: mcomix/library/book_area.py:1335
 msgid ""
 "The selected books will be removed from the library. Any in a folder with no "
 "trash is deleted permanently and cannot be restored."
@@ -4352,12 +4432,12 @@ msgstr ""
 "Odabrane knjige bit će uklonjene iz biblioteke. One u direktoriju bez smeća "
 "bit će trajno obrisane i neće se moći vratiti."
 
-#: mcomix/library/book_area.py:1355
+#: mcomix/library/book_area.py:1356
 msgid ""
 "The selected books will be removed from the library and moved to the trash."
 msgstr "Odabrane knjige bit će uklonjene iz biblioteke i premještene u smeće."
 
-#: mcomix/library/book_area.py:1380
+#: mcomix/library/book_area.py:1381
 #, python-format
 msgid "Delete %d book permanently?"
 msgid_plural "Delete %d books permanently?"
@@ -4365,7 +4445,7 @@ msgstr[0] "Trajno obrisati %d knjigu?"
 msgstr[1] "Trajno obrisati %d knjige?"
 msgstr[2] "Trajno obrisati %d knjiga?"
 
-#: mcomix/library/book_area.py:1512
+#: mcomix/library/book_area.py:1513
 #, python-format
 msgid "Remove the bookmarks in the deleted book?"
 msgid_plural "Remove the bookmarks in the %(count)d deleted books?"
@@ -4373,7 +4453,7 @@ msgstr[0] "Ukloniti oznake u %(count)d obrisanoj knjizi?"
 msgstr[1] "Ukloniti oznake u %(count)d obrisane knjige?"
 msgstr[2] "Ukloniti oznake u %(count)d obrisanih knjiga?"
 
-#: mcomix/library/book_area.py:1721
+#: mcomix/library/book_area.py:1725
 msgid "Open with"
 msgstr "Otvori pomoću"
 
@@ -4805,9 +4885,6 @@ msgstr "Automatski traži nove knjige pri _otvaranju biblioteke"
 
 #~ msgid "no page smaller as WebP"
 #~ msgstr "nijedna stranica nije manja kao WebP"
-
-#~ msgid "no PNG pages"
-#~ msgstr "nema PNG stranica"
 
 #, python-format
 #~ msgid "Store the PNG pages of %d book as WebP?"

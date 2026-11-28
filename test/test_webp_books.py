@@ -560,4 +560,147 @@ class ShrinkTest(_BookTest):
     def convert(self, path):
         return webp_books.convert(path, self.stop, shrink=self.SHRINK)
 
+
+class RepackTest(_BookTest):
+
+    """Books written again as ZIP, every file in them as it was."""
+
+    TEXT = b'a text that deflates well ' * 200
+
+    def convert(self, path):
+        return webp_books.convert(path, self.stop, repack=True)
+
+    def tar_book(self, members, name='book.cbt'):
+        path = os.path.join(self.directory, name)
+        with tarfile.open(path, 'w') as book:
+            for member, data in members.items():
+                info = tarfile.TarInfo(member)
+                info.size = len(data)
+                book.addfile(info, io.BytesIO(data))
+        return path
+
+    def assertPackedAsZip(self, path, members):
+        """<path> is a ZIP of <members>, byte for byte, each picture
+        stored and the text deflated."""
+        with zipfile.ZipFile(path) as book:
+            self.assertEqual(members, {name: book.read(name)
+                                       for name in book.namelist()})
+            self.assertEqual(
+                {name: (zipfile.ZIP_DEFLATED if name.endswith('.txt')
+                        else zipfile.ZIP_STORED) for name in members},
+                {info.filename: info.compress_type
+                 for info in book.infolist()})
+
+    def test_a_tar_becomes_a_zip_of_its_name(self):
+        members = {'01.png': line_art_png(),
+                   'sub/02.png': line_art_png(size=(200, 300)),
+                   'notes.txt': self.TEXT}
+        path = self.tar_book(members)
+        before = os.path.getsize(path)
+        converted = self.convert(path)
+        zip_book = os.path.join(self.directory, 'book.cbz')
+        self.assertEqual(['book.cbz'], os.listdir(self.directory))
+        self.assertPackedAsZip(zip_book, members)
+        self.assertEqual(zip_book, converted.moved_to)
+        self.assertEqual({'01.png': '01.png', 'sub/02.png': 'sub/02.png'},
+                         converted.renamed)
+        self.assertEqual((before, os.path.getsize(zip_book)),
+                         (converted.before, converted.after))
+
+    def test_a_rar_needs_no_rar_program(self):
+        skip_unless_rar_reads(self)
+        path = os.path.join(self.directory, 'Flat.rar')
+        shutil.copy(get_testfile_path('archives', 'Flat.rar'), path)
+        names = archive_tools.get_archive_handler(path).list_contents()
+        with unittest.mock.patch.object(archive_packer, 'rar_executable',
+                                        return_value=None):
+            converted = self.convert(path)
+        self.assertEqual(os.path.join(self.directory, 'Flat.zip'),
+                         converted.moved_to)
+        self.assertEqual(['Flat.zip'], os.listdir(self.directory))
+        with zipfile.ZipFile(converted.moved_to) as book:
+            self.assertEqual(sorted(names), sorted(book.namelist()))
+
+    def test_a_zip_is_replaced_where_it_comes_out_smaller(self):
+        members = {'01.png': line_art_png(), 'notes.txt': self.TEXT}
+        path = os.path.join(self.directory, 'book.cbz')
+        with zipfile.ZipFile(path, 'w', zipfile.ZIP_STORED) as book:
+            for member, data in members.items():
+                book.writestr(member, data)
+        converted = self.convert(path)
+        self.assertIsNone(converted.moved_to)
+        self.assertLess(converted.after, converted.before)
+        self.assertEqual(['book.cbz'], os.listdir(self.directory))
+        self.assertPackedAsZip(path, members)
+
+    def test_a_zip_no_smaller_packed_again_is_left(self):
+        path = self.zip_book({'01.png': line_art_png()})
+        self.assertSkipped(path, 'a ZIP already, no smaller packed again')
+
+    def test_a_book_whose_zip_name_is_taken_is_left(self):
+        path = self.tar_book({'01.png': line_art_png()})
+        taken = self.zip_book({'01.png': b'another book'})
+        with open(taken, 'rb') as book:
+            before = book.read()
+        with self.assertRaises(webp_books.Skipped) as raised:
+            self.convert(path)
+        self.assertEqual('book.cbz is there already', str(raised.exception))
+        with open(taken, 'rb') as book:
+            self.assertEqual(before, book.read())
+        self.assertEqual(['book.cbt', 'book.cbz'],
+                         sorted(os.listdir(self.directory)))
+
+    @unittest.skipIf(sys.platform == 'win32',
+                     'making a symbolic link needs rights on Windows')
+    def test_a_link_to_a_book_of_another_format_is_left(self):
+        path = self.tar_book({'01.png': line_art_png()})
+        link = os.path.join(self.tmp_dir, 'link.cbt')
+        os.symlink(path, link)
+        with self.assertRaises(webp_books.Skipped) as raised:
+            self.convert(link)
+        self.assertEqual('a symbolic link, which would no longer lead to it',
+                         str(raised.exception))
+        self.assertEqual(['book.cbt'], os.listdir(self.directory))
+
+    def test_a_pdf_is_not_repacked(self):
+        path = os.path.join(self.directory, 'book.pdf')
+        with open(path, 'wb') as book:
+            book.write(b'%PDF-1.4\n')
+        with unittest.mock.patch.object(archive_tools, 'archive_mime_type',
+                                        return_value=constants.PDF):
+            self.assertSkipped(path, 'not an archive of picture files: '
+                               'PDF document')
+        self.assertFalse(webp_books.can_repack(constants.PDF))
+        self.assertTrue(webp_books.can_repack(constants.RAR))
+
+    def test_the_old_book_kept_where_it_cannot_be_removed(self):
+        """The ZIP holds all of it by then: the reader is told, and the
+        book is counted as repacked."""
+        path = self.tar_book({'01.png': line_art_png()})
+        with unittest.mock.patch.object(
+                tools, 'remove_file', side_effect=PermissionError(
+                    errno.EACCES, 'refused')), \
+                self.assertLogs('mcomix', level='WARNING') as logged:
+            converted = self.convert(path)
+        self.assertEqual(['book.cbt', 'book.cbz'],
+                         sorted(os.listdir(self.directory)))
+        self.assertEqual(os.path.join(self.directory, 'book.cbz'),
+                         converted.moved_to)
+        self.assertIn('could not be removed', '\n'.join(logged.output))
+
+    def test_a_stop_leaves_the_book_and_writes_no_zip(self):
+        path = self.tar_book({'01.png': line_art_png()})
+        self.stop.set()
+        with self.assertRaises(archive_packer.Cancelled):
+            self.convert(path)
+        self.assertEqual(['book.cbt'], os.listdir(self.directory))
+
+    def test_the_zip_name(self):
+        for path, becomes in (('a/b.cbr', 'a/b.cbz'), ('b.CB7', 'b.cbz'),
+                              ('b.cbt', 'b.cbz'), ('b.rar', 'b.zip'),
+                              ('b.7z', 'b.zip'), ('b.tar.gz', 'b.zip'),
+                              ('b.TAR.XZ', 'b.zip'), ('b.lha', 'b.zip')):
+            with self.subTest(path=path):
+                self.assertEqual(becomes, webp_books.zip_name(path))
+
 # vim: expandtab:sw=4:ts=4

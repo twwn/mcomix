@@ -13,6 +13,11 @@ page over the limit shrunk (mcomix.page_shrink) instead, and moves the
 book as it was to the trash: that one loses detail.  survey() first
 tells which books it would change, and by how much.
 
+"Repack as ZIP..." writes each book again as a ZIP, every file in it
+as it was, stored where it is compressed already and deflated where
+that pays (archive_packer._ZipWriter); a RAR, 7z or tar is replaced by
+the ZIP, which takes its name but for the extension.
+
 Nothing here touches GTK: convert() runs on a thread of its own, and
 what it answers with is the caller's to bring to the stores kept by a
 page's name (file_actions.follow_pages()), on the main thread.
@@ -52,6 +57,16 @@ _TICK = 0.1
 #: (archive_packer.can_write()), to that program's name.
 _WRITTEN_BY_PROGRAM = {constants.SEVENZIP: '7z', constants.RAR: 'rar'}
 
+#: The formats whose pages are files in them, which a repack writes into
+#: a ZIP as they are.  A PDF's pages, or an ebook's, are not.
+_PACKED_AS_FILES = frozenset((
+    constants.ZIP, constants.ZIP_EXTERNAL, constants.RAR, constants.TAR,
+    constants.GZIP, constants.BZIP2, constants.XZ, constants.SEVENZIP,
+    constants.LHA))
+
+#: The ZIP formats: a book already in one is repacked under its own name.
+_ZIP_TYPES = (constants.ZIP, constants.ZIP_EXTERNAL)
+
 
 class Skipped(Exception):
 
@@ -66,7 +81,7 @@ class Skipped(Exception):
 @dataclass(frozen=True)
 class Converted:
 
-    """A book written again with WebP pages."""
+    """A book written again: with WebP pages, shrunk, or as a ZIP."""
 
     #: The name of each page within the archive, to the name it has now:
     #: written with "/" whatever the system, as the stores kept by a
@@ -78,6 +93,9 @@ class Converted:
     #: The files within the archive that could not be read, and so were
     #: left out of it, by name, to why.
     left_out: dict[str, str] = field(default_factory=dict)
+    #: Where the book is now, where it was renamed: a book repacked as a
+    #: ZIP from another format takes a name that says so.
+    moved_to: "str | None" = None
 
 
 def _ignore_progress(done: float) -> None:
@@ -103,11 +121,14 @@ class Surveyed:
 _SAMPLES = 3
 
 
-def _opened(path: str
+def _opened(path: str, repack: bool = False
             ) -> tuple[archive_base.BaseArchive, int, "str | None"]:
     """The archive handler for the book at <path>, its format, and why
     a book with pages to change could not be written, if it could not.
-    Raises Skipped for a book that is left alone whatever it holds."""
+    Raises Skipped for a book that is left alone whatever it holds.
+
+    <repack> asks for a book to write as a ZIP, which MComix always
+    writes: it has only to be one whose pages are files in it."""
     if archive_tools.is_later_volume(path) \
             or len(archive_tools.volume_set(path)) > 1:
         # TRANSLATORS: Why a book was left as it was, after "3 books left as
@@ -117,7 +138,13 @@ def _opened(path: str
     if archive_type is None:
         raise Skipped(_('damaged, or not an archive'), damaged=True)
     unwritable = None
-    if not archive_packer.can_write(archive_type):
+    if repack:
+        if archive_type not in _PACKED_AS_FILES:
+            # TRANSLATORS: Why a book was left as it was, as the others;
+            # %s is a format, such as "PDF document".
+            raise Skipped(_('not an archive of picture files: %s')
+                          % archive_tools.describe(path, archive_type))
+    elif not archive_packer.can_write(archive_type):
         program = _WRITTEN_BY_PROGRAM.get(archive_type)
         if program is None:
             raise Skipped(_('a format MComix does not write: %s')
@@ -149,7 +176,7 @@ def survey(path: str, shrink: page_shrink.Shrink, stop: threading.Event,
     try:
         try:
             pages = _unpack(archive, book, stop, progress, unwritable,
-                            any_page=True)[0]
+                            any_page=_('no page over the limit'))[0]
         finally:
             archive.close()
         over = [file for file in (os.path.join(book, name) for name in pages)
@@ -191,10 +218,13 @@ def _over(file: str, limit: int) -> bool:
 
 def convert(path: str, stop: threading.Event,
             progress: Callable[[float], None] = _ignore_progress,
-            shrink: "page_shrink.Shrink | None" = None) -> Converted:
+            shrink: "page_shrink.Shrink | None" = None,
+            repack: bool = False) -> Converted:
     """Store the PNG pages of the archive at <path> as lossless WebP;
     or, given <shrink>, the pages over its limit shrunk, the archive as
-    it was going to the trash.
+    it was going to the trash; or, with <repack>, the whole archive as a
+    ZIP packed the smallest way (archive_packer._ZipWriter), in place
+    of what it was.
 
     For a thread of its own: it unpacks the whole book and encodes each
     PNG page.  <stop>, once set, stops it before the next file, and
@@ -208,10 +238,14 @@ def convert(path: str, stop: threading.Event,
     where <stop> was set, and OSError where reading or writing failed;
     the archive is as it was in all three.
     """
-    archive, archive_type, unwritable = _opened(path)
-    if shrink is not None and tools.trash_refuses(path):
+    archive, archive_type, unwritable = _opened(path, repack)
+    try:
+        becomes = _zip_target(path, archive_type) if repack else path
+        if shrink is not None and tools.trash_refuses(path):
+            raise Skipped(_('the trash takes no files from its folder'))
+    except Skipped:
         archive.close()
-        raise Skipped(_('the trash takes no files from its folder'))
+        raise
     before = os.stat(path).st_size
     directory = tempfile.mkdtemp(prefix='mcomix-webp-book.',
                                  dir=archive_packer.working_folder())
@@ -220,14 +254,15 @@ def convert(path: str, stop: threading.Event,
         try:
             pages, others, left_out = _unpack(
                 archive, directory, stop, progress, unwritable,
-                any_page=shrink is not None)
+                any_page=(_('no page over the limit') if shrink is not None
+                          else _('no pages') if repack else ''))
         finally:
             archive.close()
-        if shrink is not None:
-            # Written beside the book, which goes to the trash once the
-            # new one is whole and takes its place.
+        if shrink is not None or repack:
+            # Written beside the book, whose place it takes once it is
+            # whole.
             fd, target = tempfile.mkstemp(
-                suffix=os.path.splitext(path)[1],
+                suffix=os.path.splitext(becomes)[1],
                 prefix=archive_tools.WORKING_PREFIX,
                 dir=os.path.dirname(tools.replaced_path(path)))
             os.close(fd)
@@ -248,13 +283,16 @@ def convert(path: str, stop: threading.Event,
         try:
             written = archive_packer.write_archive(
                 target, list(page_files), [], carried_files=files(others),
-                archive_type=archive_type, permissions_from=path,
-                page_names=page_files, waiting=wait,
-                webp_pages=shrink is None, shrink=shrink,
-                add_comic_info=False, only_converted=True)
+                archive_type=constants.ZIP if repack else archive_type,
+                permissions_from=path, page_names=page_files, waiting=wait,
+                webp_pages=shrink is None and not repack, shrink=shrink,
+                add_comic_info=False, only_converted=not repack)
         except archive_packer.Unchanged:
             raise Skipped(_('no page made smaller')) from None
-        if target != path:
+        if repack:
+            _repacked_in_place(path, target, becomes, before)
+            target = path
+        elif target != path:
             book = tools.replaced_path(path)
             try:
                 tools.move_to_trash(book)
@@ -280,7 +318,8 @@ def convert(path: str, stop: threading.Event,
                         i18n.to_display_string(path), why)
         return Converted({_member(page_files[file]): _member(name)
                           for file, name in written.items()},
-                         before, os.stat(path).st_size, left_out)
+                         before, os.stat(becomes).st_size, left_out,
+                         moved_to=becomes if becomes != path else None)
     finally:
         tools.remove_tree(directory)
         if target != path:
@@ -288,6 +327,72 @@ def convert(path: str, stop: threading.Event,
             # place.
             with contextlib.suppress(FileNotFoundError):
                 tools.remove_file(target)
+
+
+def can_repack(archive_type: "int | None") -> bool:
+    """Whether a book of <archive_type> is one convert() can repack as
+    a ZIP."""
+    return archive_type in _PACKED_AS_FILES
+
+
+def zip_name(path: str) -> str:
+    """The name the book at <path> takes as a ZIP: its own, ending in
+    .cbz for a comic book archive (.cbr, .cb7, .cbt), and in .zip for any
+    other (.rar, .7z, .tar.gz)."""
+    stem, extension = os.path.splitext(path)
+    if os.path.splitext(stem)[1].lower() == '.tar':
+        stem = os.path.splitext(stem)[0]
+    return stem + ('.cbz' if extension.lower().startswith('.cb') else '.zip')
+
+
+def _zip_target(path: str, archive_type: int) -> str:
+    """Where the book at <path>, of <archive_type>, goes as a ZIP; raises
+    Skipped where it cannot go there."""
+    if archive_type in _ZIP_TYPES:
+        return path
+    becomes = zip_name(path)
+    if os.path.islink(path):
+        # Renamed, the link would point at nothing; the file it points
+        # at would be renamed under the reader of the folder it is in.
+        # TRANSLATORS: Why a book was left as it was, as the others.
+        raise Skipped(_('a symbolic link, which would no longer lead to it'))
+    if os.path.lexists(becomes):
+        # TRANSLATORS: Why a book was left as it was, as the others; %s is
+        # a file name, such as "Book.cbz".
+        raise Skipped(_('%s is there already')
+                      % i18n.to_display_string(os.path.basename(becomes)))
+    return becomes
+
+
+def _repacked_in_place(path: str, written_to: str, becomes: str,
+                       before: int) -> None:
+    """Put <written_to>, the book at <path> packed again as a ZIP, in its
+    place at <becomes>.
+
+    It holds every file the old archive held, byte for byte, so the old
+    archive is replaced, not kept in the trash as a shrunk book's is; a
+    ZIP only where packing it again made it smaller.  Raises Skipped or
+    OSError, with nothing changed, where it cannot be.
+    """
+    if becomes == path:
+        if os.stat(written_to).st_size >= before:
+            # TRANSLATORS: Why a book was left as it was, as the others.
+            raise Skipped(_('a ZIP already, no smaller packed again'))
+        portability.rename_once_closed(os.replace, written_to,
+                                       tools.replaced_path(path))
+        return
+    if os.path.lexists(becomes):
+        # Made while the book was being written.
+        raise Skipped(_('%s is there already')
+                      % i18n.to_display_string(os.path.basename(becomes)))
+    portability.rename_once_closed(os.replace, written_to, becomes)
+    try:
+        portability.rename_once_closed(
+            lambda old, _new: tools.remove_file(old), path, path)
+    except OSError as failure:
+        log.warning('"%s" was repacked as "%s", but could not be removed: %s',
+                    i18n.to_display_string(path),
+                    i18n.to_display_string(becomes), failure)
 
 
 def _member(name: str) -> str:
@@ -299,15 +404,16 @@ def _member(name: str) -> str:
 def _unpack(archive: archive_base.BaseArchive,
             directory: str, stop: threading.Event,
             progress: Callable[[float], None],
-            unwritable: "str | None" = None, any_page: bool = False
+            unwritable: "str | None" = None, any_page: str = ''
             ) -> tuple[list[str], list[str], dict[str, str]]:
     """Unpack everything <archive> holds into <directory>, and answer
     with the names of its pages, sorted, of everything else, and of the
     files that could not be read, to why.
 
     <unwritable>, where given, says why a book with PNG pages cannot be
-    written: such a book is skipped for it once listed.  <any_page>
-    has a book with any page at all count as such, as one to shrink.
+    written: such a book is skipped for it once listed.  <any_page>,
+    where given, has a book with any page at all count as such, as one
+    to shrink or repack, and is why a book without one is skipped.
 
     A file that cannot be read is left out (archive_tools.extract_each);
     a failure that is the disk's and not the file's (archive_tools.NOT_THE_FILE)
@@ -335,7 +441,7 @@ def _unpack(archive: archive_base.BaseArchive,
                      and not archive_tools.is_finder_file(name)]
             if any_page:
                 if not pages:
-                    raise Skipped(_('no page over the limit'))
+                    raise Skipped(any_page)
             elif not any(archive_packer.may_shrink(name) for name in pages):
                 raise Skipped(_('no PNG, GIF or JPEG pages'))
             if unwritable is not None:
