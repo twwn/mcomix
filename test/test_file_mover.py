@@ -18,8 +18,9 @@ def _across_file_systems(free):
     with unittest.mock.patch.object(file_mover, 'same_file_system',
                                     return_value=False), \
             unittest.mock.patch('shutil.disk_usage',
-                                return_value=types.SimpleNamespace(free=free)):
-        yield
+                                return_value=types.SimpleNamespace(
+                                    free=free)) as usage:
+        yield usage
 
 
 class FileMoverTest(MComixTest):
@@ -51,9 +52,13 @@ class FileMoverTest(MComixTest):
         with open(taken, 'wb') as handle:
             handle.write(b'something else')
 
-        with self.assertRaises(FileExistsError):
+        with self.assertRaises(FileExistsError) as raised:
             file_mover.move_file(self.book, self.target)
 
+        # What the message and the log say.
+        self.assertEqual((errno.EEXIST, os.strerror(errno.EEXIST), taken),
+                         (raised.exception.errno, raised.exception.strerror,
+                          raised.exception.filename))
         self.assertTrue(os.path.isfile(self.book))
         with open(taken, 'rb') as handle:
             self.assertEqual(handle.read(), b'something else')
@@ -92,11 +97,15 @@ class FileMoverTest(MComixTest):
         usage.assert_not_called()
 
     def test_a_move_across_file_systems_that_would_not_fit(self):
-        with _across_file_systems(1023):
+        with _across_file_systems(1023) as usage:
             with self.assertRaises(OSError) as raised:
                 file_mover.move_file(self.book, self.target)
 
-        self.assertEqual(raised.exception.errno, errno.ENOSPC)
+        usage.assert_called_with(self.target)
+        self.assertEqual(
+            (errno.ENOSPC, os.strerror(errno.ENOSPC), self.target),
+            (raised.exception.errno, raised.exception.strerror,
+             raised.exception.filename))
         # Refused before a byte of it was copied.
         self.assertTrue(os.path.isfile(self.book))
         self.assertEqual(os.listdir(self.target), [])
@@ -127,9 +136,14 @@ class FileMoverTest(MComixTest):
             taken.write(b'something else')
         with unittest.mock.patch.object(
                 file_mover, 'move_file', wraps=file_mover.move_file) as moving, \
-                self.assertRaises(FileExistsError):
+                self.assertRaises(FileExistsError) as raised:
             file_mover.move_book(volumes[0], self.target)
         moving.assert_not_called()
+        self.assertEqual(
+            (errno.EEXIST, os.strerror(errno.EEXIST),
+             os.path.join(self.target, 'Set.part3.rar')),
+            (raised.exception.errno, raised.exception.strerror,
+             raised.exception.filename))
         self.assertTrue(all(os.path.isfile(volume) for volume in volumes))
         self.assertEqual(['Set.part3.rar'], os.listdir(self.target))
 
@@ -137,12 +151,36 @@ class FileMoverTest(MComixTest):
         volumes = self._volume_set()
         # Room for each volume, not for all of them.
         free = max(os.path.getsize(volume) for volume in volumes)
-        with _across_file_systems(free):
+        with _across_file_systems(free) as usage:
             with self.assertRaises(OSError) as raised:
                 file_mover.move_book(volumes[0], self.target)
-        self.assertEqual(raised.exception.errno, errno.ENOSPC)
+        usage.assert_called_with(self.target)
+        self.assertEqual(
+            (errno.ENOSPC, os.strerror(errno.ENOSPC), self.target),
+            (raised.exception.errno, raised.exception.strerror,
+             raised.exception.filename))
         self.assertTrue(all(os.path.isfile(volume) for volume in volumes))
         self.assertEqual([], os.listdir(self.target))
+
+    def test_a_rar_set_that_just_fits_moves(self):
+        volumes = self._volume_set()
+        with _across_file_systems(sum(map(os.path.getsize, volumes))):
+            file_mover.move_book(volumes[0], self.target)
+        self.assertEqual(3, len(os.listdir(self.target)))
+
+    def test_a_rar_set_needs_no_room_within_one_file_system(self):
+        volumes = self._volume_set()
+        with unittest.mock.patch('shutil.disk_usage',
+                                 return_value=types.SimpleNamespace(free=0)):
+            file_mover.move_book(volumes[0], self.target)
+        self.assertEqual(3, len(os.listdir(self.target)))
+
+    def test_a_set_of_two_volumes_moves_whole(self):
+        volumes = self._volume_set()
+        os.remove(volumes[2])
+        file_mover.move_book(volumes[0], self.target)
+        self.assertEqual(['Set.part1.rar', 'Set.part2.rar'],
+                         sorted(os.listdir(self.target)))
 
     def test_a_volume_that_fails_takes_the_ones_moved_back(self):
         volumes = self._volume_set()
@@ -158,6 +196,26 @@ class FileMoverTest(MComixTest):
             file_mover.move_book(volumes[0], self.target)
         self.assertTrue(all(os.path.isfile(volume) for volume in volumes))
         self.assertEqual([], os.listdir(self.target))
+
+    def test_a_volume_that_will_not_go_back_leaves_the_first_error(self):
+        """The error the reader is told of is why the move failed, not
+        why taking it back did."""
+        volumes = self._volume_set()
+        move_file = file_mover.move_file
+
+        def failing(path, directory):
+            if path == volumes[2]:
+                raise OSError(errno.EIO, os.strerror(errno.EIO), path)
+            if directory == self.source:
+                raise PermissionError(errno.EACCES,
+                                      os.strerror(errno.EACCES), path)
+            return move_file(path, directory)
+
+        with unittest.mock.patch.object(file_mover, 'move_file', failing), \
+                self.assertRaises(OSError) as raised:
+            file_mover.move_book(volumes[0], self.target)
+        self.assertEqual(errno.EIO, raised.exception.errno)
+        self.assertEqual(2, len(os.listdir(self.target)))
 
     def test_a_book_in_one_file_moves_as_before(self):
         self.assertEqual(os.path.join(self.target, 'book.cbz'),
@@ -198,5 +256,19 @@ class FileMoverTest(MComixTest):
         self._move_across_with('shutil.move', half_written)
         self.assertTrue(os.path.isfile(self.book))
         self.assertEqual([], os.listdir(self.target))
+
+    def test_a_half_copy_that_cannot_be_removed_leaves_the_copy_s_error(self):
+        def half_written(source, destination, **kwargs):
+            raise OSError(errno.EIO, os.strerror(errno.EIO), destination)
+
+        crossing = OSError(errno.EXDEV, os.strerror(errno.EXDEV))
+        refused = PermissionError(errno.EACCES, os.strerror(errno.EACCES))
+        with _across_file_systems(4096), \
+                unittest.mock.patch('os.rename', side_effect=crossing), \
+                unittest.mock.patch('shutil.move', half_written), \
+                unittest.mock.patch('os.unlink', side_effect=refused), \
+                self.assertRaises(OSError) as raised:
+            file_mover.move_file(self.book, self.target)
+        self.assertEqual(errno.EIO, raised.exception.errno)
 
 # vim: expandtab:sw=4:ts=4
