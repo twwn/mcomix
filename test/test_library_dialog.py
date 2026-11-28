@@ -992,8 +992,6 @@ class CustomCoverSizeTest(_LibraryWindowTest):
         self.assertEqual(constants.SIZE_NORMAL, prefs['library cover size'])
         self.assertEqual(constants.SIZE_NORMAL, action.get_state().get_int32())
 
-# vim: expandtab:sw=4:ts=4
-
 
 class _OneBookTest(_LibraryWindowTest):
 
@@ -2855,3 +2853,5 @@ class StorePagesAsWebpTest(_LibraryWindowTest):
         progress = self._store(self.book)
         self.assertIsNone(
             progress.get_widget_for_response(webp_dialog._SELECT))
+
+# vim: expandtab:sw=4:ts=4

@@ -1865,9 +1865,6 @@ class MiddleClickTest(_FourCoversTest):
             self.assertFalse(action.get_enabled())
 
 
-# vim: expandtab:sw=4:ts=4
-
-
 class _FilteredLibrary:
 
     """A library showing all books through <filter_string>."""
@@ -2345,8 +2342,6 @@ class RenameFromLibraryTest(_OneBookAreaTest):
     def test_the_menu_offers_it_for_one_book_only(self):
         assert_offered_once_a_book_is_selected(self, self.area, 'rename')
 
-# vim: expandtab:sw=4:ts=4
-
 
 class MoveFromLibraryTest(MComixTest):
 
@@ -2397,3 +2392,5 @@ class MoveFromLibraryTest(MComixTest):
                         j, Gio.MENU_ATTRIBUTE_LABEL,
                         GLib.VariantType('s')).get_string())
         self.assertEqual(['Move _to'], labels)
+
+# vim: expandtab:sw=4:ts=4

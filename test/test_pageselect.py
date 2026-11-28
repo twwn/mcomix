@@ -176,9 +176,6 @@ class PageselectTest(_WindowTest):
                          prefs['pageselector height'])
 
 
-# vim: expandtab:sw=4:ts=4
-
-
 class ChapterTest(_WindowTest):
 
     """A book whose ComicInfo.xml names chapters is gone through by them
@@ -293,3 +290,5 @@ class NoBookTest(_WindowTest):
         self.assertEqual([], [
             window for window in Gtk.Window.list_toplevels()
             if isinstance(window, pageselect.Pageselector)])
+
+# vim: expandtab:sw=4:ts=4

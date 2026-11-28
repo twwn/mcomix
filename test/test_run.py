@@ -213,7 +213,6 @@ class ArgumentTest(MComixTest):
             run.parse_arguments(['--page', 'seven', '/books/one.cbz'])
 
 
-
 class MakeDirectoriesTest(MComixTest):
 
     def test_directories_another_mcomix_has_just_made_are_taken_as_made(self):
@@ -236,7 +235,6 @@ class MakeDirectoriesTest(MComixTest):
         for directory in (constants.DATA_DIR, constants.CONFIG_DIR):
             self.assertEqual(0o700, os.stat(directory).st_mode & 0o777)
 
-# vim: expandtab:sw=4:ts=4
 
     def test_the_library_opens_at_start_when_asked_for(self):
         """-l asks for it once; the preference asks every time."""
@@ -247,3 +245,5 @@ class MakeDirectoriesTest(MComixTest):
         prefs['open library on startup'] = True
         opts, _args = run.parse_arguments([])
         self.assertTrue(run.shows_library(opts))
+
+# vim: expandtab:sw=4:ts=4

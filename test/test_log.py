@@ -33,9 +33,6 @@ class LogTest(unittest.TestCase):
         self.assertIn('B\\udcfccher.cbz', written)
 
 
-# vim: expandtab:sw=4:ts=4
-
-
 class LogFileTest(unittest.TestCase):
 
     """-o FILE, the log a build without a console - MComix.exe on
@@ -119,3 +116,5 @@ class LogFileTest(unittest.TestCase):
         threading.excepthook(threading.ExceptHookArgs(
             (SystemExit, SystemExit(0), None, threading.Thread())))
         self.assertEqual('', self._written())
+
+# vim: expandtab:sw=4:ts=4

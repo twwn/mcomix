@@ -627,8 +627,6 @@ class CollectionBooksPlanTest(OpenLibraryTest):
                         'SEARCH recent [A-Z -]*USING INTEGER PRIMARY KEY')
                     self.assertNotIn('TEMP B-TREE', plan)
 
-# vim: expandtab:sw=4:ts=4
-
 
 class CollectionHashTest(unittest.TestCase):
 
@@ -655,3 +653,5 @@ class CollectionHashTest(unittest.TestCase):
     def test_the_default_collection_is_hashable(self):
         self.assertEqual(hash(None),
                          hash(backend_types.DefaultCollection))
+
+# vim: expandtab:sw=4:ts=4

@@ -268,9 +268,6 @@ class MenuClickTest(MComixTest):
         self.assertFalse(widgets.take_middle_click())
 
 
-# vim: expandtab:sw=4:ts=4
-
-
 class MenuKeyTest(MComixTest):
 
     """The keys that ask a widget for its context menu.
@@ -350,3 +347,5 @@ class TimerTest(MComixTest):
         self.timer.start(0)
         self.assertFalse(self.timer.running)
         self.assertFalse(self._done_within(0.1))
+
+# vim: expandtab:sw=4:ts=4

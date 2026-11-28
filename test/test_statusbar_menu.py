@@ -54,8 +54,6 @@ class StatusbarFieldsMenuTest(StatusbarTest):
         self.assertEqual(prefs['statusbar fields'],
                          before | constants.STATUS_RESOLUTION)
 
-# vim: expandtab:sw=4:ts=4
-
 
 class StatusbarCopyTest(MComixTest):
 
@@ -96,3 +94,5 @@ class StatusbarCopyTest(MComixTest):
         actions = self.bar._field_actions
         self.assertTrue(actions.lookup_action('copy-filename').get_enabled())
         self.assertFalse(actions.lookup_action('copy-path').get_enabled())
+
+# vim: expandtab:sw=4:ts=4

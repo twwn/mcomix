@@ -820,8 +820,6 @@ class BeforeAPageIsChosenTest(_HandlerTest):
     def test_nothing_is_waited_on_for_a_page_that_was_never_chosen(self):
         self.assertFalse(self.handler._wait_on_page(None, check_only=True))
 
-# vim: expandtab:sw=4:ts=4
-
 
 class ExtractionOrderTest(MComixTest):
 
@@ -866,3 +864,5 @@ class ExtractionOrderTest(MComixTest):
         self.assertEqual([1, 7, 2, 3, 4, 5, 6, 8, 9], self._order(1))
         self.handler.set_image_files(['%02d.png' % n for n in range(1, 10)])
         self.assertEqual([1, 2, 3, 4, 5, 6, 7, 8, 9], self._order(1))
+
+# vim: expandtab:sw=4:ts=4

@@ -342,8 +342,6 @@ class ThumbnailReuseTest(MComixTest):
             thumbnail_tools._file_uri(source).isascii(),
             'the URI carried a character the hash would have to encode')
 
-# vim: expandtab:sw=4:ts=4
-
 
 class ThumbnailFollowTest(MComixTest):
 
@@ -1004,3 +1002,5 @@ class SizedThumbnailTest(MComixTest):
                                         side_effect=OSError('refused')):
             self._keep()
         self.assertEqual([], os.listdir(os.path.dirname(self._kept)))
+
+# vim: expandtab:sw=4:ts=4

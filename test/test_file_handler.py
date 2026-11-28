@@ -1657,8 +1657,6 @@ class BeforeAPageIsChosenTest(MainWindowOpenTest):
         self.assertEqual(self.window.filehandler.get_path_to_base(),
                          '/nowhere')
 
-# vim: expandtab:sw=4:ts=4
-
 
 class BusyCursorTest(MComixTest):
 
@@ -2037,3 +2035,5 @@ class APageIsDatedAsItsArchiveRecordsItTest(_WindowTest):
             recorded = time.mktime(
                 archive.getinfo(member).date_time + (0, 0, -1))
         self.assertEqual(recorded, self.handler.page_date(1))
+
+# vim: expandtab:sw=4:ts=4

@@ -52,7 +52,6 @@ class StatusbarTest(MComixTest):
         super().tearDown()
 
 
-
 class StatusbarTextTest(StatusbarTest):
 
     def _text(self):
@@ -140,8 +139,6 @@ class StatusbarTextTest(StatusbarTest):
         self.bar.set_filename('only.jpg')
         self.bar.update()
         self.assertNotIn('an error nobody cleared', self._text())
-
-# vim: expandtab:sw=4:ts=4
 
 
 class StatusbarHeightTest(MComixTest):
@@ -290,3 +287,5 @@ class StatusbarLayoutTest(MComixTest):
         self.assertEqual((text.red, text.green, text.blue),
                          (colour.red, colour.green, colour.blue))
         self.assertAlmostEqual(text.alpha / 2, colour.alpha, places=2)
+
+# vim: expandtab:sw=4:ts=4

@@ -1657,9 +1657,6 @@ class RgbaTest(unittest.TestCase):
         self.assertEqual(1.0, image_tools.rgba(0.1, 0.2, 0.3).alpha)
 
 
-# vim: expandtab:sw=4:ts=4
-
-
 class _Format:
 
     """Enough of a GdkPixbuf.PixbufFormat for get_supported_formats()."""
@@ -1897,3 +1894,5 @@ class AvifThroughPluginTest(unittest.TestCase):
 
     def test_without_the_plugin_nothing_changes(self):
         self.assertEqual((False, ['pillow_avif']), self._ask(None, False))
+
+# vim: expandtab:sw=4:ts=4

@@ -212,9 +212,6 @@ class CatalogueDirectionTest(MComixTest):
                          'mcomix/messages has no catalogue for')
 
 
-# vim: expandtab:sw=4:ts=4
-
-
 class CatalogueCandidatesTest(unittest.TestCase):
 
     """Which catalogue directories a locale name is looked for under.
@@ -269,3 +266,5 @@ class ToUnicodeTest(unittest.TestCase):
         for text in (self.GERMAN, self.FRENCH):
             with self.subTest(text=text[:10]):
                 self.assertEqual(text, i18n.to_unicode(text.encode('cp1252')))
+
+# vim: expandtab:sw=4:ts=4

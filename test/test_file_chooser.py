@@ -800,9 +800,6 @@ class FileChooserTest(MainWindowOpenTest):
             seconds=10), repr(self.dialog._detailslabel.get_text()))
 
 
-# vim: expandtab:sw=4:ts=4
-
-
 class _Library(Gtk.Window):
 
     """The library window, as far as its file chooser asks."""
@@ -983,3 +980,5 @@ class FileDetailsTest(MComixTest):
         with open(path, 'w') as notes:
             notes.write('nothing to see')
         self.assertEqual('', file_chooser_base_dialog.file_details(path))
+
+# vim: expandtab:sw=4:ts=4

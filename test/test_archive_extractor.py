@@ -284,8 +284,6 @@ class LateExtractionTest(_ExtractorTest):
                         'the thread waiting for the page was never woken')
         waiter.join(timeout=20)
 
-# vim: expandtab:sw=4:ts=4
-
 
 class FailedBatchTest(_ExtractorTest):
 
@@ -426,3 +424,5 @@ class ShortBatchTest(_ExtractorTest):
             self._extract(names)
         warning.assert_called_once()
         self.assertIn(names[0], warning.call_args.args[1])
+
+# vim: expandtab:sw=4:ts=4

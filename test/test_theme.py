@@ -316,7 +316,6 @@ class PitchBlackBackgroundTest(MComixTest):
                     self._PICTURE, '%s, dynamic=%s' % (scheme, dynamic))
 
 
-
 class LibadwaitaStylesheetsTest(MComixTest):
 
     """Where the colours are read from, with libadwaita's resources
@@ -439,8 +438,6 @@ class LibadwaitaColoursTest(MComixTest):
         self.assertEqual('#000000', black['window_bg_color'])
         self.assertEqual(dark['view_fg_color'], black['view_fg_color'])
         self.assertEqual({}, system)
-
-# vim: expandtab:sw=4:ts=4
 
 
 def _border_nodes(window, colours=False):
@@ -565,3 +562,5 @@ class ViewColourTest(MComixTest):
                                book_area._BookArea._BLACK_CSS_CLASS)
         for scheme, colour in self._painted(view).items():
             self.assertEqual(colour, 'rgb(0,0,0)', scheme)
+
+# vim: expandtab:sw=4:ts=4
