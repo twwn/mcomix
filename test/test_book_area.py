@@ -1721,7 +1721,8 @@ class StorePagesAsWebpEntryTest(_FourCoversTest):
         counted as left alone after the question and the pass."""
         self.library.collection_area = _CollectionArea()
         self.library.main_window = _main_window()
-        action = self.area._popup_actions.lookup_action('store-webp')
+        actions = [self.area._popup_actions.lookup_action(name)
+                   for name in ('store-webp', 'shrink-pages')]
         self.area._covers.get_item(0).format = constants.PDF
         self.area._covers.get_item(1).format = constants.RAR
         with unittest.mock.patch.object(book_area.widgets, 'popup_at'), \
@@ -1734,12 +1735,15 @@ class StorePagesAsWebpEntryTest(_FourCoversTest):
                 with self.subTest(selected=selected):
                     self.area._covers.select_positions(selected)
                     self.area._popup_book_menu()
-                    self.assertEqual(offered, action.get_enabled())
+                    self.assertEqual([offered, offered],
+                                     [action.get_enabled()
+                                      for action in actions])
 
     def test_it_has_a_section_of_its_own(self):
         """It writes every book selected again; it sat among Rename and
-        Properties, which only name or describe one.  "Find duplicates"
-        goes through many books too."""
+        Properties, which only name or describe one.  "Shrink oversized
+        pages" beside it does too, and "Find duplicates" goes through
+        many books."""
         model = self.area._book_menu.get_menu_model()
         sections = [model.get_item_link(index, Gio.MENU_LINK_SECTION)
                     for index in range(model.get_n_items())]
@@ -1749,7 +1753,8 @@ class StorePagesAsWebpEntryTest(_FourCoversTest):
                     if section.get_item_attribute_value(
                         index, 'action', None) is not None]
                    for section in sections if section is not None]
-        self.assertIn(['books.store-webp', 'books.find-duplicates'], actions)
+        self.assertIn(['books.store-webp', 'books.shrink-pages',
+                       'books.find-duplicates'], actions)
 
 
 class BooksOnShowEntriesTest(_FourCoversTest):

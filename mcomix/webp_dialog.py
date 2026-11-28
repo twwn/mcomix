@@ -35,6 +35,7 @@ from mcomix import file_chooser_simple_dialog
 from mcomix import i18n
 from mcomix import log
 from mcomix import message_dialog
+from mcomix import page_shrink
 from mcomix import tools
 from mcomix import webp_books
 from mcomix import widgets
@@ -103,13 +104,41 @@ def offer(parent: Gtk.Window, books: Sequence[str],
                                     _('_Make Smaller'), Response.OK)
 
     def run() -> None:
-        _ProgressDialog(parent, list(books), open_book, written, finished,
-                        select)
+        write(parent, list(books), open_book, written, finished, select)
 
     def answered(response: int) -> None:
         if response == Response.OK:
             start(run)
     dialog.run_async(answered)
+
+
+def write(parent: Gtk.Window, books: list[str],
+          open_book: Callable[[], "str | None"],
+          written: "Callable[[str, webp_books.Converted], None]",
+          finished: Callable[[], None],
+          select: "Callable[[list[str]], None] | None" = None,
+          shrink: "page_shrink.Shrink | None" = None) -> None:
+    """Write <books> again, showing how far it is, as offer() does once
+    the reader has said yes; with the pages over the limit of <shrink>
+    shrunk, where it is given (mcomix.shrink_dialog), instead of made
+    smaller without loss."""
+    _ProgressDialog(parent, books, open_book, written, finished, select,
+                    shrink)
+
+
+def left_line(reason: str, count: int) -> str:
+    """The summary's line for <count> books left alone for <reason>."""
+    return i18n.get_translation().ngettext(
+        '%(count)d book left as it was: %(reason)s',
+        '%(count)d books left as they were: %(reason)s',
+        count) % {'count': count, 'reason': reason}
+
+
+def stopped_line(count: int) -> str:
+    """The summary's line for <count> books a stop left unread."""
+    return i18n.get_translation().ngettext(
+        'Stopped with %d book not yet looked at',
+        'Stopped with %d books not yet looked at', count) % count
 
 
 class _ProgressDialog(Dialog):
@@ -123,11 +152,14 @@ class _ProgressDialog(Dialog):
                  open_book: Callable[[], "str | None"],
                  written: "Callable[[str, webp_books.Converted], None]",
                  finished: Callable[[], None],
-                 select: "Callable[[list[str]], None] | None" = None
+                 select: "Callable[[list[str]], None] | None" = None,
+                 shrink: "page_shrink.Shrink | None" = None
                  ) -> None:
-        super().__init__(title=_('Making pages smaller'),
+        super().__init__(title=_('Making pages smaller') if shrink is None
+                         else _('Shrinking pages'),
                          transient_for=parent, modal=True,
                          destroy_with_parent=True)
+        self._shrink = shrink
         self._books = books
         self._open_book = open_book
         self._written = written
@@ -204,7 +236,7 @@ class _ProgressDialog(Dialog):
                         os.path.abspath(open_book) == os.path.abspath(path):
                     raise webp_books.Skipped(_('open in the main window'))
                 outcome = webp_books.convert(path, self._stop,
-                                             self._progress)
+                                             self._progress, self._shrink)
             except archive_packer.Cancelled:
                 break
             except webp_books.Skipped as reason:
@@ -240,10 +272,16 @@ class _ProgressDialog(Dialog):
 
     def _done_line(self) -> str:
         count = len(self._stored)
-        return i18n.get_translation().ngettext(
-            '%(count)d book stored with WebP pages, %(size)s smaller',
-            '%(count)d books stored with WebP pages, %(size)s smaller',
-            count) % {'count': count, 'size': GLib.format_size(self._saved)}
+        ngettext = i18n.get_translation().ngettext
+        if self._shrink is not None:
+            line = ngettext('%(count)d book shrunk, %(size)s smaller',
+                            '%(count)d books shrunk, %(size)s smaller', count)
+        else:
+            line = ngettext(
+                '%(count)d book stored with WebP pages, %(size)s smaller',
+                '%(count)d books stored with WebP pages, %(size)s smaller',
+                count)
+        return line % {'count': count, 'size': GLib.format_size(self._saved)}
 
     def _damaged(self) -> list[tuple[str, webp_books.Converted]]:
         """The books written without the files in them that could not
@@ -255,12 +293,6 @@ class _ProgressDialog(Dialog):
         return i18n.get_translation().ngettext(
             '%d book stored without its damaged files',
             '%d books stored without their damaged files', count) % count
-
-    def _left_line(self, reason: str, count: int) -> str:
-        return i18n.get_translation().ngettext(
-            '%(count)d book left as it was: %(reason)s',
-            '%(count)d books left as they were: %(reason)s',
-            count) % {'count': count, 'reason': reason}
 
     def faulty(self) -> list[str]:
         """The books found at fault, in the order they were given: those
@@ -278,11 +310,6 @@ class _ProgressDialog(Dialog):
         for paths in self._left.values():
             seen.update(paths)
         return [path for path in self._books if path not in seen]
-
-    def _stopped_line(self, count: int) -> str:
-        return i18n.get_translation().ngettext(
-            'Stopped with %d book not yet looked at',
-            'Stopped with %d books not yet looked at', count) % count
 
     def _left_by_reason(self) -> list[tuple[str, list[str]]]:
         """The books left alone by why, the most common reason first."""
@@ -328,7 +355,7 @@ class _ProgressDialog(Dialog):
         if damaged:
             lines.append(self._damaged_line(len(damaged)))
         for reason, paths in self._left_by_reason():
-            lines.append(self._left_line(reason, len(paths)))
+            lines.append(left_line(reason, len(paths)))
         # One to a line: joined, a few long names made one line wider
         # than the screen.
         for path, _error in self._failed[:_FAILURES_NAMED]:
@@ -338,7 +365,7 @@ class _ProgressDialog(Dialog):
             lines.append('…')
         left = len(self._not_looked_at())
         if left:
-            lines.append(self._stopped_line(left))
+            lines.append(stopped_line(left))
         self._book.set_visible(False)
         self.finished = True
         self._bar.set_fraction(1.0 if not left else self._bar.get_fraction())
@@ -381,7 +408,7 @@ class _ProgressDialog(Dialog):
                     for name, why in converted.left_out.items())
             sections.append(section)
         for reason, paths in self._left_by_reason():
-            sections.append([self._left_line(reason, len(paths))]
+            sections.append([left_line(reason, len(paths))]
                             + [book(path) for path in paths])
         for path, error in self._failed:
             sections.append([_('Could not be written: %s')
@@ -389,7 +416,7 @@ class _ProgressDialog(Dialog):
                              '    ' + error])
         left = self._not_looked_at()
         if left:
-            sections.append([self._stopped_line(len(left))]
+            sections.append([stopped_line(len(left))]
                             + [book(path) for path in left])
         return '\n\n'.join('\n'.join(section) for section in sections) + '\n'
 
@@ -398,7 +425,9 @@ class _ProgressDialog(Dialog):
             Gtk.FileChooserAction.SAVE, self,
             folder=prefs['path of last saved in filechooser'])
         chooser.set_title(_('Save the log as'))
-        chooser.set_save_name(time.strftime('mcomix-webp-%Y-%m-%d-%H%M.txt'))
+        chooser.set_save_name(time.strftime(
+            'mcomix-webp-%Y-%m-%d-%H%M.txt' if self._shrink is None
+            else 'mcomix-shrink-%Y-%m-%d-%H%M.txt'))
 
         def chosen(paths: list[str]) -> None:
             chooser.destroy()

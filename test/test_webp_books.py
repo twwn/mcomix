@@ -11,19 +11,22 @@ import unittest
 import unittest.mock
 import zipfile
 
+from gi.repository import GLib
 from PIL import Image
 
 from mcomix import archive_packer
 from mcomix import archive_tools
 from mcomix import constants
+from mcomix import tools
 from mcomix import webp_books
 from mcomix.archive import sevenzip_external
 from mcomix.archive import zip as zip_archive
+from mcomix.page_shrink import Shrink
 from mcomix.preferences import prefs
 
-from . import (MComixTest, copy_rar_set, damage_member, get_testfile_path,
-               line_art_png, refuse_passwords, sample_pages,
-               skip_unless_rar_reads)
+from . import (MComixTest, copy_rar_set, damage_member, drawn_page, encoded,
+               get_testfile_path, line_art_png, refuse_passwords,
+               sample_pages, skip_unless_rar_reads)
 
 
 def pixels(data):
@@ -460,5 +463,101 @@ class SkippedTest(_BookTest):
         with open(path, 'rb') as book:
             self.assertEqual(before, book.read())
         self.assertEqual(['book.cbz'], os.listdir(self.directory))
+
+
+
+class ShrinkTest(_BookTest):
+
+    """A book of two pages over the limit, one under it and a text,
+    surveyed and then shrunk."""
+
+    SHRINK = Shrink(limit=600, quality=80)
+
+    def setUp(self):
+        super().setUp()
+        self.members = {
+            '01.jpg': encoded(drawn_page(1, (1000, 1500)), 'JPEG',
+                              quality=95),
+            '02.png': encoded(drawn_page(2, (400, 600)), 'PNG'),
+            'sub/03.png': encoded(drawn_page(3, (1000, 1500)), 'PNG'),
+            'notes.txt': b'kept as it was',
+        }
+        self.book = self.zip_book(self.members)
+
+    def test_the_survey_counts_the_pages_over_the_limit_and_writes_nothing(
+            self):
+        with open(self.book, 'rb') as book:
+            before = book.read()
+        surveyed = webp_books.survey(self.book, self.SHRINK, self.stop)
+        self.assertEqual(2, surveyed.pages)
+        self.assertEqual(len(before), surveyed.size)
+        over = len(self.members['01.jpg']) + len(self.members['sub/03.png'])
+        self.assertGreater(surveyed.saved, over // 2)
+        self.assertLess(surveyed.saved, over)
+        with open(self.book, 'rb') as book:
+            self.assertEqual(before, book.read())
+        self.assertEqual(['book.cbz'], os.listdir(self.directory))
+
+    def test_the_survey_of_a_book_with_no_page_over_the_limit(self):
+        book = self.zip_book({'01.png': self.members['02.png']}, 'small.cbz')
+        with self.assertRaises(webp_books.Skipped) as raised:
+            webp_books.survey(book, self.SHRINK, self.stop)
+        self.assertEqual('no page over the limit', str(raised.exception))
+
+    def test_the_pages_over_the_limit_are_shrunk_and_the_book_trashed(self):
+        with open(self.book, 'rb') as book:
+            before = book.read()
+        converted = webp_books.convert(self.book, self.stop,
+                                       shrink=self.SHRINK)
+        self.assertEqual({'01.jpg': '01.webp', '02.png': '02.png',
+                          'sub/03.png': 'sub/03.webp'}, converted.renamed)
+        self.assertEqual((len(before), os.path.getsize(self.book)),
+                         (converted.before, converted.after))
+        with zipfile.ZipFile(self.book) as book:
+            self.assertEqual(
+                ['01.webp', '02.png', 'notes.txt', 'sub/03.webp'],
+                sorted(book.namelist()))
+            self.assertEqual(self.members['02.png'], book.read('02.png'))
+            with book.open('sub/03.webp') as member, \
+                    Image.open(member) as page:
+                self.assertEqual((400, 600), page.size)
+        trashed, = os.listdir(self.trash_dir)
+        with open(os.path.join(self.trash_dir, trashed), 'rb') as book:
+            self.assertEqual(before, book.read())
+        self.assertEqual(['book.cbz'], os.listdir(self.directory))
+
+    def test_a_book_the_trash_refuses_is_left_as_it_was(self):
+        with unittest.mock.patch.object(tools, 'move_to_trash',
+                                        side_effect=GLib.Error('no trash')):
+            self.assertSkipped(self.book, 'the trash refused it: no trash')
+        with unittest.mock.patch.object(tools, 'trash_refuses',
+                                        return_value=True):
+            self.assertSkipped(self.book,
+                               'the trash takes no files from its folder')
+
+    def test_the_new_book_is_kept_where_the_old_one_could_not_be_replaced(
+            self):
+        """The book as it was is in the trash by then; the one written
+        is all there is of it in its folder."""
+        rename = webp_books.portability.rename_once_closed
+
+        def refused(replace, source, target):
+            # The packer's own rename, of its temporary file, goes on.
+            if target == self.book:
+                raise OSError(errno.EACCES, 'refused')
+            rename(replace, source, target)
+        with unittest.mock.patch.object(
+                webp_books.portability, 'rename_once_closed', refused), \
+                self.assertLogs('mcomix', level='WARNING') as logged, \
+                self.assertRaises(OSError):
+            webp_books.convert(self.book, self.stop, shrink=self.SHRINK)
+        written, = os.listdir(self.directory)
+        with zipfile.ZipFile(os.path.join(self.directory, written)) as book:
+            self.assertIn('01.webp', book.namelist())
+        self.assertEqual(1, len(os.listdir(self.trash_dir)))
+        self.assertIn(written, '\n'.join(logged.output))
+
+    def convert(self, path):
+        return webp_books.convert(path, self.stop, shrink=self.SHRINK)
 
 # vim: expandtab:sw=4:ts=4

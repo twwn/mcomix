@@ -8,6 +8,11 @@ name it had, and a page made a WebP changes only its extension.  That
 is where it differs from a save, which numbers the pages anew and adds
 a ComicInfo.xml: here nothing changes that the reader did not ask for.
 
+"Shrink oversized pages..." writes books again the same way, with each
+page over the limit shrunk (mcomix.page_shrink) instead, and moves the
+book as it was to the trash: that one loses detail.  survey() first
+tells which books it would change, and by how much.
+
 Nothing here touches GTK: convert() runs on a thread of its own, and
 what it answers with is the caller's to bring to the stores kept by a
 page's name (file_actions.follow_pages()), on the main thread.
@@ -19,12 +24,16 @@ import tempfile
 import threading
 from dataclasses import dataclass, field
 
+from gi.repository import GLib
+
 from mcomix import archive_packer
 from mcomix import archive_tools
 from mcomix import constants
 from mcomix import i18n
 from mcomix import image_tools
 from mcomix import log
+from mcomix import page_shrink
+from mcomix import portability
 from mcomix import tools
 from mcomix.archive import archive_base
 from mcomix.archive import password as archive_password
@@ -75,23 +84,30 @@ def _ignore_progress(done: float) -> None:
     pass
 
 
-def convert(path: str, stop: threading.Event,
-            progress: Callable[[float], None] = _ignore_progress
-            ) -> Converted:
-    """Store the PNG pages of the archive at <path> as lossless WebP.
+@dataclass(frozen=True)
+class Surveyed:
 
-    For a thread of its own: it unpacks the whole book and encodes each
-    PNG page.  <stop>, once set, stops it before the next file, and
-    <progress> is called with how much of the book is done, from 0 to 1.
+    """A book with pages over the limit, as survey() found it."""
 
-    A file in the archive that cannot be read, being damaged, is left
-    out of it, and named in what is answered: the rest of the book is
-    not lost with it.
+    #: How many of its pages are over the limit.
+    pages: int
+    #: The archive's size in bytes, and roughly how many shrinking its
+    #: pages would save.
+    size: int
+    saved: int
 
-    Raises Skipped for a book it leaves alone, archive_packer.Cancelled
-    where <stop> was set, and OSError where reading or writing failed;
-    the archive is as it was in all three.
-    """
+
+#: How many of a book's pages over the limit survey() shrinks to tell
+#: what shrinking all of them would save: the first, the last and one
+#: between, spread through the book as its pages are.
+_SAMPLES = 3
+
+
+def _opened(path: str
+            ) -> tuple[archive_base.BaseArchive, int, "str | None"]:
+    """The archive handler for the book at <path>, its format, and why
+    a book with pages to change could not be written, if it could not.
+    Raises Skipped for a book that is left alone whatever it holds."""
     if archive_tools.is_later_volume(path) \
             or len(archive_tools.volume_set(path)) > 1:
         # TRANSLATORS: Why a book was left as it was, after "3 books left as
@@ -113,15 +129,108 @@ def convert(path: str, stop: threading.Event,
     archive = archive_tools.get_archive_handler(path, archive_type)
     if archive is None:
         raise Skipped(_('nothing installed here reads the format'))
+    return archive, archive_type, unwritable
+
+
+def survey(path: str, shrink: page_shrink.Shrink, stop: threading.Event,
+           progress: Callable[[float], None] = _ignore_progress
+           ) -> Surveyed:
+    """How many pages of the archive at <path> are over the limit of
+    <shrink>, and roughly how much room shrinking them would save, told
+    by shrinking a few of them (_SAMPLES).  Nothing is written.
+
+    For a thread of its own, as convert(), and raising what it raises
+    but OSError for a write; Skipped too for a book with no page over
+    the limit."""
+    archive, _archive_type, unwritable = _opened(path)
+    directory = tempfile.mkdtemp(prefix='mcomix-shrink-survey.',
+                                 dir=archive_packer.working_folder())
+    book = os.path.join(directory, 'book')
+    try:
+        try:
+            pages = _unpack(archive, book, stop, progress, unwritable,
+                            any_page=True)[0]
+        finally:
+            archive.close()
+        over = [file for file in (os.path.join(book, name) for name in pages)
+                if _over(file, shrink.limit)]
+        if not over:
+            # TRANSLATORS: Why a book was left as it was, as the others.
+            raise Skipped(_('no page over the limit'))
+        step = -(-len(over) // _SAMPLES)
+        sampled = (over[::step] + over[-1:])[:_SAMPLES] \
+            if len(over) > _SAMPLES else over
+        before = after = 0
+        for number, file in enumerate(dict.fromkeys(sampled)):
+            if stop.is_set():
+                raise archive_packer.Cancelled()
+            shrunk = page_shrink.shrink_instead(file, directory,
+                                                '%d.webp' % number, shrink)
+            before += os.path.getsize(file)
+            after += os.path.getsize(shrunk if shrunk is not None else file)
+        over_bytes = sum(os.path.getsize(file) for file in over)
+        return Surveyed(len(over), os.stat(path).st_size,
+                        round(over_bytes * (1 - after / before))
+                        if before else 0)
+    finally:
+        tools.remove_tree(directory)
+
+
+def _over(file: str, limit: int) -> bool:
+    """Whether the picture <file> is over <limit>, told by its size as
+    its header gives it; False for what Pillow does not read."""
+    from PIL import Image
+
+    try:
+        with Image.open(file) as picture:
+            size = picture.size
+    except Exception:
+        return False
+    return page_shrink.scaled_size(*size, limit) is not None
+
+
+def convert(path: str, stop: threading.Event,
+            progress: Callable[[float], None] = _ignore_progress,
+            shrink: "page_shrink.Shrink | None" = None) -> Converted:
+    """Store the PNG pages of the archive at <path> as lossless WebP;
+    or, given <shrink>, the pages over its limit shrunk, the archive as
+    it was going to the trash.
+
+    For a thread of its own: it unpacks the whole book and encodes each
+    PNG page.  <stop>, once set, stops it before the next file, and
+    <progress> is called with how much of the book is done, from 0 to 1.
+
+    A file in the archive that cannot be read, being damaged, is left
+    out of it, and named in what is answered: the rest of the book is
+    not lost with it.
+
+    Raises Skipped for a book it leaves alone, archive_packer.Cancelled
+    where <stop> was set, and OSError where reading or writing failed;
+    the archive is as it was in all three.
+    """
+    archive, archive_type, unwritable = _opened(path)
+    if shrink is not None and tools.trash_refuses(path):
+        archive.close()
+        raise Skipped(_('the trash takes no files from its folder'))
     before = os.stat(path).st_size
     directory = tempfile.mkdtemp(prefix='mcomix-webp-book.',
                                  dir=archive_packer.working_folder())
+    target = path
     try:
         try:
-            pages, others, left_out = _unpack(archive, directory, stop,
-                                              progress, unwritable)
+            pages, others, left_out = _unpack(
+                archive, directory, stop, progress, unwritable,
+                any_page=shrink is not None)
         finally:
             archive.close()
+        if shrink is not None:
+            # Written beside the book, which goes to the trash once the
+            # new one is whole and takes its place.
+            fd, target = tempfile.mkstemp(
+                suffix=os.path.splitext(path)[1],
+                prefix=archive_tools.WORKING_PREFIX,
+                dir=os.path.dirname(tools.replaced_path(path)))
+            os.close(fd)
 
         def files(names: list[str]) -> dict[str, str]:
             return {os.path.join(directory, name): name for name in names}
@@ -138,12 +247,32 @@ def convert(path: str, stop: threading.Event,
 
         try:
             written = archive_packer.write_archive(
-                path, list(page_files), [], carried_files=files(others),
+                target, list(page_files), [], carried_files=files(others),
                 archive_type=archive_type, permissions_from=path,
-                page_names=page_files, waiting=wait, webp_pages=True,
+                page_names=page_files, waiting=wait,
+                webp_pages=shrink is None, shrink=shrink,
                 add_comic_info=False, only_converted=True)
         except archive_packer.Unchanged:
             raise Skipped(_('no page made smaller')) from None
+        if target != path:
+            book = tools.replaced_path(path)
+            try:
+                tools.move_to_trash(book)
+            except GLib.Error as error:
+                raise Skipped(_('the trash refused it: %s')
+                              % error.message) from None
+            # The book as it was is in the trash: the new one is all that
+            # is left in its folder, kept where it was written if it
+            # cannot take the book's name.
+            written_to, target = target, path
+            try:
+                portability.rename_once_closed(os.replace, written_to, book)
+            except OSError as failure:
+                log.warning('"%s" went to the trash, but "%s", written in '
+                            'its place, could not take its name: %s',
+                            i18n.to_display_string(book),
+                            i18n.to_display_string(written_to), failure)
+                raise
         progress(1.0)
         for name, why in left_out.items():
             log.warning('Left "%s" out of "%s": it could not be read: %s',
@@ -154,6 +283,11 @@ def convert(path: str, stop: threading.Event,
                          before, os.stat(path).st_size, left_out)
     finally:
         tools.remove_tree(directory)
+        if target != path:
+            # Stopped, or failed, before the new book took the old one's
+            # place.
+            with contextlib.suppress(FileNotFoundError):
+                tools.remove_file(target)
 
 
 def _member(name: str) -> str:
@@ -165,14 +299,15 @@ def _member(name: str) -> str:
 def _unpack(archive: archive_base.BaseArchive,
             directory: str, stop: threading.Event,
             progress: Callable[[float], None],
-            unwritable: "str | None" = None
+            unwritable: "str | None" = None, any_page: bool = False
             ) -> tuple[list[str], list[str], dict[str, str]]:
     """Unpack everything <archive> holds into <directory>, and answer
     with the names of its pages, sorted, of everything else, and of the
     files that could not be read, to why.
 
     <unwritable>, where given, says why a book with PNG pages cannot be
-    written: such a book is skipped for it once listed.
+    written: such a book is skipped for it once listed.  <any_page>
+    has a book with any page at all count as such, as one to shrink.
 
     A file that cannot be read is left out (archive_tools.extract_each);
     a failure that is the disk's and not the file's (archive_tools.NOT_THE_FILE)
@@ -198,7 +333,10 @@ def _unpack(archive: archive_base.BaseArchive,
             pages = [name for name in names
                      if image_tools.is_image_file(name)
                      and not archive_tools.is_finder_file(name)]
-            if not any(archive_packer.may_shrink(name) for name in pages):
+            if any_page:
+                if not pages:
+                    raise Skipped(_('no page over the limit'))
+            elif not any(archive_packer.may_shrink(name) for name in pages):
                 raise Skipped(_('no PNG, GIF or JPEG pages'))
             if unwritable is not None:
                 raise Skipped(unwritable)

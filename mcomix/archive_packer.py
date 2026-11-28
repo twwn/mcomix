@@ -20,6 +20,7 @@ from mcomix import archive_tools
 from mcomix import comicinfo
 from mcomix import constants
 from mcomix import log
+from mcomix import page_shrink
 from mcomix import portability
 from mcomix import process
 from mcomix import tools
@@ -566,7 +567,8 @@ def write_archive(archive_path: str, image_files: Sequence[str],
                   waiting: "Callable[[Packer], None] | None" = None,
                   webp_pages: bool = False,
                   add_comic_info: bool = True,
-                  only_converted: bool = False
+                  only_converted: bool = False,
+                  shrink: "page_shrink.Shrink | None" = None
                   ) -> dict[str, str]:
     """Write an archive of those files at <archive_path>, and answer
     with the name each page was written under, by its path.
@@ -591,6 +593,11 @@ def write_archive(archive_path: str, image_files: Sequence[str],
     <only_converted> then writes nothing where no page became one, and
     raises Unchanged: an archive rewritten only to store its pages as
     WebP is not rewritten for nothing.
+
+    <shrink> instead has every page over its limit shrunk and written
+    as a WebP where page_shrink.shrink_instead() makes one smaller; the
+    rest go in as they were.  <only_converted> then works as it does
+    for <webp_pages>.
 
     <add_comic_info> False carries what the book holds as it is,
     without writing or updating a ComicInfo.xml: for a rewrite that
@@ -652,7 +659,8 @@ def write_archive(archive_path: str, image_files: Sequence[str],
                         comment_names=comment_names,
                         webp_pages=webp_pages,
                         only_converted=only_converted,
-                        comic_info=comic_info)
+                        comic_info=comic_info,
+                        shrink=shrink)
         packer.pack()
         try:
             if waiting is not None:
@@ -1050,7 +1058,8 @@ class Packer:
                  comment_names: "Mapping[str, str] | None" = None,
                  webp_pages: bool = False,
                  only_converted: bool = False,
-                 comic_info: "tuple[str, bytes | None] | None" = None
+                 comic_info: "tuple[str, bytes | None] | None" = None,
+                 shrink: "page_shrink.Shrink | None" = None
                  ) -> None:
         """Setup a Packer object to create an archive at <archive_path>.
         All files pointed to by paths in the sequences <image_files> and
@@ -1090,6 +1099,10 @@ class Packer:
         <only_converted> has nothing written where no page became a
         WebP; unchanged then says so.
 
+        <shrink> has the pages over its limit shrunk instead, each
+        written as the WebP page_shrink.shrink_instead() makes where it
+        makes one, in the same way.
+
         <comic_info> is the ComicInfo.xml written for the archive, and
         the one it was made from: a page made a WebP has another size,
         so the file is written again once the WebPs are there.
@@ -1104,6 +1117,7 @@ class Packer:
         self._archive_type = archive_type
         self._webp_pages = webp_pages
         self._only_converted = only_converted
+        self._shrink = shrink
         self._unchanged = False
         # The WebP each page's file was made into, by the file's path.
         self._webps: dict[str, str] = {}
@@ -1229,6 +1243,10 @@ class Packer:
                 if not held or self._stop.is_set():
                     return None
                 try:
+                    if self._shrink is not None:
+                        return page_shrink.shrink_instead(
+                            path, directory, '%d.webp' % number,
+                            self._shrink)
                     if may_become_webp(path):
                         return webp_instead(path, directory,
                                             '%d.webp' % number)
@@ -1241,7 +1259,8 @@ class Packer:
                     log.debug('No WebP of "%s": %s', path, error)
                     return None
 
-        costs = {path: webp_cost(path) for path in paths}
+        cost = webp_cost if self._shrink is None else page_shrink.cost
+        costs = {path: cost(path) for path in paths}
         # The largest first, so that the last page left working alone,
         # with the processors idle beside it, is a small one.
         order = sorted(enumerate(paths), key=lambda page: -costs[page[1]])
@@ -1276,7 +1295,7 @@ class Packer:
 
         webp_directory = None
         try:
-            if self._webp_pages:
+            if self._webp_pages or self._shrink is not None:
                 webp_directory = tempfile.mkdtemp(prefix='mcomix-webp.',
                                                   dir=working_folder())
                 self._make_webps(webp_directory)

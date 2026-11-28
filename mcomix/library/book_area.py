@@ -39,6 +39,7 @@ from mcomix import openwith_menu
 from mcomix import tools
 from mcomix import file_actions
 from mcomix import archive_packer
+from mcomix import shrink_dialog
 from mcomix import webp_books
 from mcomix import webp_dialog
 from mcomix.library import backend_types
@@ -358,6 +359,8 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable, LibraryPart):
             # which none of the entries about the file beside it does.
             ('store-webp', _('Make pages smaller _without loss...'),
              self.store_pages_as_webp),
+            ('shrink-pages', _('Shrin_k oversized pages...'),
+             self.shrink_pages),
             # Of the books on show, not those selected: what it finds
             # is selected afterwards.
             ('find-duplicates', _('Find _duplicates...'),
@@ -406,7 +409,7 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable, LibraryPart):
         for heading, group in ((_('Library books'), entries[0:4]),
                                (None, entries[4:6]), (None, entries[6:7]),
                                (None, entries[7:12]), (None, entries[12:16]),
-                               (None, entries[16:18])):
+                               (None, entries[16:19])):
             section = Gio.Menu()
             for name, label, _handler in group:
                 item = widgets.menu_item(label, 'books.' + name,
@@ -1664,9 +1667,10 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable, LibraryPart):
         # Only where a book selected could be written back: a PDF, a
         # RAR without rar, would only be counted as left alone.  Whether
         # it has PNG pages is found only by reading it.
-        self._set_sensitive('store-webp', any(
-            archive_packer.can_write(archive_type)
-            for archive_type in {item.format for item in selected}))
+        writable = any(archive_packer.can_write(archive_type)
+                       for archive_type in {item.format for item in selected})
+        self._set_sensitive('store-webp', writable)
+        self._set_sensitive('shrink-pages', writable)
 
         manages = self._library.manages
         self._set_sensitive('open-keep-library', books_selected and manages)
@@ -1730,6 +1734,18 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable, LibraryPart):
             self._library.window,
             [item.path for item in self._selected_items()],
             self._stored_as_webp,
+            open_book=self._library.main_window.filehandler.get_path_to_base,
+            select=self._select_paths)
+
+    def shrink_pages(self, *args: object) -> None:
+        """Offer to shrink the pages of the selected books that are over
+        a limit: see mcomix.shrink_dialog.  The book the main window
+        reads is left alone."""
+        books = [item.path for item in self._selected_items()]
+        if not books:
+            return
+        shrink_dialog.ShrinkDialog(
+            self._library.window, books, self._stored_as_webp,
             open_book=self._library.main_window.filehandler.get_path_to_base,
             select=self._select_paths)
 

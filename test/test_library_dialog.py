@@ -2707,8 +2707,8 @@ class StorePagesAsWebpTest(_LibraryWindowTest):
             before = book.read()
         real = webp_books.convert
 
-        def first_then_stop(path, stop, progress):
-            converted = real(path, stop, progress)
+        def first_then_stop(path, stop, progress, shrink=None):
+            converted = real(path, stop, progress, shrink)
             stop.set()
             return converted
         self.enterContext(unittest.mock.patch.object(
@@ -2726,7 +2726,7 @@ class StorePagesAsWebpTest(_LibraryWindowTest):
     def test_closing_the_window_stops_and_shows_the_summary(self):
         started = threading.Event()
 
-        def until_stopped(path, stop, progress):
+        def until_stopped(path, stop, progress, shrink=None):
             started.set()
             stop.wait(10)
             raise archive_packer.Cancelled()
@@ -2756,10 +2756,10 @@ class StorePagesAsWebpTest(_LibraryWindowTest):
         that it left out <left_out>."""
         real = webp_books.convert
 
-        def convert(path, stop, progress):
+        def convert(path, stop, progress, shrink=None):
             if path in failing:
                 raise OSError('the disk went away')
-            converted = real(path, stop, progress)
+            converted = real(path, stop, progress, shrink)
             if path == damaged:
                 return dataclasses.replace(converted,
                                            left_out=dict(left_out))
@@ -2826,12 +2826,12 @@ class StorePagesAsWebpTest(_LibraryWindowTest):
                       left_out={'02.png': 'Bad CRC-32'})
         failing_convert = webp_books.convert
 
-        def spoilt(path, stop, progress):
+        def spoilt(path, stop, progress, shrink=None):
             # Spoilt once the library holds it, which it would not take.
             if path == unreadable:
                 with open(unreadable, 'wb') as book:
                     book.write(b'not an archive at all')
-            return failing_convert(path, stop, progress)
+            return failing_convert(path, stop, progress, shrink)
         self.enterContext(unittest.mock.patch.object(
             webp_books, 'convert', spoilt))
         # NORMAL_ZIP is left alone as open in the main window: no fault.
