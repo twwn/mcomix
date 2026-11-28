@@ -49,7 +49,25 @@ class GapTest(unittest.TestCase):
         _result, asked = self._layout(self.VIEWPORT[0])
         self.assertEqual(1, asked[-1][0])
 
-# vim: expandtab:sw=4:ts=4
+
+class OrientationTest(unittest.TestCase):
+
+    def test_a_manga_spread_puts_the_first_page_on_the_right(self):
+        """Whichever way the pages run, the boxes answered are in the
+        order of the pages: in manga mode the first is the right one."""
+        for orientation, first_on_the_left in (
+                (constants.WESTERN_ORIENTATION, True),
+                (constants.MANGA_ORIENTATION, False)):
+            with self.subTest(orientation=orientation):
+                result = layout.FiniteLayout(
+                    [[100, 300], [200, 200]], [False, False], (300, 300),
+                    orientation, 0, False,
+                    constants.DISTRIBUTION_AXIS, constants.ALIGNMENT_AXIS)
+                first, second = result.get_content_boxes()
+                self.assertEqual((100, 300), tuple(first.get_size()))
+                self.assertEqual((200, 200), tuple(second.get_size()))
+                self.assertEqual(first_on_the_left, first.get_position()[0]
+                                 < second.get_position()[0])
 
 
 class SmartScrollTest(unittest.TestCase):
@@ -180,3 +198,5 @@ class SmartScrollTest(unittest.TestCase):
         self.assertEqual([(1, (100, 0)), (0, (0, 100)), (1, (100, 100)),
                           (0, (0, 200)), (1, (100, 200)), (2, (100, 200))],
                          self._steps(result, 6))
+
+# vim: expandtab:sw=4:ts=4
