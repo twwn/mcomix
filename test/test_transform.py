@@ -91,6 +91,12 @@ class MatrixTest(MComixTest):
         self.assertEqual(matrix.rotated(90).flipped_y(),
                          matrix.and_then_all(Transform.ROT90, Transform.INVY))
 
+    def test_a_flip_of_both_axes_is_a_half_turn_and_of_neither_nothing(self):
+        matrix = Transform.from_scales(2, 3)
+        self.assertEqual(matrix + Transform.ROT180,
+                         matrix.flipped(x=True, y=True))
+        self.assertIs(matrix, matrix.flipped())
+
     def test_only_a_quarter_turn_swaps_the_axes(self):
         self.assertFalse(Transform.ID.swaps_axes())
         self.assertFalse(Transform.ROT180.swaps_axes())
