@@ -946,7 +946,7 @@ class EditArchiveDialogTest(MComixTest):
     def test_a_save_can_keep_the_format_the_book_was_opened_in(self):
         """A ZIP saved back as a ZIP keeps the extension it had, rather
         than being renamed to the one MComix would have given it."""
-        prefs['keep archive format when saving'] = True
+        prefs['save archive format'] = constants.SAVE_KEEP_FORMAT
         self.assertEqual(self.dialog._save_format(),
                          (constants.ZIP, '.zip'))
         chooser = self._save_as_chooser()
@@ -957,7 +957,7 @@ class EditArchiveDialogTest(MComixTest):
 
     def test_a_format_that_cannot_be_written_is_still_saved_as_a_cbz(self):
         """Nothing makes an LHA out of a book."""
-        prefs['keep archive format when saving'] = True
+        prefs['save archive format'] = constants.SAVE_KEEP_FORMAT
         with unittest.mock.patch.object(self.dialog.file_handler,
                                         'archive_type', constants.LHA):
             self.assertEqual(self.dialog._save_format(),
@@ -965,8 +965,8 @@ class EditArchiveDialogTest(MComixTest):
 
     def test_saving_every_archive_as_a_zip_comes_first(self):
         """A tar, which MComix writes, is still saved as a CBZ."""
-        prefs['keep archive format when saving'] = True
-        prefs['zip when saving'] = True
+        prefs['save archive format'] = constants.SAVE_KEEP_FORMAT
+        prefs['save archive format'] = constants.SAVE_ALL_AS_ZIP
         with unittest.mock.patch.object(self.dialog.file_handler,
                                         'archive_type', constants.TAR):
             self.assertEqual(self.dialog._save_format(),
@@ -976,7 +976,7 @@ class EditArchiveDialogTest(MComixTest):
         """A 7z needs 7-Zip and a RAR needs rar, neither of which
         MComix installs; unrar, which is what a RAR is read with, only
         ever reads."""
-        prefs['keep archive format when saving'] = True
+        prefs['save archive format'] = constants.SAVE_KEEP_FORMAT
         for archive_type, finder, found in (
                 (constants.SEVENZIP, 'szip_executable', '/usr/bin/7z'),
                 (constants.RAR, 'rar_executable', '/usr/bin/rar')):

@@ -191,9 +191,10 @@ class _EditArchiveDialog(Dialog):
         saved as a ZIP comes before that.
         """
         archive_type = self.file_handler.archive_type
-        if prefs['zip when saving']:
+        chosen = prefs['save archive format']
+        if chosen == constants.SAVE_ALL_AS_ZIP:
             return constants.ZIP, '.cbz'
-        if (prefs['keep archive format when saving']
+        if (chosen == constants.SAVE_KEEP_FORMAT
                 and archive_type is not None
                 and archive_packer.can_write(archive_type)):
             source = self.file_handler.get_path_to_base() or ''
@@ -378,7 +379,8 @@ class _EditArchiveDialog(Dialog):
             # to be kept and it is being kept: there it says nothing
             # that the name above it does not.
             if (archive_type != self.file_handler.archive_type
-                    or not prefs['keep archive format when saving']):
+                    or prefs['save archive format']
+                    != constants.SAVE_KEEP_FORMAT):
                 chooser.set_note(_('Archives are stored as ZIP files.'))
             chooser.add_archive_filters()
 

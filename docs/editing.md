@@ -63,9 +63,9 @@ The archive on disk is untouched until the changes are written.
 - Comment files keep their names; one a page has taken gets an underscore in front.
 - The ComicInfo.xml MComix writes keeps its own name, whatever the list calls it.
 - In a CBZ, a page that is compressed already, such as a JPEG, PNG or WebP, is stored as it is: compressing it again saves a tenth of a percent or so, and makes the book slower to write and to read. Text files and uncompressed pictures, such as BMP, are compressed.
-- With "Save every archive as a ZIP, replacing other formats", a RAR, 7z, tar or LHA book is written as a ZIP when its changes are saved, and the ZIP takes its place: Book.cbr, Book.cb7 or Book.cbt becomes Book.cbz, and any other name ends in .zip. The ZIP is read back first, every file in it checked; one that does not read back whole is dropped, and the book is left as it was. Otherwise the old file is removed, and the book is read from the ZIP from then on, at the same page; the library, bookmarks and the page it was left at follow it.
+- With "Save an edited archive as" set to "Always a ZIP, replacing other formats", a RAR, 7z, tar or LHA book is written as a ZIP when its changes are saved, and the ZIP takes its place: Book.cbr, Book.cb7 or Book.cbt becomes Book.cbz, and any other name ends in .zip. The ZIP is read back first, every file in it checked; one that does not read back whole is dropped, and the book is left as it was. Otherwise the old file is removed, and the book is read from the ZIP from then on, at the same page; the library, bookmarks and the page it was left at follow it.
   - A book whose new name another file holds is not saved, and MComix says so. A RAR in volumes, and a book reached through a symbolic link, are saved as before.
-  - "Save As" in the archive editor writes a CBZ, whatever "Save an edited archive in the format it was opened in" says.
+  - "Save As" in the archive editor writes a CBZ.
   - The library's "Repack as ZIP..." does the same for books without changes; see [Library](library.md).
 - With "Make pages smaller without loss when saving an archive", each PNG or GIF page is written as a WebP instead, its name ending in .webp: "03 - Batman 01.webp".
   - Lossless: a page becomes a WebP only where that decodes to exactly the same pixels and is smaller. The drawn and painted pages it was tried on took a quarter to three fifths less room; a page that would not shrink stays as it was.
@@ -78,9 +78,9 @@ The archive on disk is untouched until the changes are written.
 
 ## The format a save is written in
 
-- Archives are saved as ZIP files by default.
-- With "Save an edited archive in the format it was opened in", a book is written in its own format where MComix can: ZIP and tar always, 7z with the `7z` program, RAR with `rar`. `unrar` cannot write RAR, and a PDF is never written.
-- The same preference is needed to write a book over its own file. Without it, only a ZIP is written over itself; anything else goes to a new file with "Save As".
+- Archives are saved as ZIP files by default ("Save an edited archive as" in Preferences).
+- With "The format it was opened in", a book is written in its own format where MComix can: ZIP and tar always, 7z with the `7z` program, RAR with `rar`. `unrar` cannot write RAR, and a PDF is never written.
+- That choice, or "Always a ZIP", is needed to write a book other than a ZIP over its own file. By default only a ZIP is written over itself; anything else goes to a new file with "Save As".
 
 ## ComicInfo.xml
 

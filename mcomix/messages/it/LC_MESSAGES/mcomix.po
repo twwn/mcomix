@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MComix\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-28 12:39+0100\n"
+"POT-Creation-Date: 2026-11-28 13:01+0100\n"
 "PO-Revision-Date: 2013-04-26 18:00+0100\n"
 "Last-Translator: Giovanni Scafora <giovanni@archlinux.org>\n"
 "Language-Team: Arch Linux Italian Team <giovanni@archlinux.org>\n"
@@ -54,18 +54,18 @@ msgstr "! Si è verificato un errore durante l'estrazione: %s"
 msgid "! Could not read %s"
 msgstr "! Impossibile leggere %s"
 
-#: mcomix/archive_packer.py:708 mcomix/file_actions.py:1532
+#: mcomix/archive_packer.py:731 mcomix/file_actions.py:1542
 #: mcomix/library/book_area.py:1448
 #, python-format
 msgid "! Could not remove %(file)s: %(error)s"
 msgstr "! Impossibile rimuovere %(file)s: %(error)s"
 
-#: mcomix/archive_packer.py:1292 mcomix/archive_packer.py:1327
+#: mcomix/archive_packer.py:1315 mcomix/archive_packer.py:1350
 #, python-format
 msgid "! Could not create archive at path \"%s\""
 msgstr "! Impossibile creare un archivio nel percorso \"%s\""
 
-#: mcomix/archive_packer.py:1317
+#: mcomix/archive_packer.py:1340
 #, python-format
 msgid ""
 "! Could not add file %(sourcefile)s to archive %(archivefile)s, aborting..."
@@ -94,13 +94,13 @@ msgid "! Could not parse bookmarks file %s"
 msgstr "! Impossibile analizzare il file %s dei segnalibri"
 
 #: mcomix/bookmark_backend.py:487 mcomix/book_store.py:83
-#: mcomix/file_actions.py:1294
+#: mcomix/file_actions.py:1304
 #, python-format
 msgid "! Could not save %(file)s to %(directory)s: %(error)s"
 msgstr "! Impossibile salvare %(file)s in %(directory)s: %(error)s"
 
-#: mcomix/bookmark_backend.py:493 mcomix/file_actions.py:1304
-#: mcomix/webp_dialog.py:519
+#: mcomix/bookmark_backend.py:493 mcomix/file_actions.py:1314
+#: mcomix/webp_dialog.py:527
 #, python-format
 msgid "Could not save \"%(file)s\" to \"%(directory)s\""
 msgstr "Impossibile salvare \"%(file)s\" in \"%(directory)s\""
@@ -114,8 +114,8 @@ msgid "_No"
 msgstr "_No"
 
 #: mcomix/bookmark_backend.py:510 mcomix/edit_dialog.py:65
-#: mcomix/file_actions.py:898 mcomix/file_actions.py:1345
-#: mcomix/file_actions.py:1518 mcomix/file_chooser_base_dialog.py:237
+#: mcomix/file_actions.py:900 mcomix/file_actions.py:1355
+#: mcomix/file_actions.py:1528 mcomix/file_chooser_base_dialog.py:237
 #: mcomix/file_chooser_base_dialog.py:242
 #: mcomix/file_chooser_library_dialog.py:42 mcomix/message_dialog.py:26
 #: mcomix/message_dialog.py:29 mcomix/pageselect.py:38
@@ -177,7 +177,7 @@ msgstr "_Rimuovi"
 #: mcomix/bookmark_dialog.py:34 mcomix/comment_dialog.py:29
 #: mcomix/message_dialog.py:25 mcomix/preferences_dialog.py:105
 #: mcomix/properties_dialog.py:38 mcomix/shrink_dialog.py:282
-#: mcomix/webp_dialog.py:445 mcomix/library/book_check_dialog.py:180
+#: mcomix/webp_dialog.py:453 mcomix/library/book_check_dialog.py:180
 #: mcomix/library/book_properties.py:60 mcomix/library/duplicates_dialog.py:292
 #: mcomix/library/watchlist.py:41
 msgid "_Close"
@@ -226,7 +226,7 @@ msgstr "_Rimuovi i segnalibri di questo libro..."
 msgid "_Edit bookmarks..."
 msgstr "_Modifica i segnalibri..."
 
-#: mcomix/bookmark_menu.py:202 mcomix/file_actions.py:1578
+#: mcomix/bookmark_menu.py:202 mcomix/file_actions.py:1588
 #, python-format
 msgid "Remove the bookmarks in \"%s\"?"
 msgstr "Eliminare i segnalibri in \"%s\"?"
@@ -315,7 +315,7 @@ msgstr "_Salva come"
 msgid "A_pply"
 msgstr "A_pplica"
 
-#: mcomix/edit_dialog.py:111 mcomix/preferences_dialog.py:479
+#: mcomix/edit_dialog.py:111 mcomix/preferences_dialog.py:472
 msgid "Images"
 msgstr "Immagini"
 
@@ -323,29 +323,29 @@ msgstr "Immagini"
 msgid "Comment files"
 msgstr "File di commento"
 
-#: mcomix/edit_dialog.py:265 mcomix/file_actions.py:975
+#: mcomix/edit_dialog.py:266 mcomix/file_actions.py:985
 #: mcomix/webp_dialog.py:293
 #, python-format
 msgid "! Could not save the archive %(archivefile)s: %(error)s"
 msgstr "! Impossibile salvare l'archivio %(archivefile)s: %(error)s"
 
-#: mcomix/edit_dialog.py:278 mcomix/file_actions.py:980
+#: mcomix/edit_dialog.py:279 mcomix/file_actions.py:990
 msgid "The new archive could not be saved!"
 msgstr "Il nuovo archivio non può essere salvato!"
 
-#: mcomix/edit_dialog.py:279 mcomix/file_actions.py:981
+#: mcomix/edit_dialog.py:280 mcomix/file_actions.py:991
 msgid "The original files have not been removed."
 msgstr "I file originali non sono stati rimossi."
 
-#: mcomix/edit_dialog.py:382
+#: mcomix/edit_dialog.py:384
 msgid "Archives are stored as ZIP files."
 msgstr "Gli archivi sono salvati come file ZIP."
 
-#: mcomix/edit_dialog.py:466
+#: mcomix/edit_dialog.py:468
 msgid "Close the book the archive editor is working on?"
 msgstr "Chiudere il libro su cui sta lavorando l’editor dell’archivio?"
 
-#: mcomix/edit_dialog.py:467
+#: mcomix/edit_dialog.py:469
 msgid ""
 "The editor holds changes that have not been applied or saved. They go with "
 "the book."
@@ -353,11 +353,11 @@ msgstr ""
 "L’editor contiene modifiche non applicate né salvate. Andranno perse con il "
 "libro."
 
-#: mcomix/edit_dialog.py:471
+#: mcomix/edit_dialog.py:473
 msgid "_Go on editing"
 msgstr "_Continua a modificare"
 
-#: mcomix/edit_dialog.py:472
+#: mcomix/edit_dialog.py:474
 msgid "_Close the book"
 msgstr "Chiudi il _libro"
 
@@ -389,8 +389,8 @@ msgstr "_Ripristina"
 msgid "Go back to the saved values."
 msgstr "Torna ai valori salvati."
 
-#: mcomix/enhance_dialog.py:51 mcomix/file_actions.py:812
-#: mcomix/file_actions.py:870 mcomix/file_actions.py:899
+#: mcomix/enhance_dialog.py:51 mcomix/file_actions.py:814
+#: mcomix/file_actions.py:872 mcomix/file_actions.py:901
 #: mcomix/file_chooser_base_dialog.py:243 mcomix/openwith.py:453
 msgid "_Save"
 msgstr "_Salva"
@@ -456,8 +456,8 @@ msgstr "Inverti i colori _dell'immagine"
 msgid "Invert (negate) image colors."
 msgstr "Inverte (nega) i colori dell'immagine."
 
-#: mcomix/file_actions.py:378 mcomix/file_actions.py:1721
-#: mcomix/file_actions.py:1851
+#: mcomix/file_actions.py:378 mcomix/file_actions.py:1731
+#: mcomix/file_actions.py:1861
 msgid "A file of that name is there already."
 msgstr "Un file con quel nome è già lì."
 
@@ -490,7 +490,7 @@ msgstr ""
 "perdita. Si potrebbe ruotare solo il suo orientamento Exif, che MComix non "
 "segue finché \"%s\" è disattivato."
 
-#: mcomix/file_actions.py:566 mcomix/preferences_dialog.py:482
+#: mcomix/file_actions.py:566 mcomix/preferences_dialog.py:475
 msgid "Automatically rotate images according to their metadata"
 msgstr "Ruota automaticamente le immagini in base ai metadata"
 
@@ -499,12 +499,12 @@ msgstr "Ruota automaticamente le immagini in base ai metadata"
 msgid "Could not turn \"%s\""
 msgstr "Impossibile ruotare \"%s\""
 
-#: mcomix/file_actions.py:808
+#: mcomix/file_actions.py:810
 #, python-format
 msgid "Write \"%s\" again before closing it?"
 msgstr "Riscrivere «%s» prima di chiuderlo?"
 
-#: mcomix/file_actions.py:809
+#: mcomix/file_actions.py:811
 msgid ""
 "The book has changes that the archive on disk does not hold. They are lost "
 "when it closes."
@@ -512,16 +512,16 @@ msgstr ""
 "Il libro ha modifiche che l'archivio su disco non contiene. Andranno perse "
 "alla chiusura."
 
-#: mcomix/file_actions.py:811
+#: mcomix/file_actions.py:813
 msgid "_Close without saving"
 msgstr "_Chiudi senza salvare"
 
-#: mcomix/file_actions.py:865
+#: mcomix/file_actions.py:867
 #, python-format
 msgid "Write \"%s\" again now?"
 msgstr "Riscrivere «%s» adesso?"
 
-#: mcomix/file_actions.py:866
+#: mcomix/file_actions.py:868
 msgid ""
 "The archive on disk will be replaced by the book as it stands: the pages it "
 "holds now, in the order and under the names it shows."
@@ -529,16 +529,16 @@ msgstr ""
 "L'archivio su disco sarà sostituito dal libro così com'è: le pagine che ha "
 "ora, nell'ordine e con i nomi che mostra."
 
-#: mcomix/file_actions.py:869
+#: mcomix/file_actions.py:871
 msgid "_Not now"
 msgstr "_Non ora"
 
-#: mcomix/file_actions.py:894
+#: mcomix/file_actions.py:896
 #, python-format
 msgid "\"%s\" has changed since it was opened"
 msgstr "«%s» è cambiato da quando è stato aperto"
 
-#: mcomix/file_actions.py:895
+#: mcomix/file_actions.py:897
 msgid ""
 "Another program has written it. Saving replaces it with the book as MComix "
 "shows it, and what that program changed is lost."
@@ -546,82 +546,82 @@ msgstr ""
 "Un altro programma lo ha scritto. Salvare lo sostituisce con il libro come "
 "lo mostra MComix, e quello che ha cambiato quel programma va perso."
 
-#: mcomix/file_actions.py:1188
+#: mcomix/file_actions.py:1198
 #, python-format
 msgid "Could not show the folder: %s"
 msgstr "Impossibile mostrare la cartella: %s"
 
-#: mcomix/file_actions.py:1235 mcomix/keybindings.py:167
+#: mcomix/file_actions.py:1245 mcomix/keybindings.py:167
 msgid "Save page as"
 msgstr "Salva la pagina come"
 
-#: mcomix/file_actions.py:1298 mcomix/file_actions.py:1853
+#: mcomix/file_actions.py:1308 mcomix/file_actions.py:1863
 #, python-format
 msgid "There is not enough room there: the file is %s."
 msgstr "Non c'è spazio sufficiente: il file occupa %s."
 
-#: mcomix/file_actions.py:1335
+#: mcomix/file_actions.py:1345
 msgid "There is no trash for this folder, so it cannot be restored."
 msgstr ""
 "Questa cartella non ha un cestino, quindi non potrà essere ripristinato."
 
-#: mcomix/file_actions.py:1343
+#: mcomix/file_actions.py:1353
 #, python-format
 msgid "Delete \"%s\"?"
 msgstr "Vuoi eliminare \"%s\"?"
 
-#: mcomix/file_actions.py:1344
+#: mcomix/file_actions.py:1354
 msgid "The file is moved to the trash."
 msgstr "Il file viene spostato nel cestino."
 
-#: mcomix/file_actions.py:1346
+#: mcomix/file_actions.py:1356
 msgid "_Move to Trash"
 msgstr "_Sposta nel cestino"
 
-#: mcomix/file_actions.py:1376 mcomix/library/book_area.py:1385
+#: mcomix/file_actions.py:1386 mcomix/library/book_area.py:1385
 msgid "It does not go to the trash and cannot be restored."
 msgstr "Non viene spostato nel cestino e non potrà essere ripristinato."
 
-#: mcomix/file_actions.py:1384 mcomix/library/book_area.py:1377
+#: mcomix/file_actions.py:1394 mcomix/library/book_area.py:1377
 #, python-format
 msgid "Delete \"%s\" permanently?"
 msgstr "Vuoi eliminare definitivamente \"%s\"?"
 
-#: mcomix/file_actions.py:1491
+#: mcomix/file_actions.py:1501
 #, python-format
 msgid "Could not move \"%s\" to the trash"
 msgstr "Impossibile spostare \"%s\" nel cestino"
 
-#: mcomix/file_actions.py:1495 mcomix/library/book_area.py:1462
+#: mcomix/file_actions.py:1505 mcomix/library/book_area.py:1462
 #, python-format
 msgid "%d book could not be moved to the trash."
 msgid_plural "%d books could not be moved to the trash."
 msgstr[0] "Impossibile spostare %d libro nel cestino."
 msgstr[1] "Impossibile spostare %d libri nel cestino."
 
-#: mcomix/file_actions.py:1499
+#: mcomix/file_actions.py:1509
 msgid "Delete it permanently instead? It cannot be restored."
 msgid_plural "Delete them permanently instead? They cannot be restored."
 msgstr[0] "Eliminarlo definitivamente? Non potrà essere ripristinato."
 msgstr[1] "Eliminarli definitivamente? Non potranno essere ripristinati."
 
-#: mcomix/file_actions.py:1519
+#: mcomix/file_actions.py:1529
 msgid "_Delete Permanently"
 msgstr "Elimina _definitivamente"
 
-#: mcomix/file_actions.py:1542
+#: mcomix/file_actions.py:1552
 #, python-format
 msgid "Could not delete \"%s\""
 msgstr "Impossibile eliminare \"%s\""
 
-#: mcomix/file_actions.py:1548
+#: mcomix/file_actions.py:1558
 #, python-format
 msgid "%d book could not be deleted."
 msgid_plural "%d books could not be deleted."
 msgstr[0] "Impossibile eliminare %d libro."
 msgstr[1] "Impossibile eliminare %d libri."
 
-#: mcomix/file_actions.py:1574
+#: mcomix/file_actions.py:1584
 #, python-format
 msgid "The file is gone, and its %d bookmark cannot be opened any more."
 msgid_plural ""
@@ -631,21 +631,21 @@ msgstr[0] ""
 msgstr[1] ""
 "Il file non c'è più e i suoi %d segnalibri non possono più essere aperti."
 
-#: mcomix/file_actions.py:1674 mcomix/file_actions.py:1847
+#: mcomix/file_actions.py:1684 mcomix/file_actions.py:1857
 #: mcomix/thumbnail_tools.py:385
 #, python-format
 msgid "! Could not move %(file)s to %(directory)s: %(error)s"
 msgstr "! Impossibile spostare %(file)s in %(directory)s: %(error)s"
 
-#: mcomix/file_actions.py:1725
+#: mcomix/file_actions.py:1735
 msgid "Rename archive?"
 msgstr "Vuoi rinominare l'archivio?"
 
-#: mcomix/file_actions.py:1726
+#: mcomix/file_actions.py:1736
 msgid "Please enter a new name for this archive."
 msgstr "Digitare un nuovo nome per questo archivio."
 
-#: mcomix/file_actions.py:1859
+#: mcomix/file_actions.py:1869
 #, python-format
 msgid "Could not move \"%(file)s\" to \"%(directory)s\""
 msgstr "Impossibile spostare \"%(file)s\" in \"%(directory)s\""
@@ -901,7 +901,7 @@ msgstr "Scorri in basso a sinistra"
 #: mcomix/keybindings.py:83 mcomix/keybindings.py:84 mcomix/keybindings.py:85
 #: mcomix/keybindings.py:87 mcomix/keybindings.py:88 mcomix/keybindings.py:89
 #: mcomix/keybindings.py:90 mcomix/keybindings.py:92 mcomix/keybindings.py:93
-#: mcomix/keybindings.py:117 mcomix/preferences_dialog.py:306
+#: mcomix/keybindings.py:117 mcomix/preferences_dialog.py:299
 msgid "Scroll"
 msgstr "Scorrimento"
 
@@ -1023,7 +1023,7 @@ msgstr "Rotazione automatica in base alla larghezza"
 msgid "Autorotate by height"
 msgstr "Rotazione automatica in base all'altezza"
 
-#: mcomix/keybindings.py:113 mcomix/preferences_dialog.py:432 mcomix/ui.py:553
+#: mcomix/keybindings.py:113 mcomix/preferences_dialog.py:425 mcomix/ui.py:553
 msgid "Double page mode"
 msgstr "Modalità pagina doppia"
 
@@ -1044,7 +1044,7 @@ msgstr "Pagina del titolo da sola"
 msgid "Manga mode"
 msgstr "Modalità manga"
 
-#: mcomix/keybindings.py:116 mcomix/preferences_dialog.py:450 mcomix/ui.py:571
+#: mcomix/keybindings.py:116 mcomix/preferences_dialog.py:443 mcomix/ui.py:571
 msgid "Continuous mode"
 msgstr "Modalità continua"
 
@@ -1052,7 +1052,7 @@ msgstr "Modalità continua"
 msgid "Invert smart scroll"
 msgstr "Inverti lo scorrimento intelligente"
 
-#: mcomix/keybindings.py:119 mcomix/preferences_dialog.py:498 mcomix/ui.py:580
+#: mcomix/keybindings.py:119 mcomix/preferences_dialog.py:491 mcomix/ui.py:580
 msgid "Magnifying lens"
 msgstr "Lente di ingrandimento"
 
@@ -1750,25 +1750,15 @@ msgstr ""
 "Apre la finestra \\\"Salva come\\\" nella directory in cui è stato salvato "
 "l'ultimo file."
 
-#: mcomix/preferences_dialog.py:273
-msgid "Save an edited archive in the format it was opened in"
-msgstr "Salva un archivio modificato nel formato in cui è stato aperto"
+#: mcomix/preferences_dialog.py:272
+msgid "Save an edited archive as:"
+msgstr "Salva un archivio modificato come:"
 
-#: mcomix/preferences_dialog.py:275
-msgid ""
-"Write an edited archive back as a ZIP, a tar, a 7z or a RAR, whichever it "
-"was read as. The last two need the 7z and rar programs, which MComix does "
-"not install; a format it cannot write is saved as a ZIP."
-msgstr ""
-"Riscrivi un archivio modificato come ZIP, tar, 7z o RAR, a seconda di come è "
-"stato letto. Gli ultimi due richiedono i programmi 7z e rar, che MComix non "
-"installa; un formato che non può scrivere viene salvato come ZIP."
-
-#: mcomix/preferences_dialog.py:278
+#: mcomix/preferences_dialog.py:276
 msgid "Make pages smaller without loss when saving an archive"
 msgstr "Riduci le pagine senza perdita al salvataggio di un archivio"
 
-#: mcomix/preferences_dialog.py:280
+#: mcomix/preferences_dialog.py:278
 msgid ""
 "Write each PNG or GIF page of an archive MComix saves as a lossless WebP, "
 "and each JPEG page with optimised tables, where that is smaller and keeps "
@@ -1779,38 +1769,19 @@ msgstr ""
 "piccola e conserva ogni pixel. Alcuni altri lettori di fumetti non sanno "
 "mostrare WebP."
 
-#: mcomix/preferences_dialog.py:283
-msgid "Save every archive as a ZIP, replacing other formats"
-msgstr "Salva ogni archivio come ZIP, sostituendo gli altri formati"
-
-#: mcomix/preferences_dialog.py:285
-msgid ""
-"Write each archive MComix saves as a ZIP, with pages already compressed "
-"stored and the rest compressed, whatever format it was opened in. A RAR, 7z "
-"or tar book saved in place is replaced by the ZIP, named .cbz in place "
-"of .cbr, .cb7 or .cbt, and .zip in place of any other extension. This comes "
-"before keeping the format an archive was opened in."
-msgstr ""
-"Scrive ogni archivio che MComix salva come ZIP, con le pagine già compresse "
-"archiviate così come sono e il resto compresso, in qualunque formato sia "
-"stato aperto. Un libro RAR, 7z o tar salvato al suo posto viene sostituito "
-"dallo ZIP, con .cbz al posto di .cbr, .cb7 o .cbt, e .zip al posto di "
-"qualsiasi altra estensione. Questo ha la precedenza sul mantenere il formato "
-"in cui l'archivio è stato aperto."
-
-#: mcomix/preferences_dialog.py:287
+#: mcomix/preferences_dialog.py:280
 msgid "Comment file extensions:"
 msgstr "Estensioni dei commenti:"
 
-#: mcomix/preferences_dialog.py:290
+#: mcomix/preferences_dialog.py:283
 msgid "Prompts answered for good"
 msgstr "Domande a cui è stato risposto una volta per tutte"
 
-#: mcomix/preferences_dialog.py:309
+#: mcomix/preferences_dialog.py:302
 msgid "Use smart scrolling"
 msgstr "Usa lo scorrimento intelligente"
 
-#: mcomix/preferences_dialog.py:311
+#: mcomix/preferences_dialog.py:304
 msgid ""
 "With this preference set, the space key and mouse wheel do not only scroll "
 "down or up, but also sideways and so try to follow the natural reading order "
@@ -1819,33 +1790,33 @@ msgstr ""
 "Con questa preferenza si imposta anche lo scorrimento laterale e cerca così "
 "di seguire l'ordine naturale di lettura del fumetto."
 
-#: mcomix/preferences_dialog.py:315
+#: mcomix/preferences_dialog.py:308
 msgid "Arrow key step (in pixels):"
 msgstr "Numero di pixel da scorrere quando si preme il tasto freccia:"
 
-#: mcomix/preferences_dialog.py:319
+#: mcomix/preferences_dialog.py:312
 msgid "Set the number of pixels to scroll on a page when using the arrow keys."
 msgstr ""
 "Imposta il numero di pixel da scorrere su una pagina, quando si usano i "
 "tasti freccia."
 
-#: mcomix/preferences_dialog.py:321
+#: mcomix/preferences_dialog.py:314
 msgid "Mouse wheel step (in pixels):"
 msgstr "Numero di pixel da scorrere per ogni scatto della rotellina del mouse:"
 
-#: mcomix/preferences_dialog.py:325
+#: mcomix/preferences_dialog.py:318
 msgid "Set the number of pixels to scroll on a page when using a mouse wheel."
 msgstr ""
 "Imposta il numero di pixel da scorrere su una pagina quando si una la "
 "rotellina del mouse."
 
-#: mcomix/preferences_dialog.py:327
+#: mcomix/preferences_dialog.py:320
 msgid "Space key step (in percent of the page):"
 msgstr ""
 "Frazione di pagina da scorrere quando si preme la barra di spazio (in "
 "percentuale):"
 
-#: mcomix/preferences_dialog.py:331
+#: mcomix/preferences_dialog.py:324
 msgid ""
 "Sets the percentage by which the page will be scrolled down or up when the "
 "space key is pressed."
@@ -1853,15 +1824,15 @@ msgstr ""
 "Imposta la percentuale di cui la pagina scorrerà verso il basso o verso "
 "l'alto, quando viene premuta la barra di spazio."
 
-#: mcomix/preferences_dialog.py:334
+#: mcomix/preferences_dialog.py:327
 msgid "Page turning"
 msgstr "Voltare pagina"
 
-#: mcomix/preferences_dialog.py:337
+#: mcomix/preferences_dialog.py:330
 msgid "Turn the page when scrolling past its edge"
 msgstr "Volta le pagine quando ci si muove oltre inizio o fine pagina"
 
-#: mcomix/preferences_dialog.py:339
+#: mcomix/preferences_dialog.py:332
 msgid ""
 "Flip pages when scrolling \"off the page\" with the scroll wheel or with the "
 "arrow keys. It takes n consecutive \"steps\" with the scroll wheel or the "
@@ -1871,11 +1842,11 @@ msgstr ""
 "mouse o con i tasti freccia. Per voltare pagina, bisogna compiere tre "
 "\"scatti\" con la rotellina del mouse oppure con i tasti freccia."
 
-#: mcomix/preferences_dialog.py:341
+#: mcomix/preferences_dialog.py:334
 msgid "Steps past the edge before the page turns:"
 msgstr "Numero di \"scatti\" da compiere prima di voltare la pagina:"
 
-#: mcomix/preferences_dialog.py:345
+#: mcomix/preferences_dialog.py:338
 msgid ""
 "Set the number of \"steps\" needed to flip to the next or previous page.  "
 "Less steps will allow for very fast page turning but you might find yourself "
@@ -1885,11 +1856,11 @@ msgstr ""
 "successiva o a quella precedente. Un minor numero di scatti consentirà di "
 "voltare pagina velocemente, ma anche di sfogliarle accidentalmente."
 
-#: mcomix/preferences_dialog.py:348
+#: mcomix/preferences_dialog.py:341
 msgid "Count the steps also when the page fits"
 msgstr "Conta gli scatti anche quando la pagina entra nella finestra"
 
-#: mcomix/preferences_dialog.py:350
+#: mcomix/preferences_dialog.py:343
 msgid ""
 "A page that fits the window turns on the first step past it. With this, it "
 "takes as many steps as above."
@@ -1897,23 +1868,23 @@ msgstr ""
 "Una pagina che entra nella finestra si volta al primo scatto oltre. Con "
 "questo, servono tanti scatti quanti sopra."
 
-#: mcomix/preferences_dialog.py:352
+#: mcomix/preferences_dialog.py:345
 msgid "Wheel pause after a page turn (in milliseconds):"
 msgstr ""
 "Millisecondi in cui la rotellina viene ignorata dopo aver voltato pagina:"
 
-#: mcomix/preferences_dialog.py:356
+#: mcomix/preferences_dialog.py:349
 msgid ""
 "Keeps a fast wheel from turning several pages at once. 0 ignores nothing."
 msgstr ""
 "Impedisce a una rotellina veloce di voltare più pagine insieme. 0 non ignora "
 "nulla."
 
-#: mcomix/preferences_dialog.py:359
+#: mcomix/preferences_dialog.py:352
 msgid "Flip pages with a left click"
 msgstr "Volta le pagine con un clic sinistro"
 
-#: mcomix/preferences_dialog.py:361
+#: mcomix/preferences_dialog.py:354
 msgid ""
 "A left click on the page turns to the next one. Clicks with SHIFT or ALT "
 "turn pages either way."
@@ -1921,15 +1892,15 @@ msgstr ""
 "Un clic sinistro sulla pagina passa alla successiva. I clic con MAIUSC o ALT "
 "voltano pagina comunque."
 
-#: mcomix/preferences_dialog.py:363
+#: mcomix/preferences_dialog.py:356
 msgid "Where a click lands:"
 msgstr "Dove cade il clic:"
 
-#: mcomix/preferences_dialog.py:367
+#: mcomix/preferences_dialog.py:360
 msgid "Skip pages that cannot be shown"
 msgstr "Salta le pagine che non si possono mostrare"
 
-#: mcomix/preferences_dialog.py:369
+#: mcomix/preferences_dialog.py:362
 msgid ""
 "Turn past a page whose image is damaged or cannot be read, instead of "
 "showing the broken-image icon in its place."
@@ -1937,15 +1908,15 @@ msgstr ""
 "Salta una pagina la cui immagine è danneggiata o illeggibile, invece di "
 "mostrare al suo posto l'icona di immagine danneggiata."
 
-#: mcomix/preferences_dialog.py:371
+#: mcomix/preferences_dialog.py:364
 msgid "Between books"
 msgstr "Tra i libri"
 
-#: mcomix/preferences_dialog.py:374
+#: mcomix/preferences_dialog.py:367
 msgid "Open the next book past the last page"
 msgstr "Apri automaticamente l'archivio successivo"
 
-#: mcomix/preferences_dialog.py:376
+#: mcomix/preferences_dialog.py:369
 msgid ""
 "Past the last page, open the next book in the folder; past the first page, "
 "the previous one."
@@ -1953,11 +1924,11 @@ msgstr ""
 "Apre automaticamente l'archivio successivo nella directory, dopo aver "
 "visualizzato l'ultima pagina o l'archivio precedente dopo la prima pagina."
 
-#: mcomix/preferences_dialog.py:379
+#: mcomix/preferences_dialog.py:372
 msgid "Go on into the next folder"
 msgstr "Apri automaticamente la directory successiva"
 
-#: mcomix/preferences_dialog.py:381
+#: mcomix/preferences_dialog.py:374
 msgid ""
 "Automatically open the first file in the next sibling directory when "
 "flipping past the last page of the last file in a directory, or the previous "
@@ -1967,31 +1938,31 @@ msgstr ""
 "si giunge all'ultima pagina dell'ultimo file di una directory, o la "
 "directory precedente quando si giunge alla prima pagina del primo file."
 
-#: mcomix/preferences_dialog.py:384
+#: mcomix/preferences_dialog.py:377
 msgid "Open the previous book at its first page"
 msgstr "Apri il primo file quando si passa all'archivio precedente"
 
-#: mcomix/preferences_dialog.py:386
+#: mcomix/preferences_dialog.py:379
 msgid "Open the previous book at its first page rather than at its last."
 msgstr ""
 "Apre automaticamente il primo file dell'archivio precedente quando vi si "
 "passa, invece del suo ultimo file."
 
-#: mcomix/preferences_dialog.py:389
+#: mcomix/preferences_dialog.py:382
 msgid "Open the previous folder at its first page"
 msgstr "Apri il primo file quando si passa alla directory precedente"
 
-#: mcomix/preferences_dialog.py:391
+#: mcomix/preferences_dialog.py:384
 msgid "Open the previous folder at its first page rather than at its last."
 msgstr ""
 "Apre automaticamente il primo file della directory precedente quando vi si "
 "passa, invece del suo ultimo file."
 
-#: mcomix/preferences_dialog.py:394
+#: mcomix/preferences_dialog.py:387
 msgid "Open a folder with the folders in it as one book"
 msgstr "Apri una cartella con le cartelle che contiene come un unico libro"
 
-#: mcomix/preferences_dialog.py:396
+#: mcomix/preferences_dialog.py:389
 msgid ""
 "The files of the folders in a folder, two levels down, follow its own. The "
 "next directory is then the one beside it."
@@ -1999,31 +1970,31 @@ msgstr ""
 "I file delle cartelle in una cartella, fino a due livelli più in basso, "
 "seguono i suoi. La directory successiva è allora quella accanto."
 
-#: mcomix/preferences_dialog.py:398
+#: mcomix/preferences_dialog.py:391
 msgid "File order"
 msgstr "Ordine dei file"
 
-#: mcomix/preferences_dialog.py:400
+#: mcomix/preferences_dialog.py:393
 msgid "Sort files in a folder by:"
 msgstr "Ordina file e directory per:"
 
-#: mcomix/preferences_dialog.py:403
+#: mcomix/preferences_dialog.py:396
 msgid "Sort pages inside an archive by:"
 msgstr "Ordina le pagine di un archivio per:"
 
-#: mcomix/preferences_dialog.py:406 mcomix/slideshow.py:26
+#: mcomix/preferences_dialog.py:399 mcomix/slideshow.py:26
 msgid "Slideshow"
 msgstr "Presentazione"
 
-#: mcomix/preferences_dialog.py:408
+#: mcomix/preferences_dialog.py:401
 msgid "Slideshow delay (in seconds):"
 msgstr "Intervallo della presentazione (in secondi):"
 
-#: mcomix/preferences_dialog.py:413
+#: mcomix/preferences_dialog.py:406
 msgid "Slideshow step (in pixels):"
 msgstr "Intervallo della presentazione (in pixel):"
 
-#: mcomix/preferences_dialog.py:417
+#: mcomix/preferences_dialog.py:410
 msgid ""
 "Specify the number of pixels to scroll while in slideshow mode. A positive "
 "value will scroll forward, a negative value will scroll backwards, and a "
@@ -2034,44 +2005,44 @@ msgstr ""
 "all'indietro ed un valore pari a 0 farà sì che la presentazione visualizzi "
 "sempre una nuova pagina."
 
-#: mcomix/preferences_dialog.py:420
+#: mcomix/preferences_dialog.py:413
 msgid "Let the slideshow go on to the next book"
 msgstr "Durante una presentazione apri automaticamente l'archivio successivo"
 
-#: mcomix/preferences_dialog.py:422
+#: mcomix/preferences_dialog.py:415
 msgid "Past the last page during a slideshow, open the next book."
 msgstr ""
 "Durante la modalità presentazione consente automaticamente l'apertura "
 "dell'archivio successivo."
 
-#: mcomix/preferences_dialog.py:435
+#: mcomix/preferences_dialog.py:428
 msgid "Turn two pages at a time"
 msgstr "Capovolgi due pagine in modalità pagina doppia"
 
-#: mcomix/preferences_dialog.py:437
+#: mcomix/preferences_dialog.py:430
 msgid ""
 "Flip two pages, instead of one, each time we flip pages in double page mode."
 msgstr ""
 "Capovolge due pagine, invece di una, ogni volta che capovolgiamo le pagine "
 "in modalità pagina doppia."
 
-#: mcomix/preferences_dialog.py:439
+#: mcomix/preferences_dialog.py:432
 msgid "Show a page alone:"
 msgstr "Mostra solo una pagina quando:"
 
-#: mcomix/preferences_dialog.py:442
+#: mcomix/preferences_dialog.py:435
 msgid "Page auto-resizing:"
 msgstr "Ridimensionamento automatico delle pagine:"
 
-#: mcomix/preferences_dialog.py:445
+#: mcomix/preferences_dialog.py:438
 msgid "Space between two pages (in pixels):"
 msgstr "Spazio fra due pagine (in pixel):"
 
-#: mcomix/preferences_dialog.py:453
+#: mcomix/preferences_dialog.py:446
 msgid "Open long strips in continuous mode"
 msgstr "Apri le strisce lunghe in modalità continua"
 
-#: mcomix/preferences_dialog.py:455
+#: mcomix/preferences_dialog.py:448
 msgid ""
 "A book most of whose first pages are at least twice as high as wide is shown "
 "in continuous mode. The View menu turns it off for that book."
@@ -2080,27 +2051,27 @@ msgstr ""
 "della larghezza è mostrato in modalità continua. Il menu Visualizza la "
 "disattiva per quel libro."
 
-#: mcomix/preferences_dialog.py:457 mcomix/ui.py:593
+#: mcomix/preferences_dialog.py:450 mcomix/ui.py:593
 msgid "Fit to size mode"
 msgstr "Modalità adatta alla dimensione"
 
-#: mcomix/preferences_dialog.py:459
+#: mcomix/preferences_dialog.py:452
 msgid "Fixed width for wide pages:"
 msgstr "Larghezza fissa per le pagine larghe:"
 
-#: mcomix/preferences_dialog.py:464
+#: mcomix/preferences_dialog.py:457
 msgid "Fixed height for wide pages:"
 msgstr "Altezza fissa per le pagine larghe:"
 
-#: mcomix/preferences_dialog.py:469
+#: mcomix/preferences_dialog.py:462
 msgid "Fixed width for other pages:"
 msgstr "Larghezza fissa per le altre pagine:"
 
-#: mcomix/preferences_dialog.py:474
+#: mcomix/preferences_dialog.py:467
 msgid "Fixed height for other pages:"
 msgstr "Altezza fissa per le altre pagine:"
 
-#: mcomix/preferences_dialog.py:484
+#: mcomix/preferences_dialog.py:477
 msgid ""
 "Automatically rotate images when an orientation is specified in the image "
 "metadata, such as in an Exif tag."
@@ -2108,27 +2079,27 @@ msgstr ""
 "Ruota automaticamente le immagini quando nei metadata dell'immagine è "
 "specificato un orientamento, come ad esempio in un tag Exif."
 
-#: mcomix/preferences_dialog.py:486
+#: mcomix/preferences_dialog.py:479
 msgid "Animation mode:"
 msgstr "Modalità di animazione:"
 
-#: mcomix/preferences_dialog.py:489
+#: mcomix/preferences_dialog.py:482
 msgid "Scaling quality:"
 msgstr "Modalità di ridimensionamento:"
 
-#: mcomix/preferences_dialog.py:492
+#: mcomix/preferences_dialog.py:485
 msgid "Screen colour profile:"
 msgstr "Profilo colore dello schermo:"
 
-#: mcomix/preferences_dialog.py:495
+#: mcomix/preferences_dialog.py:488
 msgid "Rendering intent:"
 msgstr "Intento di rendering:"
 
-#: mcomix/preferences_dialog.py:500
+#: mcomix/preferences_dialog.py:493
 msgid "Lens size (in pixels):"
 msgstr "Dimensione della lente di ingrandimento (in pixel):"
 
-#: mcomix/preferences_dialog.py:504
+#: mcomix/preferences_dialog.py:497
 msgid ""
 "Set the size of the magnifying lens. It is a square with a side of this many "
 "pixels."
@@ -2136,23 +2107,23 @@ msgstr ""
 "Imposta la dimensione della lente di ingrandimento. È un quadrato con un "
 "lato di questo numero di pixel."
 
-#: mcomix/preferences_dialog.py:506
+#: mcomix/preferences_dialog.py:499
 msgid "Magnification factor:"
 msgstr "Fattore di ingrandimento:"
 
-#: mcomix/preferences_dialog.py:510
+#: mcomix/preferences_dialog.py:503
 msgid "Set the magnification factor of the magnifying lens."
 msgstr "Imposta il fattore di ingrandimento della lente."
 
-#: mcomix/preferences_dialog.py:520
+#: mcomix/preferences_dialog.py:513
 msgid "Extraction and cache"
 msgstr "Estrazione e cache"
 
-#: mcomix/preferences_dialog.py:528
+#: mcomix/preferences_dialog.py:521
 msgid "Extraction threads:"
 msgstr "Numero massimo di thread di estrazione concorrenti:"
 
-#: mcomix/preferences_dialog.py:532
+#: mcomix/preferences_dialog.py:525
 msgid ""
 "Set the maximum number of concurrent threads for formats that support it. A "
 "value of 0 uses one thread for each processor. For PDFs, 0 also keeps within "
@@ -2162,11 +2133,11 @@ msgstr ""
 "supportano. Il valore 0 usa un thread per ogni processore. Per i PDF, 0 "
 "resta anche entro un sedicesimo della memoria."
 
-#: mcomix/preferences_dialog.py:534
+#: mcomix/preferences_dialog.py:527
 msgid "Thumbnail threads:"
 msgstr "Numero massimo di thread concorrenti per le miniature:"
 
-#: mcomix/preferences_dialog.py:538
+#: mcomix/preferences_dialog.py:531
 msgid ""
 "Set the maximum number of concurrent threads used to generate thumbnails. A "
 "value of 0 uses one thread for each processor. Takes effect the next time "
@@ -2176,15 +2147,15 @@ msgstr ""
 "miniature. Il valore 0 usa un thread per ogni processore. Ha effetto al "
 "prossimo avvio di MComix."
 
-#: mcomix/preferences_dialog.py:540
+#: mcomix/preferences_dialog.py:533
 msgid "Unpack books in:"
 msgstr "Estrai i libri in:"
 
-#: mcomix/preferences_dialog.py:543
+#: mcomix/preferences_dialog.py:536
 msgid "Pages to keep in the cache:"
 msgstr "Massimo numero di pagine da memorizzare nella cache:"
 
-#: mcomix/preferences_dialog.py:547
+#: mcomix/preferences_dialog.py:540
 msgid ""
 "Set the max number of pages to cache. A value of -1 will cache the entire "
 "archive."
@@ -2192,11 +2163,11 @@ msgstr ""
 "Imposta il numero massimo di pagine da memorizzare nella cache. Un valore "
 "pari a -1, memorizzerà l'intero archivio nella cache."
 
-#: mcomix/preferences_dialog.py:550
+#: mcomix/preferences_dialog.py:543
 msgid "Store thumbnails for opened files"
 msgstr "Memorizza le miniature dei file aperti"
 
-#: mcomix/preferences_dialog.py:552
+#: mcomix/preferences_dialog.py:545
 msgid ""
 "Store thumbnails for opened files according to the freedesktop.org "
 "specification. These thumbnails are shared by many other applications, such "
@@ -2206,19 +2177,19 @@ msgstr ""
 "freedesktop.org. Queste miniature sono condivise da molte altre "
 "applicazioni, come, ad esempio, la maggior parte dei gestori di file."
 
-#: mcomix/preferences_dialog.py:572
+#: mcomix/preferences_dialog.py:565
 msgid "_Reset keys"
 msgstr "_Ripristina i tasti"
 
-#: mcomix/preferences_dialog.py:574
+#: mcomix/preferences_dialog.py:567
 msgid "Resets all keyboard shortcuts to their default values."
 msgstr "Ripristina tutte le scorciatoie da tastiera ai valori predefiniti."
 
-#: mcomix/preferences_dialog.py:577
+#: mcomix/preferences_dialog.py:570
 msgid "Clear _dialog choices"
 msgstr "Cancella le scelte nelle finestre di _dialogo"
 
-#: mcomix/preferences_dialog.py:579
+#: mcomix/preferences_dialog.py:572
 msgid ""
 "Clears all dialog choices that you have previously chosen not to be asked "
 "again."
@@ -2226,11 +2197,11 @@ msgstr ""
 "Cancella tutte le scelte nella finestra di dialogo che precedentemente hai "
 "scelto di non chiedere di nuovo"
 
-#: mcomix/preferences_dialog.py:621
+#: mcomix/preferences_dialog.py:614
 msgid "Ask every time"
 msgstr "Chiedi ogni volta"
 
-#: mcomix/preferences_dialog.py:626
+#: mcomix/preferences_dialog.py:619
 msgid ""
 "What MComix answers this prompt with instead of asking. This is what the "
 "prompt's \"Do not ask again\" box sets."
@@ -2238,27 +2209,27 @@ msgstr ""
 "Ciò che MComix risponde a questa domanda invece di porla. È quanto imposta "
 "la casella \"Non chiedere di nuovo\" della domanda."
 
-#: mcomix/preferences_dialog.py:648
+#: mcomix/preferences_dialog.py:641
 msgid "Auto-detect (Default)"
 msgstr "Rileva automaticamente (default)"
 
-#: mcomix/preferences_dialog.py:690
+#: mcomix/preferences_dialog.py:683
 msgid "Follow the system"
 msgstr "Segui il sistema"
 
-#: mcomix/preferences_dialog.py:691
+#: mcomix/preferences_dialog.py:684
 msgid "Light"
 msgstr "Chiaro"
 
-#: mcomix/preferences_dialog.py:692
+#: mcomix/preferences_dialog.py:685
 msgid "Dark"
 msgstr "Scuro"
 
-#: mcomix/preferences_dialog.py:693
+#: mcomix/preferences_dialog.py:686
 msgid "Pitch black"
 msgstr "Nero assoluto"
 
-#: mcomix/preferences_dialog.py:699
+#: mcomix/preferences_dialog.py:692
 msgid ""
 "How MComix itself is painted, whatever the desktop asks for. Pitch black is "
 "the dark theme with black backgrounds, which a screen that lights its pixels "
@@ -2268,11 +2239,11 @@ msgstr ""
 "nero assoluto è il tema scuro con sfondi neri, che uno schermo che accende i "
 "pixel uno per uno mostra come assenza totale di luce."
 
-#: mcomix/preferences_dialog.py:736
+#: mcomix/preferences_dialog.py:729
 msgid "Restart MComix in the language you picked?"
 msgstr "Riavviare MComix nella lingua scelta?"
 
-#: mcomix/preferences_dialog.py:737
+#: mcomix/preferences_dialog.py:730
 msgid ""
 "MComix is translated as it starts, so most of the interface stays in the "
 "language it started in until it is started again. The book being read, its "
@@ -2282,24 +2253,24 @@ msgstr ""
 "nella lingua con cui è stato avviato finché non viene riavviato. Il libro in "
 "lettura, la sua pagina e le dimensioni della finestra vengono mantenuti."
 
-#: mcomix/preferences_dialog.py:751 mcomix/preferences_dialog.py:924
-#: mcomix/preferences_dialog.py:979 mcomix/ui.py:599
+#: mcomix/preferences_dialog.py:744 mcomix/preferences_dialog.py:938
+#: mcomix/preferences_dialog.py:993 mcomix/ui.py:599
 msgid "Never"
 msgstr "Mai"
 
-#: mcomix/preferences_dialog.py:752
+#: mcomix/preferences_dialog.py:745
 msgid "Only for title pages"
 msgstr "Solo per i titoli delle pagine"
 
-#: mcomix/preferences_dialog.py:753
+#: mcomix/preferences_dialog.py:746
 msgid "Only for wide images"
 msgstr "Solo per le immagini di grandi dimensioni"
 
-#: mcomix/preferences_dialog.py:754 mcomix/preferences_dialog.py:925
+#: mcomix/preferences_dialog.py:747 mcomix/preferences_dialog.py:939
 msgid "Always"
 msgstr "Sempre"
 
-#: mcomix/preferences_dialog.py:761
+#: mcomix/preferences_dialog.py:754
 msgid ""
 "When showing the first page of an archive, or an image's width exceeds its "
 "height, only a single page will be displayed."
@@ -2307,43 +2278,43 @@ msgstr ""
 "Quando la prima pagina di un archivio, o la larghezza di un'immagine supera "
 "la sua altezza, sarà visualizzata solo una pagina singola."
 
-#: mcomix/preferences_dialog.py:779
+#: mcomix/preferences_dialog.py:772
 msgid "Prefer same scale"
 msgstr "Preferisci la stessa scala"
 
-#: mcomix/preferences_dialog.py:780
+#: mcomix/preferences_dialog.py:773
 msgid "Prefer same size"
 msgstr "Preferisci la stessa dimensione"
 
-#: mcomix/preferences_dialog.py:781
+#: mcomix/preferences_dialog.py:774
 msgid "Fit to same size"
 msgstr "Adatta alla stessa dimensione"
 
-#: mcomix/preferences_dialog.py:788
+#: mcomix/preferences_dialog.py:781
 msgid "Maintain relative size or fit to same size."
 msgstr "Mantiene la dimensione relativa oppure adatta alla stessa dimensione."
 
-#: mcomix/preferences_dialog.py:802 mcomix/preferences_dialog.py:814
+#: mcomix/preferences_dialog.py:795 mcomix/preferences_dialog.py:807
 msgid "No sorting"
 msgstr "Nessun ordinamento"
 
-#: mcomix/preferences_dialog.py:803
+#: mcomix/preferences_dialog.py:796
 msgid "File name"
 msgstr "Nome del file"
 
-#: mcomix/preferences_dialog.py:804
+#: mcomix/preferences_dialog.py:797
 msgid "File name (GLib)"
 msgstr "Nome del file (GLib)"
 
-#: mcomix/preferences_dialog.py:805 mcomix/library/book_area.py:436
+#: mcomix/preferences_dialog.py:798 mcomix/library/book_area.py:436
 msgid "File size"
 msgstr "Dimensione del file"
 
-#: mcomix/preferences_dialog.py:806
+#: mcomix/preferences_dialog.py:799
 msgid "Last modified"
 msgstr "Ultima modifica"
 
-#: mcomix/preferences_dialog.py:808
+#: mcomix/preferences_dialog.py:801
 msgid ""
 "Files will be opened and displayed according to the sort order specified "
 "here. This option does not affect ordering within archives."
@@ -2351,19 +2322,19 @@ msgstr ""
 "I file saranno aperti e visualizzati secondo l'ordine qui specificato. "
 "Questa opzione non influisce sull'ordine all'interno degli archivi."
 
-#: mcomix/preferences_dialog.py:815
+#: mcomix/preferences_dialog.py:808
 msgid "Natural order"
 msgstr "Ordine naturale"
 
-#: mcomix/preferences_dialog.py:816
+#: mcomix/preferences_dialog.py:809
 msgid "Literal order"
 msgstr "Ordine letterale"
 
-#: mcomix/preferences_dialog.py:817
+#: mcomix/preferences_dialog.py:810
 msgid "GLib order"
 msgstr "Ordine GLib"
 
-#: mcomix/preferences_dialog.py:819
+#: mcomix/preferences_dialog.py:812
 msgid ""
 "Files within archives will be sorted according to the order specified here. "
 "Natural order will sort numbered files based on their natural order, i.e. 1, "
@@ -2378,19 +2349,19 @@ msgstr ""
 "ordinerà i file usando le chiavi di collazione generate da GLib/GTK, usate "
 "da molte altre applicazioni GTK."
 
-#: mcomix/preferences_dialog.py:836 mcomix/library/book_area.py:444
+#: mcomix/preferences_dialog.py:829 mcomix/library/book_area.py:444
 msgid "Ascending"
 msgstr "Ascendente"
 
-#: mcomix/preferences_dialog.py:837 mcomix/library/book_area.py:445
+#: mcomix/preferences_dialog.py:830 mcomix/library/book_area.py:445
 msgid "Descending"
 msgstr "Discendente"
 
-#: mcomix/preferences_dialog.py:866
+#: mcomix/preferences_dialog.py:859
 msgid "Delete information about recently opened files?"
 msgstr "Vuoi eliminare le informazioni dei file aperti di recente?"
 
-#: mcomix/preferences_dialog.py:867
+#: mcomix/preferences_dialog.py:860
 msgid ""
 "This will remove all entries from the \"Recent\" menu, and clear information "
 "about last read pages."
@@ -2398,27 +2369,27 @@ msgstr ""
 "Questo rimuoverà tutte le voci presenti nel menu \"Recenti\" e le "
 "informazioni delle ultime pagine lette."
 
-#: mcomix/preferences_dialog.py:880
+#: mcomix/preferences_dialog.py:873
 msgid "Nearest (pixel art)"
 msgstr "Vicino più prossimo (pixel art)"
 
-#: mcomix/preferences_dialog.py:881
+#: mcomix/preferences_dialog.py:874
 msgid "Normal (fast)"
 msgstr "Normale (veloce)"
 
-#: mcomix/preferences_dialog.py:882
+#: mcomix/preferences_dialog.py:875
 msgid "Bilinear"
 msgstr "Bilineare"
 
-#: mcomix/preferences_dialog.py:883
+#: mcomix/preferences_dialog.py:876
 msgid "Bicubic"
 msgstr "Bicubico"
 
-#: mcomix/preferences_dialog.py:884
+#: mcomix/preferences_dialog.py:877
 msgid "Lanczos (slow)"
 msgstr "Lanczos (lento)"
 
-#: mcomix/preferences_dialog.py:890
+#: mcomix/preferences_dialog.py:883
 msgid ""
 "Changes how images are scaled. Slower algorithms result in higher quality "
 "resizing, but longer page loading times."
@@ -2427,19 +2398,19 @@ msgstr ""
 "producono un ridimensionamento di qualità superiore, ma tempi più lunghi per "
 "il caricamento delle pagine."
 
-#: mcomix/preferences_dialog.py:907
+#: mcomix/preferences_dialog.py:900
 msgid "Anywhere: the next page"
 msgstr "Ovunque: la pagina successiva"
 
-#: mcomix/preferences_dialog.py:908
+#: mcomix/preferences_dialog.py:901
 msgid "Halves: back and forward"
 msgstr "Metà: indietro e avanti"
 
-#: mcomix/preferences_dialog.py:909
+#: mcomix/preferences_dialog.py:902
 msgid "Thirds: back, fullscreen, forward"
 msgstr "Terzi: indietro, schermo intero, avanti"
 
-#: mcomix/preferences_dialog.py:917
+#: mcomix/preferences_dialog.py:910
 msgid ""
 "With \"Flip pages with a left click\": the left half or third of the page "
 "turns back and the right one forward; the middle third enters or leaves "
@@ -2449,16 +2420,44 @@ msgstr ""
 "pagina torna indietro e il destro va avanti; il terzo centrale entra o esce "
 "dallo schermo intero. In modalità manga sinistra e destra si scambiano."
 
-#: mcomix/preferences_dialog.py:926
+#: mcomix/preferences_dialog.py:916
+msgid "A ZIP, where it is one; others through Save As"
+msgstr "ZIP, dove lo è già; gli altri con Salva come"
+
+#: mcomix/preferences_dialog.py:918
+msgid "The format it was opened in"
+msgstr "Il formato in cui è stato aperto"
+
+#: mcomix/preferences_dialog.py:920
+msgid "Always a ZIP, replacing other formats"
+msgstr "Sempre ZIP, al posto degli altri formati"
+
+#: mcomix/preferences_dialog.py:930
+msgid ""
+"Write an edited archive back as a ZIP, a tar, a 7z or a RAR, whichever it "
+"was read as. The last two need the 7z and rar programs, which MComix does "
+"not install; a format it cannot write is saved as a ZIP."
+msgstr ""
+"Riscrivi un archivio modificato come ZIP, tar, 7z o RAR, a seconda di come è "
+"stato letto. Gli ultimi due richiedono i programmi 7z e rar, che MComix non "
+"installa; un formato che non può scrivere viene salvato come ZIP."
+
+#: mcomix/preferences_dialog.py:931
+msgid ""
+"Every archive is written as a ZIP, and a RAR, 7z or tar book saved in place "
+"is replaced by a ZIP of its name ending in .cbz or .zip."
+msgstr "Ogni archivio viene scritto come ZIP, e un libro RAR, 7z o tar salvato al suo posto viene sostituito da uno ZIP con il suo nome che termina in .cbz o .zip."
+
+#: mcomix/preferences_dialog.py:940
 msgid "For a few seconds after a page turn"
 msgstr "Per qualche secondo dopo aver girato pagina"
 
-#: mcomix/preferences_dialog.py:931
+#: mcomix/preferences_dialog.py:945
 msgid "The pages on screen and the number of pages, in the lower right corner."
 msgstr ""
 "Le pagine sullo schermo e il numero di pagine, nell'angolo in basso a destra."
 
-#: mcomix/preferences_dialog.py:952
+#: mcomix/preferences_dialog.py:966
 msgid ""
 "The ICC profile of the screen, such as one made by calibrating it. Pages are "
 "converted into it from sRGB. Leave it empty where the desktop already "
@@ -2468,27 +2467,27 @@ msgstr ""
 "sono convertite da sRGB. Lasciare vuoto dove il desktop converte già per lo "
 "schermo."
 
-#: mcomix/preferences_dialog.py:953
+#: mcomix/preferences_dialog.py:967
 msgid "None"
 msgstr "Nessuno"
 
-#: mcomix/preferences_dialog.py:959
+#: mcomix/preferences_dialog.py:973
 msgid "Perceptual"
 msgstr "Percettivo"
 
-#: mcomix/preferences_dialog.py:960
+#: mcomix/preferences_dialog.py:974
 msgid "Relative colorimetric"
 msgstr "Colorimetrico relativo"
 
-#: mcomix/preferences_dialog.py:961
+#: mcomix/preferences_dialog.py:975
 msgid "Saturation"
 msgstr "Saturazione"
 
-#: mcomix/preferences_dialog.py:962
+#: mcomix/preferences_dialog.py:976
 msgid "Absolute colorimetric"
 msgstr "Colorimetrico assoluto"
 
-#: mcomix/preferences_dialog.py:973
+#: mcomix/preferences_dialog.py:987
 msgid ""
 "How colours the screen cannot show are brought within its range, when a "
 "screen colour profile is set. Perceptual keeps the colours in proportion; "
@@ -2499,15 +2498,15 @@ msgstr ""
 "colori in proporzione; colorimetrico relativo mantiene esatti quelli che lo "
 "schermo può mostrare."
 
-#: mcomix/preferences_dialog.py:980 mcomix/library/book_area.py:452
+#: mcomix/preferences_dialog.py:994 mcomix/library/book_area.py:452
 msgid "Normal"
 msgstr "Normale"
 
-#: mcomix/preferences_dialog.py:986
+#: mcomix/preferences_dialog.py:1000
 msgid "Controls how animated images should be displayed."
 msgstr "Determina come vengono mostrate le immagini animate."
 
-#: mcomix/preferences_dialog.py:1028
+#: mcomix/preferences_dialog.py:1042
 msgid ""
 "The folder archives are unpacked into while they are read, such as a RAM "
 "disk. Empty, the system's temporary folder. Takes effect with the next book "
@@ -2517,11 +2516,11 @@ msgstr ""
 "esempio un disco RAM. Vuota: la cartella temporanea del sistema. Vale dal "
 "prossimo libro aperto."
 
-#: mcomix/preferences_dialog.py:1029
+#: mcomix/preferences_dialog.py:1043
 msgid "The temporary folder"
 msgstr "La cartella temporanea"
 
-#: mcomix/preferences_dialog.py:1034
+#: mcomix/preferences_dialog.py:1048
 msgid ""
 "Treat all files found within archives, that have one of these file endings, "
 "as comments."
@@ -2816,7 +2815,11 @@ msgid ""
 "the books as they were stay in the trash, and keep their room until it is "
 "emptied. Deleting them permanently instead frees their room as each book is "
 "written."
-msgstr "I libri ridotti occupano circa %(needed)s sul disco, che ha %(free)s liberi: i libri com'erano restano nel cestino e ne occupano lo spazio finché non viene svuotato. Eliminarli definitivamente ne libera lo spazio man mano che ogni libro viene scritto."
+msgstr ""
+"I libri ridotti occupano circa %(needed)s sul disco, che ha %(free)s liberi: "
+"i libri com'erano restano nel cestino e ne occupano lo spazio finché non "
+"viene svuotato. Eliminarli definitivamente ne libera lo spazio man mano che "
+"ogni libro viene scritto."
 
 #: mcomix/shrink_dialog.py:317
 msgid "_Delete Originals Permanently"
@@ -3560,38 +3563,38 @@ msgstr "un file al suo interno non si può leggere e andrebbe perso"
 msgid "no page made smaller"
 msgstr "nessuna pagina ridotta"
 
-#: mcomix/webp_books.py:321
+#: mcomix/webp_books.py:323
 #, python-format
 msgid "the trash refused it: %s"
 msgstr "il cestino l'ha rifiutato: %s"
 
 #. TRANSLATORS: Why a book was left as it was, as the others.
-#: mcomix/webp_books.py:379
+#: mcomix/webp_books.py:381
 msgid "a symbolic link, which would no longer lead to it"
 msgstr "un collegamento simbolico, che non porterebbe più a esso"
 
 #. TRANSLATORS: Why a book was left as it was, as the others; %s is
 #. a file name, such as "Book.cbz".
-#: mcomix/webp_books.py:383 mcomix/webp_books.py:407
+#: mcomix/webp_books.py:385 mcomix/webp_books.py:409
 #, python-format
 msgid "%s is there already"
 msgstr "%s esiste già"
 
 #. TRANSLATORS: Why a book was left as it was, as the others.
-#: mcomix/webp_books.py:401
+#: mcomix/webp_books.py:403
 msgid "a ZIP already, no smaller packed again"
 msgstr "già uno ZIP, non più piccolo reimpacchettato"
 
-#: mcomix/webp_books.py:457 mcomix/webp_books.py:486 mcomix/webp_books.py:492
-#: mcomix/webp_books.py:512 mcomix/library/book_check.py:38
+#: mcomix/webp_books.py:459 mcomix/webp_books.py:488 mcomix/webp_books.py:494
+#: mcomix/webp_books.py:514 mcomix/library/book_check.py:38
 msgid "encrypted"
 msgstr "cifrato"
 
-#: mcomix/webp_books.py:459
+#: mcomix/webp_books.py:461
 msgid "archives inside"
 msgstr "contiene altri archivi"
 
-#: mcomix/webp_books.py:467
+#: mcomix/webp_books.py:469
 msgid "no PNG, GIF or JPEG pages"
 msgstr "nessuna pagina PNG, GIF o JPEG"
 
@@ -3671,7 +3674,7 @@ msgstr "Riduzione delle pagine"
 msgid "Shrinking pages"
 msgstr "Riduzione delle pagine grandi"
 
-#: mcomix/webp_dialog.py:326
+#: mcomix/webp_dialog.py:334
 msgid ""
 "The disk is full. The books as they were are in the trash, which holds their "
 "room until it is emptied."
@@ -3679,66 +3682,66 @@ msgstr ""
 "Il disco è pieno. I libri com'erano sono nel cestino, che ne occupa lo "
 "spazio finché non viene svuotato."
 
-#: mcomix/webp_dialog.py:328
+#: mcomix/webp_dialog.py:336
 msgid "The disk is full."
 msgstr "Il disco è pieno."
 
-#: mcomix/webp_dialog.py:335
+#: mcomix/webp_dialog.py:343
 #, python-format
 msgid "%(count)d book repacked as ZIP, %(size)s larger"
 msgid_plural "%(count)d books repacked as ZIP, %(size)s larger"
 msgstr[0] "%(count)d libro reimpacchettato come ZIP, %(size)s più grande"
 msgstr[1] "%(count)d libri reimpacchettati come ZIP, %(size)s più grandi"
 
-#: mcomix/webp_dialog.py:341
+#: mcomix/webp_dialog.py:349
 #, python-format
 msgid "%(count)d book repacked as ZIP, %(size)s smaller"
 msgid_plural "%(count)d books repacked as ZIP, %(size)s smaller"
 msgstr[0] "%(count)d libro reimpacchettato come ZIP, %(size)s più piccolo"
 msgstr[1] "%(count)d libri reimpacchettati come ZIP, %(size)s più piccoli"
 
-#: mcomix/webp_dialog.py:345
+#: mcomix/webp_dialog.py:353
 #, python-format
 msgid "%(count)d book shrunk, %(size)s smaller"
 msgid_plural "%(count)d books shrunk, %(size)s smaller"
 msgstr[0] "%(count)d libro ridotto, %(size)s in meno"
 msgstr[1] "%(count)d libri ridotti, %(size)s in meno"
 
-#: mcomix/webp_dialog.py:349
+#: mcomix/webp_dialog.py:357
 #, python-format
 msgid "%(count)d book stored with WebP pages, %(size)s smaller"
 msgid_plural "%(count)d books stored with WebP pages, %(size)s smaller"
 msgstr[0] "%(count)d libro salvato con pagine WebP, %(size)s in meno"
 msgstr[1] "%(count)d libri salvati con pagine WebP, %(size)s in meno"
 
-#: mcomix/webp_dialog.py:362
+#: mcomix/webp_dialog.py:370
 #, python-format
 msgid "%d book stored without its damaged files"
 msgid_plural "%d books stored without their damaged files"
 msgstr[0] "%d libro salvato senza i suoi file danneggiati"
 msgstr[1] "%d libri salvati senza i loro file danneggiati"
 
-#: mcomix/webp_dialog.py:399
+#: mcomix/webp_dialog.py:407
 #, python-format
 msgid "About %d minute left"
 msgid_plural "About %d minutes left"
 msgstr[0] "Circa %d minuto rimanente"
 msgstr[1] "Circa %d minuti rimanenti"
 
-#: mcomix/webp_dialog.py:430 mcomix/webp_dialog.py:484
+#: mcomix/webp_dialog.py:438 mcomix/webp_dialog.py:492
 #, python-format
 msgid "Could not be written: %s"
 msgstr "Impossibile scrivere: %s"
 
-#: mcomix/webp_dialog.py:448
+#: mcomix/webp_dialog.py:456
 msgid "_Save Log…"
 msgstr "_Salva il registro…"
 
-#: mcomix/webp_dialog.py:453
+#: mcomix/webp_dialog.py:461
 msgid "Select Books with _Errors"
 msgstr "Seleziona i libri con _errori"
 
-#: mcomix/webp_dialog.py:499
+#: mcomix/webp_dialog.py:507
 msgid "Save the log as"
 msgstr "Salva il registro come"
 
@@ -4428,6 +4431,35 @@ msgstr "Con le sottodirectory"
 #: mcomix/library/watchlist.py:85
 msgid "Automatically scan for new books when library is _opened"
 msgstr "Cerca a_utomaticamente nuovi libri quando la libreria è aperta"
+
+#, fuzzy
+#~ msgid ""
+#~ "The format it was opened in: a ZIP, a tar, a 7z or a RAR, whichever it "
+#~ "was read as; the last two need the 7z and rar programs, which MComix does "
+#~ "not install, and a format it cannot write is saved as a ZIP. Always a "
+#~ "ZIP: pages already compressed are stored and the rest compressed, and a "
+#~ "RAR, 7z or tar book saved in place is replaced by the ZIP, named .cbz in "
+#~ "place of .cbr, .cb7 or .cbt, and .zip in place of any other extension."
+#~ msgstr ""
+#~ "Ogni libro viene riscritto come ZIP, con ogni file com'era: le pagine già "
+#~ "compresse vengono archiviate così come sono, il resto viene compresso. Un "
+#~ "libro RAR, 7z o tar viene sostituito dallo ZIP, con .cbz al posto "
+#~ "di .cbr, .cb7 o .cbt, e .zip al posto di qualsiasi altra estensione. Uno "
+#~ "ZIP viene sostituito solo se risulta più piccolo."
+
+#~ msgid ""
+#~ "Write each archive MComix saves as a ZIP, with pages already compressed "
+#~ "stored and the rest compressed, whatever format it was opened in. A RAR, "
+#~ "7z or tar book saved in place is replaced by the ZIP, named .cbz in place "
+#~ "of .cbr, .cb7 or .cbt, and .zip in place of any other extension. This "
+#~ "comes before keeping the format an archive was opened in."
+#~ msgstr ""
+#~ "Scrive ogni archivio che MComix salva come ZIP, con le pagine già "
+#~ "compresse archiviate così come sono e il resto compresso, in qualunque "
+#~ "formato sia stato aperto. Un libro RAR, 7z o tar salvato al suo posto "
+#~ "viene sostituito dallo ZIP, con .cbz al posto di .cbr, .cb7 o .cbt, "
+#~ "e .zip al posto di qualsiasi altra estensione. Questo ha la precedenza "
+#~ "sul mantenere il formato in cui l'archivio è stato aperto."
 
 #~ msgid "Store PNG pages as lossless WebP when saving an archive"
 #~ msgstr ""

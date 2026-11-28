@@ -403,6 +403,24 @@ class MigratePreferencesTest(MComixTest):
                 preferences.read_preferences_file()
                 self.assertEqual(read, prefs['scaling quality'])
 
+    def test_the_save_format_check_buttons_become_one_choice(self) -> None:
+        """Saving every archive as a ZIP came before keeping the format,
+        so it wins where both were on."""
+        for kept, zipped, read in (
+                (False, False, constants.SAVE_ZIP_ONLY),
+                (True, False, constants.SAVE_KEEP_FORMAT),
+                (False, True, constants.SAVE_ALL_AS_ZIP),
+                (True, True, constants.SAVE_ALL_AS_ZIP)):
+            with self.subTest(kept=kept, zipped=zipped):
+                self._write({_FORMAT_VERSION_KEY: 12,
+                             'keep archive format when saving': kept,
+                             'zip when saving': zipped})
+                prefs['save archive format'] = constants.SAVE_ZIP_ONLY
+                preferences.read_preferences_file()
+                self.assertEqual(read, prefs['save archive format'])
+                self.assertNotIn('keep archive format when saving', prefs)
+                self.assertNotIn('zip when saving', prefs)
+
     def test_a_version_that_is_not_a_number_is_taken_as_the_oldest(self) -> None:
         """The version comes out of the file like everything else in it,
         so it can be anything a hand edit or a half-written file left

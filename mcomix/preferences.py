@@ -36,7 +36,7 @@ from mcomix import tools
 #:      where the reader has not bound those keys elsewhere.
 #:  11: F5 refreshes, as in file managers and browsers, where the
 #:      reader has not bound it elsewhere.
-CONFIG_FORMAT_VERSION = 12
+CONFIG_FORMAT_VERSION = 13
 
 #: Keys a step of _migrate_preferences() has given to another action, as
 #: (action, accelerator, holder): the key bindings are read after the
@@ -63,9 +63,8 @@ DEFAULT_BG_COLOUR = [5000 / 65535, 5000 / 65535, 5000 / 65535, 1.0]
 Preferences = TypedDict('Preferences', {
     'config format version': int,
     'comment extensions': list[str],
-    'keep archive format when saving': bool,
     'png pages as webp when saving': bool,
-    'zip when saving': bool,
+    'save archive format': int,
     'write without damaged files': bool,
     'shrink page height': int,
     'shrink page quality': int,
@@ -228,9 +227,8 @@ _NOTHING = object()
 _DEFAULTS: Preferences = {
     'config format version': CONFIG_FORMAT_VERSION,
     'comment extensions': constants.ACCEPTED_COMMENT_EXTENSIONS,
-    'keep archive format when saving': False,
     'png pages as webp when saving': False,
-    'zip when saving': False,
+    'save archive format': 0,  # constants.SAVE_ZIP_ONLY
     'write without damaged files': False,
     # "Shrink oversized pages...": twice the height of a 4K screen,
     # which leaves room to zoom in, and a quality at
@@ -627,6 +625,16 @@ def _migrate_preferences(saved_prefs: dict[str, object]) -> None:
         # gets the slow and best now.
         if saved_prefs.get('scaling quality') == 3:
             saved_prefs['scaling quality'] = constants.SCALING_LANCZOS
+
+    if version < 13:
+        # Two check buttons, one coming before the other, became one
+        # choice of three.
+        kept = saved_prefs.pop('keep archive format when saving', False)
+        zipped = saved_prefs.pop('zip when saving', False)
+        if zipped is True:
+            saved_prefs['save archive format'] = constants.SAVE_ALL_AS_ZIP
+        elif kept is True:
+            saved_prefs['save archive format'] = constants.SAVE_KEEP_FORMAT
 
     saved_prefs[_FORMAT_VERSION_KEY] = CONFIG_FORMAT_VERSION
 

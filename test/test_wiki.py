@@ -228,7 +228,9 @@ class ManualTest(unittest.TestCase):
 
     #: The preferences the page names, as the dialog labels them.
     QUOTED_PREFERENCES = (
-        'Save an edited archive in the format it was opened in',
+        'Save an edited archive as',
+        'Always a ZIP, replacing other formats',
+        'The format it was opened in',
         'Automatically rotate images according to their metadata',
     )
 

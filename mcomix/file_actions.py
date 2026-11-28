@@ -689,12 +689,14 @@ class FileActions:
         archive_type = self._window.filehandler.archive_type
         if archive_type is None:
             return None
-        if prefs['zip when saving'] and self._saves_as_zip(archive_type):
+        chosen = prefs['save archive format']
+        if chosen == constants.SAVE_ALL_AS_ZIP \
+                and self._saves_as_zip(archive_type):
             return constants.ZIP
         if not archive_packer.can_write(archive_type):
             return None
         if archive_type in (constants.ZIP, constants.ZIP_EXTERNAL) \
-                or prefs['keep archive format when saving']:
+                or chosen == constants.SAVE_KEEP_FORMAT:
             return archive_type
         return None
 

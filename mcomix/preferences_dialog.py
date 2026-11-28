@@ -269,20 +269,13 @@ class _PreferencesDialog(Dialog):
                                                     'store last saved in directory',
                                                     _('Open the save dialog at the folder the last page was saved into.')))
 
-        page.add_row(self._create_pref_check_button(
-            _('Save an edited archive in the format it was opened in'),
-            'keep archive format when saving',
-            _('Write an edited archive back as a ZIP, a tar, a 7z or a RAR, whichever it was read as. The last two need the 7z and rar programs, which MComix does not install; a format it cannot write is saved as a ZIP.')))
+        page.add_row(Gtk.Label(label=_('Save an edited archive as:')),
+                     self._create_save_format_combobox())
 
         page.add_row(self._create_pref_check_button(
             _('Make pages smaller without loss when saving an archive'),
             'png pages as webp when saving',
             _('Write each PNG or GIF page of an archive MComix saves as a lossless WebP, and each JPEG page with optimised tables, where that is smaller and keeps every pixel. Some other comic readers cannot show WebP.')))
-
-        page.add_row(self._create_pref_check_button(
-            _('Save every archive as a ZIP, replacing other formats'),
-            'zip when saving',
-            _('Write each archive MComix saves as a ZIP, with pages already compressed stored and the rest compressed, whatever format it was opened in. A RAR, 7z or tar book saved in place is replaced by the ZIP, named .cbz in place of .cbr, .cb7 or .cbt, and .zip in place of any other extension. This comes before keeping the format an archive was opened in.')))
 
         page.add_row(Gtk.Label(label=_('Comment file extensions:')),
                      self._create_extensions_entry())
@@ -915,6 +908,27 @@ class _PreferencesDialog(Dialog):
         box = self._create_combobox(items, prefs['click zones'], changed)
         box.set_tooltip_text(
             _('With "Flip pages with a left click": the left half or third of the page turns back and the right one forward; the middle third enters or leaves fullscreen. In manga mode left and right change places.'))
+        return box
+
+    def _create_save_format_combobox(self) -> "widgets.Chooser[int]":
+        """The format an edited archive is saved in."""
+        items = (
+                (_('A ZIP, where it is one; others through Save As'),
+                 constants.SAVE_ZIP_ONLY),
+                (_('The format it was opened in'),
+                 constants.SAVE_KEEP_FORMAT),
+                (_('Always a ZIP, replacing other formats'),
+                 constants.SAVE_ALL_AS_ZIP))
+
+        def changed(box: "widgets.Chooser[int]") -> None:
+            prefs['save archive format'] = box.get_value()
+
+        box = self._create_combobox(items, prefs['save archive format'],
+                                    changed)
+        # Each choice in a line of its own, by the name the list gives it.
+        box.set_tooltip_text('\n'.join((
+            '%s: %s' % (items[1][0], _('Write an edited archive back as a ZIP, a tar, a 7z or a RAR, whichever it was read as. The last two need the 7z and rar programs, which MComix does not install; a format it cannot write is saved as a ZIP.')),
+            '%s: %s' % (items[2][0], _('Every archive is written as a ZIP, and a RAR, 7z or tar book saved in place is replaced by a ZIP of its name ending in .cbz or .zip.')))))
         return box
 
     def _create_page_counter_combobox(self) -> "widgets.Chooser[int]":

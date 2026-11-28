@@ -78,6 +78,8 @@ ANIMATION_DISABLED, ANIMATION_NORMAL = list(range(2))
 #: the whole page forward; the half the book is read from back; the
 #: thirds, with the middle one entering or leaving fullscreen.
 CLICK_FORWARD, CLICK_HALVES, CLICK_THIRDS = list(range(3))
+# The format an edited archive is saved in ('save archive format').
+SAVE_ZIP_ONLY, SAVE_KEEP_FORMAT, SAVE_ALL_AS_ZIP = list(range(3))
 
 #: The 'scaling quality' choices Pillow scales with, past the four
 #: gdk-pixbuf interpolation types (0-3) the preference holds otherwise.
