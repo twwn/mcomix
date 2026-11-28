@@ -150,9 +150,19 @@ class _BookmarksStore:
         the old path would point at a file that is not there.  The
         library and the store of last read pages are brought forward the
         same way when a book moves.
+
+        A bookmark is named by the book's file (an archive), or from the
+        folder down to the picture (a folder): a renamed book's bookmarks
+        take its new name, where they had the old one.
         """
+        old_name = os.path.basename(os.path.normpath(old_path))
+        new_name = os.path.basename(os.path.normpath(new_path))
         for bookmark in self.bookmarks_for_path(old_path):
             name, _path, page, numpages, archive_type, added = bookmark.pack()
+            if name == old_name:
+                name = new_name
+            elif name.startswith(old_name + os.sep):
+                name = new_name + name[len(old_name):]
             self.replace_bookmark(bookmark, bookmark_menu_item._Bookmark(
                 self._window, self._file_handler, name, new_path, page,
                 numpages, archive_type, added, member=bookmark.get_member(),

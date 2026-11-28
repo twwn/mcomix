@@ -421,6 +421,26 @@ class MovedBookTest(_StoreTest):
                          (7, 20, None, datetime.datetime(2026, 1, 1)))
         self.assertEqual(moved.pack()[0], 'one.cbz')
 
+    def test_a_renamed_book_gives_its_bookmarks_its_new_name(self):
+        """The name is what the menu and Edit Bookmarks show: left as
+        it was, it named a file that is not there."""
+        self.store._bookmarks = [self._bookmark('/books/one.cbz')]
+        self.store.update_path('/books/one.cbz', '/books/One (2009).cbz')
+        self.assertEqual(('One (2009).cbz', '/books/One (2009).cbz'),
+                         self.store._bookmarks[0].pack()[:2])
+
+    def test_a_renamed_folder_gives_its_name_to_the_picture_named(self):
+        folder = self._bookmark('/books/strip')
+        folder._name = os.path.join('strip', '01.png')
+        other = self._bookmark('/books/strip')
+        other._name = 'strip, chapter one'
+        self.store._bookmarks = [folder, other]
+        self.store.update_path('/books/strip', '/books/the strip')
+        self.assertEqual([os.path.join('the strip', '01.png'),
+                          'strip, chapter one'],
+                         [bookmark.get_name()
+                          for bookmark in self.store._bookmarks])
+
     def test_every_bookmark_of_the_same_book_follows_it(self):
         self.store._bookmarks = [self._bookmark('/books/one.cbz', page=2),
                                  self._bookmark('/books/one.cbz', page=9)]
