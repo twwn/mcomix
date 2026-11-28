@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Comix-4.0.1\n"
 "Report-Msgid-Bugs-To: https://github.com/twwn/mcomix/issues\n"
-"POT-Creation-Date: 2026-11-28 16:29+0100\n"
+"POT-Creation-Date: 2026-11-28 16:35+0100\n"
 "PO-Revision-Date: 2008-12-13 21:23+0700\n"
 "Last-Translator: Andhika Padmawan <andhika.padmawan@gmail.com>\n"
 "Language-Team: Indonesia <id@li.org>\n"
@@ -56,7 +56,7 @@ msgstr "! Tidak dapat membaca %s"
 #
 # File: src/comment.py, line: 53
 #: mcomix/archive_packer.py:731 mcomix/file_actions.py:1545
-#: mcomix/library/book_area.py:1468
+#: mcomix/library/book_area.py:1489
 #, python-format
 msgid "! Could not remove %(file)s: %(error)s"
 msgstr "! Tidak dapat menghapus %(file)s: %(error)s"
@@ -644,11 +644,11 @@ msgstr "Berkas dipindahkan ke Tong Sampah."
 msgid "_Move to Trash"
 msgstr "Pindahkan ke Tong Sa_mpah"
 
-#: mcomix/file_actions.py:1389 mcomix/library/book_area.py:1405
+#: mcomix/file_actions.py:1389 mcomix/library/book_area.py:1426
 msgid "It does not go to the trash and cannot be restored."
 msgstr "Berkas tidak dipindahkan ke Tong Sampah dan tidak dapat dipulihkan."
 
-#: mcomix/file_actions.py:1397 mcomix/library/book_area.py:1397
+#: mcomix/file_actions.py:1397 mcomix/library/book_area.py:1418
 #, python-format
 msgid "Delete \"%s\" permanently?"
 msgstr "Hapus \"%s\" secara permanen?"
@@ -658,7 +658,7 @@ msgstr "Hapus \"%s\" secara permanen?"
 msgid "Could not move \"%s\" to the trash"
 msgstr "Tidak dapat memindahkan \"%s\" ke Tong Sampah"
 
-#: mcomix/file_actions.py:1508 mcomix/library/book_area.py:1482
+#: mcomix/file_actions.py:1508 mcomix/library/book_area.py:1503
 #, python-format
 msgid "%d book could not be moved to the trash."
 msgid_plural "%d books could not be moved to the trash."
@@ -2591,7 +2591,7 @@ msgstr "Nama berkas"
 msgid "File name (GLib)"
 msgstr "Nama berkas (GLib)"
 
-#: mcomix/preferences_dialog.py:798 mcomix/library/book_area.py:457
+#: mcomix/preferences_dialog.py:798 mcomix/library/book_area.py:478
 msgid "File size"
 msgstr "Ukuran berkas"
 
@@ -2633,11 +2633,11 @@ msgstr ""
 "34, 5. Urutan GLib mengurutkan berkas dengan kunci pembanding yang dibuat "
 "GLib/GTK, yang juga dipakai banyak aplikasi GTK lain."
 
-#: mcomix/preferences_dialog.py:829 mcomix/library/book_area.py:465
+#: mcomix/preferences_dialog.py:829 mcomix/library/book_area.py:486
 msgid "Ascending"
 msgstr "Menaik"
 
-#: mcomix/preferences_dialog.py:830 mcomix/library/book_area.py:466
+#: mcomix/preferences_dialog.py:830 mcomix/library/book_area.py:487
 msgid "Descending"
 msgstr "Menurun"
 
@@ -2787,7 +2787,7 @@ msgstr ""
 "warna; kolorimetrik relatif menjaga persis warna yang dapat ditampilkan "
 "layar."
 
-#: mcomix/preferences_dialog.py:994 mcomix/library/book_area.py:473
+#: mcomix/preferences_dialog.py:994 mcomix/library/book_area.py:494
 msgid "Normal"
 msgstr "Normal"
 
@@ -4307,8 +4307,8 @@ msgstr "Memutakhirkan versi basis data perpustakaan dari %(from)d ke %(to)d."
 
 #
 # File: src/library.py, line: 202
-#: mcomix/library/backend_types.py:431 mcomix/library/book_area.py:485
-#: mcomix/library/collection_area.py:200 mcomix/library/control_area.py:95
+#: mcomix/library/backend_types.py:431 mcomix/library/book_area.py:506
+#: mcomix/library/collection_area.py:203 mcomix/library/control_area.py:95
 #: mcomix/library/shelf.py:215
 msgid "All books"
 msgstr "Semua buku"
@@ -4380,107 +4380,115 @@ msgstr "Kemas ulang sebagai _ZIP..."
 msgid "Find _duplicates..."
 msgstr "Te_mukan duplikat..."
 
-#: mcomix/library/book_area.py:422
+#: mcomix/library/book_area.py:435
+msgid "Add to collection"
+msgstr "Tambah ke koleksi"
+
+#: mcomix/library/book_area.py:437
+msgid "Move to collection"
+msgstr "Pindahkan ke koleksi"
+
+#: mcomix/library/book_area.py:443
 msgid "Move _to"
 msgstr "P_indahkan ke"
 
-#: mcomix/library/book_area.py:426
+#: mcomix/library/book_area.py:447
 msgid "Library books"
 msgstr "Buku perpustakaan"
 
-#: mcomix/library/book_area.py:444
+#: mcomix/library/book_area.py:465
 msgid "Remove"
 msgstr "Hapus"
 
-#: mcomix/library/book_area.py:445
+#: mcomix/library/book_area.py:466
 msgid "Free up space"
 msgstr "Kosongkan ruang"
 
-#: mcomix/library/book_area.py:455
+#: mcomix/library/book_area.py:476
 msgid "Book name"
 msgstr "Nama buku"
 
-#: mcomix/library/book_area.py:456
+#: mcomix/library/book_area.py:477
 msgid "Full path"
 msgstr "Lokasi lengkap"
 
-#: mcomix/library/book_area.py:458
+#: mcomix/library/book_area.py:479
 msgid "Pages"
 msgstr "Halaman"
 
-#: mcomix/library/book_area.py:459 mcomix/library/book_properties.py:102
+#: mcomix/library/book_area.py:480 mcomix/library/book_properties.py:102
 msgid "Date added"
 msgstr "Tanggal ditambahkan"
 
-#: mcomix/library/book_area.py:460
+#: mcomix/library/book_area.py:481
 msgid "Date modified"
 msgstr "Tanggal diubah"
 
-#: mcomix/library/book_area.py:461 mcomix/library/book_properties.py:106
+#: mcomix/library/book_area.py:482 mcomix/library/book_properties.py:106
 msgid "Last read"
 msgstr "Terakhir dibaca"
 
-#: mcomix/library/book_area.py:462
+#: mcomix/library/book_area.py:483
 msgid "By hand"
 msgstr "Manual"
 
-#: mcomix/library/book_area.py:471
+#: mcomix/library/book_area.py:492
 msgid "Huge"
 msgstr "Sangat besar"
 
-#: mcomix/library/book_area.py:472
+#: mcomix/library/book_area.py:493
 msgid "Large"
 msgstr "Besar"
 
-#: mcomix/library/book_area.py:474
+#: mcomix/library/book_area.py:495
 msgid "Small"
 msgstr "Kecil"
 
-#: mcomix/library/book_area.py:475
+#: mcomix/library/book_area.py:496
 msgid "Tiny"
 msgstr "Sangat kecil"
 
-#: mcomix/library/book_area.py:479
+#: mcomix/library/book_area.py:500
 msgid "Custom..."
 msgstr "Ubahan..."
 
-#: mcomix/library/book_area.py:487
+#: mcomix/library/book_area.py:508
 msgid "Books with no pages"
 msgstr "Buku tanpa halaman"
 
-#: mcomix/library/book_area.py:490
+#: mcomix/library/book_area.py:511
 msgid "Books whose file is not there"
 msgstr "Buku yang berkasnya tidak ada"
 
-#: mcomix/library/book_area.py:492
+#: mcomix/library/book_area.py:513
 msgid "Books that cannot be read in full..."
 msgstr "Buku yang tidak bisa dibaca seluruhnya..."
 
-#: mcomix/library/book_area.py:496
+#: mcomix/library/book_area.py:517
 msgid "Select books"
 msgstr "Pilih buku"
 
-#: mcomix/library/book_area.py:497
+#: mcomix/library/book_area.py:518
 msgid "_Sort"
 msgstr "U_rutkan"
 
-#: mcomix/library/book_area.py:498
+#: mcomix/library/book_area.py:519
 msgid "Cover si_ze"
 msgstr "Ukuran sampu_l"
 
-#: mcomix/library/book_area.py:995
+#: mcomix/library/book_area.py:1016
 msgid "Set library cover size"
 msgstr "Menentukan ukuran sampul di perpustakaan"
 
 #
 # File: src/library.py, line: 588
-#: mcomix/library/book_area.py:1303
+#: mcomix/library/book_area.py:1324
 #, python-format
 msgid "Removed %(num)d book from '%(collection)s'."
 msgid_plural "Removed %(num)d books from '%(collection)s'."
 msgstr[0] "%(num)d buku dikeluarkan dari \"%(collection)s\"."
 
-#: mcomix/library/book_area.py:1332 mcomix/library/collection_area.py:282
+#: mcomix/library/book_area.py:1353 mcomix/library/collection_area.py:298
 #: mcomix/library/main_dialog.py:256
 #, python-format
 msgid "Removed %d book from the library."
@@ -4489,11 +4497,11 @@ msgstr[0] "%d buku dikeluarkan dari perpustakaan."
 
 #
 # File: src/library.py, line: 597
-#: mcomix/library/book_area.py:1354 mcomix/library/book_area.py:1375
+#: mcomix/library/book_area.py:1375 mcomix/library/book_area.py:1396
 msgid "Remove books from the library?"
 msgstr "Hapus buku dari pustaka?"
 
-#: mcomix/library/book_area.py:1355
+#: mcomix/library/book_area.py:1376
 msgid ""
 "The selected books will be removed from the library. Any in a folder with no "
 "trash is deleted permanently and cannot be restored."
@@ -4501,26 +4509,30 @@ msgstr ""
 "Buku yang dipilih akan dikeluarkan dari perpustakaan. Buku dalam direktori "
 "tanpa Tong Sampah dihapus permanen dan tidak dapat dipulihkan."
 
-#: mcomix/library/book_area.py:1376
+#: mcomix/library/book_area.py:1397
 msgid ""
 "The selected books will be removed from the library and moved to the trash."
 msgstr ""
 "Buku yang dipilih akan dikeluarkan dari perpustakaan dan dipindahkan ke Tong "
 "Sampah."
 
-#: mcomix/library/book_area.py:1401
+#: mcomix/library/book_area.py:1422
 #, python-format
 msgid "Delete %d book permanently?"
 msgid_plural "Delete %d books permanently?"
 msgstr[0] "Hapus %d buku secara permanen?"
 
-#: mcomix/library/book_area.py:1533
+#: mcomix/library/book_area.py:1554
 #, python-format
 msgid "Remove the bookmarks in the deleted book?"
 msgid_plural "Remove the bookmarks in the %(count)d deleted books?"
 msgstr[0] "Hapus bookmark dalam %(count)d buku yang dihapus?"
 
-#: mcomix/library/book_area.py:1745
+#: mcomix/library/book_area.py:1777
+msgid "New collection..."
+msgstr "Koleksi baru..."
+
+#: mcomix/library/book_area.py:1826
 msgid "Open with"
 msgstr "Buka dengan"
 
@@ -4628,24 +4640,24 @@ msgstr "Koleksi perpustakaan"
 
 #
 # File: src/library.py, line: 854
-#: mcomix/library/collection_area.py:236
+#: mcomix/library/collection_area.py:250
 msgid "Add new collection?"
 msgstr "Tambah koleksi baru?"
 
 #
 # File: src/library.py, line: 856
-#: mcomix/library/collection_area.py:237
+#: mcomix/library/collection_area.py:251
 msgid "Please enter a name for the new collection."
 msgstr "Silakan masukkan nama untuk koleksi baru."
 
 #
 # File: src/library.py, line: 876
-#: mcomix/library/collection_area.py:268
+#: mcomix/library/collection_area.py:284
 #, python-format
 msgid "Could not add a new collection called '%s'."
 msgstr "Tak dapat menambah koleksi baru bernama '%s'."
 
-#: mcomix/library/collection_area.py:287
+#: mcomix/library/collection_area.py:303
 #, python-format
 msgid "Kept %d book whose folder is not there, as on a drive not connected."
 msgid_plural ""
@@ -4656,19 +4668,19 @@ msgstr[0] ""
 
 #
 # File: src/library.py, line: 251
-#: mcomix/library/collection_area.py:346
+#: mcomix/library/collection_area.py:362
 msgid "Rename collection?"
 msgstr "Ganti nama koleksi?"
 
 #
 # File: src/library.py, line: 253
-#: mcomix/library/collection_area.py:347
+#: mcomix/library/collection_area.py:363
 msgid "Please enter a new name for the selected collection."
 msgstr "Silakan masukkan nama baru untuk koleksi terpilih."
 
 #
 # File: src/library.py, line: 271
-#: mcomix/library/collection_area.py:374
+#: mcomix/library/collection_area.py:390
 #, python-format
 msgid "Could not change the name to '%s'."
 msgstr "Tak dapat mengubah nama ke '%s'."
@@ -4676,25 +4688,25 @@ msgstr "Tak dapat mengubah nama ke '%s'."
 #
 # File: src/library.py, line: 275
 # File: src/library.py, line: 881
-#: mcomix/library/collection_area.py:382
+#: mcomix/library/collection_area.py:398
 msgid "A collection by that name already exists."
 msgstr "Koleksi dengan nama tersebut telah ada."
 
 #
 # File: src/library.py, line: 285
-#: mcomix/library/collection_area.py:394
+#: mcomix/library/collection_area.py:410
 msgid "Could not duplicate collection."
 msgstr "Tak dapat menduplikasi koleksi."
 
 #
 # File: src/library.py, line: 382
-#: mcomix/library/collection_area.py:605
+#: mcomix/library/collection_area.py:625
 msgid "Root"
 msgstr "Root"
 
 #
 # File: src/library.py, line: 386
-#: mcomix/library/collection_area.py:608
+#: mcomix/library/collection_area.py:628
 #, python-format
 msgid ""
 "Put the collection '%(subcollection)s' in the collection "
@@ -4703,12 +4715,12 @@ msgstr "Taruh koleksi '%(subcollection)s' di koleksi '%(supercollection)s'."
 
 #
 # File: src/library.py, line: 407
-#: mcomix/library/collection_area.py:624
+#: mcomix/library/collection_area.py:644
 #, python-format
 msgid "Add books to '%s'."
 msgstr "Tambah buku ke '%s'."
 
-#: mcomix/library/collection_area.py:627
+#: mcomix/library/collection_area.py:647
 #, python-format
 msgid ""
 "Copy books from '%(source collection)s' to '%(destination collection)s'."
@@ -4717,7 +4729,7 @@ msgstr ""
 
 #
 # File: src/library.py, line: 411
-#: mcomix/library/collection_area.py:634
+#: mcomix/library/collection_area.py:654
 #, python-format
 msgid ""
 "Move books from '%(source collection)s' to '%(destination collection)s'."

@@ -390,9 +390,20 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable, LibraryPart):
         for name, handler in (('select-all', self._select_all),
                               ('select-no-pages', self._select_no_pages),
                               ('select-absent', self._select_absent),
-                              ('select-unreadable', self.check_books)):
+                              ('select-unreadable', self.check_books),
+                              ('add-to-new-collection',
+                               lambda *args: self._file_anew(move=False)),
+                              ('move-to-new-collection',
+                               lambda *args: self._file_anew(move=True))):
             action = Gio.SimpleAction.new(name, None)
             action.connect('activate', handler)
+            self._popup_actions.add_action(action)
+        # Each collection the books can go to is a target of one action.
+        for name, move in (('add-to-collection', False),
+                           ('move-to-collection', True)):
+            action = Gio.SimpleAction.new(name, GLib.VariantType.new('i'))
+            action.connect('activate', lambda _action, target, move=move:
+                           self._file(target.get_int32(), move))
             self._popup_actions.add_action(action)
         self.insert_action_group('books', self._popup_actions)
 
@@ -407,6 +418,8 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable, LibraryPart):
         # popover draws as a title over it.
         model = Gio.Menu()
         entries = self._menu_entries()
+        self._add_to_collection = Gio.Menu()
+        self._move_to_collection = Gio.Menu()
 
         def sections(menu: Gio.Menu, groups: "tuple[tuple[str | None, tuple[tuple[str, str, Callable[..., None]], ...]], ...]") -> None:  # type: ignore[explicit-any]  # as _menu_entries()
             for heading, group in groups:
@@ -415,6 +428,14 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable, LibraryPart):
                     item = widgets.menu_item(label, 'books.' + name,
                                              self._MENU_KEYS.get(name))
                     section.append_item(item)
+                    if name == 'add':
+                        # Filled each time the menu opens, from the
+                        # collections there are then.  Without a letter,
+                        # as the two submenus below.
+                        section.append_submenu(_('Add to collection'),
+                                               self._add_to_collection)
+                        section.append_submenu(_('Move to collection'),
+                                               self._move_to_collection)
                     if name == 'rename':
                         # The main window's, for the books selected; not
                         # its "Mo_ve to", whose letter is taken here in
@@ -1708,12 +1729,74 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable, LibraryPart):
         self._set_sensitive('rename', len(selected) == 1)
         self._set_sensitive('select-no-pages', any(
             item.pages == 0 for item in self._each_item()))
+        # Not over the main window's covers, where nothing is filed.
+        moves = books_selected and self._library.manages and \
+            collection not in (None, constants.COLLECTION_ALL)
+        adds = books_selected and self._library.manages
+        for action, enabled in (('add-to-collection', adds),
+                                ('add-to-new-collection', adds),
+                                ('move-to-collection', moves),
+                                ('move-to-new-collection', moves)):
+            self._set_sensitive(action, enabled)
+        self._offer_collections(collection)
         self._move_to.update()
         self._offer_commands(selected[0].path if selected else None)
         if self._before_popup is not None:
             self._before_popup()
 
         widgets.popup_at(self._book_menu, over or self, x, y)
+
+    def _offer_collections(self, shown: int | None) -> None:
+        """List in the two collection submenus every collection the books
+        selected can go to: all but <shown> and "Recent", which reading
+        fills and whose emptying would take a book filed there by hand
+        out of the library.  In the sidebar's order, each under the names
+        of those it sits in, and then a new one."""
+        tree = self._library.backend.get_collection_tree()
+        names: list[tuple[int, str]] = []
+
+        def walk(under: int | None, path: tuple[str, ...]) -> None:
+            for collection, name in tree.get(under, ()):
+                if collection != constants.COLLECTION_RECENT:
+                    if collection != shown:
+                        names.append((collection,
+                                      ' / '.join(path + (name,))))
+                    walk(collection, path + (name,))
+
+        walk(None, ())
+        for menu, action in ((self._add_to_collection, 'add-to-collection'),
+                             (self._move_to_collection,
+                              'move-to-collection')):
+            menu.remove_all()
+            listed = Gio.Menu()
+            for collection, label in names:
+                listed.append_item(widgets.menu_item(
+                    widgets.menu_label(label), 'books.' + action,
+                    target=GLib.Variant('i', collection)))
+            menu.append_section(None, listed)
+            new = Gio.Menu()
+            new.append_item(widgets.menu_item(
+                _('New collection...'), 'books.%s' % action.replace(
+                    '-to-', '-to-new-')))
+            menu.append_section(None, new)
+
+    def _file(self, collection: int, move: bool) -> None:
+        """Put the books selected into <collection>; with <move>, take
+        them out of the collection on show, as dragging them there does."""
+        self._library.collection_area.file_books(
+            [item.uid for item in self._selected_items()], collection, move)
+
+    def _file_anew(self, move: bool) -> None:
+        """Ask for a new collection and put the books selected into it,
+        as _file() does: the books selected when the command is given."""
+        books = [item.uid for item in self._selected_items()]
+        area = self._library.collection_area
+
+        def added(collection: int) -> None:
+            area.file_books(books, collection, move)
+            area.display_collections(reload_books=False)
+
+        area.ask_new_collection(added)
 
     def _offer_commands(self, book: str | None) -> None:
         """Put the external commands in the menu, those that can run on

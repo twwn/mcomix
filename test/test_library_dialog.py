@@ -2947,4 +2947,111 @@ class StorePagesAsWebpTest(_LibraryWindowTest):
         self.assertIsNone(
             progress.get_widget_for_response(webp_dialog._SELECT))
 
+
+class FileFromTheCoversMenuTest(_LibraryWindowTest):
+
+    """"Add to collection" and "Move to collection" in the covers'
+    menu, which did only what dragging the covers onto the sidebar
+    did, and nothing for a reader without a mouse to drag with."""
+
+    def setUp(self):
+        super().setUp()
+        self.dialog = self._open_all()
+        self.books = []
+        for name in ('one.cbz', 'two.cbz'):
+            path = os.path.join(self.tmp_dir, name)
+            shutil.copy(NORMAL_ZIP, path)
+            self.books.append(path)
+        self._held(self.dialog, *self.books)
+        backend = self.dialog.backend
+        self.shelf = backend.add_collection('Shelf')
+        self.box = backend.add_collection('Box')
+        self.inner = backend.add_collection('Inner')
+        backend.add_collection_to_collection(self.inner, self.box)
+        self.dialog.collection_area.display_collections()
+        pump()
+
+    def _show(self, collection):
+        prefs['last library collection'] = collection
+        self.dialog.collection_area.display_collections()
+        pump()
+        self._covers_drawn(self.dialog)
+
+    def _popped_up(self, *positions):
+        area = self.dialog.book_area
+        area._covers.select_positions(list(positions))
+        with unittest.mock.patch.object(book_area.widgets, 'popup_at'):
+            area._popup_book_menu()
+        return area
+
+    def _ids(self, collection):
+        return sorted(book.id for book in self.dialog.backend
+                      .get_collection_by_id(collection).get_books())
+
+    def _id(self, path):
+        return self.dialog.backend.get_book_by_path(path).id
+
+    @staticmethod
+    def _labels(menu):
+        section = menu.get_item_link(0, Gio.MENU_LINK_SECTION)
+        return [section.get_item_attribute_value(index, 'label', None)
+                .get_string() for index in range(section.get_n_items())]
+
+    def test_every_collection_is_offered_under_the_ones_it_sits_in(self):
+        """And not "Recent", which reading fills."""
+        self.assertIn(constants.COLLECTION_RECENT,
+                      [collection for collection, _name in
+                       self.dialog.backend.get_collection_tree()[None]])
+        area = self._popped_up(0)
+        self.assertEqual(['Box', 'Box / Inner', 'Shelf'],
+                         self._labels(area._add_to_collection))
+
+    def test_books_added_stay_where_they_were(self):
+        area = self._popped_up(0)
+        book = area._covers.get_item(0).uid
+        area._popup_actions.activate_action('add-to-collection',
+                                            GLib.Variant('i', self.shelf))
+        self.assertEqual([book], self._ids(self.shelf))
+        self.assertEqual(2, len(list(area._covers.each_item())))
+
+    def test_books_are_moved_out_of_the_collection_on_show(self):
+        with self.dialog.backend.transaction():
+            for path in self.books:
+                self.dialog.backend.add_book_to_collection(
+                    self._id(path), self.shelf)
+        self._show(self.shelf)
+        area = self._popped_up(0)
+        self.assertNotIn('Shelf', self._labels(area._move_to_collection))
+        book = area._covers.get_item(0).uid
+        area._popup_actions.activate_action('move-to-collection',
+                                            GLib.Variant('i', self.inner))
+        self.assertEqual([book], self._ids(self.inner))
+        self.assertNotIn(book, self._ids(self.shelf))
+        self.assertEqual(1, len(list(area._covers.each_item())))
+
+    def test_nothing_is_moved_out_of_all_books(self):
+        area = self._popped_up(0)
+        for name in ('move-to-collection', 'move-to-new-collection'):
+            self.assertFalse(
+                area._popup_actions.lookup_action(name).get_enabled())
+        for name in ('add-to-collection', 'add-to-new-collection'):
+            self.assertTrue(
+                area._popup_actions.lookup_action(name).get_enabled())
+
+    def test_a_new_collection_is_made_for_the_books(self):
+        """The collection on show stays shown, as the books it was asked
+        for stay selected."""
+        area = self._popped_up(0, 1)
+        area._popup_actions.activate_action('add-to-new-collection', None)
+        pump()
+        prompt, = visible_prompts()
+        AddCollectionTest._entry_in(prompt).set_text('Crate')
+        prompt.response(Response.OK)
+        pump()
+        crate = self.dialog.backend.get_collection_by_name('Crate').id
+        self.assertEqual(sorted(map(self._id, self.books)), self._ids(crate))
+        self.assertEqual(constants.COLLECTION_ALL,
+                         self.dialog.collection_area.get_current_collection())
+        self.assertEqual([0, 1], list(area._covers.get_selected_positions()))
+
 # vim: expandtab:sw=4:ts=4

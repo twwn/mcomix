@@ -91,6 +91,10 @@ class _Backend:
     #: Which collection each collection is filed under, where any is.
     supercollections: dict = {}
 
+    def get_collection_tree(self):
+        # No collection but "Recent", which books are not filed in.
+        return {None: [(constants.COLLECTION_RECENT, 'Recent')]}
+
     def collection_is_within(self, collection, ancestor):
         if ancestor in (None, constants.COLLECTION_ALL):
             return True

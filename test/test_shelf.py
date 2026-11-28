@@ -244,6 +244,10 @@ class ShelfTest(_ShelfWindowTest):
         self.assertFalse(actions.lookup_action('add').get_enabled())
         self.assertFalse(
             actions.lookup_action('open-keep-library').get_enabled())
+        # Nor filed: the library window has the collections.
+        for name in ('add-to-collection', 'add-to-new-collection',
+                     'move-to-collection', 'move-to-new-collection'):
+            self.assertFalse(actions.lookup_action(name).get_enabled(), name)
         self.assertTrue(actions.lookup_action('open').get_enabled())
 
     def test_files_dropped_on_the_covers_are_opened(self):

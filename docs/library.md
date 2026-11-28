@@ -17,6 +17,7 @@ While no book is open, the main window shows the covers of "Recent" itself, or o
 - Drag a collection onto another to file it there, to any depth. Dropped on the edge of a row, it goes beside that collection.
 - Drag books onto a collection to move them there from the collection on show; from "All books" they are added and stay where they were.
 - Hold CTRL while dragging to copy them instead: they stay in the collection on show as well.
+- Without dragging, "Add to collection" in the books' right-click menu files the selected books in a collection and leaves them where they were; "Move to collection" takes them out of the collection on show as well, and is not offered in "All books". Each lists every collection but the one on show and "Recent", one under another as "Box / Inner", and "New collection...", which asks for a name and files the books in the collection made. Over the main window's covers, both are offered but not enabled: the library window does the filing.
 - A drag that starts on a selected cover takes every selected book; one that starts on another cover takes that book alone.
 - "Recent" holds the books that are read, not books dragged onto it.
 - "Add..." and books dropped from a file manager go into the collection on show; under "All books" or "Recent" they join no collection.
@@ -54,7 +55,7 @@ While no book is open, the main window shows the covers of "Recent" itself, or o
 - With several books selected, it sums them up: how many, their pages and size together, and how many of them are started and finished.
 - With no book selected, it counts the books on show: how many, how many of them are started and how many finished, the pages read, and when the last was read.
 - A double click or Enter opens a book. Enter on one of several books picked out opens them all as one book, as "Open" does.
-- Right-clicking the books offers "Open", "Open without closing library", "Mark as read", "Mark as unread", "Add...", "Copy", "Open containing folder", "Rename", "Move to", "Properties", and "Open with" where [external commands](external-commands.md) are set up.
+- Right-clicking the books offers "Open", "Open without closing library", "Mark as read", "Mark as unread", "Add...", "Add to collection", "Move to collection", "Copy", "Open containing folder", "Rename", "Move to", "Properties", and "Open with" where [external commands](external-commands.md) are set up.
 - Its "Free up space" submenu holds "Make pages smaller without loss...", "Shrink oversized pages...", "Repack as ZIP..." and "Find duplicates...".
 - Its "Remove" submenu holds four ways to take books out, and "Clean up":
   - "Remove from this collection".

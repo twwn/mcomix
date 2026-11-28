@@ -24,7 +24,7 @@ from mcomix.i18n import _
 from mcomix.dialog import Response
 from mcomix.library import relocate_dialog
 
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator, Sequence
 if TYPE_CHECKING:
     from mcomix.library.main_dialog import _LibraryDialog
 
@@ -176,12 +176,15 @@ class _CollectionArea(Gtk.ScrolledWindow, widgets.Releasable,
         row = self._list.get_selected_row()
         return row.collection if row is not None else None
 
-    def display_collections(self) -> None:
+    def display_collections(self, reload_books: bool = True) -> None:
         """Display the library collections by redrawing them from the
         backend data. Should be called on startup or when the collections
         hierarchy has been changed (e.g. after moving, adding, renaming).
         Any row that was expanded before the call will have it's
         corresponding new row also expanded after the call.
+
+        Without <reload_books>, the covers on show stay as they are, and
+        the collection shown, still there, stays selected.
         """
 
         # The whole hierarchy in one statement: the tree is walked here
@@ -217,7 +220,8 @@ class _CollectionArea(Gtk.ScrolledWindow, widgets.Releasable,
         for row in list(_each_row(rows)):
             if row.collection == chosen:
                 # Reset to trigger update of book area.
-                prefs['last library collection'] = None
+                if reload_books:
+                    prefs['last library collection'] = None
                 self._list.expand_to(row)
                 self._list.select_row(row)
             # Not an elif: the selected collection may be expanded too.
@@ -229,6 +233,16 @@ class _CollectionArea(Gtk.ScrolledWindow, widgets.Releasable,
 
     def add_collection(self, *args: object) -> None:
         """Add a new collection to the library, through a dialog."""
+        self.ask_new_collection(self._show_added)
+
+    def _show_added(self, collection: int) -> None:
+        prefs['last library collection'] = collection
+        self.display_collections()
+
+    def ask_new_collection(self, added: Callable[[int], None]) -> None:
+        """Ask for the name of a new collection, add it, and hand <added>
+        its id; nothing where the dialog is cancelled or the collection
+        cannot be added."""
         add_dialog = message_dialog.MessageDialog(
             self._library, buttons=Gtk.ButtonsType.OK_CANCEL)
         add_dialog.set_default_response(Response.OK)
@@ -248,10 +262,13 @@ class _CollectionArea(Gtk.ScrolledWindow, widgets.Releasable,
         # The entry outlives the dialog, which run_async() takes down
         # before it answers.
         add_dialog.run_async(
-            lambda response: self._add_answered(response, entry.get_text()))
+            lambda response: self._add_answered(response, entry.get_text(),
+                                                added))
 
-    def _add_answered(self, response: int, name: str) -> None:
-        """Create the collection the add dialog asked about.
+    def _add_answered(self, response: int, name: str,
+                      added: "Callable[[int], None] | None" = None) -> None:
+        """Create the collection the add dialog asked about, and hand
+        <added> its id; by default, show it.
 
         Spaces around the name are not part of it: typed by accident,
         they made a second "Shelf" beside the first, and spaces alone a
@@ -261,8 +278,7 @@ class _CollectionArea(Gtk.ScrolledWindow, widgets.Releasable,
         if response == Response.OK and name:
             collection = self._library.backend.add_collection(name)
             if collection is not None:
-                prefs['last library collection'] = collection
-                self._library.collection_area.display_collections()
+                (added or self._show_added)(collection)
             else:
                 self._name_refused(
                     _("Could not add a new collection called '%s'.") % name,
@@ -490,40 +506,44 @@ class _CollectionArea(Gtk.ScrolledWindow, widgets.Releasable,
             positions = [int(position) for position in payload.split(',')]
             books = [self._library.book_area.get_book_at_path(position)
                      for position in positions]
-            # Books dragged out of "All books" are filed rather than
-            # moved, and so are books dragged with no collection shown,
-            # or copied with CTRL.
-            move_from = (src_collection if src_collection is not None
-                         and src_collection != constants.COLLECTION_ALL
-                         and not self._copying(target) else None)
-            # Two writes a book: as transactions of their own, a few
-            # hundred books held the window up for seconds.
-            with self._library.backend.transaction():
-                for book in books:
-                    if book is None:
-                        continue
-                    self._library.backend.add_book_to_collection(
-                        book, dest_collection)
-                    if move_from is not None:
-                        self._library.backend.remove_book_from_collection(
-                            book, move_from)
-            # The covers on show are those of every collection under
-            # this one as well: books moved into one of those are still
-            # among them, and so is a book that is also filed in one -
-            # the move takes it out of this collection alone.
-            if move_from is not None and not \
-                    self._library.backend.collection_is_within(
-                        dest_collection, move_from):
-                shown = self._library.backend.get_collection_by_id(
-                    move_from)
-                still_here = ({book.id for book in shown.get_books()}
-                              if shown is not None else set())
-                self._library.book_area.remove_books(
-                    [book for book in books
-                     if book is not None and book not in still_here])
+            self.file_books([book for book in books if book is not None],
+                            dest_collection, move=not self._copying(target))
         else:
             return False
         return True
+
+    def file_books(self, books: Sequence[int], collection: int,
+                   move: bool) -> None:
+        """Put <books> into <collection>; with <move>, take them out of
+        the collection on show as well.
+
+        Books taken from "All books" are filed rather than moved, and so
+        are books with no collection shown.
+        """
+        shown_collection = self.get_current_collection()
+        move_from = (shown_collection if move and shown_collection is not None
+                     and shown_collection != constants.COLLECTION_ALL
+                     else None)
+        # Two writes a book: as transactions of their own, a few hundred
+        # books held the window up for seconds.
+        with self._library.backend.transaction():
+            for book in books:
+                self._library.backend.add_book_to_collection(book, collection)
+                if move_from is not None:
+                    self._library.backend.remove_book_from_collection(
+                        book, move_from)
+        # The covers on show are those of every collection under this
+        # one as well: books moved into one of those are still among
+        # them, and so is a book that is also filed in one - the move
+        # takes it out of this collection alone.
+        if move_from is not None and not \
+                self._library.backend.collection_is_within(collection,
+                                                           move_from):
+            shown = self._library.backend.get_collection_by_id(move_from)
+            still_here = ({book.id for book in shown.get_books()}
+                          if shown is not None else set())
+            self._library.book_area.remove_books(
+                [book for book in books if book not in still_here])
 
     def _drop_row_at(self, x: float, y: float) -> "tuple[column_list.Row, int] | None":
         """The row a drop at (<x>, <y>) lands on, and where on it, or
