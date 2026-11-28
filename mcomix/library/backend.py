@@ -87,22 +87,34 @@ def _volume_of(path: str, known: dict[str, str]) -> str:
     return volume
 
 
+def _stored(device: int) -> int:
+    """<device> as the database holds it: an SQLite INTEGER is signed,
+    and a device number with its top bit set does not fit.  Windows
+    gives the volume's serial number, 64 bits since Python 3.12, and one
+    of a drive on GitHub's runner raised OverflowError for every book
+    added from it.  Taken as signed, it stays one number for one
+    device."""
+    return device - (1 << 64) if device >= 1 << 63 else device
+
+
 def _device_of(path: str) -> int | None:
     """The device of the file at <path>, or None if no file is there.
     On Windows it is the serial number of the volume, which stays with
     the drive; elsewhere the number of the device it is mounted from,
-    which a drive plugged in again may be given anew."""
+    which a drive plugged in again may be given anew.  As the database
+    holds it: see _stored()."""
     try:
         status = os.stat(path)
     except (OSError, ValueError):
         return None
-    return status.st_dev if stat.S_ISREG(status.st_mode) else None
+    return _stored(status.st_dev) if stat.S_ISREG(status.st_mode) else None
 
 
 def _device_of_folder(folder: str) -> int | None:
-    """The device of <folder>, or None if it cannot be read."""
+    """The device of <folder>, or None if it cannot be read; as
+    _device_of() gives it."""
     try:
-        return os.stat(folder).st_dev
+        return _stored(os.stat(folder).st_dev)
     except (OSError, ValueError):
         return None
 

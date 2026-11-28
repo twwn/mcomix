@@ -1124,6 +1124,36 @@ class MissingBooksByVolumeTest(OpenLibraryTest):
             {self._device()},
             set(self.library._con.execute('select device from book')))
 
+    def test_a_drive_whose_device_number_has_its_top_bit_set(self):
+        """As Windows gives a volume's 64-bit serial number: SQLite's
+        INTEGER, signed, holds none above 2**63 - 1, and adding a book
+        from such a drive raised OverflowError (GitHub's Windows runner,
+        whose drive D: had one)."""
+        real = os.stat
+
+        class Status:
+            st_dev = 2 ** 64 - 7
+
+            def __init__(self, status):
+                self._status = status
+
+            def __getattr__(self, name):
+                return getattr(self._status, name)
+
+        fourth = os.path.join(self.drive, 'other', 'four.zip')
+        shutil.copy(NORMAL_ZIP, fourth)
+        self.books['other/four.zip'] = fourth
+        with unittest.mock.patch.object(
+                backend.os, 'stat',
+                lambda *args, **kwargs: Status(real(*args, **kwargs))):
+            self._with_device(-7)
+            self.assertTrue(self.library.add_book(fourth))
+            self.assertEqual({-7}, set(self.library._con.execute(
+                'select device from book')))
+            os.remove(self.books['series/one.zip'])
+            self.assertEqual(['other/four.zip', 'other/three.zip',
+                              'series/two.zip'], self._left())
+
     def test_a_watched_folder_emptied_has_its_books_gone(self):
         folder = os.path.join(self.drive, 'series')
         os.remove(self.books['series/one.zip'])
