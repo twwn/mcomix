@@ -11,18 +11,20 @@ picked from the covers' right-click menu.
 
 import functools
 import weakref
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from typing import TYPE_CHECKING, cast
 
 from gi.repository import Gdk, Gio, GLib, Gtk
 
 from mcomix import constants
+from mcomix import message_dialog
 from mcomix import theme
 from mcomix.i18n import _
 from mcomix.preferences import prefs
 from mcomix.library import backend as library_backend
 from mcomix.library import backend_types
 from mcomix.library import book_area as library_book_area
+from mcomix.library import collection_area as library_collection_area
 from mcomix.library import control_area as library_control_area
 
 if TYPE_CHECKING:
@@ -207,6 +209,23 @@ class Shelf(Gtk.Box):
 
     def get_current_collection(self) -> int | None:
         return self._collection
+
+    def ask_new_collection(self, added: Callable[[int], None]) -> None:
+        """Ask over the window for a new collection, as the library's
+        sidebar does; a name refused is said in a message of its own,
+        there being no status line here."""
+        library_collection_area.ask_new_collection(
+            self.window, self.backend, added, self._refused)
+
+    def _refused(self, message: str) -> None:
+        refusal = message_dialog.MessageDialog(
+            self.window, buttons=Gtk.ButtonsType.OK)
+        refusal.set_text(message)
+        refusal.run_async(lambda response: None)
+
+    def display_collections_kept(self) -> None:
+        """Nothing to draw: the "Collection" submenu lists them anew
+        each time it opens."""
 
     def _list_collections(self) -> None:
         """Offer every book and each collection the library has now:

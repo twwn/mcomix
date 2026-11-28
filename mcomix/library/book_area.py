@@ -1729,12 +1729,10 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable, LibraryPart):
         self._set_sensitive('rename', len(selected) == 1)
         self._set_sensitive('select-no-pages', any(
             item.pages == 0 for item in self._each_item()))
-        # Not over the main window's covers, where nothing is filed.
-        moves = books_selected and self._library.manages and \
-            collection not in (None, constants.COLLECTION_ALL)
-        adds = books_selected and self._library.manages
-        for action, enabled in (('add-to-collection', adds),
-                                ('add-to-new-collection', adds),
+        moves = books_selected and collection not in (
+            None, constants.COLLECTION_ALL)
+        for action, enabled in (('add-to-collection', books_selected),
+                                ('add-to-new-collection', books_selected),
                                 ('move-to-collection', moves),
                                 ('move-to-new-collection', moves)):
             self._set_sensitive(action, enabled)
@@ -1780,11 +1778,44 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable, LibraryPart):
                     '-to-', '-to-new-')))
             menu.append_section(None, new)
 
+    def file_books(self, books: Sequence[int], collection: int,
+                   move: bool) -> None:
+        """Put <books> into <collection>; with <move>, take them out of
+        the collection on show as well.
+
+        Books taken from "All books" are filed rather than moved, and so
+        are books with no collection shown.
+        """
+        backend = self._library.backend
+        shown_collection = \
+            self._library.collection_area.get_current_collection()
+        move_from = (shown_collection if move and shown_collection is not None
+                     and shown_collection != constants.COLLECTION_ALL
+                     else None)
+        # Two writes a book: as transactions of their own, a few hundred
+        # books held the window up for seconds.
+        with backend.transaction():
+            for book in books:
+                backend.add_book_to_collection(book, collection)
+                if move_from is not None:
+                    backend.remove_book_from_collection(book, move_from)
+        # The covers on show are those of every collection under this
+        # one as well: books moved into one of those are still among
+        # them, and so is a book that is also filed in one - the move
+        # takes it out of this collection alone.
+        if move_from is not None and not \
+                backend.collection_is_within(collection, move_from):
+            shown = backend.get_collection_by_id(move_from)
+            still_here = ({book.id for book in shown.get_books()}
+                          if shown is not None else set())
+            self.remove_books(
+                [book for book in books if book not in still_here])
+
     def _file(self, collection: int, move: bool) -> None:
         """Put the books selected into <collection>; with <move>, take
         them out of the collection on show, as dragging them there does."""
-        self._library.collection_area.file_books(
-            [item.uid for item in self._selected_items()], collection, move)
+        self.file_books([item.uid for item in self._selected_items()],
+                        collection, move)
 
     def _file_anew(self, move: bool) -> None:
         """Ask for a new collection and put the books selected into it,
@@ -1793,8 +1824,8 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable, LibraryPart):
         area = self._library.collection_area
 
         def added(collection: int) -> None:
-            area.file_books(books, collection, move)
-            area.display_collections(reload_books=False)
+            self.file_books(books, collection, move)
+            area.display_collections_kept()
 
         area.ask_new_collection(added)
 

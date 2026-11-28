@@ -24,8 +24,9 @@ from mcomix.i18n import _
 from mcomix.dialog import Response
 from mcomix.library import relocate_dialog
 
-from collections.abc import Callable, Iterator, Sequence
+from collections.abc import Callable, Iterator
 if TYPE_CHECKING:
+    from mcomix.library import backend as library_backend
     from mcomix.library.main_dialog import _LibraryDialog
 
 #: What a drop handler answers with when it will not take the drop.
@@ -241,48 +242,20 @@ class _CollectionArea(Gtk.ScrolledWindow, widgets.Releasable,
 
     def ask_new_collection(self, added: Callable[[int], None]) -> None:
         """Ask for the name of a new collection, add it, and hand <added>
-        its id; nothing where the dialog is cancelled or the collection
-        cannot be added."""
-        add_dialog = message_dialog.MessageDialog(
-            self._library, buttons=Gtk.ButtonsType.OK_CANCEL)
-        add_dialog.set_default_response(Response.OK)
-        add_dialog.set_text(
-            _('Add new collection?'),
-            _('Please enter a name for the new collection.')
-        )
+        its id; nothing where the dialog is cancelled, and where the
+        collection cannot be added, the status line says why."""
+        ask_new_collection(self._library, self._library.backend, added,
+                           self._library.set_status_message)
 
-        # To get nice line-ups with the padding.
-        box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
-        widgets.pack(add_dialog.get_content_area(), box, True, True, 0)
+    def _add_answered(self, response: int, name: str) -> None:
+        """Create the collection the add dialog asked about, and show it."""
+        _add_answered(self._library.backend, response, name,
+                      self._show_added, self._library.set_status_message)
 
-        entry = Gtk.Entry()
-        entry.set_activates_default(True)
-        widgets.pack(box, entry, True, True, 6)
-
-        # The entry outlives the dialog, which run_async() takes down
-        # before it answers.
-        add_dialog.run_async(
-            lambda response: self._add_answered(response, entry.get_text(),
-                                                added))
-
-    def _add_answered(self, response: int, name: str,
-                      added: "Callable[[int], None] | None" = None) -> None:
-        """Create the collection the add dialog asked about, and hand
-        <added> its id; by default, show it.
-
-        Spaces around the name are not part of it: typed by accident,
-        they made a second "Shelf" beside the first, and spaces alone a
-        collection whose name showed as nothing.
-        """
-        name = name.strip()
-        if response == Response.OK and name:
-            collection = self._library.backend.add_collection(name)
-            if collection is not None:
-                (added or self._show_added)(collection)
-            else:
-                self._name_refused(
-                    _("Could not add a new collection called '%s'.") % name,
-                    name)
+    def display_collections_kept(self) -> None:
+        """Draw the collections again, one added, with the covers on
+        show and their selection kept."""
+        self.display_collections(reload_books=False)
 
     def clean_collection(self, collection: int | None) -> None:
         """ Removes from the library every book in <collection> whose
@@ -393,10 +366,8 @@ class _CollectionArea(Gtk.ScrolledWindow, widgets.Releasable,
     def _name_refused(self, message: str, name: str) -> None:
         """Show <message>, that the library refused a collection called
         <name>, saying why where the name is already taken."""
-        if self._library.backend.get_collection_by_name(name) is not None:
-            message = '%s %s' % (message,
-                                 _('A collection by that name already exists.'))
-        self._library.set_status_message(message)
+        self._library.set_status_message(
+            _refusal(self._library.backend, message, name))
 
     def _duplicate_collection(self, *args: object) -> None:
         """Duplicate the currently selected collection."""
@@ -506,44 +477,12 @@ class _CollectionArea(Gtk.ScrolledWindow, widgets.Releasable,
             positions = [int(position) for position in payload.split(',')]
             books = [self._library.book_area.get_book_at_path(position)
                      for position in positions]
-            self.file_books([book for book in books if book is not None],
-                            dest_collection, move=not self._copying(target))
+            self._library.book_area.file_books(
+                [book for book in books if book is not None],
+                dest_collection, move=not self._copying(target))
         else:
             return False
         return True
-
-    def file_books(self, books: Sequence[int], collection: int,
-                   move: bool) -> None:
-        """Put <books> into <collection>; with <move>, take them out of
-        the collection on show as well.
-
-        Books taken from "All books" are filed rather than moved, and so
-        are books with no collection shown.
-        """
-        shown_collection = self.get_current_collection()
-        move_from = (shown_collection if move and shown_collection is not None
-                     and shown_collection != constants.COLLECTION_ALL
-                     else None)
-        # Two writes a book: as transactions of their own, a few hundred
-        # books held the window up for seconds.
-        with self._library.backend.transaction():
-            for book in books:
-                self._library.backend.add_book_to_collection(book, collection)
-                if move_from is not None:
-                    self._library.backend.remove_book_from_collection(
-                        book, move_from)
-        # The covers on show are those of every collection under this
-        # one as well: books moved into one of those are still among
-        # them, and so is a book that is also filed in one - the move
-        # takes it out of this collection alone.
-        if move_from is not None and not \
-                self._library.backend.collection_is_within(collection,
-                                                           move_from):
-            shown = self._library.backend.get_collection_by_id(move_from)
-            still_here = ({book.id for book in shown.get_books()}
-                          if shown is not None else set())
-            self._library.book_area.remove_books(
-                [book for book in books if book not in still_here])
 
     def _drop_row_at(self, x: float, y: float) -> "tuple[column_list.Row, int] | None":
         """The row a drop at (<x>, <y>) lands on, and where on it, or
@@ -690,5 +629,70 @@ class _CollectionArea(Gtk.ScrolledWindow, widgets.Releasable,
         paintable = self._list.row_paintable(row)
         if paintable is not None:
             source.set_icon(paintable, -5, -5)
+
+
+def ask_new_collection(parent: Gtk.Window,
+                       backend: "library_backend._LibraryBackend",
+                       added: Callable[[int], None],
+                       refused: Callable[[str], None]) -> None:
+    """Ask over <parent> for the name of a new collection, add it to
+    <backend>, and hand <added> its id; nothing where the dialog is
+    cancelled, and where the collection cannot be added, <refused> the
+    message that says why.  The sidebar's "New" asks, and so do the
+    covers' "New collection..." entries, in the library window and over
+    the main window's covers alike."""
+    add_dialog = message_dialog.MessageDialog(
+        parent, buttons=Gtk.ButtonsType.OK_CANCEL)
+    add_dialog.set_default_response(Response.OK)
+    add_dialog.set_text(
+        _('Add new collection?'),
+        _('Please enter a name for the new collection.')
+    )
+
+    # To get nice line-ups with the padding.
+    box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
+    widgets.pack(add_dialog.get_content_area(), box, True, True, 0)
+
+    entry = Gtk.Entry()
+    entry.set_activates_default(True)
+    widgets.pack(box, entry, True, True, 6)
+
+    # The entry outlives the dialog, which run_async() takes down
+    # before it answers.
+    add_dialog.run_async(
+        lambda response: _add_answered(backend, response, entry.get_text(),
+                                       added, refused))
+
+
+def _add_answered(backend: "library_backend._LibraryBackend",
+                  response: int, name: str, added: Callable[[int], None],
+                  refused: Callable[[str], None]) -> None:
+    """Create the collection the add dialog asked about, and hand
+    <added> its id, or <refused> why it could not be made.
+
+    Spaces around the name are not part of it: typed by accident,
+    they made a second "Shelf" beside the first, and spaces alone a
+    collection whose name showed as nothing.
+    """
+    name = name.strip()
+    if response == Response.OK and name:
+        collection = backend.add_collection(name)
+        if collection is not None:
+            added(collection)
+        else:
+            refused(_refusal(
+                backend,
+                _("Could not add a new collection called '%s'.") % name,
+                name))
+
+
+def _refusal(backend: "library_backend._LibraryBackend", message: str,
+             name: str) -> str:
+    """<message>, that the library refused a collection called <name>,
+    with why where the name is already taken."""
+    if backend.get_collection_by_name(name) is not None:
+        message = '%s %s' % (message,
+                             _('A collection by that name already exists.'))
+    return message
 
 # vim: expandtab:sw=4:ts=4

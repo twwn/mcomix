@@ -22,6 +22,7 @@ from mcomix import constants
 from mcomix.dialog import Response
 from mcomix import message_dialog
 from mcomix.library import backend
+from mcomix.library import book_area
 from mcomix.library import collection_area
 from mcomix.preferences import prefs
 
@@ -34,9 +35,13 @@ class _Event:
 
 class _BookArea:
 
-    def __init__(self):
+    def __init__(self, library):
+        self._library = library
         self.displayed = []
         self.removed = []
+
+    # The real filing, which a drop hands its books to.
+    file_books = book_area._BookArea.file_books
 
     def display_covers(self, collection):
         self.displayed.append(collection)
@@ -53,7 +58,7 @@ class _Library(Gtk.Window):
     def __init__(self, library_backend):
         super().__init__()
         self.backend = library_backend
-        self.book_area = _BookArea()
+        self.book_area = _BookArea(self)
         self.messages = []
 
     def set_status_message(self, message):

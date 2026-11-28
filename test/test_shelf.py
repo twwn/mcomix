@@ -7,8 +7,9 @@ import weakref
 
 from gi.repository import Gdk, Gio, GLib, Graphene, Gtk
 
-from . import (MainWindowLaterTest, collect_garbage, get_testfile_path, pump,
-               wait_for, wait_frames)
+from . import (MainWindowLaterTest, collect_garbage, descendants,
+               get_testfile_path, pump, visible_prompts, wait_for,
+               wait_frames)
 from .test_key_press import _Controller, bindings_recorded
 
 from mcomix import constants
@@ -244,11 +245,63 @@ class ShelfTest(_ShelfWindowTest):
         self.assertFalse(actions.lookup_action('add').get_enabled())
         self.assertFalse(
             actions.lookup_action('open-keep-library').get_enabled())
-        # Nor filed: the library window has the collections.
-        for name in ('add-to-collection', 'add-to-new-collection',
-                     'move-to-collection', 'move-to-new-collection'):
-            self.assertFalse(actions.lookup_action(name).get_enabled(), name)
         self.assertTrue(actions.lookup_action('open').get_enabled())
+
+    def test_books_are_filed_from_here_in_a_new_collection(self):
+        """With no collection made yet, "New collection..." was all the
+        two submenus held, and it was never enabled over these covers:
+        filing was left to the library window."""
+        library = backend.LibraryBackend()
+        library.add_book(self.books[0])
+        self._window()
+        area = self._shown().book_area
+        area._covers.get_model().select_item(0, True)
+        with unittest.mock.patch('mcomix.widgets.popup_at'):
+            area._popup_book_menu()
+        actions = area._popup_actions
+        self.assertTrue(
+            actions.lookup_action('add-to-new-collection').get_enabled())
+        actions.activate_action('add-to-new-collection', None)
+        pump()
+        prompt, = visible_prompts()
+        self.assertIs(self.window, prompt.get_transient_for())
+        entry, = [widget for widget in descendants(prompt)
+                  if isinstance(widget, Gtk.Entry)]
+        entry.set_text('Crate')
+        prompt.response(Gtk.ResponseType.OK)
+        pump()
+        crate = library.get_collection_by_name('Crate')
+        self.assertEqual([self.books[0]],
+                         [book.path for book in crate.get_books()])
+        # Filed again under a name taken: said in a message of its own.
+        actions.activate_action('add-to-new-collection', None)
+        pump()
+        prompt, = visible_prompts()
+        entry, = [widget for widget in descendants(prompt)
+                  if isinstance(widget, Gtk.Entry)]
+        entry.set_text('Crate')
+        prompt.response(Gtk.ResponseType.OK)
+        pump()
+        refusal, = visible_prompts()
+        self.addCleanup(refusal.destroy)
+        self.assertIn('already exists', ' '.join(
+            widget.get_text() for widget in descendants(refusal)
+            if isinstance(widget, Gtk.Label)))
+
+    def test_books_are_filed_from_here_in_a_collection_there_is(self):
+        library = backend.LibraryBackend()
+        library.add_book(self.books[0])
+        shelf_id = library.add_collection('Shelf')
+        self._window()
+        area = self._shown().book_area
+        area._covers.get_model().select_item(0, True)
+        with unittest.mock.patch('mcomix.widgets.popup_at'):
+            area._popup_book_menu()
+        area._popup_actions.activate_action('add-to-collection',
+                                            GLib.Variant('i', shelf_id))
+        self.assertEqual([self.books[0]], [
+            book.path for book in
+            library.get_collection_by_id(shelf_id).get_books()])
 
     def test_files_dropped_on_the_covers_are_opened(self):
         # GTK hands a drop to a target on the widget under the pointer
