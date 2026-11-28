@@ -19,6 +19,7 @@ from mcomix import constants
 from mcomix import webp_books
 from mcomix.archive import sevenzip_external
 from mcomix.archive import zip as zip_archive
+from mcomix.preferences import prefs
 
 from . import (MComixTest, copy_rar_set, damage_member, get_testfile_path,
                line_art_png, refuse_passwords, sample_pages,
@@ -28,6 +29,32 @@ from . import (MComixTest, copy_rar_set, damage_member, get_testfile_path,
 def pixels(data):
     with Image.open(io.BytesIO(data)) as picture:
         return picture.convert('RGBA').tobytes()
+
+
+class _Packer:
+
+    """Stands in for archive_packer.Packer: each wait on it writes one
+    more of <files> files, and the waits and the first stop are kept."""
+
+    def __init__(self, files):
+        self.files = files
+        self.written = 0
+        self.waits = []
+        self.stopped_at = None
+
+    def finished(self, timeout=0):
+        self.waits.append(timeout)
+        if self.written == self.files:
+            return True
+        self.written += 1
+        return False
+
+    def progress(self):
+        return self.written, self.files
+
+    def stop(self):
+        if self.stopped_at is None:
+            self.stopped_at = self.written
 
 
 class _BookTest(MComixTest):
@@ -117,6 +144,35 @@ class ConvertTest(_BookTest):
         self.assertEqual([], [name for name in beside if name != 'book.cbz'
                               and not archive_tools.is_working_file(name)])
 
+    def test_the_pages_are_worked_on_in_the_unpack_folder(self):
+        """The folder the preference names, as for a book opened."""
+        folder = os.path.join(self.tmp_dir, 'unpack')
+        os.makedirs(folder)
+        self.enterContext(unittest.mock.patch.dict(
+            prefs, {'unpack folder': folder}))
+        there = []
+        made = archive_packer.webp_instead
+
+        def looking(*args):
+            there.extend(os.listdir(folder))
+            return made(*args)
+
+        path = self.zip_book({'01.png': line_art_png()})
+        with unittest.mock.patch.object(archive_packer, 'webp_instead',
+                                        looking):
+            self.convert(path)
+        # The book unpacked, and the WebPs made of its pages.
+        self.assertEqual(2, len(there), msg=there)
+        self.assertTrue(all(name.startswith('mcomix-') for name in there),
+                        msg=there)
+        self.assertEqual([], os.listdir(folder))
+
+    def test_a_folder_the_archive_lists_is_no_file_left_out(self):
+        path = self.zip_book({'art/': b'', 'art/01.png': line_art_png()})
+        converted = self.convert(path)
+        self.assertEqual({}, converted.left_out)
+        self.assertEqual({'art/01.png': 'art/01.webp'}, converted.renamed)
+
     def test_no_comicinfo_is_added(self):
         path = self.zip_book({'01.png': line_art_png()})
         self.convert(path)
@@ -146,7 +202,33 @@ class ConvertTest(_BookTest):
         done = []
         webp_books.convert(path, self.stop, done.append)
         self.assertEqual(sorted(done), done)
+        # Unpacking is the first fifth, a share for each file out.
+        self.assertEqual([0.1, 0.2], [round(value, 6) for value in done[:2]])
         self.assertAlmostEqual(1.0, done[-1])
+
+    def test_the_writing_is_the_rest_of_the_progress_and_can_be_stopped(self):
+        """Read off the packer at each wait: a stand-in here, which
+        writes one of four files each time it is waited on."""
+        packer = _Packer(4)
+        done = []
+
+        def write(*args, waiting, **kwargs):
+            waiting(packer)
+            return {}
+
+        def progress(value):
+            done.append(round(value, 6))
+            if value >= 0.6:
+                self.stop.set()
+
+        path = self.zip_book({'01.png': line_art_png()})
+        with unittest.mock.patch.object(archive_packer, 'write_archive',
+                                        write):
+            webp_books.convert(path, self.stop, progress)
+        self.assertEqual([0.2, 0.4, 0.6, 0.8, 1.0, 1.0], done)
+        self.assertEqual({webp_books._TICK}, set(packer.waits))
+        # Told at the next wait after Stop, and not before.
+        self.assertEqual(3, packer.stopped_at)
 
     def test_a_jpeg_page_is_optimised_under_its_own_name(self):
         """sample_pages()[0] was written without optimised tables."""
@@ -222,6 +304,33 @@ class DamagedTest(_BookTest):
         with zipfile.ZipFile(path) as book:
             self.assertEqual(['03.webp', 'notes.txt'],
                              sorted(book.namelist()))
+
+    def test_a_file_said_to_be_out_that_is_not_is_left_out(self):
+        path = self.zip_book({'01.png': line_art_png(),
+                              '02.png': line_art_png()})
+        iter_extract = zip_archive.ZipArchive.iter_extract
+
+        def losing(archive, names, directory):
+            for name in iter_extract(archive, names, directory):
+                if name == '01.png':
+                    os.remove(os.path.join(directory, name))
+                yield name
+
+        with unittest.mock.patch.object(zip_archive.ZipArchive,
+                                        'iter_extract', losing):
+            converted = self.convert(path)
+        self.assertEqual({'01.png': 'nothing came out of it'},
+                         converted.left_out)
+        self.assertEqual({'02.png': '02.webp'}, converted.renamed)
+
+    def test_a_failure_that_is_no_os_error_is_told_as_one(self):
+        path = self.damaged_book()
+        with unittest.mock.patch.object(
+                zip_archive.ZipArchive, 'list_contents',
+                side_effect=RuntimeError('the listing failed')), \
+                self.assertRaises(OSError) as raised:
+            self.convert(path)
+        self.assertEqual('the listing failed', str(raised.exception))
 
     def test_a_full_disk_is_no_damaged_file(self):
         path = self.damaged_book()
@@ -326,10 +435,20 @@ class SkippedTest(_BookTest):
             self.assertSkipped(path, 'no PNG, GIF or JPEG pages')
 
     def test_a_book_in_volumes(self):
-        first = copy_rar_set(self.directory)[0]
-        with self.assertRaises(webp_books.Skipped) as raised:
-            self.convert(first)
-        self.assertEqual('split into volumes', str(raised.exception))
+        for parts in ((1, 2, 3), (1, 2)):
+            with self.subTest(parts=parts):
+                first = copy_rar_set(os.path.join(self.directory,
+                                                  str(len(parts))),
+                                     parts=parts)[0]
+                with self.assertRaises(webp_books.Skipped) as raised:
+                    self.convert(first)
+                self.assertEqual('split into volumes', str(raised.exception))
+
+    def test_a_format_nothing_installed_here_reads(self):
+        path = self.zip_book({'01.png': line_art_png()})
+        with unittest.mock.patch.object(archive_tools, 'get_archive_handler',
+                                        return_value=None):
+            self.assertSkipped(path, 'nothing installed here reads the format')
 
     def test_a_stopped_conversion_leaves_the_book(self):
         path = self.zip_book({'01.png': line_art_png()})
