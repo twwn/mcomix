@@ -27,14 +27,15 @@ def _image(format):
     return data.getvalue()
 
 
-def _book(resources, ident=b'BOOKMOBI', crypto_type=0):
-    """A MobiPocket book: a header record, one of text, then <resources>."""
-    header = bytearray(0xE8)
+def _book(resources, ident=b'BOOKMOBI', crypto_type=0, first_image=2,
+          text=b'<html><body>Page one</body></html>', header_size=0xE8):
+    """A MobiPocket book: a header record of <header_size> bytes, one of
+    <text>, then <resources>, the first of them record <first_image>."""
+    header = bytearray(header_size)
     header[0x10:0x14] = b'MOBI'
     struct.pack_into('>H', header, 0xC, crypto_type)
-    # The first resource: the one after the header and the text.
-    struct.pack_into('>L', header, 0x6C, 2)
-    records = [bytes(header), b'<html><body>Page one</body></html>']
+    struct.pack_into('>L', header, 0x6C, first_image)
+    records = [bytes(header), text]
     records.extend(resources)
 
     database = bytearray(78)
@@ -112,8 +113,33 @@ class MobiArchiveTest(MComixTest):
         with open(os.path.join(self.tmp_dir, names[-1]), 'rb') as page:
             self.assertEqual(page.read(), self.png)
 
+    def test_a_book_of_text_alone_has_no_pages(self):
+        """A book without pictures names no first one, 0xFFFFFFFF, and
+        the text before the pictures is no page, however it begins."""
+        archive = self._open(_book(self.resources, first_image=0xFFFFFFFF))
+        self.assertEqual([], archive.list_contents())
+        archive = self._open(_book([self.png], text=b'BMW, the book of it'))
+        self.assertEqual(['image00001.png'], archive.list_contents())
+
+    def test_a_record_too_short_for_a_signature_is_no_picture(self):
+        """What follows a record is not read as the rest of it."""
+        archive = self._open(_book([b'\xff\xd8', self.jpeg]))
+        self.assertEqual(['image00002.jpg'], archive.list_contents())
+
+    def test_a_header_as_short_as_the_first_picture_s_place_allows(self):
+        archive = self._open(_book([self.png], header_size=0x70))
+        self.assertEqual(['image00001.png'], archive.list_contents())
+
+    def test_the_book_is_let_go_of_once_and_for_all(self):
+        archive = self._open(_book(self.resources))
+        book = archive.file
+        archive.close()
+        self.assertTrue(book.closed)
+        self.assertIsNone(archive.file)
+        archive.close()
+
     def test_refuses_a_palm_database_that_is_not_a_book(self):
-        with self.assertRaises(mobi.UnpackException):
+        with self.assertRaisesRegex(mobi.UnpackException, 'invalid file format'):
             self._open(_book(self.resources, ident=b'TEXtREAd'))
 
     def test_a_damaged_book_is_refused_or_read_as_far_as_it_goes(self):
@@ -123,8 +149,13 @@ class MobiArchiveTest(MComixTest):
         is the rest of the file.  The fuzzer found the first with an
         empty file (fuzz/fuzz_mobi.py)."""
         book = _book([self.jpeg])
-        for broken in (b'', book[:50], book[:80], book[:96]):
-            with self.subTest(len(broken)), self.assertRaises(mobi.UnpackException):
+        for broken, why in ((b'', 'not a Palm database'),
+                            (book[:50], 'not a Palm database'),
+                            (book[:80], 'record index cut short'),
+                            (book[:96], 'record index cut short'),
+                            (book[:120], 'MOBI header cut short')):
+            with self.subTest(len(broken)), \
+                    self.assertRaisesRegex(mobi.UnpackException, why):
                 self._open(broken)
         # The PNG record's offset made 0: the JPEG record before it ends
         # before it starts, and was read to the end of the file as a
@@ -135,5 +166,5 @@ class MobiArchiveTest(MComixTest):
         self.assertEqual([], archive.list_contents())
 
     def test_refuses_an_encrypted_book(self):
-        with self.assertRaises(mobi.UnpackException):
+        with self.assertRaisesRegex(mobi.UnpackException, 'file is encrypted'):
             self._open(_book(self.resources, crypto_type=2))
