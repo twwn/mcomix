@@ -10,6 +10,8 @@ import json
 import os
 import re
 
+from gi.repository import Gtk
+
 from . import MComixTest
 
 from mcomix import constants
@@ -30,8 +32,11 @@ class _StubUIManager:
     """Standing in for ui.MainUI, which is only told the shortcut to
     show beside an action in the menus."""
 
+    def __init__(self):
+        self.accelerators = {}
+
     def set_accelerator(self, name, accelerator):
-        pass
+        self.accelerators[name] = accelerator
 
 
 class _StubWindow:
@@ -73,6 +78,14 @@ class KeybindingExecuteTest(MComixTest):
         self._press('<Shift>S')
         self.assertEqual([], self.fired)
 
+    def test_an_action_is_called_with_what_it_was_registered_with(self):
+        called = []
+        self.manager.register('close', ['<Control>W'],
+                              lambda **kwargs: called.append(kwargs),
+                              kwargs={'confirm': False})
+        self._press('<Control>W')
+        self.assertEqual([{'confirm': False}], called)
+
     def test_a_key_bound_to_nothing_is_a_no_op(self):
         self._press('<Control>y')
         self.assertEqual([], self.fired)
@@ -102,7 +115,8 @@ class StoredKeybindingsTest(MComixTest):
             preferences.keybinding_moves[:] = moves
         with open(constants.KEYBINDINGS_CONF_PATH, 'w') as fp:
             json.dump(stored, fp)
-        manager = keybindings._KeybindingManager(_StubWindow())
+        self.window = _StubWindow()
+        manager = keybindings._KeybindingManager(self.window)
         self.fired = []
         for action, default in defaults:
             manager.register(action, [default],
@@ -156,6 +170,61 @@ class StoredKeybindingsTest(MComixTest):
                     [], manager.get_bindings_for_action('exit_fullscreen'))
                 with open(constants.KEYBINDINGS_CONF_PATH) as fp:
                     self.assertIn('Escape', json.load(fp)['quit'])
+
+    def test_the_menus_show_the_first_key_each_action_holds(self):
+        """The menus read the key beside an action from what the manager
+        tells them; an action holding none is not mentioned."""
+        self._manager({'slideshow': ['<Control>F5', '<Control>S'],
+                       'close': []})
+        self.assertEqual(
+            {'slideshow': Gtk.accelerator_name(
+                *keybindings.parse_accelerator('<Control>F5')),
+             'extract_page': Gtk.accelerator_name(
+                 *keybindings.parse_accelerator('<Control><Shift>s')),
+             'close': Gtk.accelerator_name(
+                 *keybindings.parse_accelerator('<Control>W')),
+             'quit': Gtk.accelerator_name(
+                 *keybindings.parse_accelerator('<Control>Q'))},
+            self.window.uimanager.accelerators)
+
+    def test_the_menus_show_what_a_moved_key_leaves_its_holder(self):
+        """A key moved off an action changes the key its menu shows: the
+        next it holds, or none."""
+        for stored, left in (
+                ({'exit_fullscreen': ['Escape', 'F11']}, 'F11'),
+                ({}, '')):
+            with self.subTest(stored=stored):
+                self._escape_manager(stored)
+                self.assertEqual(
+                    left,
+                    self.window.uimanager.accelerators['exit_fullscreen'])
+                self.assertEqual(
+                    Gtk.accelerator_name(
+                        *keybindings.parse_accelerator('<Control>Q')),
+                    self.window.uimanager.accelerators['quit'])
+
+    def test_a_move_that_does_not_apply_does_not_stop_the_next(self):
+        """Each kind of move that is passed over - a key already where
+        it goes, a new default whose key is taken, a key held by another
+        action than the one named - leaves the moves after it to run."""
+        escape = keybindings.parse_accelerator('Escape')
+        for skipped in (('quit', '<Control>Q', None),
+                        ('quit', '<Control>S', ''),
+                        ('quit', '<Control>S', 'close')):
+            with self.subTest(skipped=skipped):
+                manager = self._stored_manager(
+                    {}, (('exit_fullscreen', 'Escape'),
+                         ('quit', '<Control>Q'),
+                         ('slideshow', '<Control>S')),
+                    [skipped, ('quit', 'Escape', None)])
+                self.assertIn(escape, manager.get_bindings_for_action('quit'))
+
+    def test_no_move_taken_leaves_the_file_as_it_was(self):
+        """The file is written again only where a move changed a key."""
+        stored = {'quit': ['Escape']}
+        self._escape_manager(stored)
+        with open(constants.KEYBINDINGS_CONF_PATH) as fp:
+            self.assertEqual(json.dumps(stored), fp.read())
 
     def test_a_key_already_where_it_is_moved_to_is_left(self):
         manager = self._escape_manager({'quit': ['Escape']})
@@ -226,6 +295,18 @@ class StoredKeybindingsTest(MComixTest):
                 manager = self._manager(stored)
                 self.assertEqual(default,
                                  manager.get_bindings_for_action('slideshow'))
+
+    def test_a_shortcut_ignored_does_not_stop_the_ones_after_it(self):
+        """Each kind of stored entry that is dropped - not a name, not
+        an accelerator, a key another action holds - leaves the entries
+        after it in the list bound."""
+        f5 = keybindings.parse_accelerator('F5')
+        for bad in (1, '<Nonsense>', '<Control>W'):
+            with self.subTest(bad=bad):
+                manager = self._manager({'close': ['<Control>W'],
+                                         'quit': [bad, 'F5']})
+                self.assertEqual(
+                    [f5], manager.get_bindings_for_action('quit'))
 
     def test_a_file_that_is_not_json_leaves_the_defaults(self):
         with open(constants.KEYBINDINGS_CONF_PATH, 'w') as fp:
