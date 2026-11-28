@@ -19,7 +19,8 @@ import unittest.mock
 import zipfile
 import xml.etree.ElementTree as ElementTree
 
-from . import MComixTest, line_art_png, replace_held_once, sample_pages
+from . import (MComixTest, get_testfile_path, line_art_png, replace_held_once,
+               sample_pages)
 
 from mcomix import archive_packer
 from mcomix import archive_tools
@@ -441,6 +442,20 @@ class WriteArchiveTest(_PackingTest):
         with zipfile.ZipFile(book) as packed:
             self.assertEqual(4, len(packed.namelist()))
         self.assertEqual(['book.cbz'], os.listdir(shelf))
+
+    def test_what_a_comicinfo_said_is_kept_when_pages_become_webps(self):
+        """It is written again for the WebPs' sizes, from the one the
+        book carried rather than from nothing."""
+        carried = self._carried(
+            b'<ComicInfo><Title>The Book</Title>'
+            b'<PageCount>2</PageCount></ComicInfo>')
+        written = archive_packer.write_archive(
+            self.archive, self.pages, [], carried_files=carried,
+            webp_pages=True)
+        self.assertEqual('3 - packed.webp', written[self.pages[2]])
+        root = ElementTree.fromstring(self._read())
+        self.assertEqual('The Book', root.findtext('Title'))
+        self.assertEqual('3', root.findtext('PageCount'))
 
     def test_an_archive_written_from_nothing_carries_a_comicinfo(self):
         self._write()
@@ -949,20 +964,107 @@ class WebpPagesTest(_PackingTest):
                       '\n'.join(logs.output))
         self.assertEqual([], os.listdir(self.work))
 
+    def _png_of_gamma(self, name, gamma):
+        """A drawing at <name> with a gAMA chunk of <gamma>, in
+        hundred-thousandths, before its image data; its path."""
+        import zlib
+        path = self._png(name)
+        with open(path, 'rb') as file:
+            data = file.read()
+        chunk = b'gAMA' + gamma.to_bytes(4, 'big')
+        gama = (4).to_bytes(4, 'big') + chunk + \
+            zlib.crc32(chunk).to_bytes(4, 'big')
+        with open(path, 'wb') as file:
+            file.write(data[:33] + gama + data[33:])
+        return path
+
+    def _kept_because(self, path):
+        """What webp_instead() says of keeping <path>, which it keeps."""
+        with self.assertLogs('mcomix', 'DEBUG') as logs:
+            log.debug('-')
+            self.assertIsNone(archive_packer.webp_instead(
+                path, self.work, 'page.webp'))
+        return '\n'.join(line for line in logs.output if 'Kept' in line)
+
+    def test_a_png_of_srgb_gamma_becomes_a_webp(self):
+        """sRGB's gamma, 1/2.2, is what a WebP is shown with anyway."""
+        png = self._png_of_gamma('srgb.png', 45455)
+        self.assertIsNotNone(archive_packer.webp_instead(
+            png, self.work, 'page.webp'))
+
+    def test_exif_goes_along(self):
+        from PIL import Image
+        exif = Image.Exif()
+        exif[0x0112] = 6
+        png = self._png()
+        with Image.open(png) as picture:
+            picture.save(png, exif=exif.tobytes())
+        webp = archive_packer.webp_instead(png, self.work, 'page.webp')
+        with Image.open(webp) as written:
+            self.assertEqual(6, written.getexif()[0x0112])
+
+    def test_a_picture_as_wide_as_a_webp_can_be_is_not_too_wide(self):
+        from PIL import Image
+        wide = os.path.join(self.tmp_dir, 'wide.png')
+        Image.effect_noise((archive_packer._WEBP_MAX_SIDE, 2), 64) \
+            .save(wide)
+        with self.assertLogs('mcomix', 'DEBUG') as logs:
+            log.debug('-')
+            archive_packer.webp_instead(wide, self.work, 'page.webp')
+        self.assertNotIn('either way', '\n'.join(logs.output))
+
+    def test_the_memory_an_animation_may_take_is_a_share(self):
+        """An animation that takes a sixteenth of the memory, and not
+        more, is made a WebP; a still picture is not counted at all,
+        and nor is an animation of two frames let off."""
+        png, frames = self._apng()
+        memory = self.enterContext(unittest.mock.patch.object(
+            tools, 'physical_memory',
+            return_value=archive_packer._webp_cost(240, 320, 3)
+            * tools.THREAD_MEMORY_SHARE))
+        self.assertIsNotNone(archive_packer.webp_instead(
+            png, self.work, 'page.webp'))
+        memory.return_value = 1
+        self.assertIsNotNone(archive_packer.webp_instead(
+            self._png(), self.work, 'still.webp'))
+        two = os.path.join(self.tmp_dir, 'two.png')
+        frames[0].save(two, save_all=True, append_images=frames[1:2])
+        said = self._kept_because(two)
+        self.assertIn('as a PNG: its 2 frames would take too much memory',
+                      said)
+        gif = os.path.join(self.tmp_dir, 'two.gif')
+        frames[0].save(gif, save_all=True, append_images=frames[1:2])
+        self.assertIn('as a GIF: its 2 frames', self._kept_because(gif))
+
+    def test_what_optimising_a_jpeg_costs_is_counted_from_its_size(self):
+        """Read from its header, and nothing for a picture that is no
+        JPEG under a JPEG's name, a broken one, or one of another
+        name."""
+        from PIL import Image
+        self.enterContext(unittest.mock.patch.object(
+            archive_packer, '_optimises_jpegs', return_value=True))
+        jpeg = self._jpeg()
+        with Image.open(jpeg) as picture:
+            width, height = picture.size
+        self.assertEqual(width * height * archive_packer._JPEG_BYTES_PER_PIXEL,
+                         archive_packer.webp_cost(jpeg))
+        bitmap = os.path.join(self.tmp_dir, 'bitmap.jpg')
+        Image.new('RGB', (32, 32)).save(bitmap, 'BMP')
+        broken = os.path.join(self.tmp_dir, 'broken.jpg')
+        with open(broken, 'wb') as file:
+            file.write(b'\xff\xd8 and nothing more')
+        text = os.path.join(self.tmp_dir, 'notes.txt')
+        with open(text, 'w') as file:
+            file.write('page one')
+        for path in (bitmap, broken, text):
+            with self.subTest(os.path.basename(path)):
+                self.assertEqual(0, archive_packer.webp_cost(path))
+
     def test_what_a_webp_cannot_hold_stays_a_png(self):
         from PIL import Image
         deep = os.path.join(self.tmp_dir, 'deep.png')
         Image.new('I;16', (64, 64), 300).save(deep)
-        gamma = self._png('gamma.png')
-        # A gAMA of 1.0, before the image data.
-        with open(gamma, 'rb') as file:
-            data = file.read()
-        chunk = b'gAMA' + (100000).to_bytes(4, 'big')
-        import zlib
-        gama = (4).to_bytes(4, 'big') + chunk + \
-            zlib.crc32(chunk).to_bytes(4, 'big')
-        with open(gamma, 'wb') as file:
-            file.write(data[:33] + gama + data[33:])
+        gamma = self._png_of_gamma('gamma.png', 100000)
         # An APNG whose own picture is shown only where APNG is not.
         animated = os.path.join(self.tmp_dir, 'animated.png')
         frames = [Image.new('RGB', (32, 32), colour)
@@ -1070,6 +1172,88 @@ class WebpPagesTest(_PackingTest):
                 self.archive, pages, [], webp_pages=True)
         self.assertEqual(['1 - packed.webp', '2 - packed.webp'],
                          sorted(written.values()))
+
+    def test_the_largest_page_is_made_first_and_each_counts_as_a_file(self):
+        """The rough count while the WebPs are made: each page twice,
+        once for its WebP, and every other file once.  How many are
+        written by then is a race between the pool and the packer."""
+        from PIL import Image
+        small, large = (os.path.join(self.tmp_dir, name)
+                        for name in ('small.png', 'large.png'))
+        Image.new('RGB', (20, 20), 'red').save(small)
+        Image.new('RGB', (200, 200), 'red').save(large)
+        comment = os.path.join(self.tmp_dir, 'comment.txt')
+        with open(comment, 'w') as file:
+            file.write('a comment')
+        packer = archive_packer.Packer([small, large], [comment],
+                                       self.archive, 'packed',
+                                       webp_pages=True)
+        made = archive_packer.webp_instead
+        seen = []
+
+        def counted(path, *args):
+            seen.append((os.path.basename(path), packer.progress()[1]))
+            return made(path, *args)
+
+        self.enterContext(unittest.mock.patch.object(
+            archive_packer, 'webp_instead', counted))
+        self.enterContext(unittest.mock.patch.object(
+            archive_packer, 'webp_threads', return_value=1))
+        packer.pack()
+        self.assertTrue(packer.wait())
+        self.assertEqual([('large.png', 5), ('small.png', 5)], seen)
+
+    def test_a_webp_animation_is_compared_frame_by_frame(self):
+        """What _webp_animation() answers with tells a WebP of other
+        frames, frame times or plays from the one it wrote."""
+        from PIL import Image
+        png, frames = self._apng(loop=2)
+        target = os.path.join(self.work, 'page.webp')
+        with Image.open(png) as picture:
+            same = archive_packer._webp_animation(picture, target, {})
+        with Image.open(target) as webp:
+            self.assertTrue(same(webp))
+        durations = [100, 33, 250]
+        for name, changed in (
+                ('fewer frames', dict(images=frames[:2],
+                                      duration=durations[:2])),
+                ('plays forever', dict(loop=0)),
+                ('another time', dict(duration=[100, 34, 250])),
+                ('another frame', dict(images=[frames[0], frames[2],
+                                               frames[1]]))):
+            options = dict(images=frames, duration=durations, loop=2)
+            options.update(changed)
+            images = options.pop('images')
+            other = os.path.join(self.work, 'other.webp')
+            images[0].save(other, 'WEBP', save_all=True,
+                           append_images=images[1:], lossless=True,
+                           **options)
+            with self.subTest(name), Image.open(other) as webp:
+                self.assertFalse(same(webp))
+
+    def test_a_frame_given_no_time_is_given_none_as_a_webp(self):
+        from PIL import Image
+        webp = archive_packer.webp_instead(
+            get_testfile_path('images', 'no-delay.gif'), self.work,
+            'page.webp')
+        with Image.open(webp) as written:
+            times = []
+            for index in range(written.n_frames):
+                written.seek(index)
+                written.load()
+                times.append(written.info.get('duration'))
+        self.assertEqual([0] * 4, times)
+
+    def test_what_a_webp_costs_is_its_bytes_a_pixel_and_a_frame(self):
+        """A still picture 32 bytes a pixel, each frame after the
+        first 4 more."""
+        self.assertEqual(10 * 20 * 32, archive_packer._webp_cost(10, 20, 1))
+        self.assertEqual(10 * 20 * (32 + 2 * 4),
+                         archive_packer._webp_cost(10, 20, 3))
+
+    def test_a_still_png_counts_as_one_frame(self):
+        self.assertEqual(archive_packer._webp_cost(240, 320, 1),
+                         archive_packer.webp_cost(self._png()))
 
     def _processors(self, count):
         """Have the machine seem to have <count> processors."""
