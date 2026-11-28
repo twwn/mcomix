@@ -454,3 +454,55 @@ class CannotOpenTest(MComixTest):
                     self.assertEqual([], archive_tools.helpers(archive_type))
                 else:
                     self.assertTrue(archive_tools.helpers(archive_type))
+
+
+class _Unpacking:
+
+    """An archive of three files whose unpacking all at once fails after
+    the first, and whose <failing> files fail by themselves, raising
+    <error>."""
+
+    NAMES = ['01.png', '02.png', '03.png']
+
+    def __init__(self, failing=(), error=OSError('Bad CRC-32')):
+        self.failing = failing
+        self.error = error
+        #: The files unpacked one by one, in order.
+        self.alone = []
+
+    def iter_extract(self, names, directory):
+        yield names[0]
+        raise OSError('Bad CRC-32')
+
+    def extract(self, name, directory):
+        self.alone.append(name)
+        if name in self.failing:
+            raise self.error
+
+
+class ExtractEachTest(MComixTest):
+
+    def extract_each(self, archive, fatal=lambda error: None):
+        unpacked = []
+        left_out = archive_tools.extract_each(
+            archive, _Unpacking.NAMES, self.tmp_dir, unpacked.append, fatal)
+        return left_out, unpacked
+
+    def test_a_file_out_is_not_unpacked_again(self):
+        archive = _Unpacking()
+        left_out, unpacked = self.extract_each(archive)
+        self.assertEqual({}, left_out)
+        self.assertEqual(['02.png', '03.png'], archive.alone)
+        self.assertEqual(_Unpacking.NAMES, unpacked)
+
+    def test_a_file_that_fails_alone_is_left_out(self):
+        left_out, unpacked = self.extract_each(_Unpacking(['02.png']))
+        self.assertEqual({'02.png': 'Bad CRC-32'}, left_out)
+        self.assertEqual(_Unpacking.NAMES, unpacked)
+
+    def test_each_error_is_put_to_fatal(self):
+        full = OSError(28, 'No space left on device')
+        seen = []
+        self.extract_each(_Unpacking(['03.png'], full), seen.append)
+        self.assertEqual(['Bad CRC-32', full], [
+            error if error is full else str(error) for error in seen])
