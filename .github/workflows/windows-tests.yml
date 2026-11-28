@@ -123,7 +123,11 @@ jobs:
           $env:PATH = "$env:RUNNER_TEMP\msys64\ucrt64\bin;$env:RUNNER_TEMP\unrar;$env:PATH;$env:ProgramFiles\7-Zip"
           python -c "import os, sys; print(sys.executable, repr(os.sep), sorted(k for k in os.environ if k.upper().startswith(('MSYS', 'MINGW')))); assert os.sep == '\\'"
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
-          python -m pytest test/ -q -n auto --durations=30 --junitxml=pytest.xml
+          # --maxfail: a run whose tests fail by the hundred, each then
+          # waiting out a thread it left behind, ran into the job's time
+          # limit and was cancelled before pytest named a single failure.
+          # Stopping after 25 names them.
+          python -m pytest test/ -q -n auto --maxfail=25 --durations=30 --junitxml=pytest.xml
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
