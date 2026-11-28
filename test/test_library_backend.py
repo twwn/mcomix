@@ -1,5 +1,6 @@
 """Tests for the library database schema itself."""
 
+import dataclasses
 import datetime
 import inspect
 import io
@@ -27,6 +28,7 @@ from mcomix.i18n import _
 from mcomix import last_read_page
 from mcomix.library import backend
 from mcomix.library import backend_types
+from mcomix.library import fingerprint
 from mcomix.library import pixbuf_cache
 
 
@@ -501,7 +503,7 @@ class UpgradeFromEveryVersionTest(LibraryDatabaseTest):
             with self.subTest(version=version):
                 library = self._upgraded(version)
                 for table in ('book', 'collection', 'contain', 'info',
-                              'watchlist', 'recent'):
+                              'watchlist', 'recent', 'fingerprint'):
                     self.assertTrue(library._table_exists(table),
                                     '%s is missing' % table)
                 plan = self._plan(library._con,
@@ -810,7 +812,7 @@ class InterruptedCreationTest(_InterruptedOpenTest):
     """
 
     #: Every table a finished library holds.
-    TABLES = ('book', 'collection', 'contain', 'info', 'watchlist', 'recent')
+    TABLES = ('book', 'collection', 'contain', 'info', 'watchlist', 'recent', 'fingerprint')
 
     def test_a_creation_that_stops_after_the_info_table_leaves_nothing(self):
         """Nothing rather than a database that says it is finished: the
@@ -1386,7 +1388,7 @@ class TableExistsTest(OpenLibraryTest):
 
     def test_a_table_that_is_there(self):
         for table in ('book', 'collection', 'contain', 'info',
-                      'watchlist', 'recent'):
+                      'watchlist', 'recent', 'fingerprint'):
             self.assertTrue(self.library._table_exists(table), msg=table)
 
     def test_a_table_that_is_not(self):
@@ -2267,7 +2269,7 @@ class HalfWrittenDatabaseTest(LibraryDatabaseTest):
         library = backend.LibraryBackend()
         try:
             for table in ('book', 'collection', 'contain', 'info',
-                          'watchlist', 'recent'):
+                          'watchlist', 'recent', 'fingerprint'):
                 self.assertTrue(library._table_exists(table),
                                 '%s was not created' % table)
         finally:
@@ -2748,3 +2750,76 @@ class UnreadableDatabaseTest(LibraryDatabaseTest):
         self.assertTrue(os.path.isdir(constants.LIBRARY_DATABASE_PATH))
         self.assertFalse(os.path.exists(
             constants.LIBRARY_DATABASE_PATH + '.broken'))
+
+
+class FingerprintTableTest(OpenLibraryTest):
+
+    """The fingerprint table keeps what was read of a book to find its
+    copies, as long as the book is in the library."""
+
+    def setUp(self):
+        super().setUp()
+        self.assertTrue(self.library.add_book(NORMAL_ZIP))
+        self.book = self.library.get_book_by_path(NORMAL_ZIP).id
+        self.made = fingerprint.make(NORMAL_ZIP)
+
+    def test_a_fingerprint_is_kept_and_read_back(self):
+        self.library.store_fingerprint(self.book, self.made)
+        self.assertEqual({self.book: self.made}, self.library.fingerprints())
+
+    def test_a_digest_is_kept_for_the_file_it_is_of(self):
+        self.library.store_fingerprint(self.book, self.made)
+        older = dataclasses.replace(self.made, mtime=self.made.mtime - 1)
+        self.library.store_digest(self.book, older, b'of another file')
+        self.assertIsNone(self.library.fingerprints()[self.book].digest)
+        self.library.store_digest(self.book, self.made, b'of this file')
+        self.assertEqual(b'of this file',
+                         self.library.fingerprints()[self.book].digest)
+
+    def test_a_removed_book_takes_its_fingerprint_along(self):
+        self.library.store_fingerprint(self.book, self.made)
+        self.library.remove_book(self.book)
+        self.assertEqual({}, self.library.fingerprints())
+
+    def test_one_read_after_its_book_was_removed_is_not_kept(self):
+        """It would be taken for that of the book given the id next."""
+        self.library.remove_book(self.book)
+        self.library.store_fingerprint(self.book, self.made)
+        self.assertEqual({}, self.library.fingerprints())
+
+    def test_a_row_of_another_layout_is_left_out(self):
+        """To be read again, as a stale one is."""
+        self.library.store_fingerprint(self.book, self.made)
+        self.library.execute("update fingerprint set samples = x'00'")
+        self.assertEqual({}, self.library.fingerprints())
+
+
+class FingerprintUpgradeTest(LibraryDatabaseTest):
+
+    """Version 14 added the fingerprint table; an older MComix that
+    opens the file afterwards leaves rows of the books it removes."""
+
+    def test_the_rows_of_books_gone_go(self):
+        library = backend.LibraryBackend()
+        try:
+            self.assertTrue(library.add_book(NORMAL_ZIP))
+            book = library.get_book_by_path(NORMAL_ZIP).id
+            made = fingerprint.make(NORMAL_ZIP)
+            library.store_fingerprint(book, made)
+            # As MComix at version 13 leaves it: the version its own,
+            # and a row for a book it removed.
+            library.execute("update info set value = '13' "
+                            "where key = 'version'")
+            library.execute('insert into fingerprint values '
+                            "(?, 1, 1, 1, x'01', null)", (book + 1,))
+        finally:
+            library.close()
+        library = backend.LibraryBackend()
+        try:
+            self.assertEqual({book: made}, library.fingerprints())
+            self.assertEqual(
+                str(backend._LibraryBackend.DB_VERSION),
+                library.fetchone("select value from info "
+                                 "where key = 'version'"))
+        finally:
+            library.close()

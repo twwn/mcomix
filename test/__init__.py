@@ -1337,6 +1337,36 @@ def line_art_png(size=(240, 320), mode='RGB', **options):
     return buffer.getvalue()
 
 
+def drawn_page(seed, size=(600, 900)):
+    """A page of panels drawn at random from <seed>, as a Pillow image:
+    another seed, as good as surely another page."""
+    import random
+    from PIL import Image, ImageDraw
+    chance = random.Random(seed)
+    page = Image.new('RGB', size, 'white')
+    draw = ImageDraw.Draw(page)
+    width, height = size
+    for _ in range(12):
+        left, top = chance.randrange(width), chance.randrange(height)
+        box = (left, top, left + chance.randrange(40, width // 2),
+               top + chance.randrange(40, height // 2))
+        colour = tuple(chance.randrange(256) for _ in range(3))
+        if chance.random() < 0.5:
+            draw.rectangle(box, fill=colour, outline='black', width=3)
+        else:
+            draw.ellipse(box, fill=colour, outline='black', width=3)
+    return page
+
+
+def encoded(picture, format, **options):
+    """The bytes of the Pillow image <picture> saved as <format>, with
+    <options> to its save()."""
+    import io
+    data = io.BytesIO()
+    picture.save(data, format, **options)
+    return data.getvalue()
+
+
 # Helper to get path to testsuite sample files.
 
 def sample_pages(count=3):

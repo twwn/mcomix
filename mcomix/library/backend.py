@@ -2,8 +2,9 @@
 
 One connection, in auto-commit mode, to a file holding a table of books,
 a table of collections, the contain table that files one in the other,
-the recent table of where a book was left, and a watchlist of
-directories to look in for more.  A book's id is its sqlite rowid, which
+the recent table of where a book was left, a watchlist of directories
+to look in for more, and the fingerprint table of what was read of a
+book to find its copies (mcomix.library.fingerprint).  A book's id is its sqlite rowid, which
 sqlite hands out again as soon as the highest row is free.
 
 The schema is versioned: DB_VERSION below is what this code expects, and
@@ -26,6 +27,7 @@ from mcomix import thumbnail_tools
 from mcomix import log
 from mcomix import callback
 from mcomix.library import backend_types
+from mcomix.library.fingerprint import Fingerprint
 from mcomix.library import pixbuf_cache
 from mcomix import i18n
 from mcomix.i18n import _
@@ -187,7 +189,7 @@ class _LibraryBackend:
 
     #: Current version of the library database structure.
     # See method _upgrade_database() for changes between versions.
-    DB_VERSION = 13
+    DB_VERSION = 14
 
     def __init__(self) -> None:
         #: Held from running a statement to closing its cursor.  Threads
@@ -1238,6 +1240,46 @@ class _LibraryBackend:
         # soon as the highest row is free, so a page left behind here
         # belongs to whichever book is added next.
         self.execute('delete from Recent where book = ?', (book,))
+        self.execute('delete from fingerprint where book = ?', (book,))
+
+    def fingerprints(self) -> dict[int, Fingerprint]:
+        """The fingerprint stored of each book that has one, by its id;
+        whether each is current is for the caller to see
+        (fingerprint.is_current()).  The whole table, as a search for
+        copies reads it."""
+        found = {}
+        for book, size, mtime, pages, samples, digest in self.fetchall(
+                '''select book, size, mtime, pages, samples, digest
+                from fingerprint'''):
+            unpacked = Fingerprint.unpacked_samples(samples)
+            if unpacked is not None:
+                found[book] = Fingerprint(
+                    size, mtime, pages, unpacked, digest)
+        return found
+
+    def store_fingerprint(self, book: int,
+                          fingerprint: Fingerprint) -> None:
+        """Keep <fingerprint> as that of <book>, in place of any before.
+        Not for a book that is no longer in the library, which a read
+        that ends after its removal would leave behind for whichever
+        book takes its id next: one statement, so that a removal on
+        another thread comes wholly before or after it."""
+        self.execute('''insert or replace into fingerprint
+            (book, size, mtime, pages, samples, digest)
+            select ?, ?, ?, ?, ?, ? where exists
+            (select 1 from Book where id = ?)''', (
+                book, fingerprint.size, fingerprint.mtime,
+                fingerprint.pages, fingerprint.packed_samples(),
+                fingerprint.digest, book))
+
+    def store_digest(self, book: int, fingerprint: Fingerprint,
+                     digest: bytes) -> None:
+        """Keep <digest> as the hash of the file of <book>, if its
+        stored fingerprint is still <fingerprint>'s file: one read again
+        meanwhile is of another."""
+        self.execute('''update fingerprint set digest = ?
+            where book = ? and size = ? and mtime = ?''', (
+                digest, book, fingerprint.size, fingerprint.mtime))
 
     def remove_collection(self, collection: int) -> None:
         """Remove the <collection> from the library.
@@ -1477,6 +1519,7 @@ class _LibraryBackend:
             self._create_table_info()
             self._create_table_watchlist()
             self._create_table_recent()
+            self._create_table_fingerprint()
 
     def _upgrade_database(self, from_version: int, to_version: int) -> None:
         """Bring the database from <from_version> up to <to_version>.
@@ -1638,6 +1681,18 @@ class _LibraryBackend:
             if 12 in upgrades:
                 self._add_columns_book_volume()
 
+            if 13 in upgrades:
+                # The fingerprint table, for finding a book's copies.
+                # An older MComix writes its own version back and leaves
+                # the table alone, so its removals leave rows behind,
+                # and this step runs again once this one opens the file:
+                # the rows of books gone go, as step 8 does for recent.
+                # A row an id handed out again inherits is of another
+                # file's size and time, which is read again anyway.
+                self._create_table_fingerprint()
+                self._con.execute('''delete from fingerprint
+                    where book not in (select id from book)''')
+
             self._con.execute('''update info set value = ? where key = 'version' ''',
                               (str(_LibraryBackend.DB_VERSION),))
 
@@ -1721,6 +1776,19 @@ class _LibraryBackend:
             path text primary key,
             collection integer references collection (id) on delete set null,
             recursive boolean not null)''')
+
+    def _create_table_fingerprint(self) -> None:
+        """What was read of each book to find its copies; see
+        mcomix.library.fingerprint.  A row is for the file as it was at
+        <size> and <mtime>, in nanoseconds; <digest>, the hash of the
+        whole file, is null until one was made."""
+        self._con.execute('''create table if not exists fingerprint (
+            book integer primary key,
+            size integer not null,
+            mtime integer not null,
+            pages integer not null,
+            samples blob not null,
+            digest blob)''')
 
     def _create_table_recent(self) -> None:
         self._con.execute('''create table if not exists recent (

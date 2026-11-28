@@ -43,6 +43,7 @@ from mcomix import webp_books
 from mcomix import webp_dialog
 from mcomix.library import backend_types
 from mcomix.library import book_properties
+from mcomix.library import duplicates_dialog
 from mcomix.library.pixbuf_cache import get_pixbuf_cache
 from mcomix.i18n import _
 from mcomix.dialog import Response
@@ -356,6 +357,10 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable, LibraryPart):
             # which none of the entries about the file beside it does.
             ('store-webp', _('Make pages smaller _without loss...'),
              self.store_pages_as_webp),
+            # Of the books on show, not those selected: what it finds
+            # is selected afterwards.
+            ('find-duplicates', _('Find _duplicates...'),
+             self.find_duplicates),
         )
 
     def _create_popup_menu(self) -> Gtk.PopoverMenu:
@@ -399,7 +404,7 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable, LibraryPart):
         for heading, group in ((_('Library books'), entries[0:4]),
                                (None, entries[4:6]), (None, entries[6:7]),
                                (None, entries[7:12]), (None, entries[12:16]),
-                               (None, entries[16:17])):
+                               (None, entries[16:18])):
             section = Gio.Menu()
             for name, label, _handler in group:
                 item = widgets.menu_item(label, 'books.' + name,
@@ -1277,12 +1282,18 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable, LibraryPart):
         also from the _BookArea.
         """
 
-        selected = self._selected_items()
+        self.remove_from_library([item.uid for item in self._selected_items()])
+
+    def remove_from_library(self, book_ids: Sequence[int]) -> None:
+        """Remove the books with <book_ids> from the library, and those
+        shown from the _BookArea, saying so in the status bar."""
+        wanted = set(book_ids)
+        selected = [item for item in self._each_item() if item.uid in wanted]
         # As above: the mode has to be put back whatever happens, or the
         # library stops committing anything for the rest of the session.
         with self._library.backend.transaction():
-            for item in selected:
-                self._library.backend.remove_book(item.uid)
+            for book in book_ids:
+                self._library.backend.remove_book(book)
 
             self._covers.remove_items(selected)
             for item in selected:
@@ -1291,8 +1302,8 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable, LibraryPart):
         msg = i18n.get_translation().ngettext(
             'Removed %d book from the library.',
             'Removed %d books from the library.',
-            len(selected))
-        self._library.set_status_message(msg % len(selected))
+            len(book_ids))
+        self._library.set_status_message(msg % len(book_ids))
 
     def _completely_remove_book(self, *args: object) -> None:
         """Remove the currently selected books from the library and the
@@ -1644,6 +1655,8 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable, LibraryPart):
         # Only where a book selected could be written back: a PDF, a
         # RAR without rar, would only be counted as left alone.  Whether
         # it has PNG pages is found only by reading it.
+        self._set_sensitive('find-duplicates', any(
+            True for _item in self._each_item()))
         self._set_sensitive('store-webp', any(
             archive_packer.can_write(archive_type)
             for archive_type in {item.format for item in selected}))
@@ -1712,6 +1725,18 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable, LibraryPart):
             self._stored_as_webp,
             open_book=self._library.main_window.filehandler.get_path_to_base,
             select=self._select_paths)
+
+    def find_duplicates(self, *args: object) -> None:
+        """Look for copies among the books on show: see
+        mcomix.library.duplicates_dialog."""
+        books = {item.uid: item.path for item in self._each_item()}
+        if not books:
+            return
+        duplicates_dialog.DuplicatesDialog(
+            self._library.window, self._library.backend, books,
+            open_book=lambda book: self._library.open_book(
+                [book], keep_library_open=True),
+            select=self._select_paths, remove=self.remove_from_library)
 
     def _stored_as_webp(self, path: str,
                         converted: webp_books.Converted) -> None:

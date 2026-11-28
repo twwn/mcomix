@@ -1738,7 +1738,8 @@ class StorePagesAsWebpEntryTest(_FourCoversTest):
 
     def test_it_has_a_section_of_its_own(self):
         """It writes every book selected again; it sat among Rename and
-        Properties, which only name or describe one."""
+        Properties, which only name or describe one.  "Find duplicates"
+        goes through many books too."""
         model = self.area._book_menu.get_menu_model()
         sections = [model.get_item_link(index, Gio.MENU_LINK_SECTION)
                     for index in range(model.get_n_items())]
@@ -1748,7 +1749,25 @@ class StorePagesAsWebpEntryTest(_FourCoversTest):
                     if section.get_item_attribute_value(
                         index, 'action', None) is not None]
                    for section in sections if section is not None]
-        self.assertIn(['books.store-webp'], actions)
+        self.assertIn(['books.store-webp', 'books.find-duplicates'], actions)
+
+
+class FindDuplicatesEntryTest(_FourCoversTest):
+
+    """"Find duplicates..." looks among the books on show, so it is
+    offered whatever is selected, where any are shown."""
+
+    def test_offered_where_books_are_shown(self):
+        self.library.collection_area = _CollectionArea()
+        self.library.main_window = _main_window()
+        action = self.area._popup_actions.lookup_action('find-duplicates')
+        with unittest.mock.patch.object(book_area.widgets, 'popup_at'):
+            self.area._covers.select_positions([])
+            self.area._popup_book_menu()
+            self.assertTrue(action.get_enabled())
+            self.area._covers.remove_items(list(self.area._each_item()))
+            self.area._popup_book_menu()
+            self.assertFalse(action.get_enabled())
 
 
 class MiddleClickTest(_FourCoversTest):
