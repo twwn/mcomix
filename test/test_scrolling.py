@@ -214,4 +214,35 @@ class SmartScrollingTest(MComixTest):
                              % (content, view, position, destination))
 
 
+
+class StepGridCacheTest(MComixTest):
+
+    def test_a_grid_remembered_is_the_one_asked_for(self):
+        """Each of the three things a grid is asked by tells it from
+        the others: the two last asked for are kept, and the one asked
+        for is the one answered, whichever of the two it matches."""
+        other = (5, 2, False)
+        for first, second in (((701, 4, False), (701, 4, True)),
+                              ((701, 4, False), (701, 5, False)),
+                              ((701, 4, False), (700, 4, False))):
+            with self.subTest(first=first, second=second):
+                scrolling = Scrolling()
+                kept = scrolling._cached_bresenham_sums(*first)
+                then = scrolling._cached_bresenham_sums(*second)
+                self.assertEqual(Scrolling._bresenham_sums(*second), then)
+                self.assertIs(kept, scrolling._cached_bresenham_sums(*first))
+                self.assertIs(then, scrolling._cached_bresenham_sums(*second))
+                scrolling._cached_bresenham_sums(*other)
+                self.assertEqual(Scrolling._bresenham_sums(*first),
+                                 scrolling._cached_bresenham_sums(*first))
+                self.assertEqual(Scrolling._bresenham_sums(*second),
+                                 scrolling._cached_bresenham_sums(*second))
+
+    def test_clearing_forgets_the_grids(self):
+        scrolling = Scrolling()
+        kept = scrolling._cached_bresenham_sums(701, 4, False)
+        scrolling.clear_cache()
+        self.assertIsNot(kept, scrolling._cached_bresenham_sums(701, 4, False))
+
+
 # vim: expandtab:sw=4:ts=4
