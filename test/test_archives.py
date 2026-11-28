@@ -418,6 +418,64 @@ class MissingProgramTest(MComixTest):
         self.assertFalse(pdf_multi.DisabledFitzArchive.is_available())
 
 
+class RarStarNameTest(MComixTest):
+
+    """A member of a RAR named with a '*', which libunrar 7.3.2 reports
+    as written and does not write: the outside unrar or 7z reads it
+    instead, and with neither installed the page is left out."""
+
+    def setUp(self):
+        super().setUp()
+        if 'win32' == sys.platform:
+            self.skipTest('no file on Windows holds a "*" to pack')
+        if not _unrar_skips_star_names(fallback=False):
+            self.skipTest('this libunrar writes such a member itself')
+        # foo.JPG beside *oo.JPG: either program, given the name, takes
+        # it for a wildcard and prints both.
+        self.path = os.path.join(self.tmp_dir, 'stars.rar')
+        try:
+            make_archive(self.path, (
+                ('foo.JPG', get_testfile_path('images', '02-JPG-RGB.jpg')),
+                ('*oo.JPG', get_testfile_path('images', '04-PNG-Indexed.png')),
+            ), format='rar')
+        except (UnsupportedFormat, OSError):
+            self.skipTest('rar is not installed')
+
+    def _extract(self, unrar, sevenzip):
+        """The page *oo.JPG as libunrar's handler extracts it, with only
+        the outside programs <unrar> and <sevenzip> said to be there:
+        its MD5, or None where it was left out."""
+        if unrar and not rar_external.RarArchive.is_available():
+            self.skipTest('unrar is not installed')
+        if sevenzip and not sevenzip_external.SevenZipArchive.is_available():
+            self.skipTest('7z is not installed')
+        archive = rar.RarArchive(self.path)
+        destination = os.path.join(self.tmp_dir, 'out')
+        with unittest.mock.patch.object(rar_external.RarArchive, 'is_available',
+                                        return_value=unrar), \
+                unittest.mock.patch.object(sevenzip_external.SevenZipArchive,
+                                           'is_available', return_value=sevenzip):
+            try:
+                self.assertIn('*oo.JPG', archive.list_contents())
+                archive.extract('*oo.JPG', destination)
+            finally:
+                archive.close()
+        page = os.path.join(destination, '*oo.JPG')
+        return md5(page) if os.path.isfile(page) else None
+
+    def test_the_outside_unrar_reads_it(self):
+        self.assertEqual(md5(get_testfile_path('images', '04-PNG-Indexed.png')),
+                         self._extract(unrar=True, sevenzip=False))
+
+    def test_7z_reads_it(self):
+        self.assertEqual(md5(get_testfile_path('images', '04-PNG-Indexed.png')),
+                         self._extract(unrar=False, sevenzip=True))
+
+    def test_left_out_without_either(self):
+        with self.assertLogs(level='WARNING'):
+            self.assertIsNone(self._extract(unrar=False, sevenzip=False))
+
+
 class _Listed(Exception):
     """Raised by a listing a test stands in for, to show it was asked."""
 
@@ -1411,20 +1469,24 @@ xfail_list = [
     ('LhaExternalUnicode', 'test_list_contents'),
 ]
 
-def _unrar_skips_star_names() -> bool:
-    """Whether libunrar leaves out a member whose name holds a '*'.
+def _unrar_skips_star_names(fallback=True) -> bool:
+    """Whether libunrar's handler leaves out a member whose name holds a
+    '*': with <fallback> false, whether the library itself does.
 
-    Since 7.3.2 it reports success for such a member and writes nothing,
-    the same with a destination name, a destination folder, or the data
-    handed to the callback; what the program sees is a missing file.
-    Windows lists the member as '_oo.JPG', since no file there can hold a
-    '*', and the build it loads follows RARLAB's releases, so it is asked
-    as well. """
+    Since 7.3.2 the library reports success for such a member and writes
+    nothing, the same with a destination name, a destination folder, or
+    the data handed to the callback; the handler then has the outside
+    unrar or 7z read it, where one is installed.  Windows lists the
+    member as '_oo.JPG', since no file there can hold a '*', and the
+    build it loads follows RARLAB's releases, so it is asked as well. """
     if not rar.RarArchive.is_available():
         return False
     archive = rar.RarArchive(get_testfile_path('archives', 'GlobEntries.rar'))
     name = archive._replace_invalid_filesystem_chars('*oo.JPG')
-    with tempfile.TemporaryDirectory() as dest_dir:
+    with tempfile.TemporaryDirectory() as dest_dir, \
+            unittest.mock.patch.object(
+                archive, '_extract_elsewhere',
+                wraps=archive._extract_elsewhere if fallback else None):
         try:
             archive.extract(name, dest_dir)
         finally:

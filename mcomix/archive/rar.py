@@ -12,6 +12,8 @@ from collections.abc import Iterator
 
 from mcomix import constants
 from mcomix.archive import archive_base
+from mcomix.archive import rar_external
+from mcomix.archive import sevenzip_external
 from mcomix import log
 
 if sys.platform == 'win32':
@@ -145,6 +147,9 @@ class RarArchive(archive_base.BaseArchive):
         # Information about the current file will be stored in this structure
         self._headerdata = RarArchive._RARHeaderDataEx()
         self._current_filename: str | None = None
+        #: The outside programs that read what libunrar leaves out, made
+        #: when first needed: see _extract_elsewhere().
+        self._fallbacks: list[archive_base.ExternalExecutableArchive] | None = None
         # The names members have been listed under since the handle opened.
         self._names_read: set[str] = set()
 
@@ -240,8 +245,10 @@ class RarArchive(archive_base.BaseArchive):
             if self._current_filename is not None:
                 if self._current_filename == filename and self._header_is_member():
                     # It's the entry we're looking for, extract it.
-                    dest = ctypes.c_wchar_p(os.path.join(destination_dir, filename))
-                    self._process(dest)
+                    path = os.path.join(destination_dir, filename)
+                    self._process(ctypes.c_wchar_p(path))
+                    if not os.path.isfile(path):
+                        self._extract_elsewhere(filename, destination_dir)
                     break
                 # Not the right entry, skip it.
                 self._process()
@@ -261,6 +268,37 @@ class RarArchive(archive_base.BaseArchive):
         # After the method returns, the RAR handler is still open and pointing
         # to the next archive file. This will improve extraction speed for sequential file reads.
         # After all files have been extracted, close() should be called to free the handler resources.
+
+    def _extract_elsewhere(self, filename: str, destination_dir: str) -> None:
+        """Extract <filename>, which libunrar reported as written and did
+        not write, with the outside unrar or 7z, whichever is installed.
+
+        libunrar 7.3.2 does that for a member whose name holds a '*'.
+        Both programs take a name given to them for a wildcard, which
+        '*oo.jpg' would make of 'foo.jpg' too, so the member is picked
+        out of the stream of the whole archive by its place in the
+        listing instead.  With neither installed the page stays out.
+        """
+        if self._fallbacks is None:
+            self._fallbacks = [
+                handler(self.archive) for handler in (
+                    rar_external.RarArchive, sevenzip_external.SevenZipArchive)
+                if handler.is_available()]
+            for fallback in self._fallbacks:
+                if self._password is not None:
+                    # Asked for once already, by libunrar's callback.
+                    fallback._password = self._password
+                    fallback._event.set()
+        for fallback in self._fallbacks:
+            try:
+                for _name in fallback.iter_extract((filename,), destination_dir):
+                    return
+            except (rar_external.ExtractionError,
+                    sevenzip_external.ExtractionError) as exc:
+                log.warning('%s could not read "%s": %s',
+                            fallback.helper, filename, exc)
+        log.warning('libunrar left out "%s" of "%s", and no other program read it',
+                    filename, self.archive)
 
     def close(self) -> None:
         """ Close the archive handle """
