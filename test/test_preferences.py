@@ -1,4 +1,5 @@
 import ast
+import copy
 import glob
 import json
 import os
@@ -6,6 +7,7 @@ import shutil
 import pickle
 import stat
 import sys
+from collections.abc import Sequence
 from unittest import mock
 
 from gi.repository import GdkPixbuf
@@ -207,7 +209,7 @@ class MigratePreferencesTest(MComixTest):
         self._write(current)
         preferences.read_preferences_file()
         self.assertEqual(prefs['bg colour'], [0.5, 0.25, 0.125, 1.0])
-        self.assertFalse(os.path.exists(self.backup),
+        self.assertEqual([], glob.glob(glob.escape(self.path) + '.v*'),
                          'nothing was migrated, so nothing should be backed up')
 
     def test_the_version_is_stored_so_it_only_migrates_once(self) -> None:
@@ -408,10 +410,59 @@ class MigratePreferencesTest(MComixTest):
         TypeError, which nothing on the way up caught: MComix would not
         start."""
         self._write({_FORMAT_VERSION_KEY: '1',
-                     'bg colour': self.OLD_DEFAULT})
+                     'bg colour': [65535, 0, 0]})
         preferences.read_preferences_file()
-        self.assertEqual(len(prefs['bg colour']), 4)
-        self.assertAlmostEqual(prefs['bg colour'][0], 5000 / 65535)
+        # Taken for the oldest format, so the colour is converted: the
+        # old near-black grey would not tell it from the default.
+        self.assertEqual([1.0, 0.0, 0.0, 1.0], prefs['bg colour'])
+
+    def test_each_step_is_for_the_files_before_its_format(self) -> None:
+        """A file one format older than a step is rewritten by it, and a
+        file at the step's own format, which already holds what the
+        step makes, is not rewritten by it again."""
+        self.addCleanup(preferences.keybinding_moves.clear)
+        for step, stored, migrated in (
+                (1, {'bg colour': [1, 0, 0, 1]},
+                 {'bg colour': [1 / 65535, 0.0, 0.0, 1.0]}),
+                (2, {'stored dialog choices': {'delete-opend-file': 1}},
+                 {'stored dialog choices': {'delete-opened-file': 1}}),
+                # 2, not 0 or 1, which compare equal to False and True.
+                (3, {'store recent file info': 2},
+                 {'store recent file info': True}),
+                (8, {'page counter in fullscreen': True}, {'page counter': 1}),
+                (9, {'click halves': True}, {'click zones': 1})):
+            for version, wanted in ((step - 1, migrated), (step, stored)):
+                with self.subTest(step=step, version=version):
+                    saved = copy.deepcopy(stored)
+                    saved[_FORMAT_VERSION_KEY] = version
+                    preferences._migrate_preferences(saved)
+                    del saved[_FORMAT_VERSION_KEY]
+                    self.assertEqual(wanted, saved)
+        turn = ('next_page_ff_dynamic', '<Shift><Alt>Right', 'next_page_ff')
+        for version, moved in ((6, True), (7, False)):
+            with self.subTest(step=7, version=version):
+                preferences.keybinding_moves.clear()
+                preferences._migrate_preferences({_FORMAT_VERSION_KEY: version})
+                self.assertEqual(moved, turn in preferences.keybinding_moves)
+
+    def test_a_file_without_escape_quits_gives_quit_no_key(self) -> None:
+        self.addCleanup(preferences.keybinding_moves.clear)
+        preferences.keybinding_moves.clear()
+        preferences._migrate_preferences({_FORMAT_VERSION_KEY: 4})
+        self.assertNotIn('quit',
+                         [move[0] for move in preferences.keybinding_moves])
+
+    def test_a_colour_is_told_from_rgba_components_by_its_numbers(
+            self) -> None:
+        """Up to four floats between 0 and 1 are RGBA already, with an
+        alpha of 1 where there are three; anything else is 16-bit."""
+        rgba = preferences._rgba_from_16bit_colour
+        self.assertEqual([0.1, 0.2, 0.3, 0.4], rgba([0.1, 0.2, 0.3, 0.4]))
+        self.assertEqual([0.5, 0.5, 0.5, 1.0], rgba([0.5, 0.5, 0.5]))
+        self.assertEqual([0.5, 0.5, 0.5, 1.0],
+                         rgba([0.5, 0.5, 0.5, 1.0, 'x']))
+        self.assertEqual([1.0, 0.0, 0.0, 1.0], rgba([65535, 0, 0, 65535]))
+        self.assertEqual([1.5 / 65535, 0.0, 0.0, 1.0], rgba([1.5, 0.0, 0.0]))
 
     def test_a_colour_an_older_mcomix_wrote_back_unchanged_is_kept(self) -> None:
         """MComix 3.2 reads a file this one has migrated, drops the
@@ -429,6 +480,29 @@ class MigratePreferencesTest(MComixTest):
         self._write({'bg colour': 'not a colour'})
         preferences.read_preferences_file()
         self.assertEqual(prefs['bg colour'], preferences.DEFAULT_BG_COLOUR)
+
+
+class OfTypeTest(MComixTest):
+
+    """A value read from the file is taken only where it is of the type
+    the Preferences table declares for it."""
+
+    def test_a_value_is_of_the_type_it_is(self) -> None:
+        for value, annotation in (
+                (['a'], list[str]), ({'a': 1}, dict[str, int]), (1, float),
+                (1.5, float), (None, int | None), (2, int | None), ('a', str),
+                ([['a', True]], list[Sequence[str | bool]])):
+            with self.subTest(value=value, annotation=annotation):
+                self.assertTrue(preferences._of_type(value, annotation))
+
+    def test_a_value_of_another_type_is_not(self) -> None:
+        for value, annotation in (
+                ('ab', list[str]), ([1], list[str]), ([], dict[str, int]),
+                ({'a': 'x'}, dict[str, int]), ({1: 2}, dict[str, int]),
+                ('1', float), (True, float), (True, int), (1, str),
+                ('x', int | None)):
+            with self.subTest(value=value, annotation=annotation):
+                self.assertFalse(preferences._of_type(value, annotation))
 
 
 class WindowsSettingsFolderTest(MComixTest):
@@ -773,6 +847,57 @@ class WriteOnChangeTest(MComixTest):
         shutil.rmtree(constants.CONFIG_DIR)
         prefs['lens size'] = 234
         self.assertEqual(self._written().get('lens size'), 234)
+
+    def test_the_scheduled_write_runs_once(self) -> None:
+        """GLib removes a timeout whose callback answers False; one that
+        answered True would write the file every few milliseconds."""
+        with mock.patch.object(preferences, 'write_preferences_file') as write:
+            self.assertFalse(preferences._write_now())
+        write.assert_called_once_with()
+
+    def test_a_change_inside_a_preference_read_from_the_file_is_written(
+            self) -> None:
+        """What was read is kept apart from what is changed, inner
+        lists and dictionaries too, before and after each write."""
+        with open(constants.PREFERENCE_PATH, 'w') as config_file:
+            json.dump({'lens size': 250}, config_file)
+        preferences.read_preferences_file()
+        for answer in (-8, -9):
+            with self.subTest(answer=answer):
+                prefs['stored dialog choices'][
+                    'resume-from-last-read-page'] = answer
+                preferences.write_preferences_file()
+                with open(constants.PREFERENCE_PATH, 'r') as config_file:
+                    self.assertEqual(
+                        {'resume-from-last-read-page': answer},
+                        json.load(config_file)['stored dialog choices'])
+
+    def test_a_preference_it_does_not_know_does_not_stop_the_rest(
+            self) -> None:
+        with open(constants.PREFERENCE_PATH, 'w') as config_file:
+            json.dump({'no such preference': 1, 'lens size': 250},
+                      config_file)
+        preferences.read_preferences_file()
+        self.assertEqual(250, prefs['lens size'])
+        self.assertNotIn('no such preference', prefs)
+
+    def test_a_value_taken_for_this_session_is_written_only_once_changed(
+            self) -> None:
+        """As "mcomix -m" takes manga mode: what was asked for once is
+        not what the file keeps, until it is changed again, inside the
+        list it is too."""
+        preferences.read_preferences_file()
+        prefs['bg colour'] = [0.1, 0.2, 0.3, 1.0]
+        preferences.for_this_session('bg colour')
+        preferences.cancel_scheduled_write()
+        preferences.write_preferences_file()
+        with open(constants.PREFERENCE_PATH, 'r') as config_file:
+            self.assertNotIn('bg colour', json.load(config_file))
+        prefs['bg colour'][0] = 0.9
+        preferences.write_preferences_file()
+        with open(constants.PREFERENCE_PATH, 'r') as config_file:
+            self.assertEqual([0.9, 0.2, 0.3, 1.0],
+                             json.load(config_file)['bg colour'])
 
     def test_reading_the_file_is_not_changing_it(self) -> None:
         with open(constants.PREFERENCE_PATH, 'w') as config_file:
