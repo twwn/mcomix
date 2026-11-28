@@ -9,7 +9,8 @@ import zipfile
 
 from gi.repository import Gtk
 
-from . import drawn_page, encoded, pump, visible_prompts, wait_for
+from . import (drawn_page, encoded, pump, stop_on_the_second, visible_prompts,
+               wait_for)
 from .test_library_dialog import _LibraryWindowTest
 from mcomix.dialog import Response
 from mcomix.library import duplicates
@@ -128,11 +129,7 @@ class FindDuplicatesTest(_LibraryWindowTest):
         found, = [window for window in Gtk.Window.list_toplevels()
                   if isinstance(window, duplicates_dialog.DuplicatesDialog)]
         self.addCleanup(found.destroy)
-        self.assertTrue(wait_for(lambda: len(reads) == 2))
-        found.response(Response.CANCEL)
-        go.set()
-        self.assertTrue(wait_for(lambda: found.finished, seconds=20))
-        self.assertEqual(2, len(reads))
+        stop_on_the_second(found, reads, go)
         self.assertIn('Stopped with 1 book not yet read.',
                       found._status.get_text())
 

@@ -76,6 +76,10 @@ Class or helper | For
 `session_tmp_dir()` | A folder that lasts the whole run, for what goes on writing after its test.
 `sample_pages(count)` | Paths of up to three pictures to pack or open.
 `line_art_png(size, mode, **options)` | The bytes of a PNG of line art, whose lossless WebP is smaller.
+`drawn_page(seed, size)` | A Pillow image of panels drawn at random from `seed`: a page like a comic's, for what compares pages.
+`encoded(picture, format, **options)` | The bytes of a Pillow image saved as `format`.
+`stop_on_the_second(window, reads, go)` | Press Stop on a library window that reads books, once the second book read is held, and wait for what it shows then.
+`damage_member(path, name)` | A file of a ZIP damaged in place, so that its checksum fails.
 `described_book(path, comicinfo)` | A CBZ of two of them, with a `ComicInfo.xml` where one is given.
 `solid_pixbuf(width, height, colour, has_alpha)` | A pixbuf all of one colour, `0xRRGGBBAA`.
 `pixel(pixbuf, x, y)` | One pixel's channels.

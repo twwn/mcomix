@@ -43,6 +43,7 @@ from mcomix import webp_books
 from mcomix import webp_dialog
 from mcomix.library import backend_types
 from mcomix.library import book_properties
+from mcomix.library import book_check_dialog
 from mcomix.library import duplicates_dialog
 from mcomix.library.pixbuf_cache import get_pixbuf_cache
 from mcomix.i18n import _
@@ -384,7 +385,8 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable, LibraryPart):
             self._popup_actions.add_action(action)
         for name, handler in (('select-all', self._select_all),
                               ('select-no-pages', self._select_no_pages),
-                              ('select-absent', self._select_absent)):
+                              ('select-absent', self._select_absent),
+                              ('select-unreadable', self.check_books)):
             action = Gio.SimpleAction.new(name, None)
             action.connect('activate', handler)
             self._popup_actions.add_action(action)
@@ -461,6 +463,9 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable, LibraryPart):
                                                   'books.select-no-pages'))
         select_menu.append_item(widgets.menu_item(
             _('Books whose file is not there'), 'books.select-absent'))
+        select_menu.append_item(widgets.menu_item(
+            _('Books that cannot be read in full...'),
+            'books.select-unreadable'))
 
         submenus = Gio.Menu()
         submenus.append_submenu(_('Select books'), select_menu)
@@ -1652,11 +1657,13 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable, LibraryPart):
                        'completely-remove', 'delete-permanently',
                        'properties'):
             self._set_sensitive(action, books_selected)
+        # These look among the books on show, whatever is selected.
+        shown = any(True for _item in self._each_item())
+        self._set_sensitive('find-duplicates', shown)
+        self._set_sensitive('select-unreadable', shown)
         # Only where a book selected could be written back: a PDF, a
         # RAR without rar, would only be counted as left alone.  Whether
         # it has PNG pages is found only by reading it.
-        self._set_sensitive('find-duplicates', any(
-            True for _item in self._each_item()))
         self._set_sensitive('store-webp', any(
             archive_packer.can_write(archive_type)
             for archive_type in {item.format for item in selected}))
@@ -1737,6 +1744,15 @@ class _BookArea(Gtk.ScrolledWindow, widgets.Releasable, LibraryPart):
             open_book=lambda book: self._library.open_book(
                 [book], keep_library_open=True),
             select=self._select_paths, remove=self.remove_from_library)
+
+    def check_books(self, *args: object) -> None:
+        """Read every file of each book on show, and list those that
+        cannot be read in full: see the book_check_dialog module."""
+        books = {item.uid: item.path for item in self._each_item()}
+        if not books:
+            return
+        book_check_dialog.BookCheckDialog(self._library.window, books,
+                                          select=self._select_paths)
 
     def _stored_as_webp(self, path: str,
                         converted: webp_books.Converted) -> None:

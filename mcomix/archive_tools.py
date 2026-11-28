@@ -1,5 +1,6 @@
 """archive_tools.py - Archive tool functions."""
 
+import errno
 import functools
 import os
 import re
@@ -633,6 +634,57 @@ def get_archive_handler(path: str, mimetype: int | None = None) -> archive_base.
     log.debug('Archive handler %(handler)s for archive "%(archivename)s" was selected.',
               {'handler': handler.__name__, 'archivename': os.path.split(path)[1]})
     return handler(path)
+
+
+#: The errors of unpacking that say the disk or the system failed, and
+#: not the file being unpacked: a book that meets one is not written
+#: (webp_books) or checked (library.book_check), where one with a file
+#: that cannot be read is written without it, or told damaged.
+NOT_THE_FILE = frozenset((
+    errno.ENOSPC, errno.EDQUOT, errno.EACCES, errno.EPERM, errno.EROFS,
+    errno.EIO, errno.ENAMETOOLONG, errno.EMFILE, errno.ENFILE))
+
+
+def extract_each(archive: archive_base.BaseArchive, names: list[str],
+                 directory: str, unpacked: Callable[[str], None],
+                 fatal: Callable[[Exception], None]) -> dict[str, str]:
+    """Unpack the files <names> of <archive> into <directory>, and
+    answer with those that could not be read, to why.
+
+    They are unpacked all at once where that works.  Where it fails,
+    each file not yet out is unpacked by itself, so that one damaged
+    file costs only itself.  <unpacked> is called with each name once
+    it is out or has failed, and may raise to stop.  <fatal> is called
+    with each error first, and raises where the error is the book's or
+    the disk's rather than the one file's.
+    """
+    left_out: dict[str, str] = {}
+    done: set[str] = set()
+
+    def out(name: str) -> None:
+        done.add(name)
+        unpacked(name)
+
+    extracting = archive.iter_extract(names, directory)
+    while True:
+        try:
+            name = next(extracting)
+        except StopIteration:
+            return left_out
+        except Exception as error:
+            fatal(error)
+            break
+        out(name)
+    for name in names:
+        if name in done:
+            continue
+        try:
+            archive.extract(name, directory)
+        except Exception as error:
+            fatal(error)
+            left_out[name] = str(error)
+        out(name)
+    return left_out
 
 
 def get_recursive_archive_handler(path: str, destination_dir: str,

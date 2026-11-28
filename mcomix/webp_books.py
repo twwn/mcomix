@@ -14,7 +14,6 @@ page's name (file_actions.follow_pages()), on the main thread.
 """
 
 import contextlib
-import errno
 import os
 import tempfile
 import threading
@@ -39,13 +38,6 @@ _UNPACKING = 0.2
 
 #: How often the progress of the writing is passed on, in seconds.
 _TICK = 0.1
-
-#: The errors of unpacking that say the disk or the system failed, and
-#: not the file being unpacked: a book that meets one is not written,
-#: where one with a file that cannot be read is written without it.
-_NOT_THE_FILE = frozenset((
-    errno.ENOSPC, errno.EDQUOT, errno.EACCES, errno.EPERM, errno.EROFS,
-    errno.EIO, errno.ENAMETOOLONG, errno.EMFILE, errno.ENFILE))
 
 #: The formats MComix writes only with a program it does not install
 #: (archive_packer.can_write()), to that program's name.
@@ -182,10 +174,9 @@ def _unpack(archive: archive_base.BaseArchive,
     <unwritable>, where given, says why a book with PNG pages cannot be
     written: such a book is skipped for it once listed.
 
-    Where unpacking the whole archive fails, each file not yet out is
-    unpacked by itself, so that one damaged file costs only itself.  A
-    failure that is the disk's and not the file's (_NOT_THE_FILE) fails
-    the book instead.
+    A file that cannot be read is left out (archive_tools.extract_each);
+    a failure that is the disk's and not the file's (archive_tools.NOT_THE_FILE)
+    fails the book instead.
 
     The library never asks for a password, and neither does this: an
     encrypted book is skipped.  So is one with archives inside it, which
@@ -206,31 +197,18 @@ def _unpack(archive: archive_base.BaseArchive,
                 raise Skipped(_('no PNG, GIF or JPEG pages'))
             if unwritable is not None:
                 raise Skipped(unwritable)
-            left_out: dict[str, str] = {}
-            done: set[str] = set()
+            done = 0
 
             def unpacked(name: str) -> None:
+                nonlocal done
                 if stop.is_set():
                     raise archive_packer.Cancelled()
-                done.add(name)
-                progress(_UNPACKING * len(done) / len(names))
+                done += 1
+                progress(_UNPACKING * done / len(names))
 
-            try:
-                for name in archive.iter_extract(names, directory):
-                    unpacked(name)
-            except (Skipped, archive_packer.Cancelled):
-                raise
-            except Exception as error:
-                _raise_unless_the_file(error, withheld.wanted)
-                for name in names:
-                    if name in done:
-                        continue
-                    try:
-                        archive.extract(name, directory)
-                    except Exception as error:
-                        _raise_unless_the_file(error, withheld.wanted)
-                        left_out[name] = str(error)
-                    unpacked(name)
+            left_out = archive_tools.extract_each(
+                archive, names, directory, unpacked,
+                lambda error: _raise_unless_the_file(error, withheld.wanted))
         except (Skipped, archive_packer.Cancelled):
             raise
         except Exception as error:
@@ -262,7 +240,8 @@ def _raise_unless_the_file(error: Exception, encrypted: bool) -> None:
     that the file being unpacked could not be read."""
     if encrypted:
         raise Skipped(_('encrypted')) from error
-    if isinstance(error, OSError) and error.errno in _NOT_THE_FILE:
+    if isinstance(error, OSError) \
+            and error.errno in archive_tools.NOT_THE_FILE:
         raise error
 
 # vim: expandtab:sw=4:ts=4

@@ -1752,22 +1752,46 @@ class StorePagesAsWebpEntryTest(_FourCoversTest):
         self.assertIn(['books.store-webp', 'books.find-duplicates'], actions)
 
 
-class FindDuplicatesEntryTest(_FourCoversTest):
+class BooksOnShowEntriesTest(_FourCoversTest):
 
-    """"Find duplicates..." looks among the books on show, so it is
-    offered whatever is selected, where any are shown."""
+    """"Find duplicates..." and "Select books > Books that cannot be
+    read in full..." look among the books on show, so they are offered
+    whatever is selected, where any are shown."""
+
+    ACTIONS = ('find-duplicates', 'select-unreadable')
 
     def test_offered_where_books_are_shown(self):
         self.library.collection_area = _CollectionArea()
         self.library.main_window = _main_window()
-        action = self.area._popup_actions.lookup_action('find-duplicates')
+        actions = [self.area._popup_actions.lookup_action(name)
+                   for name in self.ACTIONS]
         with unittest.mock.patch.object(book_area.widgets, 'popup_at'):
             self.area._covers.select_positions([])
             self.area._popup_book_menu()
-            self.assertTrue(action.get_enabled())
+            self.assertEqual([True, True],
+                             [action.get_enabled() for action in actions])
             self.area._covers.remove_items(list(self.area._each_item()))
             self.area._popup_book_menu()
-            self.assertFalse(action.get_enabled())
+            self.assertEqual([False, False],
+                             [action.get_enabled() for action in actions])
+
+    def test_the_check_is_in_select_books(self):
+        def submenus(model):
+            for index in range(model.get_n_items()):
+                label = model.get_item_attribute_value(index, 'label', None)
+                links = model.iterate_item_links(index)
+                while links.next():
+                    if links.get_name() == 'submenu':
+                        yield label.get_string(), links.get_value()
+                    yield from submenus(links.get_value())
+
+        select, = [menu for label, menu in
+                   submenus(self.area._book_menu.get_menu_model())
+                   if label == 'Select books']
+        self.assertEqual(
+            'books.select-unreadable',
+            select.get_item_attribute_value(
+                select.get_n_items() - 1, 'action', None).get_string())
 
 
 class MiddleClickTest(_FourCoversTest):

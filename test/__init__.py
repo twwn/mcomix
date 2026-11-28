@@ -56,6 +56,7 @@ import atexit
 import contextlib
 import copy
 import gc
+import io
 import json
 import shutil
 import stat
@@ -64,6 +65,7 @@ import threading
 import time
 import traceback
 import weakref
+import zipfile
 
 _TMP_ROOT = os.path.join(os.path.dirname(__file__), 'tmp')
 os.makedirs(_TMP_ROOT, exist_ok=True)
@@ -1361,10 +1363,32 @@ def drawn_page(seed, size=(600, 900)):
 def encoded(picture, format, **options):
     """The bytes of the Pillow image <picture> saved as <format>, with
     <options> to its save()."""
-    import io
     data = io.BytesIO()
     picture.save(data, format, **options)
     return data.getvalue()
+
+
+def stop_on_the_second(window, reads, go):
+    """Stop the work of <window>, a window with a Stop button, once a
+    second book is being read (<reads> lists those begun) and held until
+    <go> is set; then let it go on, and wait until <window> shows what
+    it found."""
+    assert wait_for(lambda: len(reads) == 2)
+    window.response(Gtk.ResponseType.CANCEL)
+    go.set()
+    assert wait_for(lambda: window.finished, seconds=20)
+    assert len(reads) == 2, reads
+
+
+def damage_member(path, name):
+    """Change the bytes of the file <name> in the ZIP at <path>, stored
+    with no extra field, so that its checksum fails."""
+    with zipfile.ZipFile(path) as book:
+        info = book.getinfo(name)
+    with open(path, 'r+b') as book:
+        # Past the local header: 30 bytes, the name, no extra field.
+        book.seek(info.header_offset + 30 + len(name) + 40)
+        book.write(b'damaged')
 
 
 # Helper to get path to testsuite sample files.

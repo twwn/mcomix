@@ -19,8 +19,8 @@ from mcomix import constants
 from mcomix import webp_books
 from mcomix.archive import zip as zip_archive
 
-from . import (MComixTest, copy_rar_set, get_testfile_path, line_art_png,
-               refuse_passwords, sample_pages)
+from . import (MComixTest, copy_rar_set, damage_member, get_testfile_path,
+               line_art_png, refuse_passwords, sample_pages)
 
 
 def pixels(data):
@@ -185,12 +185,7 @@ class DamagedTest(_BookTest):
         path = self.zip_book({name: line_art_png() for name in
                               ('01.png', '02.png', '03.png')}
                              | {'notes.txt': b'notes'})
-        with zipfile.ZipFile(path) as book:
-            info = book.getinfo(damaged)
-        with open(path, 'r+b') as book:
-            # Past the local header: 30 bytes, the name, no extra field.
-            book.seek(info.header_offset + 30 + len(damaged) + 40)
-            book.write(b'damaged')
+        damage_member(path, damaged)
         return path
 
     def test_a_damaged_page_is_left_out(self):
