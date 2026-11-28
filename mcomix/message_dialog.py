@@ -97,6 +97,10 @@ REMEMBERED_DIALOGS = {
 }
 
 
+#: How many characters a line of the text asks for at most.
+_CHARACTERS = 60
+
+
 class MessageDialog(Dialog):
 
     def __init__(self, parent: "Gtk.Window | None" = None, *,
@@ -126,11 +130,14 @@ class MessageDialog(Dialog):
             destroy_with_parent=destroy_with_parent)
         widgets.set_border(self, 12)
 
-        self._primary = Gtk.Label()
+        # A wrapping label still asks for the width of its text on one
+        # line, so without a cap a paragraph made the window as wide as
+        # the screen; GTK's own message dialog caps it the same.
+        self._primary = Gtk.Label(max_width_chars=_CHARACTERS)
         self._primary.set_xalign(0)
         self._primary.set_wrap(True)
         self._primary.add_css_class('title-4')
-        self._secondary = Gtk.Label()
+        self._secondary = Gtk.Label(max_width_chars=_CHARACTERS)
         self._secondary.set_xalign(0)
         self._secondary.set_wrap(True)
         self._secondary.set_visible(False)

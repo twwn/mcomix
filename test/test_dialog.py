@@ -287,6 +287,21 @@ class MessageDialogTest(MComixTest):
         self.assertIsNotNone(built.get_widget_for_response(Response.YES))
         self.assertIsNotNone(built.get_widget_for_response(Response.NO))
 
+    def test_a_long_text_wraps_rather_than_widening_the_window(self):
+        """A wrapping label asks for the width of its text on one line:
+        the question of "Repack as ZIP..." asked for 2115 pixels, and
+        the window took the whole width of the screen.  Twice the text
+        now takes twice the lines, not twice the width."""
+        sentence = 'Each book is written again with every page in it. '
+        widths = []
+        for times in (6, 12):
+            built = self._build()
+            built.set_text('Repack 2 books as ZIP?', sentence * times)
+            widths.append(built.measure(Gtk.Orientation.HORIZONTAL, -1)[1])
+        # Within what a line's last word moves it by.
+        self.assertLess(widths[1], widths[0] * 1.2)
+        self.assertLess(widths[1], 640)
+
     # -- Answers the reader asked not to be asked for again ---------------
 
     #: A prompt whose only remembered answer is an OK, as the ones that
