@@ -109,6 +109,8 @@ class _SaveProgressDialog(Dialog):
 
     """A progress bar and Cancel, over the window that saves."""
 
+    stays_until_destroyed = True
+
     def __init__(self, parent: Gtk.Window, archive_path: str,
                  packer: archive_packer.Packer) -> None:
         super().__init__(
@@ -140,10 +142,5 @@ class _SaveProgressDialog(Dialog):
     def _response(self, dialog: Dialog, response: int) -> None:
         self._packer.stop()
         self.set_response_sensitive(Response.CANCEL, False)
-
-    def _closed(self, *args: object) -> bool:
-        self.emit('response', Response.DELETE_EVENT)
-        # True: the window stays until the thread has stopped.
-        return True
 
 # vim: expandtab:sw=4:ts=4

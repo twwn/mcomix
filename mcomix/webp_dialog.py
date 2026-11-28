@@ -117,6 +117,8 @@ class _ProgressDialog(Dialog):
     """How far the books are, with a Stop button; the summary once
     they are done."""
 
+    stays_until_destroyed = True
+
     def __init__(self, parent: Gtk.Window, books: list[str],
                  open_book: Callable[[], "str | None"],
                  written: "Callable[[str, webp_books.Converted], None]",
@@ -315,11 +317,6 @@ class _ProgressDialog(Dialog):
             self.set_response_sensitive(Response.CANCEL, False)
         else:
             self.destroy()
-
-    def _closed(self, *args: object) -> bool:
-        self.emit('response', Response.DELETE_EVENT)
-        # True: the window stays until the thread has stopped.
-        return True
 
     def _finished(self) -> bool:
         """Put the summary up in the progress' place, once the thread

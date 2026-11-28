@@ -88,6 +88,22 @@ class DialogTest(MComixTest):
         self.dialog.emit('close-request')
         self.assertEqual(self.answers, [Response.DELETE_EVENT])
 
+    def test_a_dialog_goes_on_closing_unless_it_stays_until_destroyed(self):
+        """The dialogs over a thread stay until it has stopped: each of
+        them destroys itself then."""
+        self.assertFalse(self.dialog.emit('close-request'))
+        self.dialog.stays_until_destroyed = True
+        self.assertTrue(self.dialog.emit('close-request'))
+        self.assertEqual([Response.DELETE_EVENT] * 2, self.answers)
+        from mcomix import save_progress, webp_dialog
+        from mcomix.library import book_check_dialog, duplicates_dialog
+        for over_a_thread in (book_check_dialog.BookCheckDialog,
+                              duplicates_dialog.DuplicatesDialog,
+                              save_progress._SaveProgressDialog,
+                              webp_dialog._ProgressDialog):
+            with self.subTest(over_a_thread.__name__):
+                self.assertTrue(over_a_thread.stays_until_destroyed)
+
     def test_a_destroyed_dialog_lets_go_of_the_focus_before_its_surface(self):
         # On Windows the text field holding the focus registers a filter
         # for the window's messages and takes it off only when it loses

@@ -70,6 +70,8 @@ class DuplicatesDialog(Dialog):
     """How far the reading of the books is, with a Stop button; the
     groups of copies once they are found."""
 
+    stays_until_destroyed = True
+
     def __init__(self, parent: Gtk.Window, backend: "_LibraryBackend",
                  books: Mapping[int, str],
                  open_book: Callable[[int], None],
@@ -195,11 +197,6 @@ class DuplicatesDialog(Dialog):
             self.set_response_sensitive(Response.CANCEL, False)
         else:
             self.destroy()
-
-    def _closed(self, *args: object) -> bool:
-        self.emit('response', Response.DELETE_EVENT)
-        # True: the window stays until the thread has stopped.
-        return True
 
     def _ask_to_remove(self) -> None:
         books = self.ticked()

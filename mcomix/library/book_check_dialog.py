@@ -41,6 +41,8 @@ class BookCheckDialog(Dialog):
     """How far the check is, with a Stop button; the books that cannot
     be read in full once it is done."""
 
+    stays_until_destroyed = True
+
     def __init__(self, parent: Gtk.Window, books: Mapping[int, str],
                  select: Callable[[list[str]], None]) -> None:
         """Check <books> (id to path); <select> selects books in the
@@ -132,11 +134,6 @@ class BookCheckDialog(Dialog):
             self.set_response_sensitive(Response.CANCEL, False)
         else:
             self.destroy()
-
-    def _closed(self, *args: object) -> bool:
-        self.emit('response', Response.DELETE_EVENT)
-        # True: the window stays until the thread has stopped.
-        return True
 
     def _finished(self, found: dict[str, book_check.Checked],
                   unchecked: dict[str, str]) -> bool:

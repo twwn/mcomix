@@ -56,6 +56,11 @@ class Dialog(Gtk.Window):
         'response': (GObject.SignalFlags.RUN_LAST, None, (int,)),
     }
 
+    #: Whether closing the window only asks it to close: it is answered
+    #: DELETE_EVENT and stays until it destroys itself, which a dialog
+    #: over a thread does once the thread has stopped.
+    stays_until_destroyed = False
+
     #: What a Gtk.Dialog carried, and what a theme paints a dialog by:
     #: MComix' own stylesheet gives window.dialog the desktop's
     #: @dialog_bg_color, which is not the @window_bg_color a plain
@@ -238,9 +243,10 @@ class Dialog(Gtk.Window):
 
     def _closed(self, *args: object) -> bool:
         self.emit('response', Response.DELETE_EVENT)
-        # False: the window goes on closing, which is what a Gtk.Dialog
-        # did with its delete event.
-        return False
+        # False, unless the dialog stays until it is destroyed: the
+        # window goes on closing, which is what a Gtk.Dialog did with
+        # its delete event.
+        return self.stays_until_destroyed
 
     def _escaped(self) -> bool:
         # DELETE_EVENT, not CANCEL: escape closed a Gtk.Dialog, which
